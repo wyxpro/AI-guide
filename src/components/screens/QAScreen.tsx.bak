@@ -1,0 +1,323 @@
+"use client";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Mic, MicOff, Send, Loader2, Volume2, VolumeX, History, X, SmilePlus } from "lucide-react";
+import { request } from "@/lib/api/request";
+import { useSearchParams } from "next/navigation";
+import { SatisfactionModal } from "@/components/ui/SatisfactionModal";
+
+const SPRING = { type: "spring" as const, stiffness: 280, damping: 35 };
+
+interface Message { role: "user" | "assistant"; content: string; timestamp: string }
+
+const QUICK_PROMPTS = [
+  "揽月亭有什么历史故事？",
+  "景区门票多少钱？",
+  "有没有适合老人的路线？",
+  "翠玉湖在哪里？",
+  "景区几点开放？",
+  "推荐亲子路线",
+];
+
+function getInitialMessage(spotName?: string | null): Message {
+  const content = spotName
+    ? `您好！我已为您准备好「${spotName}」的详细讲解。请问您想了解它的历史渊源、文化典故，还是游览小贴士？`
+    : "您好！我是翠玉景区的AI导览官小玉，今日将陪您游览每一处胜景。可以语音提问，也可以文字输入，我随时恭候。";
+  return {
+    role: "assistant", content,
+    timestamp: new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }),
+  };
+}
+
+export function QAScreen() {
+  const searchParams = useSearchParams();
+  const spotName = searchParams.get("name");
+
+  const [messages, setMessages] = useState<Message[]>([getInitialMessage(spotName)]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const [ttsEnabled, setTtsEnabled] = useState(true);
+  const [showHistory, setShowHistory] = useState(false);
+  const [showSatisfaction, setShowSatisfaction] = useState(false);
+  const satisfactionShownRef = useRef(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recognitionRef = useRef<any>(null);
+
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
+
+  // TTS: speak AI reply
+  const speak = useCallback((text: string) => {
+    if (!ttsEnabled || !("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text.slice(0, 300));
+    utter.lang = "zh-CN"; utter.rate = 0.92; utter.pitch = 1.05;
+    // prefer a Chinese female voice
+    const voices = window.speechSynthesis.getVoices();
+    const zhVoice = voices.find((v) => v.lang.startsWith("zh") && v.name.includes("Female"))
+      || voices.find((v) => v.lang.startsWith("zh"));
+    if (zhVoice) utter.voice = zhVoice;
+    window.speechSynthesis.speak(utter);
+  }, [ttsEnabled]);
+
+  // STT: Web Speech API
+  const toggleRecording = () => {
+    const SR = (window as unknown as { SpeechRecognition?: new () => { lang: string; continuous: boolean; interimResults: boolean; onresult: ((e: { results: { [key: number]: { [key: number]: { transcript: string } } } }) => void) | null; onend: (() => void) | null; onerror: (() => void) | null; start: () => void; stop: () => void }; webkitSpeechRecognition?: new () => { lang: string; continuous: boolean; interimResults: boolean; onresult: ((e: { results: { [key: number]: { [key: number]: { transcript: string } } } }) => void) | null; onend: (() => void) | null; onerror: (() => void) | null; start: () => void; stop: () => void } }).SpeechRecognition
+      || (window as unknown as { webkitSpeechRecognition?: new () => { lang: string; continuous: boolean; interimResults: boolean; onresult: ((e: { results: { [key: number]: { [key: number]: { transcript: string } } } }) => void) | null; onend: (() => void) | null; onerror: (() => void) | null; start: () => void; stop: () => void } }).webkitSpeechRecognition;
+    if (!SR) { setInput("（您的浏览器不支持语音输入，请使用文字）"); return; }
+    if (recording) { recognitionRef.current?.stop(); setRecording(false); return; }
+    const rec = new SR();
+    rec.lang = "zh-CN"; rec.continuous = false; rec.interimResults = false;
+    rec.onresult = (e) => { const t = e.results[0][0].transcript; setInput(t); };
+    rec.onend = () => setRecording(false);
+    rec.onerror = () => setRecording(false);
+    rec.start();
+    recognitionRef.current = rec;
+    setRecording(true);
+  };
+
+  const sendMessage = async (question: string) => {
+    if (!question.trim() || loading) return;
+    const ts = new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
+    const userMsg: Message = { role: "user", content: question, timestamp: ts };
+    const updatedMessages = [...messages, userMsg];
+    setMessages(updatedMessages);
+    setInput(""); setLoading(true);
+    try {
+      const history = updatedMessages.slice(1).map((m) => ({ role: m.role, content: m.content }));
+      const res = await request("/api/qa/chat", {
+        method: "POST",
+        body: JSON.stringify({ question, history }),
+      });
+      const data = await res.json();
+      const aiTs = new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
+      const answer = data.answer || "抱歉，暂时无法回答这个问题。";
+      setMessages((prev) => [...prev, { role: "assistant", content: answer, timestamp: aiTs }]);
+      speak(answer);
+      // Show satisfaction modal after 3 complete exchanges
+      const totalExchanges = updatedMessages.filter((m) => m.role === "user").length;
+      if (totalExchanges >= 3 && !satisfactionShownRef.current) {
+        satisfactionShownRef.current = true;
+        setTimeout(() => setShowSatisfaction(true), 1200);
+      }
+    } catch {
+      const aiTs = new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
+      setMessages((prev) => [...prev, { role: "assistant", content: "小玉现在有些忙，请稍候再试。", timestamp: aiTs }]);
+    } finally { setLoading(false); }
+  };
+
+  return (
+    <div className="flex flex-col min-h-svh" style={{ background: "#FAF8F5" }}>
+      {/* Header */}
+      <div className="flex items-center gap-3 px-4 pb-3 sticky top-0 z-10"
+        style={{ background: "rgba(250,248,245,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid #E6E2D8", paddingTop: "calc(env(safe-area-inset-top, 44px) + 8px)" }}>
+        {/* Avatar */}
+        <motion.div animate={{ boxShadow: loading ? "0 0 0 3px rgba(210,160,83,0.4)" : "0 0 0 2px rgba(79,111,82,0.2)" }}
+          className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-semibold flex-shrink-0"
+          style={{ background: "linear-gradient(135deg, #4F6F52, #3A5240)", fontFamily: "var(--font-noto-serif)" }}>玉</motion.div>
+        <div className="flex-1">
+          <p className="text-sm font-semibold" style={{ color: "#1E2522", fontFamily: "var(--font-noto-serif)" }}>翠玉导览官</p>
+          <div className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: loading ? "#D2A053" : "#16A34A" }} />
+            <p className="text-[10px]" style={{ color: loading ? "#D2A053" : "#16A34A" }}>{loading ? "正在思考..." : "在线服务中"}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {/* TTS toggle */}
+          <motion.button whileTap={{ scale: 0.88 }} onClick={() => { setTtsEnabled(!ttsEnabled); if (ttsEnabled) window.speechSynthesis?.cancel(); }}
+            className="w-8 h-8 rounded-full flex items-center justify-center"
+            style={{ background: ttsEnabled ? "rgba(79,111,82,0.12)" : "#F0EDE5", color: ttsEnabled ? "#4F6F52" : "#8F9F8F" }}>
+            {ttsEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+          </motion.button>
+          {/* History */}
+          <motion.button whileTap={{ scale: 0.88 }} onClick={() => setShowHistory(true)}
+            className="w-8 h-8 rounded-full flex items-center justify-center"
+            style={{ background: "#F0EDE5", color: "#8F9F8F" }}>
+            <History className="w-4 h-4" />
+          </motion.button>
+        </div>
+      </div>
+
+      {/* Spot context banner */}
+      {spotName && (
+        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={SPRING}
+          className="mx-4 mt-3 px-3 py-2 rounded-xl flex items-center gap-2 text-[11px]"
+          style={{ background: "rgba(210,160,83,0.1)", border: "1px solid rgba(210,160,83,0.25)", color: "#B8843A" }}>
+          <span>📍</span><span>当前聚焦景点：<strong>{spotName}</strong>，可直接提问相关内容</span>
+        </motion.div>
+      )}
+
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 max-w-2xl mx-auto w-full">
+        <AnimatePresence initial={false}>
+          {messages.map((msg, i) => (
+            <motion.div key={i}
+              initial={{ opacity: 0, y: 14, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={SPRING}
+              className={`flex gap-2.5 ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0"
+                style={{
+                  background: msg.role === "assistant" ? "linear-gradient(135deg,#4F6F52,#3A5240)" : "rgba(79,111,82,0.12)",
+                  color: msg.role === "assistant" ? "white" : "#4F6F52",
+                  fontFamily: "var(--font-noto-serif)",
+                }}>
+                {msg.role === "assistant" ? "玉" : "游"}
+              </div>
+              <div className={`space-y-1 max-w-[76%] ${msg.role === "user" ? "items-end" : "items-start"} flex flex-col`}>
+                <div className="px-3.5 py-2.5 text-[13px] leading-relaxed"
+                  style={{
+                    borderRadius: msg.role === "assistant" ? "4px 16px 16px 16px" : "16px 4px 16px 16px",
+                    background: msg.role === "assistant" ? "white" : "linear-gradient(135deg,#4F6F52,#3A5240)",
+                    border: msg.role === "assistant" ? "1px solid #E6E2D8" : "none",
+                    color: msg.role === "assistant" ? "#1E2522" : "white",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+                  }}>
+                  {msg.content}
+                </div>
+                <span className="text-[9px] font-mono px-1" style={{ color: "#8F9F8F" }}>{msg.timestamp}</span>
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+
+        {/* Typing indicator */}
+        {loading && (
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex gap-2.5 items-center">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center"
+              style={{ background: "linear-gradient(135deg,#4F6F52,#3A5240)", color: "white" }}>玉</div>
+            <div className="px-4 py-3 rounded-2xl flex items-center gap-1.5"
+              style={{ background: "white", border: "1px solid #E6E2D8", borderRadius: "4px 16px 16px 16px" }}>
+              {[0, 1, 2].map((i) => (
+                <motion.div key={i} animate={{ y: [0, -4, 0] }} transition={{ duration: 0.6, delay: i * 0.15, repeat: Infinity }}
+                  className="w-1.5 h-1.5 rounded-full" style={{ background: "#4F6F52" }} />
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Quick prompts */}
+        {messages.length <= 2 && !loading && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="space-y-2 pt-2">
+            <p className="text-[10px] font-mono tracking-wider pl-1" style={{ color: "#8F9F8F" }}>快捷问题：</p>
+            <div className="flex flex-wrap gap-2">
+              {QUICK_PROMPTS.map((p) => (
+                <motion.button key={p} whileTap={{ scale: 0.92 }}
+                  onClick={() => sendMessage(p)}
+                  className="text-[11px] px-3 py-1.5 rounded-full transition-colors"
+                  style={{ background: "white", border: "1px solid #E6E2D8", color: "#3A4D39" }}>
+                  {p}
+                </motion.button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+        <div ref={bottomRef} />
+      </div>
+
+      {/* Input bar */}
+      <div className="sticky bottom-0 px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+4.5rem)] md:pb-4"
+        style={{ background: "rgba(255,255,255,0.98)", backdropFilter: "blur(16px)", borderTop: "1px solid #E6E2D8" }}>
+        <div className="flex items-end gap-2 max-w-2xl mx-auto">
+          {/* Voice btn */}
+          <motion.button whileTap={{ scale: 0.85 }} onClick={toggleRecording}
+            className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-2 relative"
+            style={{
+              background: recording ? "rgba(220,38,38,0.1)" : "rgba(79,111,82,0.08)",
+              borderColor: recording ? "#DC2626" : "rgba(79,111,82,0.25)",
+              color: recording ? "#DC2626" : "#4F6F52",
+            }}>
+            {recording && <motion.div animate={{ scale: [1, 1.6, 1] }} transition={{ duration: 1, repeat: Infinity }}
+              className="absolute inset-0 rounded-full" style={{ background: "rgba(220,38,38,0.15)" }} />}
+            {recording ? <MicOff className="w-4 h-4 relative z-10" /> : <Mic className="w-4 h-4" />}
+          </motion.button>
+
+          {/* Text input */}
+          <div className="flex-1 flex items-center gap-2 px-3.5 py-2.5 rounded-2xl"
+            style={{ background: "#F5F0E8", border: "1px solid #E6E2D8", minHeight: 44 }}>
+            <input type="text" value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage(input)}
+              placeholder={recording ? "正在聆听..." : "打字提问或按麦克风说话..."}
+              className="flex-1 bg-transparent outline-none text-sm"
+              style={{ color: "#1E2522", fontSize: 16, fontFamily: "var(--font-noto-sans)" }} />
+          </div>
+
+          {/* Send btn */}
+          <AnimatePresence mode="wait">
+            {input.trim() ? (
+              <motion.button key="send" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
+                whileTap={{ scale: 0.85 }} onClick={() => sendMessage(input)}
+                className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                style={{ background: "linear-gradient(135deg,#4F6F52,#3A5240)" }}>
+                <Send className="w-4 h-4 text-white" />
+              </motion.button>
+            ) : (
+              <motion.div key="placeholder" className="w-10 h-10 flex-shrink-0" />
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* History sheet */}
+      <AnimatePresence>
+        {showHistory && <HistorySheet onClose={() => setShowHistory(false)} onResume={(q) => { setShowHistory(false); sendMessage(q); }} />}
+      </AnimatePresence>
+
+      {/* Satisfaction modal */}
+      <AnimatePresence>
+        {showSatisfaction && (
+          <SatisfactionModal
+            onClose={() => setShowSatisfaction(false)}
+            onSubmit={(rating, comment) => {
+              console.info("[satisfaction]", rating, comment);
+            }}
+          />
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function HistorySheet({ onClose, onResume }: { onClose: () => void; onResume: (q: string) => void }) {
+  const [sessions, setSessions] = useState<Array<{ id: number; title: string; updatedAt: string; messages: Array<{ role: string; content: string }> }>>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    request("/api/qa/sessions").then((r) => r.json()).then((d) => { setSessions(Array.isArray(d) ? d : []); setLoading(false); }).catch(() => setLoading(false));
+  }, []);
+
+  const lastUserMsg = (msgs: Array<{ role: string; content: string }>) => msgs.filter((m) => m.role === "user").slice(-1)[0]?.content || "（无内容）";
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 z-30 flex flex-col justify-end" style={{ background: "rgba(0,0,0,0.45)" }}
+      onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
+        transition={{ type: "spring" as const, stiffness: 300, damping: 35 }}
+        className="rounded-t-2xl p-5 space-y-4 max-h-[70vh] overflow-y-auto"
+        style={{ background: "white" }}>
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold text-base" style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}>历史对话</h3>
+          <motion.button whileTap={{ scale: 0.88 }} onClick={onClose}>
+            <X className="w-5 h-5" style={{ color: "#8F9F8F" }} />
+          </motion.button>
+        </div>
+        {loading ? <div className="skeleton h-20 rounded-xl" /> : sessions.length === 0 ? (
+          <div className="text-center py-8" style={{ color: "#8F9F8F" }}>
+            <p className="text-2xl mb-2">💬</p><p className="text-sm">暂无历史对话</p>
+          </div>
+        ) : sessions.map((s) => (
+          <motion.div key={s.id} whileTap={{ scale: 0.98 }}
+            onClick={() => onResume(lastUserMsg(s.messages ?? []))}
+            className="p-3 rounded-xl cursor-pointer" style={{ border: "1px solid #E6E2D8", background: "#F5F0E8" }}>
+            <p className="text-[13px] font-medium truncate" style={{ color: "#1E2522" }}>{s.title}</p>
+            <p className="text-[11px] mt-0.5 truncate" style={{ color: "#8F9F8F" }}>{lastUserMsg(s.messages ?? [])}</p>
+            <p className="text-[9px] mt-1 font-mono" style={{ color: "#8F9F8F" }}>{new Date(s.updatedAt).toLocaleDateString("zh-CN")}</p>
+          </motion.div>
+        ))}
+      </motion.div>
+    </motion.div>
+  );
+}
