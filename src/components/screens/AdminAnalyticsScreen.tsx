@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, TrendingUp, MapPin, MessageCircle } from "lucide-react";
+import { Users, TrendingUp, MapPin, MessageCircle, Sparkles } from "lucide-react";
 import { request } from "@/lib/api/request";
 
 const SPRING = { type: "spring" as const, stiffness: 280, damping: 35 };
@@ -9,18 +9,22 @@ const SPRING = { type: "spring" as const, stiffness: 280, damping: 35 };
 interface AnalyticsDay { date: string; totalVisitors: number; totalQuestions: number; satisfactionScore: number; sentimentPositive: number; sentimentNeutral: number; sentimentNegative: number; topQuestions: string[]; topSpotIds: number[] }
 
 const SPOT_NAMES: Record<number, string> = { 1: "揽月亭", 2: "翠玉湖", 3: "听松轩", 4: "百花谷", 5: "古窑遗址", 6: "溪流栈道" };
-const INTEREST_DATA = [
-  { label: "历史文化", pct: 35, color: "#3A4D39" },
-  { label: "自然生态", pct: 28, color: "#4F6F52" },
-  { label: "亲子游览", pct: 22, color: "#D2A053" },
-  { label: "人文艺术", pct: 15, color: "#8F9F8F" },
-];
+const INTEREST_COLORS: Record<string, string> = {
+  "历史文化": "#3A4D39",
+  "自然生态": "#4F6F52",
+  "亲子游览": "#D2A053",
+  "人文艺术": "#8F9F8F",
+};
 
 export function AdminAnalyticsScreen() {
   const [data, setData] = useState<AnalyticsDay[]>([]);
   const [loading, setLoading] = useState(true);
   const [hotSpots, setHotSpots] = useState<Array<{ spotId: number; visits: number }>>([]);
   const [wordCloud, setWordCloud] = useState<Array<{ word: string; count: number }>>([]);
+  const [recommendations, setRecommendations] = useState<string>("");
+  const [loadingRecommendations, setLoadingRecommendations] = useState<boolean>(true);
+  const [interestData, setInterestData] = useState<Array<{ label: string; pct: number; count: number }>>([]);
+  const [loadingInterests, setLoadingInterests] = useState(true);
 
   const [selectedSentiment, setSelectedSentiment] = useState<string | null>(null);
   const [selectedSentimentLabel, setSelectedSentimentLabel] = useState("");
@@ -33,12 +37,24 @@ export function AdminAnalyticsScreen() {
       request("/api/admin/analytics?days=7").then((r) => r.json()),
       request("/api/admin/analytics/hot-spots").then((r) => r.json()),
       request("/api/admin/analytics/wordcloud").then((r) => r.json()),
-    ]).then(([d, h, w]) => {
+      request("/api/admin/analytics/recommendations").then((r) => r.json()),
+      request("/api/admin/analytics/interests").then((r) => r.json()),
+    ]).then(([d, h, w, rec, interests]) => {
       setData(Array.isArray(d) ? d : []);
       setHotSpots(Array.isArray(h) ? h : []);
       setWordCloud(Array.isArray(w) ? w : []);
+      setRecommendations(rec?.recommendations || "");
+      setLoadingRecommendations(false);
+      if (interests?.interests) {
+        setInterestData(interests.interests);
+      }
+      setLoadingInterests(false);
       setLoading(false);
-    }).catch(() => setLoading(false));
+    }).catch(() => {
+      setLoading(false);
+      setLoadingRecommendations(false);
+      setLoadingInterests(false);
+    });
   }, []);
 
   const openDrillDown = (sentiment: string, label: string) => {
@@ -96,23 +112,48 @@ export function AdminAnalyticsScreen() {
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {/* Visitors trend */}
+          {/* Satisfaction trend - SVG polyline */}
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ ...SPRING, delay: 0.1 }}
             className="card-ink p-5">
-            <h3 className="text-sm font-semibold mb-4" style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}>访客趋势</h3>
-            {loading ? <div className="skeleton h-28" /> : (
-              <div className="flex items-end gap-2 h-28">
-                {[...data].reverse().map((d, i) => (
-                  <div key={d.date} className="flex-1 flex flex-col items-center gap-1">
-                    <span className="text-[8px] font-mono" style={{ color: "#8F9F8F" }}>{d.totalVisitors}</span>
-                    <motion.div initial={{ scaleY: 0 }} animate={{ scaleY: 1 }} transition={{ ...SPRING, delay: i * 0.05 }}
-                      className="w-full rounded-t-sm origin-bottom"
-                      style={{ height: `${(d.totalVisitors / maxV) * 100}%`, minHeight: 4, background: "linear-gradient(#6B8F6E,#4F6F52)" }} />
-                    <span className="text-[8px] font-mono" style={{ color: "#8F9F8F" }}>{d.date.slice(5)}</span>
-                  </div>
-                ))}
-              </div>
-            )}
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold" style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}>满意度趋势</h3>
+              <span className="text-[11px] font-bold" style={{ color: "#16A34A" }}>7日走势</span>
+            </div>
+            {loading ? <div className="skeleton h-28" /> : data.length === 0 ? (
+              <div className="h-28 flex items-center justify-center text-xs" style={{ color: "#8F9F8F" }}>暂无数据</div>
+            ) : (() => {
+              const sorted = [...data].reverse();
+              const W = 240, H = 80, pad = 12;
+              const maxSat = Math.max(...sorted.map(d => d.satisfactionScore), 1);
+              const pts = sorted.map((d, i) => {
+                const x = pad + (i / Math.max(sorted.length - 1, 1)) * (W - pad * 2);
+                const y = H - pad - (d.satisfactionScore / maxSat) * (H - pad * 2);
+                return { x, y, d };
+              });
+              const polyline = pts.map(p => `${p.x},${p.y}`).join(" ");
+              const area = `M${pts[0]?.x},${H - pad} ` + pts.map(p => `L${p.x},${p.y}`).join(" ") + ` L${pts[pts.length-1]?.x},${H-pad} Z`;
+              return (
+                <div>
+                  <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: 80, overflow: "visible" }}>
+                    <defs>
+                      <linearGradient id="satGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#16A34A" stopOpacity="0.25" />
+                        <stop offset="100%" stopColor="#16A34A" stopOpacity="0" />
+                      </linearGradient>
+                    </defs>
+                    <path d={area} fill="url(#satGrad)" />
+                    <polyline points={polyline} fill="none" stroke="#16A34A" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+                    {pts.map((p, i) => (
+                      <g key={i}>
+                        <circle cx={p.x} cy={p.y} r={3} fill="white" stroke="#16A34A" strokeWidth="1.5" />
+                        <text x={p.x} y={H - 2} textAnchor="middle" fontSize="7" fill="#8F9F8F">{p.d.date.slice(5)}</text>
+                        <text x={p.x} y={p.y - 6} textAnchor="middle" fontSize="7" fill="#16A34A" fontWeight="bold">{p.d.satisfactionScore || 0}</text>
+                      </g>
+                    ))}
+                  </svg>
+                </div>
+              );
+            })()}
           </motion.div>
 
           {/* Question trend */}
@@ -163,24 +204,38 @@ export function AdminAnalyticsScreen() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {/* Interest distribution */}
+          {/* Interest distribution - dynamic from qaLogs */}
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ ...SPRING, delay: 0.2 }}
             className="card-ink p-5">
-            <h3 className="text-sm font-semibold mb-4" style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}>游客兴趣画像</h3>
-            <div className="space-y-3">
-              {INTEREST_DATA.map((item) => (
-                <div key={item.label} className="space-y-1">
-                  <div className="flex justify-between text-[11px]">
-                    <span style={{ color: "#3A4D39" }}>{item.label}</span>
-                    <span style={{ color: "#8F9F8F" }}>{item.pct}%</span>
-                  </div>
-                  <div className="w-full h-2 rounded-full" style={{ background: "#F0EDE5" }}>
-                    <motion.div initial={{ width: 0 }} animate={{ width: `${item.pct}%` }} transition={{ ...SPRING, delay: 0.3 }}
-                      className="h-full rounded-full" style={{ background: item.color }} />
-                  </div>
-                </div>
-              ))}
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-semibold" style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}>游客兴趣画像</h3>
+              <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: "rgba(79,111,82,0.1)", color: "#4F6F52" }}>实时统计</span>
             </div>
+            {loadingInterests ? (
+              <div className="space-y-3">
+                {[1,2,3,4].map(i => <div key={i} className="h-6 rounded animate-pulse" style={{ background: "#F0EDE5" }} />)}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {(interestData.length > 0 ? interestData : [
+                  { label: "历史文化", pct: 35, count: 0 },
+                  { label: "自然生态", pct: 28, count: 0 },
+                  { label: "亲子游览", pct: 22, count: 0 },
+                  { label: "人文艺术", pct: 15, count: 0 },
+                ]).map((item) => (
+                  <div key={item.label} className="space-y-1">
+                    <div className="flex justify-between text-[11px]">
+                      <span style={{ color: "#3A4D39" }}>{item.label}</span>
+                      <span style={{ color: "#8F9F8F" }}>{item.pct}%{item.count > 0 ? ` (${item.count}次)` : ""}</span>
+                    </div>
+                    <div className="w-full h-2 rounded-full" style={{ background: "#F0EDE5" }}>
+                      <motion.div initial={{ width: 0 }} animate={{ width: `${item.pct}%` }} transition={{ ...SPRING, delay: 0.3 }}
+                        className="h-full rounded-full" style={{ background: INTEREST_COLORS[item.label] || "#8F9F8F" }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </motion.div>
 
           {/* Top spots */}
@@ -248,6 +303,62 @@ export function AdminAnalyticsScreen() {
             </div>
           </motion.div>
         </div>
+
+        {/* AI Service Recommendations */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ ...SPRING, delay: 0.3 }}
+          className="card-ink p-6 space-y-4">
+          <div className="flex items-center gap-2 pb-3" style={{ borderBottom: "1px solid #E6E2D8" }}>
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "rgba(210,160,83,0.15)", color: "#D2A053" }}>
+              <Sparkles className="w-4.5 h-4.5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold" style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}>AI 智能运营建议</h3>
+              <p className="text-[10px]" style={{ color: "#8F9F8F" }}>基于游客近期真实提问与满意度反馈实时生成</p>
+            </div>
+          </div>
+          
+          {loadingRecommendations ? (
+            <div className="space-y-3 py-2">
+              <div className="h-4 bg-neutral-200 rounded animate-pulse w-3/4" />
+              <div className="h-3 bg-neutral-100 rounded animate-pulse w-5/6" />
+              <div className="h-3 bg-neutral-100 rounded animate-pulse w-2/3" />
+              <div className="h-4 bg-neutral-200 rounded animate-pulse w-1/2 mt-4" />
+              <div className="h-3 bg-neutral-100 rounded animate-pulse w-4/5" />
+            </div>
+          ) : (
+            <div className="prose prose-sm max-w-none text-[12.5px] leading-relaxed text-[#3A4D39]"
+              style={{ fontFamily: "inherit" }}>
+              <div className="whitespace-pre-line space-y-4">
+                {recommendations.split("\n").map((line, idx) => {
+                  if (line.startsWith("###")) {
+                    return (
+                      <h4 key={idx} className="font-bold text-xs mt-4 mb-2 flex items-center gap-1.5" style={{ color: "#1E2522" }}>
+                        {line.replace("###", "").trim()}
+                      </h4>
+                    );
+                  }
+                  if (line.startsWith("-")) {
+                    return (
+                      <div key={idx} className="flex gap-2 pl-2">
+                        <span className="text-[#D2A053]">•</span>
+                        <p>{line.replace("-", "").trim()}</p>
+                      </div>
+                    );
+                  }
+                  if (/^\d+\./.test(line)) {
+                    return (
+                      <div key={idx} className="flex gap-2 pl-2">
+                        <span className="font-bold text-[#4F6F52]">{line.match(/^\d+/)?.[0]}.</span>
+                        <p>{line.replace(/^\d+\./, "").trim()}</p>
+                      </div>
+                    );
+                  }
+                  return <p key={idx}>{line}</p>;
+                })}
+              </div>
+            </div>
+          )}
+        </motion.div>
       </div>
 
       {/* Drill Down Sidebar Modal */}

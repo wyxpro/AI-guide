@@ -14,9 +14,10 @@ interface RecognizeResult {
 interface CameraRecognizeProps {
   currentSpot?: string;
   onClose: () => void;
+  onRecognized?: (subject: string, story: string) => void;
 }
 
-export function CameraRecognize({ currentSpot, onClose }: CameraRecognizeProps) {
+export function CameraRecognize({ currentSpot, onClose, onRecognized }: CameraRecognizeProps) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
@@ -41,6 +42,10 @@ export function CameraRecognize({ currentSpot, onClose }: CameraRecognizeProps) 
       const res = await fetch("/api/spots/recognize", { method: "POST", body: form });
       const data = await res.json();
       setResult(data);
+      // Notify parent so result can be injected into conversation
+      if (onRecognized && data.subject && data.story) {
+        onRecognized(data.subject, data.story);
+      }
     } catch {
       setResult({ subject: "识别失败", story: "请检查网络后重试", tip: "确保图片清晰且光线充足" });
     } finally { setLoading(false); }

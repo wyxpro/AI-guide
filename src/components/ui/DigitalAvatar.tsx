@@ -8,6 +8,7 @@ interface Props {
   state: AvatarState;
   size?: "sm" | "md" | "lg" | "hero";
   audioElement?: HTMLAudioElement | null; // Pass TTS audio element for lip-sync
+  avatarStyle?: string; // Links configured style
 }
 
 const PALETTE: Record<AvatarState, {
@@ -35,7 +36,7 @@ function getEyebrows(state: AvatarState) {
   return { L: "M 36 43 Q 42 40 44 42", R: "M 56 42 Q 58 40 64 43" };
 }
 
-function AvatarSVG({ state, mouthOpen, mouthPathOverride }: { state: AvatarState; mouthOpen: boolean; mouthPathOverride?: string }) {
+function AvatarSVG({ state, mouthOpen, mouthPathOverride, avatarStyle }: { state: AvatarState; mouthOpen: boolean; mouthPathOverride?: string; avatarStyle?: string }) {
   const p = PALETTE[state];
   const eb = getEyebrows(state);
   const [blink, setBlink] = useState(false);
@@ -50,6 +51,21 @@ function AvatarSVG({ state, mouthOpen, mouthPathOverride }: { state: AvatarState
 
   const eyeH = blink ? 0.4 : state === "happy" ? 3 : 4.5;
 
+  let robeTop = p.robeTop;
+  let robeBot = p.robeBot;
+  if (avatarStyle === "modern") {
+    robeTop = "#4A6984";
+    robeBot = "#2C3E50";
+  } else if (avatarStyle === "ancient") {
+    robeTop = "#A94A42";
+    robeBot = "#6B2A25";
+  } else if (avatarStyle === "cartoon") {
+    robeTop = "#E29E4A";
+    robeBot = "#B86B1E";
+  }
+
+  const gradientId = `rg-${state}-${avatarStyle || "default"}`;
+
   return (
     <svg viewBox="0 0 100 120" width="100%" height="100%" style={{ overflow: "visible" }}>
       <defs>
@@ -57,9 +73,9 @@ function AvatarSVG({ state, mouthOpen, mouthPathOverride }: { state: AvatarState
           <stop offset="0%" stopColor={p.skin} />
           <stop offset="100%" stopColor={p.shadow} />
         </radialGradient>
-        <radialGradient id={`rg-${state}`} cx="50%" cy="0%" r="100%">
-          <stop offset="0%" stopColor={p.robeTop} />
-          <stop offset="100%" stopColor={p.robeBot} />
+        <radialGradient id={gradientId} cx="50%" cy="0%" r="100%">
+          <stop offset="0%" stopColor={robeTop} />
+          <stop offset="100%" stopColor={robeBot} />
         </radialGradient>
         <filter id="ds">
           <feDropShadow dx="0" dy="2" stdDeviation="2.5" floodOpacity="0.15" />
@@ -84,7 +100,7 @@ function AvatarSVG({ state, mouthOpen, mouthPathOverride }: { state: AvatarState
 
       {/* Body robe */}
       <motion.path d="M 15 120 Q 18 94 30 90 L 42 86 Q 50 92 58 86 L 70 90 Q 82 94 85 120 Z"
-        fill={`url(#rg-${state})`} filter="url(#ds)"
+        fill={`url(#${gradientId})`} filter="url(#ds)"
         animate={state === "speaking" ? { scaleY: [1, 1.01, 1] } : { scaleY: 1 }}
         style={{ transformOrigin: "50% 100%" }}
         transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }} />
@@ -182,7 +198,7 @@ const STATE_LABEL: Record<AvatarState, string> = {
   idle: "恭候中", thinking: "思考中", speaking: "讲解中", happy: "很高兴", concerned: "关切中",
 };
 
-export function DigitalAvatar({ state, size = "md", audioElement }: Props) {
+export function DigitalAvatar({ state, size = "md", audioElement, avatarStyle }: Props) {
   const px = SIZES_PX[size];
   const p = PALETTE[state];
   const [mouthOpen, setMouthOpen] = useState(false);
@@ -284,7 +300,7 @@ export function DigitalAvatar({ state, size = "md", audioElement }: Props) {
         <motion.div style={{ width: px, height: px * 1.12 }}
           animate={state === "speaking" ? { y: [0, -3, 0] } : { y: 0 }}
           transition={{ duration: 1.3, repeat: state === "speaking" ? Infinity : 0, ease: "easeInOut" }}>
-          <AvatarSVG state={state} mouthOpen={mouthOpen} mouthPathOverride={audioElement ? getDynamicMouthPath(state, mouthOpen, mouthAmplitude) : undefined} />
+          <AvatarSVG state={state} mouthOpen={mouthOpen} mouthPathOverride={audioElement ? getDynamicMouthPath(state, mouthOpen, mouthAmplitude) : undefined} avatarStyle={avatarStyle} />
         </motion.div>
         {/* Status label + wave */}
         <div className="flex flex-col items-center gap-1 mt-2">
@@ -309,7 +325,7 @@ export function DigitalAvatar({ state, size = "md", audioElement }: Props) {
         transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }} />
       <div className="relative w-full h-full rounded-full overflow-hidden"
         style={{ border: `2px solid ${p.ring}`, boxShadow: `0 0 16px ${p.aura}` }}>
-        <AvatarSVG state={state} mouthOpen={mouthOpen} mouthPathOverride={audioElement ? getDynamicMouthPath(state, mouthOpen, mouthAmplitude) : undefined} />
+        <AvatarSVG state={state} mouthOpen={mouthOpen} mouthPathOverride={audioElement ? getDynamicMouthPath(state, mouthOpen, mouthAmplitude) : undefined} avatarStyle={avatarStyle} />
       </div>
       {size === "lg" && (
         <motion.div className="absolute -bottom-1 -right-1 rounded-full flex items-center justify-center"

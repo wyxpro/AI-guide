@@ -300,25 +300,110 @@ export function QAScreen() {
     const ts = new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
     const updated = [...messages, { role: "user" as const, content: question, timestamp: ts }];
     setMessages(updated); setInput(""); setLoading(true); setChatExpanded(true);
+
+    const aiTs = new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
+    // Placeholder for streaming answer
+    setMessages((prev) => [...prev, { role: "assistant" as const, content: "", timestamp: aiTs }]);
+
     try {
       const history = updated.slice(1).map((m) => ({ role: m.role, content: m.content }));
-      const res = await request("/api/qa/chat", { method: "POST", body: JSON.stringify({ question, history }) });
-      const data = await res.json();
-      const answerRaw = data.answer || "抱歉，暂时无法回答。";
-      const answer = answerRaw.replace(/\[情感:\s*[^\]]+\]/g, "").trim();
-      const aiTs = new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
-      setMessages((prev) => [...prev, { role: "assistant", content: answer, timestamp: aiTs }]);
-      setSubtitle(answer);
-      speak(answer);
+      const res = await fetch("/api/qa/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question, history, stream: true }),
+      });
+
+      if (!res.ok || !res.body) throw new Error("Stream unavailable");
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let fullAnswer = "";
+      let ttsBuffer = "";
+      let ttsStarted = false;
+
+      const flushTTS = (text: string) => {
+        if (!ttsEnabled || text.trim().length < 10) return;
+        // Speak first sentence immediately, rest after
+        speak(text.trim());
+      };
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        for (const line of chunk.split("\n")) {
+          if (!line.startsWith("data: ")) continue;
+          const payload = line.slice(6).trim();
+          if (payload === "[DONE]") break;
+          try {
+            const { delta } = JSON.parse(payload);
+            if (delta) {
+              fullAnswer += delta;
+              ttsBuffer += delta;
+              const clean = fullAnswer.replace(/\[情感:\s*[^\]]+\]/g, "").trim();
+              // Update streaming message in real-time
+              setMessages((prev) => {
+                const copy = [...prev];
+                copy[copy.length - 1] = { ...copy[copy.length - 1], content: clean };
+                return copy;
+              });
+              setSubtitle(clean);
+              // Detect sentence boundary → flush TTS
+              const sentenceEnd = /[。！？.!?]/.test(delta);
+              if (sentenceEnd && !ttsStarted && ttsBuffer.replace(/\[情感:\s*[^\]]+\]/g, "").trim().length > 12) {
+                ttsStarted = true;
+                const firstSentence = ttsBuffer.replace(/\[情感:\s*[^\]]+\]/g, "").trim();
+                ttsBuffer = "";
+                flushTTS(firstSentence);
+              }
+            }
+          } catch { /* ignore parse errors */ }
+        }
+      }
+
+      // If TTS wasn't started yet (short answer), speak the full answer
+      if (!ttsStarted) {
+        const clean = fullAnswer.replace(/\[情感:\s*[^\]]+\]/g, "").trim();
+        speak(clean);
+      }
+
       const exchanges = updated.filter((m) => m.role === "user").length;
       if (exchanges >= 3 && !satisfactionShownRef.current) {
         satisfactionShownRef.current = true;
         setTimeout(() => setShowSatisfaction(true), 1500);
       }
     } catch {
-      const aiTs = new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
-      setMessages((prev) => [...prev, { role: "assistant", content: "小玉现在有些忙，请稍候再试。", timestamp: aiTs }]);
+      // Fallback to non-streaming
+      try {
+        const history = updated.slice(1).map((m) => ({ role: m.role, content: m.content }));
+        const res2 = await request("/api/qa/chat", { method: "POST", body: JSON.stringify({ question, history }) });
+        const data = await res2.json();
+        const answerRaw = data.answer || "抱歉，暂时无法回答。";
+        const answer = answerRaw.replace(/\[情感:\s*[^\]]+\]/g, "").trim();
+        setMessages((prev) => {
+          const copy = [...prev];
+          copy[copy.length - 1] = { ...copy[copy.length - 1], content: answer };
+          return copy;
+        });
+        setSubtitle(answer);
+        speak(answer);
+      } catch {
+        setMessages((prev) => {
+          const copy = [...prev];
+          copy[copy.length - 1] = { ...copy[copy.length - 1], content: "小玉现在有些忙，请稍候再试。" };
+          return copy;
+        });
+      }
     } finally { setLoading(false); }
+  };
+
+  // Camera recognition → inject into conversation as multimodal context
+  const handleCameraRecognized = (subject: string, story: string) => {
+    setShowCamera(false);
+    const question = `我拍到了「${subject}」，请给我讲讲它的更多历史和文化内涵。`;
+    // Pre-fill context: tell AI what was identified so it can expand
+    sendMessage(question);
+    toast.success(`已识别「${subject}」，正在小玉讲解中…`);
   };
 
   /* ── Message list (shared between mobile & desktop) ── */
@@ -478,7 +563,7 @@ export function QAScreen() {
               <Sparkles className="w-3 h-3" />当前聚焦：<strong>{spotName}</strong>
             </motion.div>
           )}
-          <DigitalAvatar state={avatarState} size="hero" audioElement={audioRef.current} />
+          <DigitalAvatar state={avatarState} size="hero" audioElement={audioRef.current} avatarStyle={avatarConfig?.avatarStyle} />
           <AnimatePresence mode="wait">
             <motion.div key={subtitle.slice(0,20)}
               initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
@@ -565,7 +650,7 @@ export function QAScreen() {
           </div>
 
           <div className="relative z-10 flex flex-col items-center px-6 w-full">
-            <DigitalAvatar state={avatarState} size="hero" audioElement={audioRef.current} />
+            <DigitalAvatar state={avatarState} size="hero" audioElement={audioRef.current} avatarStyle={avatarConfig?.avatarStyle} />
 
             {spotName && (
               <div className="mt-4 flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px]"
@@ -674,7 +759,7 @@ export function QAScreen() {
         )}
       </AnimatePresence>
       <AnimatePresence>
-        {showCamera && <CameraRecognize currentSpot={spotName ?? undefined} onClose={() => setShowCamera(false)} />}
+        {showCamera && <CameraRecognize currentSpot={spotName ?? undefined} onClose={() => setShowCamera(false)} onRecognized={handleCameraRecognized} />}
       </AnimatePresence>
     </>
   );
