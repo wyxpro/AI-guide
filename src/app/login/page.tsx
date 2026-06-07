@@ -82,7 +82,7 @@ export default function LoginPage() {
             email: email,
           }));
           toast.success("登录成功，正在跳转...");
-          window.location.href = email === "wyxcode@qq.com" ? "/admin" : "/";
+          window.location.href = email === "wyxcode@qq.com" ? "/admin" : "/home";
           return;
         }
 
@@ -96,7 +96,7 @@ export default function LoginPage() {
         await auth.loginWithEmailCode(email, code);
       }
       toast.success("登录成功，正在为您导览...");
-      router.push("/");
+      router.push("/home");
       router.refresh();
     } catch (err: any) {
       console.warn("SDK Auth failed, invoking user credentials:", err);
@@ -124,14 +124,14 @@ export default function LoginPage() {
         email: targetEmail,
       }));
       toast.success("快捷登录成功！正在跳转...");
-      window.location.href = targetEmail === "wyxcode@qq.com" ? "/admin" : "/";
+      window.location.href = targetEmail === "wyxcode@qq.com" ? "/admin" : "/home";
       return;
     }
 
     try {
       await auth.loginWithEmailPassword(targetEmail, targetPass);
       toast.success("快捷登录成功！正在跳转...");
-      router.push("/");
+      router.push("/home");
       router.refresh();
     } catch (err: any) {
       toast.error(err?.message || "快捷登录验证失败");

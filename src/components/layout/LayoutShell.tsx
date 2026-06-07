@@ -24,7 +24,7 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("accessibility-mode-change", syncMode);
   }, []);
 
-  const isNoShell = pathname === "/welcome" || pathname === "/login";
+  const isNoShell = pathname === "/" || pathname === "/welcome" || pathname === "/login";
 
   if (isNoShell) {
     return <>{children}</>;

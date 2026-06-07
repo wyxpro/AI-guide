@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Mic, MicOff, Send, Volume2, VolumeX,
   History, X, ChevronUp, ChevronDown, Camera, Sparkles,
+  Image as ImageIcon, User,
 } from "lucide-react";
 import { request } from "@/lib/api/request";
 import { useSearchParams } from "next/navigation";
@@ -19,6 +20,21 @@ const QUICK_PROMPTS = [
   "揽月亭历史故事", "景区门票价格", "适合老人路线",
   "翠玉湖怎么走", "亲子游推荐", "景区开放时间",
   "有哪些特色小吃", "最美拍照地点",
+];
+
+const BG_PRESETS = [
+  { id: "default", label: "玄月幻境", url: "" },
+  { id: "lake", label: "翠玉湖畔", url: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80" },
+  { id: "pavilion", label: "揽月亭台", url: "https://images.unsplash.com/photo-1542224566-6e85f2e6772f?auto=format&fit=crop&w=800&q=80" },
+  { id: "mountain", label: "巍峨山峦", url: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80" },
+  { id: "forest", label: "晨曦竹林", url: "https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80" },
+];
+
+const PERSONAS = [
+  { id: "default", label: "古典汉服", desc: "典雅东方，文旅专属" },
+  { id: "modern", label: "现代职业", desc: "专业气质，国际范儿" },
+  { id: "ancient", label: "宋代仕女", desc: "历史韵味，穿越时空" },
+  { id: "cartoon", label: "卡通童趣", desc: "活泼可爱，亲子首选" },
 ];
 
 function detectEmotion(text: string): AvatarState {
@@ -72,6 +88,37 @@ export function QAScreen() {
   // Avatar config state
   const [avatarConfig, setAvatarConfig] = useState<any>(null);
 
+  // Background selection state
+  const [bgImage, setBgImage] = useState<string>("");
+  const [showBgMenu, setShowBgMenu] = useState(false);
+
+  // Persona selection state
+  const [selectedStyle, setSelectedStyle] = useState<string>("default");
+  const [showPersonaMenu, setShowPersonaMenu] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleBgUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setBgImage(event.target.result as string);
+          toast.success("背景上传成功！");
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Sync loaded default style
+  useEffect(() => {
+    if (avatarConfig?.avatarStyle) {
+      setSelectedStyle(avatarConfig.avatarStyle);
+    }
+  }, [avatarConfig]);
+
   useEffect(() => {
     fetch("/api/qa/avatar-active")
       .then((r) => r.json())
@@ -100,7 +147,7 @@ export function QAScreen() {
       .catch((e) => console.error("Failed to load chat history", e));
   }, []);
 
-  const [avatarWidth, setAvatarWidth] = useState(380); // Default to a wider layout (380px)
+  const [avatarWidth, setAvatarWidth] = useState(450); // Default to a wider layout (450px)
   const panelRef = useRef<HTMLDivElement>(null);
   const isResizingRef = useRef(false);
 
@@ -524,8 +571,14 @@ export function QAScreen() {
       {/* ══════════════════════════════════════════════
           MOBILE — full-screen immersive (hidden on md+)
           ══════════════════════════════════════════════ */}
-      <div className="flex flex-col min-h-svh md:hidden"
-        style={{ background: "linear-gradient(180deg,#131C18 0%,#1A2520 45%,#0E1710 100%)" }}>
+      <div className="flex flex-col min-h-svh md:hidden transition-all duration-500"
+        style={{
+          background: bgImage
+            ? `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.5)), url(${bgImage})`
+            : "linear-gradient(180deg,#131C18 0%,#1A2520 45%,#0E1710 100%)",
+          backgroundSize: bgImage ? "cover" : undefined,
+          backgroundPosition: bgImage ? "center" : undefined,
+        }}>
 
         {/* Top bar */}
         <div className="flex items-center justify-between px-4 pb-3 flex-shrink-0"
@@ -537,7 +590,17 @@ export function QAScreen() {
               {loading ? "小玉思考中…" : "旅行吧导览官 · 在线"}
             </span>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 relative">
+            <motion.button whileTap={{ scale: 0.85 }} onClick={() => { setShowBgMenu(!showBgMenu); setShowPersonaMenu(false); }}
+              className="w-8 h-8 rounded-full flex items-center justify-center animate-fade-in"
+              style={{ background: "rgba(255,255,255,0.08)", color: showBgMenu ? "#D2A053" : "rgba(255,255,255,0.6)" }}>
+              <ImageIcon className="w-3.5 h-3.5" />
+            </motion.button>
+            <motion.button whileTap={{ scale: 0.85 }} onClick={() => { setShowPersonaMenu(!showPersonaMenu); setShowBgMenu(false); }}
+              className="w-8 h-8 rounded-full flex items-center justify-center animate-fade-in"
+              style={{ background: "rgba(255,255,255,0.08)", color: showPersonaMenu ? "#D2A053" : "rgba(255,255,255,0.6)" }}>
+              <User className="w-3.5 h-3.5" />
+            </motion.button>
             <motion.button whileTap={{ scale: 0.85 }}
               onClick={() => { setTtsEnabled(!ttsEnabled); if (ttsEnabled) window.speechSynthesis?.cancel(); }}
               className="w-8 h-8 rounded-full flex items-center justify-center"
@@ -549,6 +612,60 @@ export function QAScreen() {
               style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.4)" }}>
               <History className="w-3.5 h-3.5" />
             </motion.button>
+
+            {/* Background Dropdown Menu */}
+            {showBgMenu && (
+              <div className="absolute right-0 top-10 z-50 w-56 rounded-2xl p-3 border border-white/10 backdrop-blur-xl bg-black/80 shadow-2xl space-y-2.5">
+                <div className="flex justify-between items-center pb-1.5 border-b border-white/10">
+                  <span className="text-xs font-semibold text-white/90">切换景点背景</span>
+                  <button onClick={() => setShowBgMenu(false)} className="text-white/40 hover:text-white"><X className="w-3 h-3" /></button>
+                </div>
+                <div className="grid grid-cols-2 gap-1.5 max-h-44 overflow-y-auto pr-0.5">
+                  {BG_PRESETS.map((bg) => (
+                    <button key={bg.id} onClick={() => { setBgImage(bg.url); setShowBgMenu(false); }}
+                      className="p-1.5 rounded-lg text-left text-[11px] font-medium transition-all border text-white hover:bg-white/10"
+                      style={{
+                        borderColor: (bgImage === bg.url) ? "#D2A053" : "transparent",
+                        background: (bgImage === bg.url) ? "rgba(210,160,83,0.25)" : "rgba(255,255,255,0.05)"
+                      }}>
+                      <div className="truncate">{bg.label}</div>
+                    </button>
+                  ))}
+                </div>
+                <div className="pt-1.5 border-t border-white/10">
+                  <button onClick={() => fileInputRef.current?.click()}
+                    className="w-full py-1.5 rounded-lg text-center text-[11px] font-semibold text-black bg-[#D2A053] hover:bg-[#b8843a] transition-colors">
+                    上传自定义背景
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Persona Dropdown Menu */}
+            {showPersonaMenu && (
+              <div className="absolute right-0 top-10 z-50 w-56 rounded-2xl p-3 border border-white/10 backdrop-blur-xl bg-black/80 shadow-2xl space-y-2">
+                <div className="flex justify-between items-center pb-1.5 border-b border-white/10">
+                  <span className="text-xs font-semibold text-white/90">切换数字人形象</span>
+                  <button onClick={() => setShowPersonaMenu(false)} className="text-white/40 hover:text-white"><X className="w-3 h-3" /></button>
+                </div>
+                <div className="space-y-1.5 max-h-48 overflow-y-auto pr-0.5">
+                  {PERSONAS.map((p) => (
+                    <button key={p.id} onClick={() => { setSelectedStyle(p.id); setShowPersonaMenu(false); }}
+                      className="w-full p-2 rounded-lg text-left transition-all border text-white hover:bg-white/10 flex items-center justify-between"
+                      style={{
+                        borderColor: (selectedStyle === p.id) ? "#D2A053" : "transparent",
+                        background: (selectedStyle === p.id) ? "rgba(210,160,83,0.25)" : "rgba(255,255,255,0.05)"
+                      }}>
+                      <div>
+                        <div className="text-[11px] font-semibold">{p.label}</div>
+                        <div className="text-[9px] text-white/50">{p.desc}</div>
+                      </div>
+                      {selectedStyle === p.id && <Sparkles className="w-3.5 h-3.5 text-[#D2A053]" />}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -631,14 +748,91 @@ export function QAScreen() {
         style={{ background: "#FAF8F5" }}>
 
         {/* Left: Digital human panel */}
-        <div ref={panelRef} className="flex flex-col items-center justify-center flex-shrink-0 relative select-none"
+        <div ref={panelRef} className="flex flex-col items-center justify-center flex-shrink-0 relative select-none transition-all duration-500"
           style={{
             width: avatarWidth,
-            background: "linear-gradient(180deg,#1E2C28 0%,#121815 55%,#0E1710 100%)",
+            background: bgImage
+              ? `linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.55)), url(${bgImage})`
+              : "linear-gradient(180deg,#1E2C28 0%,#121815 55%,#0E1710 100%)",
+            backgroundSize: bgImage ? "cover" : undefined,
+            backgroundPosition: bgImage ? "center" : undefined,
             borderRight: "1px solid rgba(255,255,255,0.07)",
           }}>
           <div className="absolute inset-0 pointer-events-none"
-            style={{ background: "radial-gradient(ellipse 80% 60% at 50% 35%,rgba(79,111,82,0.14) 0%,transparent 70%)" }} />
+            style={{ background: bgImage ? "none" : "radial-gradient(ellipse 80% 60% at 50% 35%,rgba(79,111,82,0.14) 0%,transparent 70%)" }} />
+
+          {/* Desktop Left Panel Floating Controls */}
+          <div className="absolute top-4 left-4 right-4 flex justify-between items-center z-20">
+            <div className="text-[11px] font-medium tracking-wide text-white/50 bg-black/30 backdrop-blur px-2.5 py-1 rounded-full border border-white/5">
+              旅行吧导览官 · 在线
+            </div>
+            <div className="flex gap-2 relative">
+              <motion.button whileTap={{ scale: 0.85 }} onClick={() => { setShowBgMenu(!showBgMenu); setShowPersonaMenu(false); }}
+                className="w-8 h-8 rounded-full flex items-center justify-center bg-black/35 backdrop-blur hover:bg-black/55 transition-colors border border-white/10"
+                style={{ color: showBgMenu ? "#D2A053" : "rgba(255,255,255,0.75)" }}>
+                <ImageIcon className="w-3.5 h-3.5" />
+              </motion.button>
+              <motion.button whileTap={{ scale: 0.85 }} onClick={() => { setShowPersonaMenu(!showPersonaMenu); setShowBgMenu(false); }}
+                className="w-8 h-8 rounded-full flex items-center justify-center bg-black/35 backdrop-blur hover:bg-black/55 transition-colors border border-white/10"
+                style={{ color: showPersonaMenu ? "#D2A053" : "rgba(255,255,255,0.75)" }}>
+                <User className="w-3.5 h-3.5" />
+              </motion.button>
+
+              {/* Background Dropdown Menu */}
+              {showBgMenu && (
+                <div className="absolute right-0 top-10 z-50 w-56 rounded-2xl p-3 border border-white/10 backdrop-blur-xl bg-black/80 shadow-2xl space-y-2.5">
+                  <div className="flex justify-between items-center pb-1.5 border-b border-white/10">
+                    <span className="text-xs font-semibold text-white/90">切换景点背景</span>
+                    <button onClick={() => setShowBgMenu(false)} className="text-white/40 hover:text-white"><X className="w-3 h-3" /></button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-1.5 max-h-44 overflow-y-auto pr-0.5">
+                    {BG_PRESETS.map((bg) => (
+                      <button key={bg.id} onClick={() => { setBgImage(bg.url); setShowBgMenu(false); }}
+                        className="p-1.5 rounded-lg text-left text-[11px] font-medium transition-all border text-white hover:bg-white/10"
+                        style={{
+                          borderColor: (bgImage === bg.url) ? "#D2A053" : "transparent",
+                          background: (bgImage === bg.url) ? "rgba(210,160,83,0.25)" : "rgba(255,255,255,0.05)"
+                        }}>
+                        <div className="truncate">{bg.label}</div>
+                      </button>
+                    ))}
+                  </div>
+                  <div className="pt-1.5 border-t border-white/10">
+                    <button onClick={() => fileInputRef.current?.click()}
+                      className="w-full py-1.5 rounded-lg text-center text-[11px] font-semibold text-black bg-[#D2A053] hover:bg-[#b8843a] transition-colors">
+                      上传自定义背景
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Persona Dropdown Menu */}
+              {showPersonaMenu && (
+                <div className="absolute right-0 top-10 z-50 w-56 rounded-2xl p-3 border border-white/10 backdrop-blur-xl bg-black/80 shadow-2xl space-y-2">
+                  <div className="flex justify-between items-center pb-1.5 border-b border-white/10">
+                    <span className="text-xs font-semibold text-white/90">切换数字人形象</span>
+                    <button onClick={() => setShowPersonaMenu(false)} className="text-white/40 hover:text-white"><X className="w-3 h-3" /></button>
+                  </div>
+                  <div className="space-y-1.5 max-h-48 overflow-y-auto pr-0.5">
+                    {PERSONAS.map((p) => (
+                      <button key={p.id} onClick={() => { setSelectedStyle(p.id); setShowPersonaMenu(false); }}
+                        className="w-full p-2 rounded-lg text-left transition-all border text-white hover:bg-white/10 flex items-center justify-between"
+                        style={{
+                          borderColor: (selectedStyle === p.id) ? "#D2A053" : "transparent",
+                          background: (selectedStyle === p.id) ? "rgba(210,160,83,0.25)" : "rgba(255,255,255,0.05)"
+                        }}>
+                        <div>
+                          <div className="text-[11px] font-semibold">{p.label}</div>
+                          <div className="text-[9px] text-white/50">{p.desc}</div>
+                        </div>
+                        {selectedStyle === p.id && <Sparkles className="w-3.5 h-3.5 text-[#D2A053]" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
 
           {/* Resizer Handle */}
           <div
@@ -649,8 +843,8 @@ export function QAScreen() {
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-0.5 h-8 bg-white/20 group-hover:bg-white/50 rounded transition-colors" />
           </div>
 
-          <div className="relative z-10 flex flex-col items-center px-6 w-full">
-            <DigitalAvatar state={avatarState} size="hero" audioElement={audioRef.current} avatarStyle={avatarConfig?.avatarStyle} />
+          <div className="relative z-10 flex flex-col items-center px-6 w-full animate-fade-in">
+            <DigitalAvatar state={avatarState} size="desktop-hero" audioElement={audioRef.current} avatarStyle={selectedStyle} />
 
             {spotName && (
               <div className="mt-4 flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px]"
@@ -738,6 +932,7 @@ export function QAScreen() {
       </div>
 
       {/* ── Modals ── */}
+      <input type="file" ref={fileInputRef} onChange={handleBgUpload} accept="image/*" className="hidden" />
       <AnimatePresence>
         {showHistory && <HistorySheet onClose={() => setShowHistory(false)} onResume={(q) => { setShowHistory(false); sendMessage(q); }} />}
       </AnimatePresence>

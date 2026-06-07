@@ -11,7 +11,7 @@ import { GlobalSearch } from "@/components/ui/GlobalSearch";
 
 /* ─── C端标签 ─────────────────────────────────────────────── */
 const C_TABS = [
-  { href: "/",        label: "首页",  icon: Home },
+  { href: "/home",    label: "首页",  icon: Home },
   { href: "/spots",   label: "景点",  icon: MapPin },
   { href: "/qa",      label: "问答",  icon: MessageCircle },
   { href: "/routes",  label: "路线",  icon: Navigation },
@@ -35,7 +35,7 @@ export function BottomTabBar() {
   const [showSearch, setShowSearch] = useState(false);
 
   const MOBILE_TABS = [
-    { href: "/",        label: "首页",  icon: Home },
+    { href: "/home",    label: "首页",  icon: Home },
     { href: "/spots",   label: "景点",  icon: MapPin },
     { href: "/qa",      label: "AI导览", icon: MessageCircle },
     { href: "/routes",  label: "路线",  icon: Navigation },
@@ -134,7 +134,7 @@ export function SidebarNav({ isAdmin }: { isAdmin: boolean }) {
       {/* Nav items */}
       <div className="flex-1 overflow-y-auto px-3 py-3 space-y-1.5">
         {items.map((item) => {
-          const active = item.href === (isAdmin ? "/admin" : "/")
+          const active = item.href === (isAdmin ? "/admin" : "/home")
             ? pathname === item.href
             : pathname.startsWith(item.href);
           return (
@@ -182,7 +182,7 @@ export function SidebarNav({ isAdmin }: { isAdmin: boolean }) {
             </motion.div>
           </Link>
         ) : (
-          <Link href="/">
+          <Link href="/home">
             <motion.div whileTap={{ scale: 0.96 }}
               className="flex items-center gap-2.5 px-3.5 py-3 rounded-xl cursor-pointer text-sm"
               style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)" }}>

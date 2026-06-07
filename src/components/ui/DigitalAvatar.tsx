@@ -1,12 +1,12 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useId } from "react";
 import { motion } from "framer-motion";
 
 export type AvatarState = "idle" | "thinking" | "speaking" | "happy" | "concerned";
 
 interface Props {
   state: AvatarState;
-  size?: "sm" | "md" | "lg" | "hero";
+  size?: "sm" | "md" | "lg" | "hero" | "desktop-hero";
   audioElement?: HTMLAudioElement | null; // Pass TTS audio element for lip-sync
   avatarStyle?: string; // Links configured style
 }
@@ -36,7 +36,7 @@ function getEyebrows(state: AvatarState) {
   return { L: "M 36 43 Q 42 40 44 42", R: "M 56 42 Q 58 40 64 43" };
 }
 
-function AvatarSVG({ state, mouthOpen, mouthPathOverride, avatarStyle }: { state: AvatarState; mouthOpen: boolean; mouthPathOverride?: string; avatarStyle?: string }) {
+function AvatarSVG({ state, mouthOpen, mouthPathOverride, avatarStyle, idSuffix }: { state: AvatarState; mouthOpen: boolean; mouthPathOverride?: string; avatarStyle?: string; idSuffix: string }) {
   const p = PALETTE[state];
   const eb = getEyebrows(state);
   const [blink, setBlink] = useState(false);
@@ -64,12 +64,13 @@ function AvatarSVG({ state, mouthOpen, mouthPathOverride, avatarStyle }: { state
     robeBot = "#B86B1E";
   }
 
-  const gradientId = `rg-${state}-${avatarStyle || "default"}`;
+  const gradientId = `rg-${state}-${avatarStyle || "default"}-${idSuffix}`;
+  const skinGradientId = `sg-${state}-${idSuffix}`;
 
   return (
     <svg viewBox="0 0 100 120" width="100%" height="100%" style={{ overflow: "visible" }}>
       <defs>
-        <radialGradient id={`sg-${state}`} cx="50%" cy="40%" r="60%">
+        <radialGradient id={skinGradientId} cx="50%" cy="40%" r="60%">
           <stop offset="0%" stopColor={p.skin} />
           <stop offset="100%" stopColor={p.shadow} />
         </radialGradient>
@@ -110,11 +111,11 @@ function AvatarSVG({ state, mouthOpen, mouthPathOverride, avatarStyle }: { state
       <circle cx="50" cy="92" r="2.2" fill="rgba(210,160,83,0.75)" />
 
       {/* Neck */}
-      <rect x="44" y="79" width="12" height="11" rx="5" fill={`url(#sg-${state})`} />
+      <rect x="44" y="79" width="12" height="11" rx="5" fill={`url(#${skinGradientId})`} />
 
       {/* Head */}
       <motion.ellipse cx="50" cy="52" rx="22.5" ry="27"
-        fill={`url(#sg-${state})`} filter="url(#ds)"
+        fill={`url(#${skinGradientId})`} filter="url(#ds)"
         animate={state === "thinking" ? { rotate: [-4, 4, -4] } : { rotate: 0 }}
         transition={{ duration: 2.8, repeat: state === "thinking" ? Infinity : 0, ease: "easeInOut" }} />
 
@@ -130,8 +131,8 @@ function AvatarSVG({ state, mouthOpen, mouthPathOverride, avatarStyle }: { state
       <circle cx="62" cy="21" r="0.9" fill="#D2A053" opacity="0.7" />
 
       {/* Ears */}
-      <ellipse cx="27.5" cy="54" rx="3.2" ry="4.5" fill={`url(#sg-${state})`} />
-      <ellipse cx="72.5" cy="54" rx="3.2" ry="4.5" fill={`url(#sg-${state})`} />
+      <ellipse cx="27.5" cy="54" rx="3.2" ry="4.5" fill={`url(#${skinGradientId})`} />
+      <ellipse cx="72.5" cy="54" rx="3.2" ry="4.5" fill={`url(#${skinGradientId})`} />
 
       {/* Eyebrows */}
       <motion.path d={eb.L} fill="none" stroke={p.pupil} strokeWidth="1.8" strokeLinecap="round"
@@ -193,13 +194,14 @@ export function VoiceWave({ active, color = "rgba(210,160,83,0.85)" }: { active:
 }
 
 // ── Public hero component ─────────────────────────────────────────────────────
-const SIZES_PX = { sm: 56, md: 88, lg: 148, hero: 220 } as const;
+const SIZES_PX = { sm: 56, md: 88, lg: 148, hero: 220, "desktop-hero": 350 } as const;
 const STATE_LABEL: Record<AvatarState, string> = {
   idle: "恭候中", thinking: "思考中", speaking: "讲解中", happy: "很高兴", concerned: "关切中",
 };
 
 export function DigitalAvatar({ state, size = "md", audioElement, avatarStyle }: Props) {
   const px = SIZES_PX[size];
+  const idSuffix = useId().replace(/:/g, "");
   const p = PALETTE[state];
   const [mouthOpen, setMouthOpen] = useState(false);
   const [mouthAmplitude, setMouthAmplitude] = useState(0); // 0–1 normalized loudness
@@ -287,7 +289,7 @@ export function DigitalAvatar({ state, size = "md", audioElement, avatarStyle }:
     return getMouthPath(st, open);
   };
 
-  if (size === "hero") {
+  if (size === "hero" || size === "desktop-hero") {
     return (
       <div className="relative flex flex-col items-center select-none">
         {/* Outer ambient glow */}
@@ -300,7 +302,7 @@ export function DigitalAvatar({ state, size = "md", audioElement, avatarStyle }:
         <motion.div style={{ width: px, height: px * 1.12 }}
           animate={state === "speaking" ? { y: [0, -3, 0] } : { y: 0 }}
           transition={{ duration: 1.3, repeat: state === "speaking" ? Infinity : 0, ease: "easeInOut" }}>
-          <AvatarSVG state={state} mouthOpen={mouthOpen} mouthPathOverride={audioElement ? getDynamicMouthPath(state, mouthOpen, mouthAmplitude) : undefined} avatarStyle={avatarStyle} />
+          <AvatarSVG state={state} mouthOpen={mouthOpen} mouthPathOverride={audioElement ? getDynamicMouthPath(state, mouthOpen, mouthAmplitude) : undefined} avatarStyle={avatarStyle} idSuffix={idSuffix} />
         </motion.div>
         {/* Status label + wave */}
         <div className="flex flex-col items-center gap-1 mt-2">
@@ -325,7 +327,7 @@ export function DigitalAvatar({ state, size = "md", audioElement, avatarStyle }:
         transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }} />
       <div className="relative w-full h-full rounded-full overflow-hidden"
         style={{ border: `2px solid ${p.ring}`, boxShadow: `0 0 16px ${p.aura}` }}>
-        <AvatarSVG state={state} mouthOpen={mouthOpen} mouthPathOverride={audioElement ? getDynamicMouthPath(state, mouthOpen, mouthAmplitude) : undefined} avatarStyle={avatarStyle} />
+        <AvatarSVG state={state} mouthOpen={mouthOpen} mouthPathOverride={audioElement ? getDynamicMouthPath(state, mouthOpen, mouthAmplitude) : undefined} avatarStyle={avatarStyle} idSuffix={idSuffix} />
       </div>
       {size === "lg" && (
         <motion.div className="absolute -bottom-1 -right-1 rounded-full flex items-center justify-center"
