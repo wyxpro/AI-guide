@@ -1,5 +1,12 @@
 import type { NextConfig } from "next";
 
+// Inject environment variables at build-time for prerendering and compiling
+process.env.EAZO_APP_ID = process.env.EAZO_APP_ID || "iD3DfwgriXjTxeE6";
+process.env.NEXT_PUBLIC_EAZO_APP_ID = process.env.NEXT_PUBLIC_EAZO_APP_ID || "iD3DfwgriXjTxeE6";
+process.env.EAZO_PLATFORM_API_BASE = process.env.EAZO_PLATFORM_API_BASE || "https://eazo.ai";
+process.env.EAZO_PRIVATE_KEY = process.env.EAZO_PRIVATE_KEY || "a415360376002fab9f1c9d7bcf6ce25b0cb46ec2e6cb510e2df0d0b132db9ce5";
+process.env.DATABASE_URL = process.env.DATABASE_URL || "postgresql://eazo-v4c7v3sv:MP5DAPufPL5IPouJR5S72E7e@managed-database-3.eazo.ai:5432/cuiyu-ai-guide-f7p4r3ca";
+
 const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
