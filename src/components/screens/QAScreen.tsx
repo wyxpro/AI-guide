@@ -30,12 +30,23 @@ const BG_PRESETS = [
   { id: "forest", label: "晨曦竹林", url: "https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80" },
 ];
 
-const PERSONAS = [
-  { id: "default", label: "古典汉服", desc: "典雅东方，文旅专属" },
-  { id: "modern", label: "现代职业", desc: "专业气质，国际范儿" },
-  { id: "ancient", label: "宋代仕女", desc: "历史韵味，穿越时空" },
-  { id: "cartoon", label: "卡通童趣", desc: "活泼可爱，亲子首选" },
+const PERSONAS_FEMALE = [
+  { id: "female_hanfu", label: "汉服古风 · 小玉", desc: "典雅端庄，文旅专属" },
+  { id: "female_student", label: "青春校花 · 晓彤", desc: "阳光活力，温柔知性" },
+  { id: "female_business", label: "职场丽人 · 雅琪", desc: "端庄大方，干练成熟" },
+  { id: "female_anchor", label: "甜美主播 · 诗诗", desc: "亲切活泼，古灵精怪" },
+  { id: "female_princess", label: "异域公主 · 迪丽", desc: "高贵神秘，风情万种" }
 ];
+
+const PERSONAS_MALE = [
+  { id: "male_scholar", label: "儒雅书生 · 子轩", desc: "温文尔雅，满腹经纶" },
+  { id: "male_student", label: "帅气校草 · 宇航", desc: "朝气蓬勃，充满活力" },
+  { id: "male_business", label: "商业精英 · 伟祺", desc: "睿智沉稳，专业干练" },
+  { id: "male_anchor", label: "幽默主播 · 强哥", desc: "风趣幽默，极具亲和力" },
+  { id: "male_cool", label: "潮流酷哥 · 阿杰", desc: "时尚前卫，极具个性" }
+];
+
+const PERSONAS = [...PERSONAS_FEMALE, ...PERSONAS_MALE];
 
 function detectEmotion(text: string): AvatarState {
   const match = text.match(/\[情感:\s*(愉快|高兴|开心|温和|伤感|抱歉|紧张|思考)\]/);
@@ -89,12 +100,13 @@ export function QAScreen() {
   const [avatarConfig, setAvatarConfig] = useState<any>(null);
 
   // Background selection state
-  const [bgImage, setBgImage] = useState<string>("");
+  const [bgImage, setBgImage] = useState<string>("https://images.unsplash.com/photo-1542224566-6e85f2e6772f?auto=format&fit=crop&w=800&q=80");
   const [showBgMenu, setShowBgMenu] = useState(false);
 
   // Persona selection state
-  const [selectedStyle, setSelectedStyle] = useState<string>("default");
+  const [selectedStyle, setSelectedStyle] = useState<string>("female_hanfu");
   const [showPersonaMenu, setShowPersonaMenu] = useState(false);
+  const [activeGenderTab, setActiveGenderTab] = useState<"female" | "male">("female");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -115,7 +127,11 @@ export function QAScreen() {
   // Sync loaded default style
   useEffect(() => {
     if (avatarConfig?.avatarStyle) {
-      setSelectedStyle(avatarConfig.avatarStyle);
+      if (avatarConfig.avatarStyle === "default") {
+        setSelectedStyle("female_hanfu");
+      } else {
+        setSelectedStyle(avatarConfig.avatarStyle);
+      }
     }
   }, [avatarConfig]);
 
@@ -453,6 +469,43 @@ export function QAScreen() {
     toast.success(`已识别「${subject}」，正在小玉讲解中…`);
   };
 
+  const renderPersonaDropdownContent = () => (
+    <div className="flex flex-col space-y-2.5">
+      <div className="flex bg-white/10 rounded-xl p-0.5 select-none">
+        <button
+          type="button"
+          onClick={() => setActiveGenderTab("female")}
+          className={`flex-1 py-1 text-center text-[10px] font-bold rounded-lg transition-all ${activeGenderTab === "female" ? "bg-[#D2A053] text-black shadow-sm" : "text-white/70 hover:text-white"}`}
+        >
+          女性形象
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveGenderTab("male")}
+          className={`flex-1 py-1 text-center text-[10px] font-bold rounded-lg transition-all ${activeGenderTab === "male" ? "bg-[#D2A053] text-black shadow-sm" : "text-white/70 hover:text-white"}`}
+        >
+          男性形象
+        </button>
+      </div>
+      <div className="space-y-1.5 max-h-52 overflow-y-auto pr-0.5 scrollbar-thin">
+        {(activeGenderTab === "female" ? PERSONAS_FEMALE : PERSONAS_MALE).map((p) => (
+          <button key={p.id} onClick={() => { setSelectedStyle(p.id); setShowPersonaMenu(false); }}
+            className="w-full p-2 rounded-lg text-left transition-all border text-white hover:bg-white/10 flex items-center justify-between"
+            style={{
+              borderColor: (selectedStyle === p.id) ? "#D2A053" : "transparent",
+              background: (selectedStyle === p.id) ? "rgba(210,160,83,0.25)" : "rgba(255,255,255,0.05)"
+            }}>
+            <div>
+              <div className="text-[11px] font-semibold">{p.label}</div>
+              <div className="text-[9px] text-white/50">{p.desc}</div>
+            </div>
+            {selectedStyle === p.id && <Sparkles className="w-3.5 h-3.5 text-[#D2A053]" />}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
   /* ── Message list (shared between mobile & desktop) ── */
   const renderMessageList = () => (
     <div className="space-y-3">
@@ -460,13 +513,16 @@ export function QAScreen() {
         <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
           transition={{ ...SPRING, delay: 0 }}
           className={`flex gap-2 ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
-          <div className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold flex-shrink-0"
-            style={{
-              background: msg.role === "assistant" ? "linear-gradient(135deg,#4F6F52,#3A5240)" : "rgba(79,111,82,0.12)",
-              color: msg.role === "assistant" ? "white" : "#4F6F52",
-              fontFamily: "var(--font-noto-serif)",
-            }}>
-            {msg.role === "assistant" ? "玉" : "我"}
+          <div className="w-7 h-7 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center">
+            {msg.role === "assistant" ? (
+              <div className="w-full h-full bg-[#1A2520]">
+                <DigitalAvatar state="idle" size="sm" avatarStyle={selectedStyle} />
+              </div>
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-[11px] font-bold bg-neutral-200 text-zinc-700 rounded-full">
+                我
+              </div>
+            )}
           </div>
           <div className={`flex flex-col gap-0.5 max-w-[78%] ${msg.role === "user" ? "items-end" : ""}`}>
             <div className="px-3.5 py-2.5 text-[13px] leading-relaxed"
@@ -485,8 +541,9 @@ export function QAScreen() {
       ))}
       {loading && (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex gap-2">
-          <div className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold flex-shrink-0"
-            style={{ background: "linear-gradient(135deg,#4F6F52,#3A5240)", color: "white", fontFamily: "var(--font-noto-serif)" }}>玉</div>
+          <div className="w-7 h-7 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center bg-[#1A2520]">
+            <DigitalAvatar state="thinking" size="sm" avatarStyle={selectedStyle} />
+          </div>
           <div className="px-4 py-3 flex items-center gap-1.5"
             style={{ background: "white", border: "1px solid #E6E2D8", borderRadius: "4px 16px 16px 16px" }}>
             {[0,1,2].map((i) => (
@@ -582,7 +639,7 @@ export function QAScreen() {
 
         {/* Top bar */}
         <div className="flex items-center justify-between px-4 pb-3 flex-shrink-0"
-          style={{ paddingTop: "calc(env(safe-area-inset-top,44px)+8px)" }}>
+          style={{ paddingTop: "calc(env(safe-area-inset-top,44px) + 24px)" }}>
           <div className="flex items-center gap-2">
             <motion.div animate={{ backgroundColor: loading ? "#D2A053" : "#34C759" }}
               className="w-2 h-2 rounded-full" />
@@ -648,22 +705,7 @@ export function QAScreen() {
                   <span className="text-xs font-semibold text-white/90">切换数字人形象</span>
                   <button onClick={() => setShowPersonaMenu(false)} className="text-white/40 hover:text-white"><X className="w-3 h-3" /></button>
                 </div>
-                <div className="space-y-1.5 max-h-48 overflow-y-auto pr-0.5">
-                  {PERSONAS.map((p) => (
-                    <button key={p.id} onClick={() => { setSelectedStyle(p.id); setShowPersonaMenu(false); }}
-                      className="w-full p-2 rounded-lg text-left transition-all border text-white hover:bg-white/10 flex items-center justify-between"
-                      style={{
-                        borderColor: (selectedStyle === p.id) ? "#D2A053" : "transparent",
-                        background: (selectedStyle === p.id) ? "rgba(210,160,83,0.25)" : "rgba(255,255,255,0.05)"
-                      }}>
-                      <div>
-                        <div className="text-[11px] font-semibold">{p.label}</div>
-                        <div className="text-[9px] text-white/50">{p.desc}</div>
-                      </div>
-                      {selectedStyle === p.id && <Sparkles className="w-3.5 h-3.5 text-[#D2A053]" />}
-                    </button>
-                  ))}
-                </div>
+                {renderPersonaDropdownContent()}
               </div>
             )}
           </div>
@@ -701,18 +743,6 @@ export function QAScreen() {
               </p>
             </motion.div>
           </AnimatePresence>
-          {!chatExpanded && messages.length <= 2 && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}
-              className="flex flex-wrap justify-center gap-2 mt-4 px-4">
-              {QUICK_PROMPTS.slice(0,4).map((p) => (
-                <motion.button key={p} whileTap={{ scale: 0.92 }} onClick={() => sendMessage(p)}
-                  className="text-[11px] px-3 py-1.5 rounded-full"
-                  style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.65)" }}>
-                  {p}
-                </motion.button>
-              ))}
-            </motion.div>
-          )}
         </div>
 
         {/* Chat drawer */}
@@ -729,13 +759,22 @@ export function QAScreen() {
         {/* Input zone */}
         <div className="flex-shrink-0 px-3 pb-[calc(env(safe-area-inset-bottom,0px)+72px)] pt-2"
           style={{ background: "rgba(0,0,0,0.2)", backdropFilter: "blur(16px)" }}>
-          <div className="flex justify-center mb-2">
-            <motion.button whileTap={{ scale: 0.9 }} onClick={() => setChatExpanded(!chatExpanded)}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px]"
-              style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.4)", border: "1px solid rgba(255,255,255,0.1)" }}>
-              {chatExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
-              {chatExpanded ? "收起对话" : `查看对话 (${messages.length}条)`}
-            </motion.button>
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none mb-3 px-1 py-0.5">
+            {["揽月亭历史故事", "景区门票价格", "适合老人路线", "翠玉湖怎么走"].map((p) => (
+              <motion.button
+                key={p}
+                whileTap={{ scale: 0.94 }}
+                onClick={() => sendMessage(p)}
+                className="flex-shrink-0 text-[11px] px-3.5 py-1.5 rounded-full backdrop-blur-md transition-colors"
+                style={{
+                  background: "rgba(255,255,255,0.12)",
+                  border: "1px solid rgba(255,255,255,0.18)",
+                  color: "rgba(255,255,255,0.85)"
+                }}
+              >
+                {p}
+              </motion.button>
+            ))}
           </div>
           {renderInputBar(true)}
         </div>
@@ -762,7 +801,7 @@ export function QAScreen() {
             style={{ background: bgImage ? "none" : "radial-gradient(ellipse 80% 60% at 50% 35%,rgba(79,111,82,0.14) 0%,transparent 70%)" }} />
 
           {/* Desktop Left Panel Floating Controls */}
-          <div className="absolute top-4 left-4 right-4 flex justify-between items-center z-20">
+          <div className="absolute top-8 left-4 right-4 flex justify-between items-center z-20">
             <div className="text-[11px] font-medium tracking-wide text-white/50 bg-black/30 backdrop-blur px-2.5 py-1 rounded-full border border-white/5">
               旅行吧导览官 · 在线
             </div>
@@ -813,22 +852,7 @@ export function QAScreen() {
                     <span className="text-xs font-semibold text-white/90">切换数字人形象</span>
                     <button onClick={() => setShowPersonaMenu(false)} className="text-white/40 hover:text-white"><X className="w-3 h-3" /></button>
                   </div>
-                  <div className="space-y-1.5 max-h-48 overflow-y-auto pr-0.5">
-                    {PERSONAS.map((p) => (
-                      <button key={p.id} onClick={() => { setSelectedStyle(p.id); setShowPersonaMenu(false); }}
-                        className="w-full p-2 rounded-lg text-left transition-all border text-white hover:bg-white/10 flex items-center justify-between"
-                        style={{
-                          borderColor: (selectedStyle === p.id) ? "#D2A053" : "transparent",
-                          background: (selectedStyle === p.id) ? "rgba(210,160,83,0.25)" : "rgba(255,255,255,0.05)"
-                        }}>
-                        <div>
-                          <div className="text-[11px] font-semibold">{p.label}</div>
-                          <div className="text-[9px] text-white/50">{p.desc}</div>
-                        </div>
-                        {selectedStyle === p.id && <Sparkles className="w-3.5 h-3.5 text-[#D2A053]" />}
-                      </button>
-                    ))}
-                  </div>
+                  {renderPersonaDropdownContent()}
                 </div>
               )}
             </div>
@@ -865,17 +889,6 @@ export function QAScreen() {
                 </p>
               </motion.div>
             </AnimatePresence>
-
-            {/* Quick prompts */}
-            <div className="mt-5 w-full grid grid-cols-2 gap-2">
-              {QUICK_PROMPTS.slice(0,6).map((p) => (
-                <motion.button key={p} whileTap={{ scale: 0.93 }} onClick={() => sendMessage(p)}
-                  className="text-[10px] px-2 py-1.5 rounded-lg text-left truncate"
-                  style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.6)" }}>
-                  {p}
-                </motion.button>
-              ))}
-            </div>
 
             {/* TTS + history controls */}
             <div className="mt-5 flex gap-2 justify-center">
@@ -926,6 +939,18 @@ export function QAScreen() {
           {/* Input */}
           <div className="px-6 py-4 flex-shrink-0"
             style={{ borderTop: "1px solid #E6E2D8", background: "rgba(250,248,245,0.98)" }}>
+            <div className="flex items-center gap-2 overflow-x-auto scrollbar-none mb-3 px-1 py-0.5">
+              {["揽月亭历史故事", "景区门票价格", "适合老人路线", "翠玉湖怎么走"].map((p) => (
+                <motion.button
+                  key={p}
+                  whileTap={{ scale: 0.94 }}
+                  onClick={() => sendMessage(p)}
+                  className="flex-shrink-0 text-[11px] px-3.5 py-1.5 rounded-full transition-all border text-zinc-600 hover:text-[#4F6F52] hover:border-[#4F6F52] bg-white border-neutral-200 shadow-sm whitespace-nowrap"
+                >
+                  {p}
+                </motion.button>
+              ))}
+            </div>
             {renderInputBar()}
           </div>
         </div>

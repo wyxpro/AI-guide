@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Heart, MessageCircle, Clock, MapPin, Star, Volume2, Users, BookOpen, Camera, Share2, ChevronRight } from "lucide-react";
+import { ArrowLeft, Heart, MessageCircle, Clock, MapPin, Star, Volume2, Users, BookOpen, Camera, Share2, ChevronRight, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { useEazo } from "@eazo/sdk/react";
 import { request } from "@/lib/api/request";
@@ -12,7 +12,7 @@ import { CameraRecognize } from "@/components/ui/CameraRecognize";
 
 const SPRING = { type: "spring" as const, stiffness: 280, damping: 35 };
 
-interface Spot { id: number; name: string; category: string; description: string; imageUrl: string; audioGuide: string; duration: number; distance: string; rating: number; visitCount: number; tags: string[]; location?: { lat: number; lng: number } }
+interface Spot { id: number; name: string; category: string; city?: string; description: string; imageUrl: string; audioGuide: string; duration: number; distance: string; rating: number; visitCount: number; tags: string[]; location?: { lat: number; lng: number } }
 
 export function SpotDetailScreen({ spotId }: { spotId: string }) {
   const user = useEazo((s) => s.auth.user);
@@ -29,6 +29,8 @@ export function SpotDetailScreen({ spotId }: { spotId: string }) {
   const [speaking, setSpeaking] = useState(false);
   const [autoplayBanner, setAutoplayBanner] = useState(autoplay);
   const [nearbySpots, setNearbySpots] = useState<Array<any>>([]);
+  const [activeMedia, setActiveMedia] = useState<"image" | "video">("image");
+  const [currentImgIdx, setCurrentImgIdx] = useState(0);
 
   useEffect(() => {
     fetch(`/api/spots/${spotId}`)
@@ -147,245 +149,296 @@ export function SpotDetailScreen({ spotId }: { spotId: string }) {
   );
 
   return (
-    <div className="min-h-svh" style={{ background: "#FAF8F5" }}>
+    <div className="min-h-svh relative" style={{ background: "#FAF8F5" }}>
+      {/* Floating Buttons mid-right */}
+      <div className="fixed right-4 top-[55%] -translate-y-1/2 z-40 flex flex-col gap-3.5 max-w-[280px]">
+        {/* Floating Card 1: 导览官小玉 */}
+        <Link href={`/qa?spot=${spot.id}&name=${encodeURIComponent(spot.name)}`}>
+          <motion.div
+            whileHover={{ scale: 1.04, x: -6 }}
+            whileTap={{ scale: 0.98 }}
+            className="flex items-center gap-3 p-3.5 rounded-2xl shadow-xl border border-[#D2A053]/45 cursor-pointer backdrop-blur-md"
+            style={{
+              background: "linear-gradient(135deg, rgba(26,45,35,0.95), rgba(52,82,64,0.9))",
+              boxShadow: "0 8px 32px rgba(210,160,83,0.15)"
+            }}
+          >
+            <div className="w-10 h-10 rounded-full bg-[#1F2E26] border border-[#D2A053]/60 flex items-center justify-center text-sm font-bold text-[#D2A053]" style={{ fontFamily: "var(--font-noto-serif)" }}>
+              玉
+            </div>
+            <div className="flex-1 text-left min-w-0">
+              <h4 className="text-xs font-bold text-[#D2A053] tracking-wide" style={{ fontFamily: "var(--font-noto-serif)" }}>导览官小玉</h4>
+              <p className="text-[10px] text-white/75 mt-0.5 leading-tight truncate">向我提问关于景区历史与文化</p>
+            </div>
+          </motion.div>
+        </Link>
+
+        {/* Floating Card 2: 故事讲解模式 */}
+        <motion.div
+          whileHover={{ scale: 1.04, x: -6 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => setShowStory(true)}
+          className="flex items-center gap-3 p-3.5 rounded-2xl shadow-xl border border-orange-500/45 cursor-pointer backdrop-blur-md"
+          style={{
+            background: "linear-gradient(135deg, rgba(60,26,26,0.95), rgba(107,35,35,0.9))",
+            boxShadow: "0 8px 32px rgba(249,115,22,0.15)"
+          }}
+        >
+          <div className="w-10 h-10 rounded-full bg-[#3C1A1A] border border-orange-500/60 flex items-center justify-center text-base">
+            📖
+          </div>
+          <div className="flex-1 text-left min-w-0">
+            <h4 className="text-xs font-bold text-orange-400 tracking-wide" style={{ fontFamily: "var(--font-noto-serif)" }}>故事讲解模式</h4>
+            <p className="text-[10px] text-white/75 mt-0.5 leading-tight truncate">4章节沉浸式语音+文字剧情</p>
+          </div>
+        </motion.div>
+      </div>
+
       {/* PC layout wrapper */}
       <div className="md:flex md:h-svh md:overflow-hidden">
         {/* Mobile/PC left: content scroll column */}
-        <div className="flex-1 md:overflow-y-auto">
+        <div className="flex-1 md:overflow-y-auto pb-12">
 
-      {/* Autoplay / QR scan banner */}
-      {autoplayBanner && (
-        <motion.div initial={{ y: -40, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-          transition={{ type: "spring" as const, stiffness: 300, damping: 30 }}
-          className="fixed top-0 left-0 right-0 z-50 flex items-center gap-3 px-4 py-3"
-          style={{ background: "linear-gradient(135deg, #2B3530, #1A2420)", borderBottom: "1px solid rgba(210,160,83,0.3)" }}>
-          <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
-            style={{ background: "linear-gradient(135deg,#4F6F52,#3A5240)", color: "#D2A053", fontFamily: "var(--font-noto-serif)" }}>玉</div>
-          <div className="flex-1 min-w-0">
-            <p className="text-white text-xs font-semibold">扫码讲解已启动</p>
-            <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.6)" }}>正在为您播放「{spot.name}」深度讲解</p>
-          </div>
-          <motion.button whileTap={{ scale: 0.88 }} onClick={() => { setAutoplayBanner(false); window.speechSynthesis?.cancel(); setSpeaking(false); }}
-            className="text-[10px] px-2.5 py-1 rounded-full"
-            style={{ background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)" }}>
-            关闭
-          </motion.button>
-        </motion.div>
-      )}
-
-      {/* Hero image */}
-      <div className="relative" style={{ height: 280 }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={spot.imageUrl || "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800&q=80"} alt={spot.name}
-          className="w-full h-full object-cover" />
-        <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, transparent 40%, rgba(0,0,0,0.5) 100%)" }} />
-
-        {/* Back + Favorite */}
-        <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4"
-          style={{ paddingTop: "calc(env(safe-area-inset-top, 44px) + 8px)" }}>
-          <Link href="/spots">
-            <motion.button whileTap={{ scale: 0.88 }}
-              className="w-9 h-9 rounded-full flex items-center justify-center"
-              style={{ background: "rgba(0,0,0,0.35)", backdropFilter: "blur(8px)" }}>
-              <ArrowLeft className="w-4 h-4 text-white" />
-            </motion.button>
-          </Link>
-          <motion.button whileTap={{ scale: 0.88 }} onClick={toggleFavorite}
-            className="w-9 h-9 rounded-full flex items-center justify-center"
-            style={{ background: "rgba(0,0,0,0.35)", backdropFilter: "blur(8px)" }}>
-            <Heart className="w-4 h-4" fill={favorited ? "#DC2626" : "none"} style={{ color: favorited ? "#DC2626" : "white" }} />
-          </motion.button>
-        </div>
-
-        {/* Bottom title overlay */}
-        <div className="absolute bottom-0 left-0 right-0 px-4 pb-4">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] px-2 py-0.5 rounded-full font-medium"
-              style={{ background: "rgba(210,160,83,0.85)", color: "white" }}>
-              {spot.category === "cultural" ? "人文" : spot.category === "nature" ? "自然" : spot.category === "history" ? "历史" : "亲子"}
-            </span>
-          </div>
-          <h1 className="text-2xl font-bold text-white" style={{ fontFamily: "var(--font-noto-serif)", textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
-            {spot.name}
-          </h1>
-        </div>
-      </div>
-
-      {/* Info bar */}
-      <div className="px-4 py-3 flex items-center gap-4" style={{ background: "white", borderBottom: "1px solid #E6E2D8" }}>
-        <div className="flex items-center gap-1">
-          <Clock className="w-3.5 h-3.5" style={{ color: "#D2A053" }} />
-          <span className="text-xs" style={{ color: "#3A4D39" }}>{spot.duration} 分钟</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <MapPin className="w-3.5 h-3.5" style={{ color: "#4F6F52" }} />
-          <span className="text-xs" style={{ color: "#3A4D39" }}>{spot.distance}</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <Users className="w-3.5 h-3.5" style={{ color: "#8F9F8F" }} />
-          <span className="text-xs" style={{ color: "#8F9F8F" }}>{(spot.visitCount / 1000).toFixed(1)}k 游览</span>
-        </div>
-        <div className="ml-auto flex items-center gap-1">
-          <Star className="w-3.5 h-3.5" fill="#D2A053" style={{ color: "#D2A053" }} />
-          <span className="text-xs font-semibold" style={{ color: "#1E2522" }}>{(spot.rating / 10).toFixed(1)}</span>
-        </div>
-      </div>
-
-      <div className="px-4 py-5 space-y-4 max-w-2xl mx-auto">
-        {/* AI导览官 CTA */}
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={SPRING}
-          className="rounded-2xl p-4 flex items-center gap-4"
-          style={{ background: "linear-gradient(135deg, #2B3530, #1A2420)", border: "1px solid rgba(210,160,83,0.3)" }}>
-          <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 text-lg font-bold"
-            style={{ background: "linear-gradient(135deg, #4F6F52, #3A5240)", color: "#D2A053", fontFamily: "var(--font-noto-serif)", boxShadow: "0 0 16px rgba(210,160,83,0.4)" }}>
-            玉
-          </div>
-          <div className="flex-1">
-            <p className="text-xs font-semibold" style={{ color: "#D2A053", fontFamily: "var(--font-noto-serif)" }}>导览官小玉</p>
-            <p className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.7)" }}>点击向我提问关于{spot.name}的任何问题</p>
-          </div>
-          <Link href={`/qa?spot=${spot.id}&name=${encodeURIComponent(spot.name)}`}>
-            <motion.div whileTap={{ scale: 0.92 }}
-              className="px-3 py-1.5 rounded-lg text-xs font-semibold"
-              style={{ background: "rgba(210,160,83,0.2)", color: "#D2A053", border: "1px solid rgba(210,160,83,0.4)" }}>
-              <MessageCircle className="w-3.5 h-3.5 inline mr-1" />提问
+          {/* Autoplay / QR scan banner */}
+          {autoplayBanner && (
+            <motion.div initial={{ y: -40, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+              transition={{ type: "spring" as const, stiffness: 300, damping: 30 }}
+              className="fixed top-0 left-0 right-0 z-50 flex items-center gap-3 px-4 py-3"
+              style={{ background: "linear-gradient(135deg, #2B3530, #1A2420)", borderBottom: "1px solid rgba(210,160,83,0.3)" }}>
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
+                style={{ background: "linear-gradient(135deg,#4F6F52,#3A5240)", color: "#D2A053", fontFamily: "var(--font-noto-serif)" }}>玉</div>
+              <div className="flex-1 min-w-0">
+                <p className="text-white text-xs font-semibold">扫码讲解已启动</p>
+                <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.6)" }}>正在为您播放「{spot.name}」深度讲解</p>
+              </div>
+              <motion.button whileTap={{ scale: 0.88 }} onClick={() => { setAutoplayBanner(false); window.speechSynthesis?.cancel(); setSpeaking(false); }}
+                className="text-[10px] px-2.5 py-1 rounded-full"
+                style={{ background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)" }}>
+                关闭
+              </motion.button>
             </motion.div>
-          </Link>
-        </motion.div>
+          )}
 
-        {/* Story Mode CTA */}
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ ...SPRING, delay: 0.08 }}
-          className="rounded-2xl overflow-hidden cursor-pointer"
-          style={{ background: "linear-gradient(135deg,#2A1A08,#1A0E00)", border: "1px solid rgba(210,160,83,0.25)" }}
-          onClick={() => setShowStory(true)}>
-          <div className="p-4 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0"
-              style={{ background: "rgba(210,160,83,0.15)", border: "1px solid rgba(210,160,83,0.3)" }}>
-              📖
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-bold" style={{ color: "#F0CC88", fontFamily: "var(--font-noto-serif)" }}>
-                故事讲解模式
-              </p>
-              <p className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>
-                4章节沉浸式剧情叙事 · 语音+文字同步
-              </p>
-            </div>
-            <motion.div whileTap={{ scale: 0.9 }}
-              className="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1"
-              style={{ background: "rgba(210,160,83,0.2)", color: "#D2A053", border: "1px solid rgba(210,160,83,0.35)" }}>
-              <BookOpen className="w-3 h-3" />开启
-            </motion.div>
-          </div>
-        </motion.div>
+          {/* Hero media section */}
+          <div className="relative overflow-hidden bg-black" style={{ height: 320 }}>
+            {activeMedia === "video" ? (
+              <video
+                src="https://assets.mixkit.co/videos/preview/mixkit-scenic-view-of-a-historical-chinese-palace-41710-large.mp4"
+                controls
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="relative w-full h-full">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={
+                    [
+                      spot.imageUrl || "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800&q=80",
+                      "https://images.unsplash.com/photo-1508193638397-1c4234db14d8?w=800&q=80",
+                      "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&q=80"
+                    ][currentImgIdx]
+                  }
+                  alt={spot.name}
+                  className="w-full h-full object-cover transition-all duration-500"
+                />
+                
+                {/* Left/Right image slide controllers */}
+                {currentImgIdx > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setCurrentImgIdx((prev) => prev - 1)}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/45 hover:bg-black/60 p-2 rounded-full text-white z-20 transition-all"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                )}
+                {currentImgIdx < 2 && (
+                  <button
+                    type="button"
+                    onClick={() => setCurrentImgIdx((prev) => prev + 1)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/45 hover:bg-black/60 p-2 rounded-full text-white z-20 transition-all"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                )}
 
-        {/* Description */}
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ ...SPRING, delay: 0.1 }}
-          className="card-ink p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold" style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}>景点介绍</h3>
-            <motion.button whileTap={{ scale: 0.88 }} onClick={speakDescription}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[11px]"
-              style={{ background: speaking ? "rgba(79,111,82,0.15)" : "#F5F0E8", color: speaking ? "#4F6F52" : "#8F9F8F", border: `1px solid ${speaking ? "rgba(79,111,82,0.4)" : "#E6E2D8"}` }}>
-              <Volume2 className="w-3 h-3" />{speaking ? "停止" : "语音讲解"}
-            </motion.button>
-          </div>
-          <p className="text-sm leading-relaxed" style={{ color: "#3A4D39" }}>{spot.description}</p>
-        </motion.div>
-
-        {/* Tags */}
-        {((spot.tags as string[]) || []).length > 0 && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ ...SPRING, delay: 0.15 }}
-            className="flex flex-wrap gap-2">
-            {(spot.tags as string[]).map((tag) => (
-              <span key={tag} className="text-[11px] px-2.5 py-1 rounded-full"
-                style={{ background: "rgba(79,111,82,0.1)", color: "#4F6F52", border: "1px solid rgba(79,111,82,0.2)" }}>
-                {tag}
-              </span>
-            ))}
-          </motion.div>
-        )}
-
-        {/* User Rating */}
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ ...SPRING, delay: 0.2 }}
-          className="card-ink p-4">
-          <h3 className="text-sm font-semibold mb-3" style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}>
-            {user ? "您的评分" : "游览评分"}
-          </h3>
-          {user ? (
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1.5">
-                  {[1, 2, 3, 4, 5].map((s) => (
-                    <motion.button key={s} whileTap={{ scale: 0.85 }} onClick={() => setUserRating(s)} disabled={ratingSubmitted}>
-                      <Star className="w-7 h-7" fill={s <= userRating ? "#D2A053" : "none"}
-                        style={{ color: s <= userRating ? "#D2A053" : "#E6E2D8" }} />
-                    </motion.button>
+                {/* Dot indicator */}
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
+                  {[0, 1, 2].map((idx) => (
+                    <div
+                      key={idx}
+                      className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${idx === currentImgIdx ? "bg-white w-3" : "bg-white/40"}`}
+                    />
                   ))}
                 </div>
-                {userRating > 0 && (
-                  <span className="text-sm font-semibold" style={{ color: "#D2A053" }}>
-                    {userRating === 5 ? "非常满意" : userRating === 4 ? "满意" : userRating === 3 ? "一般" : userRating === 2 ? "不太满意" : "不满意"}
-                  </span>
-                )}
               </div>
-              {userRating > 0 && !ratingSubmitted && (
-                <motion.button whileTap={{ scale: 0.97 }}
-                  className="text-xs px-4 py-2 rounded-lg text-white"
-                  style={{ background: "linear-gradient(135deg, #4F6F52, #3A5240)" }}
-                  onClick={submitRating}>
-                  提交评分
+            )}
+
+            {/* Dark gradient overlay for text readability */}
+            <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, transparent 60%, rgba(0,0,0,0.4) 100%)" }} />
+
+            {/* Back + Favorite buttons */}
+            <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 z-20"
+              style={{ paddingTop: "calc(env(safe-area-inset-top, 44px) + 8px)" }}>
+              <Link href="/spots">
+                <motion.button whileTap={{ scale: 0.88 }}
+                  className="w-9 h-9 rounded-full flex items-center justify-center bg-black/35 backdrop-blur-md hover:bg-black/50 transition-colors">
+                  <ArrowLeft className="w-4 h-4 text-white" />
                 </motion.button>
-              )}
-              {ratingSubmitted && (
-                <p className="text-[11px] text-[#8F9F8F]">感谢您的反馈与评价！</p>
-              )}
+              </Link>
+              <motion.button whileTap={{ scale: 0.88 }} onClick={toggleFavorite}
+                className="w-9 h-9 rounded-full flex items-center justify-center bg-black/35 backdrop-blur-md hover:bg-black/50 transition-colors">
+                <Heart className="w-4 h-4" fill={favorited ? "#DC2626" : "none"} style={{ color: favorited ? "#DC2626" : "white" }} />
+              </motion.button>
             </div>
-          ) : (
-            <p className="text-sm" style={{ color: "#8F9F8F" }}>
-              <Link href="/profile"><span style={{ color: "#4F6F52" }}>登录</span></Link> 后可以为景点评分
-            </p>
-          )}
-        </motion.div>
 
-        {/* Related spots suggestion */}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ ...SPRING, delay: 0.25 }}
-          className="card-ink p-4 space-y-3">
-          <h3 className="text-sm font-semibold" style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}>附近推荐</h3>
-          
-          {nearbySpots.length > 0 ? (
-            <div className="grid grid-cols-1 gap-2.5">
-              {nearbySpots.map((nSpot) => (
-                <Link href={`/spots/${nSpot.id}`} key={nSpot.id}>
-                  <motion.div whileTap={{ scale: 0.98 }}
-                    className="flex items-center gap-3 p-2 rounded-xl border border-[#E6E2D8] hover:bg-neutral-50 transition-colors">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={nSpot.imageUrl} alt={nSpot.name} className="w-10 h-10 rounded-lg object-cover" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-semibold text-[#1E2522] truncate">{nSpot.name}</p>
-                      <p className="text-[10px] text-[#8F9F8F] mt-0.5">
-                        距离当前景点约 <span className="font-mono font-bold text-[#D2A053]">{nSpot.distanceMeters}米</span>
-                      </p>
-                    </div>
-                    <ChevronRight className="w-3.5 h-3.5 text-[#8F9F8F]" />
-                  </motion.div>
-                </Link>
-              ))}
+            {/* Media toggle tabs (Bottom Right) */}
+            <div className="absolute bottom-4 right-4 flex bg-black/40 backdrop-blur-md rounded-full p-0.5 border border-white/10 z-20">
+              <button
+                type="button"
+                onClick={() => setActiveMedia("image")}
+                className={`px-3 py-1 rounded-full text-[10px] font-bold transition-all ${activeMedia === "image" ? "bg-white text-black" : "text-white/80 hover:text-white"}`}
+              >
+                图片
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveMedia("video")}
+                className={`px-3 py-1 rounded-full text-[10px] font-bold transition-all ${activeMedia === "video" ? "bg-white text-black" : "text-white/80 hover:text-white"}`}
+              >
+                视频
+              </button>
             </div>
-          ) : (
-            <div className="text-[11px] text-[#8F9F8F] py-2">正在计算附近推荐景点...</div>
-          )}
 
-          <Link href="/spots">
-            <motion.div whileTap={{ scale: 0.97 }}
-              className="flex items-center justify-between pt-1.5 text-xs font-semibold"
-              style={{ color: "#4F6F52" }}>
-              查看全部景点导览 →
-            </motion.div>
-          </Link>
-        </motion.div>
-      </div>
-      <div style={{ height: 24 }} />
+            {/* Rating overlay badge */}
+            <div className="absolute top-16 right-4 flex items-center gap-1 px-2.5 py-1 rounded-full backdrop-blur-md bg-red-600/90 text-white shadow-md z-20">
+              <Star className="w-3 h-3 fill-white text-white" />
+              <span className="text-xs font-bold">{(spot.rating / 10).toFixed(1)}</span>
+              <span className="text-[9px] opacity-90">很棒</span>
+            </div>
+          </div>
+
+          {/* Card 1: Title and core details */}
+          <div className="relative z-10 -mt-10 mx-4 bg-white rounded-3xl p-5 shadow-md border border-neutral-100/80 flex justify-between items-stretch">
+            {/* Left Part */}
+            <div className="flex-1 pr-4 min-w-0">
+              <h1 className="text-lg font-bold text-[#1E2522] truncate" style={{ fontFamily: "var(--font-noto-serif)" }}>
+                {spot.name}
+              </h1>
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                <span className="text-[10px] px-2.5 py-0.5 rounded-full font-semibold bg-[#4F6F52]/10 text-[#4F6F52] border border-[#4F6F52]/20">
+                  5A景区
+                </span>
+                <span className="text-[10px] px-2.5 py-0.5 rounded-full font-semibold bg-blue-50 text-blue-600 border border-blue-100">
+                  景区Wi-Fi: 有
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 mt-3 text-zinc-500 text-xs">
+                <MapPin className="w-3.5 h-3.5 text-zinc-400 flex-shrink-0" />
+                <span className="truncate">{spot.city}景区中心 · 距您 {spot.distance || '11.2km'}</span>
+              </div>
+            </div>
+            
+            {/* Divider */}
+            <div className="w-[1px] bg-neutral-200 self-stretch mx-1.5" />
+
+            {/* Right Part: Actions */}
+            <div className="flex flex-col justify-around items-center pl-3 w-14 flex-shrink-0">
+              <motion.button whileTap={{ scale: 0.9 }} className="flex flex-col items-center gap-1 text-center"
+                onClick={() => toast.success("正在唤起地图导航...")}>
+                <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center">
+                  <MapPin className="w-4 h-4 text-blue-600" />
+                </div>
+                <span className="text-[9px] font-semibold text-zinc-500">导航</span>
+              </motion.button>
+              <motion.button whileTap={{ scale: 0.9 }} className="flex flex-col items-center gap-1 text-center"
+                onClick={() => toast.success("正在拨打景区服务电话: 010-85007055")}>
+                <div className="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center">
+                  <Volume2 className="w-4 h-4 text-green-600" />
+                </div>
+                <span className="text-[9px] font-semibold text-zinc-500">电话</span>
+              </motion.button>
+            </div>
+          </div>
+
+          {/* Card 2: Practical travel information */}
+          <div className="mx-4 mt-3.5 bg-white rounded-3xl p-5 shadow-md border border-neutral-100/80 space-y-4">
+            <div className="flex items-start gap-3">
+              <Clock className="w-4 h-4 text-[#D2A053] mt-0.5 flex-shrink-0" />
+              <div>
+                <h4 className="text-xs font-bold text-zinc-800">开放时间</h4>
+                <p className="text-[11px] text-zinc-500 mt-0.5">周一至周日 08:00 - 18:00 (16:00 停止入场)</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <Star className="w-4 h-4 text-[#4F6F52] mt-0.5 flex-shrink-0" />
+              <div>
+                <h4 className="text-xs font-bold text-zinc-800">建议游玩时间</h4>
+                <p className="text-[11px] text-zinc-500 mt-0.5">{spot.duration}分钟 (约 {Math.ceil(spot.duration / 60)}小时)</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <Users className="w-4 h-4 text-purple-500 mt-0.5 flex-shrink-0" />
+              <div>
+                <h4 className="text-xs font-bold text-zinc-800">景区门票</h4>
+                <p className="text-[11px] text-zinc-500 mt-0.5">成人票60元、儿童票20元、70岁以上老人免票</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <BookOpen className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
+              <div>
+                <h4 className="text-xs font-bold text-zinc-800">交通指南</h4>
+                <p className="text-[11px] text-zinc-500 mt-0.5">乘坐地铁或公共大巴直达{spot.name}景区</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 4: Description (景点介绍) */}
+          <div className="mx-4 mt-3.5 bg-white rounded-3xl p-5 shadow-md border border-neutral-100/80 space-y-3">
+            <h3 className="text-xs font-bold text-zinc-800" style={{ fontFamily: "var(--font-noto-serif)" }}>景点介绍</h3>
+            <p className="text-xs leading-relaxed text-zinc-600">{spot.description}</p>
+          </div>
+
+          {/* Card 5: Nearby recommendation (附近推荐) */}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ ...SPRING, delay: 0.25 }}
+            className="mx-4 mt-3.5 bg-white rounded-3xl p-5 shadow-md border border-neutral-100/80 space-y-3">
+            <h3 className="text-xs font-bold text-[#1E2522]" style={{ fontFamily: "var(--font-noto-serif)" }}>附近推荐</h3>
+            
+            {nearbySpots.length > 0 ? (
+              <div className="grid grid-cols-1 gap-2.5">
+                {nearbySpots.map((nSpot) => (
+                  <Link href={`/spots/${nSpot.id}`} key={nSpot.id}>
+                    <motion.div whileTap={{ scale: 0.98 }}
+                      className="flex items-center gap-3 p-2 rounded-2xl border border-[#E6E2D8] hover:bg-neutral-50 transition-colors">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={nSpot.imageUrl} alt={nSpot.name} className="w-12 h-12 rounded-xl object-cover" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-[#1E2522] truncate">{nSpot.name}</p>
+                        <p className="text-[10px] text-[#8F9F8F] mt-0.5">
+                          距离当前景点约 <span className="font-mono font-bold text-[#D2A053]">{nSpot.distanceMeters}米</span>
+                        </p>
+                      </div>
+                      <ChevronRight className="w-3.5 h-3.5 text-[#8F9F8F]" />
+                    </motion.div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="text-[11px] text-[#8F9F8F] py-2">正在计算附近推荐景点...</div>
+            )}
+
+            <Link href="/spots">
+              <motion.div whileTap={{ scale: 0.97 }}
+                className="flex items-center justify-between pt-1.5 text-xs font-bold cursor-pointer"
+                style={{ color: "#4F6F52" }}>
+                <span>查看全部景点导览 →</span>
+              </motion.div>
+            </Link>
+          </motion.div>
         </div>{/* end left scroll column */}
 
         {/* PC right panel: sticky info + actions */}

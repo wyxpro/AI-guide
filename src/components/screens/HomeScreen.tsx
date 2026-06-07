@@ -1,291 +1,581 @@
 "use client";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { MessageCircle, Map, Compass, Star, Clock, ChevronRight, Home, Navigation, User, Sparkles, Search } from "lucide-react";
+import { Search, MapPin, ChevronRight, Star, Clock } from "lucide-react";
 import Link from "next/link";
-import { useEazo } from "@eazo/sdk/react";
-import { request } from "@/lib/api/request";
-import { UserBadge } from "@/components/user-profile/user-badge";
+import { useRouter } from "next/navigation";
 
 const SPRING = { type: "spring" as const, stiffness: 300, damping: 32 };
 interface Spot { id: number; name: string; imageUrl: string; rating: number; duration: number }
 
-
-// ─── 移动端功能卡（横向小卡片）───────────────────────
-const FUNC_CARDS = [
-  { href: "/qa",     icon: MessageCircle, label: "智能问答", accent: "#D2A053",
-    bg: "linear-gradient(135deg,#2B3A2B,#1A2420)", glow: "rgba(210,160,83,0.3)" },
-  { href: "/spots",  icon: Compass,       label: "景点导览", accent: "#8FBF8A",
-    bg: "linear-gradient(135deg,#1E2E1E,#162016)", glow: "rgba(143,191,138,0.3)" },
-  { href: "/routes", icon: Map,           label: "路线规划", accent: "#E8C96A",
-    bg: "linear-gradient(135deg,#2E2510,#1C1608)", glow: "rgba(232,201,106,0.3)" },
-];
-
 /* ═══════════════════════════════════════════════════════
    根组件
-═══════════════════════════════════════════════════════ */
+   PCView / MobileView Unified
+   ═══════════════════════════════════════════════════════ */
 export default function HomeScreen() {
   return (
     <>
       {/* ── 移动端 ── */}
-      <div className="md:hidden min-h-svh flex flex-col w-full max-w-full overflow-x-hidden" style={{ background: "#F2EFE8" }}>
+      <div className="md:hidden min-h-svh flex flex-col w-full max-w-full overflow-x-hidden bg-white">
         <MobileView />
       </div>
       {/* ── PC 端 ── */}
-      <div className="hidden md:flex h-screen overflow-hidden" style={{ background: "#FAF8F5" }}>
+      <div className="hidden md:flex h-screen overflow-hidden bg-[#FAF8F5]">
         <PCView />
       </div>
     </>
   );
 }
 
+function PCView() {
+  const router = useRouter();
+  const [search, setSearch] = useState("");
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
+  const [spots, setSpots] = useState<Spot[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch("/api/spots?limit=8")
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) setSpots(data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  const handleAudioPlay = () => {
+    if (isPlaying) {
+      audio?.pause();
+      setIsPlaying(false);
+    } else {
+      if (audio) {
+        audio.play();
+        setIsPlaying(true);
+      } else {
+        const newAudio = new Audio("/api/qa/tts?text=" + encodeURIComponent("欢迎来到智慧景区导览系统！我们为您精选了多处名胜大川，并集成了AI专属路线规划与语音讲解。祝您拥有完美的旅程！"));
+        newAudio.play();
+        newAudio.onended = () => setIsPlaying(false);
+        setAudio(newAudio);
+        setIsPlaying(true);
+      }
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (audio) audio.pause();
+    };
+  }, [audio]);
+
+  return (
+    <div className="w-full min-h-screen flex flex-col bg-[#FAF8F5] text-zinc-800 overflow-y-auto">
+      {/* Desktop Header */}
+      <header className="w-full bg-white border-b border-zinc-200/60 sticky top-0 z-50 px-6 py-3 flex items-center justify-between shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-[#3A4D39] flex items-center justify-center text-white font-serif text-sm font-bold shadow-md">旅</div>
+          <span className="font-bold text-lg tracking-wider" style={{ fontFamily: "var(--font-noto-serif)", color: "#3A4D39" }}>
+            旅行吧 · 智能景区导游
+          </span>
+        </div>
+        <nav className="flex items-center gap-8 text-sm font-medium">
+          <Link href="/home" className="text-[#3A4D39] hover:text-[#4F6F52] transition-colors relative after:content-[''] after:absolute after:bottom-[-6px] after:left-0 after:w-full after:h-[2px] after:bg-[#3A4D39]">首页</Link>
+          <Link href="/spots" className="text-zinc-600 hover:text-zinc-950 transition-colors">景区景点</Link>
+          <Link href="/routes" className="text-zinc-600 hover:text-zinc-950 transition-colors">路线导航</Link>
+          <Link href="/qa" className="text-zinc-600 hover:text-zinc-950 transition-colors">智能问答</Link>
+          <Link href="/profile" className="text-zinc-600 hover:text-zinc-950 transition-colors">个人中心</Link>
+        </nav>
+        <div className="flex items-center gap-3">
+          <span className="text-[10px] font-bold text-[#D2A053] border border-[#D2A053] px-2.5 py-1 rounded-full bg-[#D2A053]/5">
+            国家5A级景区
+          </span>
+        </div>
+      </header>
+
+      {/* Main Body */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-8 space-y-10">
+        {/* Hero Banner Area */}
+        <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+          {/* Left: Banner Cover */}
+          <div className="lg:col-span-8 rounded-3xl overflow-hidden relative min-h-[350px] shadow-lg flex flex-col justify-end p-8 text-white group">
+            <div className="absolute inset-0 z-0 transition-transform duration-700 group-hover:scale-105">
+              <img
+                src="https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=1200&q=80"
+                alt="Banner"
+                className="w-full h-full object-cover brightness-[0.7]"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
+            </div>
+            <div className="relative z-10 space-y-4 max-w-xl">
+              <div className="flex items-center gap-2">
+                <span className="bg-[#FF5B45] text-white text-[10px] font-bold px-2 py-0.5 rounded-md">热门推荐</span>
+                <span className="text-xs text-white/80 font-medium">☀️ 晴转多云 · 22°C</span>
+              </div>
+              <h1 className="text-4xl font-extrabold tracking-wide drop-shadow-md leading-tight" style={{ fontFamily: "var(--font-noto-serif)" }}>
+                十座名山大川，邀你登顶揽胜
+              </h1>
+              <p className="text-sm text-zinc-200/90 leading-relaxed drop-shadow-sm">
+                去爬爬山，呼吸下新鲜空气，看看不一样的风景！融合AI专属路线规划与语音沉浸讲解，带给您全新的智慧旅游探秘体验。
+              </p>
+              {/* Search Box */}
+              <div className="flex items-center bg-white rounded-full p-1.5 shadow-md max-w-md border border-zinc-200 text-zinc-900 mt-2">
+                <div className="flex items-center gap-1.5 px-3 flex-shrink-0 font-semibold text-zinc-800 text-xs border-r border-zinc-200">
+                  <MapPin className="w-3.5 h-3.5 text-zinc-500" />
+                  <span>景区探索</span>
+                </div>
+                <input
+                  type="text"
+                  placeholder="搜索想去的景区..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && router.push(`/spots?search=${encodeURIComponent(search)}`)}
+                  className="flex-1 bg-transparent text-xs outline-none px-3 text-zinc-800"
+                />
+                <button
+                  onClick={() => router.push(`/spots?search=${encodeURIComponent(search)}`)}
+                  className="w-8 h-8 rounded-full bg-[#3A4D39] text-white flex items-center justify-center hover:bg-[#4F6F52] transition-colors"
+                >
+                  <Search className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Right: AI Assistant Box */}
+          <div className="lg:col-span-4 rounded-3xl bg-white border border-zinc-200/70 p-6 flex flex-col justify-between shadow-md">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl overflow-hidden border border-zinc-100 bg-[#FAF8F5] flex-shrink-0 flex items-center justify-center">
+                  <img
+                    src="https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=100&q=80"
+                    alt="Panda"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div>
+                  <h3 className="font-bold text-zinc-900 text-sm leading-snug">智能导览官</h3>
+                  <span className="text-[10px] text-zinc-500 font-semibold flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-ping"></span>
+                    AI小玉 · 在线讲解中
+                  </span>
+                </div>
+              </div>
+              
+              <div className="p-4 rounded-2xl bg-[#FDFBF7] border border-[#F5EED8] text-xs leading-relaxed text-zinc-700">
+                "欢迎来到智慧文旅门户！我是您的AI导览官小玉。点击下方播放按钮即可听取城市景区的专属语音导览讲解，或点击视频互动按钮直接与我的数字人分身开启聊天！"
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-zinc-100 flex items-center justify-between">
+              <button
+                onClick={handleAudioPlay}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm ${isPlaying ? 'bg-[#FF5B45] text-white animate-pulse' : 'bg-[#FFF0ED] text-[#FF5B45] hover:bg-[#FFE0DB]'}`}
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
+                  <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
+                </svg>
+                {isPlaying ? "讲解中..." : "语音讲解"}
+              </button>
+
+              <button
+                onClick={() => router.push("/qa")}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-[#3A4D39] text-white hover:bg-[#4F6F52] transition-colors shadow-sm"
+              >
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="5 3 19 12 5 21 5 3"/>
+                </svg>
+                视频互动
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* Entrance Cards Grid */}
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <motion.div
+            whileHover={{ y: -4 }}
+            onClick={() => router.push("/spots?category=cultural")}
+            className="relative bg-gradient-to-br from-[#FFF5F2] to-[#FFF8F6] border border-[#FFE8E2] rounded-3xl p-6 min-h-[120px] flex items-center justify-between overflow-hidden shadow-sm cursor-pointer group"
+          >
+            <div className="space-y-2 relative z-10">
+              <span className="text-lg font-black text-[#FF5B45] tracking-wide block">名校导览</span>
+              <p className="text-xs text-zinc-600 max-w-[280px]">感受名校文化底蕴与学府风范，量身定制名校求索打卡路线。</p>
+              <span className="text-[10px] font-bold text-white bg-[#FF5B45] px-2.5 py-0.5 rounded-full inline-flex items-center gap-0.5 shadow-sm mt-1">
+                立即前往
+                <ChevronRight className="w-3 h-3" />
+              </span>
+            </div>
+            <span className="text-6xl select-none opacity-80 transition-transform duration-300 group-hover:scale-110">🏫</span>
+          </motion.div>
+
+          <motion.div
+            whileHover={{ y: -4 }}
+            onClick={() => router.push("/spots?category=history")}
+            className="relative bg-gradient-to-br from-[#FCF8EE] to-[#FAF6E8] border border-[#F5EED8] rounded-3xl p-6 min-h-[120px] flex items-center justify-between overflow-hidden shadow-sm cursor-pointer group"
+          >
+            <div className="space-y-2 relative z-10">
+              <span className="text-lg font-black text-[#D2A053] tracking-wide block">文博精讲</span>
+              <p className="text-xs text-zinc-600 max-w-[280px]">聆听历史的回响，沉浸体验国家一级馆的文物精髓讲解。</p>
+              <span className="text-[10px] font-bold text-white bg-[#D2A053] px-2.5 py-0.5 rounded-full inline-flex items-center gap-0.5 shadow-sm mt-1">
+                立即解密
+                <ChevronRight className="w-3 h-3" />
+              </span>
+            </div>
+            <span className="text-6xl select-none opacity-80 transition-transform duration-300 group-hover:scale-110">🏺</span>
+          </motion.div>
+        </section>
+
+        {/* Hot Spots Section */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="font-bold text-lg text-zinc-900 flex items-center gap-2" style={{ fontFamily: "var(--font-noto-serif)" }}>
+              <Star className="w-4.5 h-4.5 text-[#D2A053]" fill="#D2A053" />
+              热门景区推荐
+            </h2>
+            <Link href="/spots" className="text-sm text-[#3A4D39] hover:text-[#4F6F52] font-semibold flex items-center gap-0.5">
+              全部景区 <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+            {loading || spots.length === 0
+              ? [1, 2, 3, 4].map(i => (
+                  <div key={i} className="skeleton h-[240px] rounded-3xl" />
+                ))
+              : spots.slice(0, 8).map((spot, i) => (
+                  <Link key={spot.id} href={`/spots/${spot.id}`} className="block">
+                    <motion.div
+                      whileHover={{ y: -6, boxShadow: "0 12px 28px rgba(0,0,0,0.08)" }}
+                      className="rounded-3xl overflow-hidden bg-white border border-zinc-200/60 shadow-sm flex flex-col h-full"
+                    >
+                      <div className="relative h-[150px] overflow-hidden">
+                        <img
+                          src={spot.imageUrl || "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400&q=70"}
+                          alt={spot.name}
+                          className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
+                        <div className="absolute bottom-3 right-3 flex items-center gap-0.5 bg-black/45 backdrop-blur-md px-2 py-0.5 rounded-full">
+                          <Star className="w-3.5 h-3.5 text-[#D2A053]" fill="#D2A053" />
+                          <span className="text-[11px] text-white font-bold">
+                            {(spot.rating / 10).toFixed(1)}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="p-4 flex-1 flex flex-col justify-between space-y-2">
+                        <h4 className="font-bold text-zinc-900 text-sm truncate" style={{ fontFamily: "var(--font-noto-serif)" }}>
+                          {spot.name}
+                        </h4>
+                        <div className="flex items-center gap-1.5 text-xs text-zinc-500">
+                          <Clock className="w-3.5 h-3.5 text-zinc-400" />
+                          <span>建议游玩 {spot.duration} 分钟</span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  </Link>
+                ))}
+          </div>
+        </section>
+      </main>
+
+      {/* Desktop Footer */}
+      <footer className="w-full bg-white border-t border-zinc-200/60 py-6 mt-16 px-6">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between text-xs text-zinc-400">
+          <span>© 2026 旅行吧智能景区导游系统. All Rights Reserved.</span>
+          <div className="flex gap-4 mt-2 md:mt-0">
+            <a href="#" className="hover:text-zinc-600">服务条款</a>
+            <a href="#" className="hover:text-zinc-600">隐私权政策</a>
+            <a href="#" className="hover:text-zinc-600">联系我们</a>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
 /* ═══════════════════════════════════════════════════════
    移动端整体视图
-═══════════════════════════════════════════════════════ */
+   ═══════════════════════════════════════════════════════ */
 function MobileView() {
   return (
-    <>
-      <MobileHero />
-      <MobileFuncCards />
-      <MobileToday />
+    <div className="flex flex-col bg-white w-full">
+      <MobileHeaderAndBanner />
+      <MobileChengduPanel />
+      <MobileEntranceCards />
       <MobileSpots />
-      <MobileRouteBanner />
-      {/* 底部导航占位 */}
+      {/* Bottom spacer for bottom navigation bar */}
       <div style={{ height: 80 }} />
-    </>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════
-   Hero — 紧凑版（头像+名字+问候泡，控制在25vh以内）
-═══════════════════════════════════════════════════════ */
-function MobileHero() {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const user = useEazo((s: any) => s.auth.user) as { name?: string | null; username?: string | null } | null;
-  const [greeting, setGreeting] = useState("欢迎来到旅行吧，随时可向我提问");
-  const name = user?.name || user?.username || "游客";
-
-  useEffect(() => {
-    if (!user) return;
-    request("/api/user/greeting")
-      .then(r => r.json())
-      .then(d => d.greeting && setGreeting(d.greeting))
-      .catch(() => {});
-  }, [user]);
-
-  return (
-    <div
-      className="relative flex-shrink-0 overflow-hidden"
-      style={{
-        background: "linear-gradient(165deg,#1E2C28 0%,#121815 55%,#0D1510 100%)",
-        paddingTop: "env(safe-area-inset-top, 44px)",
-      }}
-    >
-      {/* 背景光晕 */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute rounded-full"
-          style={{ width: 220, height: 220, top: -80, left: "50%", transform: "translateX(-50%)",
-            background: "radial-gradient(circle,rgba(210,160,83,0.13) 0%,transparent 65%)" }} />
-      </div>
-
-      {/* 顶部栏：logo + 用户徽章 */}
-      <div className="relative flex items-center justify-between px-4 pt-2 pb-1">
-        <div>
-          <p className="text-[10px] tracking-widest font-medium"
-            style={{ color: "rgba(255,255,255,0.35)", fontFamily: "var(--font-noto-sans)" }}>
-            TRAVEL BAR
-          </p>
-          <p className="text-[15px] font-bold leading-tight"
-            style={{ fontFamily: "var(--font-noto-serif)", color: "white" }}>旅行吧</p>
-        </div>
-        <UserBadge />
-      </div>
-
-      {/* 头像 + 问候区（横向排列，节省纵向空间）*/}
-      <div className="relative flex items-center gap-3 px-4 py-3">
-        {/* 头像 */}
-        <div className="relative flex-shrink-0">
-          <motion.div
-            animate={{ boxShadow: ["0 0 0 0 rgba(210,160,83,0.4)", "0 0 0 8px rgba(210,160,83,0)", "0 0 0 0 rgba(210,160,83,0.4)"] }}
-            transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
-            className="w-[52px] h-[52px] rounded-2xl flex items-center justify-center text-xl font-black"
-            style={{
-              background: "linear-gradient(135deg,#4F6F52,#D2A053)",
-              fontFamily: "var(--font-noto-serif)",
-              color: "white",
-            }}>玉</motion.div>
-          <div className="absolute bottom-0.5 right-0.5 w-3 h-3 rounded-full border-[1.5px]"
-            style={{ background: "#34C759", borderColor: "#121815" }} />
-        </div>
-
-        {/* 问候文字 */}
-        <div className="flex-1 min-w-0">
-          <p className="text-[14px] font-bold text-white truncate"
-            style={{ fontFamily: "var(--font-noto-serif)" }}>
-            {name}，你好
-          </p>
-          <p className="text-[11px] mt-0.5 line-clamp-2 leading-snug"
-            style={{ color: "rgba(255,255,255,0.55)" }}>{greeting}</p>
-        </div>
-      </div>
-
-      {/* 快捷 CTA 按钮（扁平横向，省空间）*/}
-      <div className="relative px-4 pb-4">
-        <Link href="/qa">
-          <motion.div whileTap={{ scale: 0.97 }}
-            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-2xl text-[13px] font-semibold"
-            style={{
-              background: "linear-gradient(90deg,#D2A053,#B8843A)",
-              color: "white",
-              boxShadow: "0 3px 14px rgba(210,160,83,0.4)",
-            }}>
-            <MessageCircle className="w-4 h-4" />
-            开始导览对话
-          </motion.div>
-        </Link>
-        {/* 搜索入口 */}
-        <Link href="/search">
-          <motion.div whileTap={{ scale: 0.97 }}
-            className="flex items-center gap-2 mt-2 px-4 py-2 rounded-2xl"
-            style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.14)" }}>
-            <Search className="w-3.5 h-3.5" style={{ color: "rgba(255,255,255,0.5)" }} />
-            <span className="text-[12px]" style={{ color: "rgba(255,255,255,0.45)" }}>搜索景点、路线、知识…</span>
-          </motion.div>
-        </Link>
-      </div>
-
-      {/* 底部圆弧过渡 */}
-      <div className="relative h-4 overflow-hidden">
-        <svg viewBox="0 0 400 16" preserveAspectRatio="none" className="absolute bottom-0 w-full h-full">
-          <path d="M0 16 Q200 0 400 16 L400 16 L0 16 Z" fill="#F2EFE8" />
-        </svg>
-      </div>
     </div>
   );
 }
 
 /* ═══════════════════════════════════════════════════════
-   功能卡：横向 3 列，高度紧凑
-═══════════════════════════════════════════════════════ */
-function MobileFuncCards() {
-  return (
-    <div className="px-4 pt-3 pb-1">
-      <div className="grid grid-cols-3 gap-2.5">
-        {FUNC_CARDS.map((card, i) => (
-          <Link key={card.href} href={card.href} className="w-full block">
-            <motion.div
-              whileTap={{ scale: 0.93 }}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ ...SPRING, delay: i * 0.06 }}
-              className="rounded-2xl overflow-hidden relative"
-              style={{
-                background: card.bg,
-                boxShadow: `0 4px 14px ${card.glow}`,
-                padding: "12px 8px 10px",
-              }}>
-              {/* 光泽膜 */}
-              <div className="absolute inset-0 pointer-events-none"
-                style={{ background: "linear-gradient(145deg,rgba(255,255,255,0.09) 0%,transparent 55%)", borderRadius: "inherit" }} />
-              <div className="flex flex-col items-center gap-1.5 relative z-10">
-                {/* 图标圆 */}
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center"
-                  style={{ background: `${card.accent}20`, border: `1px solid ${card.accent}40` }}>
-                  <card.icon className="w-[18px] h-[18px]" style={{ color: card.accent }} />
-                </div>
-                {/* 文字 */}
-                <p className="text-[11px] font-bold text-white leading-tight text-center"
-                  style={{ fontFamily: "var(--font-noto-serif)" }}>
-                  {card.label}
-                </p>
-              </div>
-            </motion.div>
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════
-   Today 推荐（单张精简卡片 + 时段贴士）
-═══════════════════════════════════════════════════════ */
-function getTimePeriod(): { greeting: string; tip: string } {
-  const h = new Date().getHours();
-  if (h < 6)  return { greeting: "清晨好",  tip: "清晨是拍摄晨雾景色的最佳时机" };
-  if (h < 11) return { greeting: "上午好",  tip: "上午光线柔和，最适合游览历史文化区" };
-  if (h < 14) return { greeting: "午间好",  tip: "午间避开人流，可先用餐再游览" };
-  if (h < 17) return { greeting: "下午好",  tip: "下午适合漫步自然景观区" };
-  if (h < 20) return { greeting: "傍晚好",  tip: "日落时分，揽月亭的夕照最为壮观" };
-  return      { greeting: "晚上好",  tip: "夜游景区别有一番意境" };
-}
-
-const TODAY_CARDS = [
-  { id: "t1", emoji: "🏯", badge: "今日热门", badgeColor: "#DC2626",
-    title: "揽月亭", sub: "当前等待约15分钟，建议提前出发", href: "/spots/1" },
-  { id: "t2", emoji: "🗺️", badge: "推荐路线", badgeColor: "#4F6F52",
-    title: "旅行吧精华2小时游", sub: "覆盖5个核心景点，适合当日游客", href: "/routes/1" },
-];
-
-function MobileToday() {
-  const { greeting, tip } = getTimePeriod();
-  const [idx, setIdx] = useState(0);
-  const card = TODAY_CARDS[idx];
+   Header, Weather, Search Pill, Banner (strictly mirrors mockup)
+   ═══════════════════════════════════════════════════════ */
+function MobileHeaderAndBanner() {
+  const router = useRouter();
+  const [time, setTime] = useState("09:41");
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
-    const t = setInterval(() => setIdx(i => (i + 1) % TODAY_CARDS.length), 4000);
+    const update = () => {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, "0");
+      const m = String(now.getMinutes()).padStart(2, "0");
+      setTime(`${h}:${m}`);
+    };
+    update();
+    const t = setInterval(update, 60000);
     return () => clearInterval(t);
   }, []);
 
   return (
-    <div className="px-4 pt-3 pb-1">
-      {/* 标题行 */}
-      <div className="flex items-center gap-1.5 mb-2">
-        <Sparkles className="w-3 h-3" style={{ color: "#D2A053" }} />
-        <span className="text-[11px] font-semibold tracking-wide"
-          style={{ color: "#8F9F8F" }}>{greeting} · 今日推荐</span>
-        {/* 分页点 */}
-        <div className="flex gap-1 ml-auto">
-          {TODAY_CARDS.map((_, i) => (
-            <motion.div key={i} animate={{ width: i === idx ? 14 : 5 }} onClick={() => setIdx(i)}
-              className="h-1.5 rounded-full cursor-pointer"
-              style={{ background: i === idx ? "#4F6F52" : "#E6E2D8" }} />
-          ))}
+    <div className="relative w-full overflow-hidden bg-neutral-900 aspect-[375/300] flex flex-col justify-between pb-8">
+      {/* Background Banner Image */}
+      <div className="absolute inset-0 z-0">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=800&q=80"
+          alt="Banner"
+          className="w-full h-full object-cover brightness-[0.75]"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/60" />
+      </div>
+
+      {/* 1. Status Bar Row */}
+      <div className="relative z-10 px-4 pt-2.5 flex items-center justify-between text-white text-xs font-semibold select-none">
+        <span>{time}</span>
+        <div className="flex items-center gap-1.5">
+          <span>☀️ 22°C • 晴转多云</span>
+          <div className="flex items-center gap-1 ml-1 opacity-95">
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.9-1.9C9.07 19.58 10.49 20 12 20c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 15c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/>
+            </svg>
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+            </svg>
+          </div>
         </div>
       </div>
 
-      {/* 推荐卡 */}
-      <Link href={card.href}>
-        <motion.div key={card.id} whileTap={{ scale: 0.97 }}
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}
-          className="flex items-center gap-3 px-3.5 py-3 rounded-2xl"
-          style={{ background: "white", border: "1px solid #E6E2D8", boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
-          <div className="text-3xl leading-none flex-shrink-0">{card.emoji}</div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5 mb-0.5">
-              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full text-white"
-                style={{ background: card.badgeColor }}>{card.badge}</span>
-            </div>
-            <p className="text-[13px] font-bold truncate"
-              style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}>{card.title}</p>
-            <p className="text-[11px] mt-0.5 truncate" style={{ color: "#8F9F8F" }}>{card.sub}</p>
+      {/* 2. Search Bar Pill + Map Button */}
+      <div className="relative z-10 px-4 mt-3 flex items-center gap-2">
+        {/* Search Pill Container */}
+        <div className="flex-1 flex items-center bg-white/95 backdrop-blur-md rounded-full px-3.5 py-1.5 border border-zinc-200/50 shadow-sm">
+          {/* Location Trigger */}
+          <Link href="/spots" className="flex items-center gap-0.5 text-xs font-bold text-zinc-800 flex-shrink-0 cursor-pointer">
+            <MapPin className="w-3.5 h-3.5 text-zinc-700" fill="currentColor" />
+            <span>成都</span>
+            <ChevronRight className="w-3 h-3 text-zinc-500 rotate-90" />
+          </Link>
+          <div className="w-[1px] h-3.5 bg-zinc-300 mx-2" />
+          
+          {/* Search Input */}
+          <div className="flex-1 flex items-center gap-1.5">
+            <input
+              type="text"
+              placeholder="搜索景区"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && router.push(`/spots?search=${encodeURIComponent(search)}`)}
+              className="w-full bg-transparent text-xs outline-none text-zinc-900 placeholder-zinc-500 font-medium"
+            />
+            <button onClick={() => router.push(`/spots?search=${encodeURIComponent(search)}`)}>
+              <Search className="w-4 h-4 text-zinc-600 hover:text-black flex-shrink-0" />
+            </button>
           </div>
-          <ChevronRight className="w-4 h-4 flex-shrink-0" style={{ color: "#E6E2D8" }} />
-        </motion.div>
-      </Link>
+        </div>
 
-      {/* 时段贴士 */}
-      <div className="flex items-center gap-2 mt-2 px-3 py-2 rounded-xl"
-        style={{ background: "rgba(79,111,82,0.07)", border: "1px solid rgba(79,111,82,0.12)" }}>
-        <span className="text-[11px]" style={{ color: "#4F6F52" }}>⏰ {tip}</span>
+        {/* Map Button */}
+        <Link href="/routes">
+          <div className="w-10 h-10 bg-white/95 backdrop-blur-md border border-zinc-200/50 rounded-xl shadow-sm flex flex-col items-center justify-center cursor-pointer hover:bg-zinc-50 transition-colors">
+            <svg className="w-4 h-4 text-[#FF5B45]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+              <line x1="9" y1="3" x2="9" y2="18"/>
+              <line x1="15" y1="6" x2="15" y2="21"/>
+            </svg>
+            <span className="text-[8px] font-bold text-zinc-800 mt-0.5 leading-none">地图</span>
+          </div>
+        </Link>
+      </div>
+
+      {/* 3. Banner Slogan Text Overlay */}
+      <div className="relative z-10 px-6 mt-auto mb-2 flex flex-col select-none">
+        <h1 className="text-2xl font-black text-white tracking-wide drop-shadow-md" style={{ fontFamily: "var(--font-noto-serif)" }}>
+          十座名山大川 <span className="inline-block bg-[#FF5B45] text-white text-[10px] px-1.5 py-0.5 rounded ml-1 align-middle font-bold">热门</span>
+        </h1>
+        <h2 className="text-xl font-bold text-white tracking-wide mt-0.5 drop-shadow-md" style={{ fontFamily: "var(--font-noto-serif)" }}>
+          邀你登顶揽胜
+        </h2>
+        
+        {/* Soft translucent red sub-banner */}
+        <div className="mt-2.5 bg-[#FF5B45]/90 text-white text-[10px] px-3.5 py-1.5 rounded-full font-semibold w-fit shadow-sm">
+          去爬爬山，呼吸下新鲜空气，看看不一样的风景！
+        </div>
+      </div>
+
+      {/* 4. Banner Carousel Indicator dots */}
+      <div className="absolute bottom-11 left-1/2 -translate-x-1/2 z-10 flex gap-1.5">
+        <span className="w-3.5 h-1 bg-white rounded-full" />
+        <span className="w-1 h-1 bg-white/50 rounded-full" />
+        <span className="w-1 h-1 bg-white/50 rounded-full" />
       </div>
     </div>
   );
 }
 
 /* ═══════════════════════════════════════════════════════
-   热门景点横滑
-═══════════════════════════════════════════════════════ */
+   Chengdu City Summary Panel with TTS Audio Guide
+   ═══════════════════════════════════════════════════════ */
+function MobileChengduPanel() {
+  const router = useRouter();
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
+
+  const handleAudioPlay = () => {
+    if (isPlaying) {
+      audio?.pause();
+      setIsPlaying(false);
+    } else {
+      if (audio) {
+        audio.play();
+        setIsPlaying(true);
+      } else {
+        const newAudio = new Audio("/api/qa/tts?text=" + encodeURIComponent("欢迎来到锦绣蓉城成都！成都是四川省省会，古蜀文明的发祥地，拥有武侯祠、杜甫草堂、金沙遗址等名胜古迹，还有可爱的大熊猫和令人垂涎的川味美食。祝您旅途愉快！"));
+        newAudio.play();
+        newAudio.onended = () => setIsPlaying(false);
+        setAudio(newAudio);
+        setIsPlaying(true);
+      }
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (audio) {
+        audio.pause();
+      }
+    };
+  }, [audio]);
+
+  return (
+    <div className="relative z-20 px-4 -mt-6">
+      <div className="bg-white rounded-2xl p-3 flex items-center justify-between shadow-[0_8px_24px_rgba(0,0,0,0.06)] border border-neutral-100">
+        
+        {/* Left: Panda Avatar and title */}
+        <div className="flex items-center gap-2">
+          <div className="w-9 h-9 rounded-full overflow-hidden border border-neutral-100 flex-shrink-0 bg-neutral-50">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=100&q=80"
+              alt="Panda"
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-xs font-bold text-zinc-900 leading-tight">成都市概况</span>
+            <div className="flex items-center gap-0.5 mt-0.5 cursor-pointer">
+              <span className="text-[10px] text-zinc-500 font-semibold">讲解词</span>
+              <svg className="w-2.5 h-2.5 text-zinc-400 rotate-90" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* Right: Audio and Video buttons */}
+        <div className="flex items-center gap-3">
+          {/* Audio/Explain button */}
+          <div 
+            onClick={handleAudioPlay}
+            className="flex flex-col items-center cursor-pointer select-none group"
+          >
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center shadow-sm transition-all ${isPlaying ? 'bg-[#FF5B45] text-white animate-pulse' : 'bg-[#FFF0ED] text-[#FF5B45] hover:bg-[#FFE0DB]'}`}>
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
+                <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
+              </svg>
+            </div>
+            <span className="text-[9px] font-bold text-zinc-700 mt-1">讲解</span>
+          </div>
+
+          {/* Video button */}
+          <div 
+            onClick={() => router.push("/qa")}
+            className="flex flex-col items-center cursor-pointer select-none group"
+          >
+            <div className="w-8 h-8 rounded-full bg-[#FFF0ED] text-[#FF5B45] flex items-center justify-center shadow-sm hover:bg-[#FFE0DB] transition-colors">
+              <svg className="w-4 h-4 ml-0.5" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="5 3 19 12 5 21 5 3"/>
+              </svg>
+            </div>
+            <span className="text-[9px] font-bold text-zinc-700 mt-1">视频</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════
+   Custom Entrance Buttons (名校导览 & 文博精讲)
+   ═══════════════════════════════════════════════════════ */
+function MobileEntranceCards() {
+  const router = useRouter();
+
+  return (
+    <div className="px-4 mt-4 grid grid-cols-2 gap-3 select-none">
+      {/* 1. 名校导览 */}
+      <motion.div
+        whileTap={{ scale: 0.96 }}
+        onClick={() => router.push("/spots?category=cultural")}
+        className="relative bg-gradient-to-br from-[#FFF5F2] to-[#FFF8F6] border border-[#FFE8E2] rounded-2xl p-3.5 h-[84px] flex flex-col justify-between overflow-hidden shadow-[0_2px_8px_rgba(255,91,69,0.03)] cursor-pointer"
+      >
+        <div className="flex flex-col">
+          <span className="text-xs font-black text-[#FF5B45] tracking-wide">名校导览</span>
+          <span className="text-[8px] font-bold text-white bg-[#FF5B45] px-1.5 py-0.5 rounded-full w-fit mt-1 shadow-sm leading-none flex items-center gap-0.5">
+            感受名校风范
+            <svg className="w-1.5 h-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </span>
+        </div>
+        
+        <span className="absolute bottom-1 right-2 text-[38px] leading-none opacity-85 select-none pointer-events-none">
+          🏫
+        </span>
+      </motion.div>
+
+      {/* 2. 文博精讲 */}
+      <motion.div
+        whileTap={{ scale: 0.96 }}
+        onClick={() => router.push("/spots?category=history")}
+        className="relative bg-gradient-to-br from-[#FCF8EE] to-[#FAF6E8] border border-[#F5EED8] rounded-2xl p-3.5 h-[84px] flex flex-col justify-between overflow-hidden shadow-[0_2px_8px_rgba(210,160,83,0.03)] cursor-pointer"
+      >
+        <div className="flex flex-col">
+          <span className="text-xs font-black text-[#D2A053] tracking-wide">文博精讲</span>
+          <span className="text-[8px] font-bold text-white bg-[#D2A053] px-1.5 py-0.5 rounded-full w-fit mt-1 shadow-sm leading-none flex items-center gap-0.5">
+            走进历史现场
+            <svg className="w-1.5 h-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </span>
+        </div>
+        
+        <span className="absolute bottom-1.5 right-2 text-[34px] leading-none opacity-85 select-none pointer-events-none">
+          🏺
+        </span>
+      </motion.div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════
+   热门景点横滑 (UNCHANGED - As strictly requested by the user)
+   ═══════════════════════════════════════════════════════ */
 function MobileSpots() {
   const [spots, setSpots] = useState<Spot[]>([]);
   const [page, setPage] = useState(1);
@@ -395,125 +685,6 @@ function MobileSpots() {
             </div>
           )}
       </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════
-   路线横幅
-═══════════════════════════════════════════════════════ */
-function MobileRouteBanner() {
-  return (
-    <div className="px-4 pt-3">
-      <Link href="/routes">
-        <motion.div whileTap={{ scale: 0.97 }}
-          className="rounded-2xl overflow-hidden relative"
-          style={{ background: "linear-gradient(135deg,#1E2C28,#0E1710)", height: 80 }}>
-          <svg className="absolute inset-0 w-full h-full opacity-20" viewBox="0 0 400 80" preserveAspectRatio="xMidYMid slice">
-            <path d="M20 55 Q100 18 200 45 T380 28" fill="none" stroke="#D2A053" strokeWidth="2" strokeDasharray="8 5"/>
-            {[20,110,200,290,380].map((x, i) => (
-              <circle key={i} cx={x} cy={[55,22,45,30,32][i]} r="4.5" fill="#D2A053" opacity="0.8"/>
-            ))}
-          </svg>
-          <div className="relative z-10 flex items-center justify-between h-full px-4">
-            <div>
-              <p className="text-[13px] font-bold text-white"
-                style={{ fontFamily: "var(--font-noto-serif)" }}>AI 智能路线规划</p>
-              <p className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>
-                告诉小玉兴趣，定制专属游览方案
-              </p>
-            </div>
-            <div className="px-3 py-1.5 rounded-full text-[11px] font-semibold flex-shrink-0"
-              style={{ background: "rgba(210,160,83,0.22)", color: "#E8C96A",
-                border: "1px solid rgba(210,160,83,0.35)" }}>
-              立即规划
-            </div>
-          </div>
-        </motion.div>
-      </Link>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════
-   PC 视图
-═══════════════════════════════════════════════════════ */
-function PCView() {
-  const [spots, setSpots] = useState<Spot[]>([]);
-
-  useEffect(() => {
-    fetch("/api/spots?limit=6").then(r => r.json())
-      .then(d => setSpots(Array.isArray(d) ? d.slice(0, 6) : [])).catch(() => {});
-  }, []);
-
-  return (
-    <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
-      {/* 功能卡 */}
-      <div className="grid grid-cols-3 gap-3">
-        {FUNC_CARDS.map((card, i) => (
-          <Link key={card.href} href={card.href}>
-            <motion.div whileTap={{ scale: 0.96 }} whileHover={{ y: -3 }}
-              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-              transition={{ ...SPRING, delay: i * 0.07 }}
-              className="rounded-2xl p-5 flex flex-col items-center gap-2 relative overflow-hidden"
-              style={{ background: card.bg, boxShadow: `0 6px 20px ${card.glow}` }}>
-              <div className="absolute inset-0 pointer-events-none"
-                style={{ background: "linear-gradient(145deg,rgba(255,255,255,0.1) 0%,transparent 55%)" }} />
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center relative z-10"
-                style={{ background: `${card.accent}22`, border: `1px solid ${card.accent}44` }}>
-                <card.icon className="w-5 h-5" style={{ color: card.accent }} />
-              </div>
-              <p className="text-[13px] font-bold text-white relative z-10"
-                style={{ fontFamily: "var(--font-noto-serif)" }}>{card.label}</p>
-            </motion.div>
-          </Link>
-        ))}
-      </div>
-      {/* 热门景点 */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Star className="w-3.5 h-3.5" fill="#D2A053" style={{ color: "#D2A053" }} />
-            <span className="text-[13px] font-semibold"
-              style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}>热门景点</span>
-          </div>
-          <Link href="/spots">
-            <span className="text-[11px] flex items-center gap-0.5" style={{ color: "#4F6F52" }}>
-              全部 <ChevronRight className="w-3 h-3" />
-            </span>
-          </Link>
-        </div>
-        <div className="grid grid-cols-3 gap-3">
-          {spots.map((spot, i) => (
-            <Link key={spot.id} href={`/spots/${spot.id}`}>
-              <motion.div whileTap={{ scale: 0.95 }} whileHover={{ y: -3 }}
-                initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-                transition={{ ...SPRING, delay: i * 0.05 }}
-                className="rounded-2xl overflow-hidden"
-                style={{ background: "white", border: "1px solid #E6E2D8", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>
-                <div className="relative" style={{ height: 100 }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={spot.imageUrl || "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=300&q=70"}
-                    alt={spot.name} className="w-full h-full object-cover" />
-                  <div className="absolute inset-0"
-                    style={{ background: "linear-gradient(to top,rgba(0,0,0,0.35) 0%,transparent 55%)" }} />
-                  <div className="absolute bottom-1.5 right-2 flex items-center gap-0.5">
-                    <Star className="w-2.5 h-2.5" fill="#D2A053" style={{ color: "#D2A053" }} />
-                    <span className="text-[9px] text-white font-semibold">{(spot.rating/10).toFixed(1)}</span>
-                  </div>
-                </div>
-                <div className="px-2.5 py-2">
-                  <p className="font-semibold text-[11px] truncate"
-                    style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}>{spot.name}</p>
-                  <p className="text-[9px] mt-0.5" style={{ color: "#8F9F8F" }}>{spot.duration}分钟</p>
-                </div>
-              </motion.div>
-            </Link>
-          ))}
-        </div>
-      </div>
-      {/* 路线横幅 */}
-      <MobileRouteBanner />
     </div>
   );
 }

@@ -53,7 +53,41 @@ function AvatarSVG({ state, mouthOpen, mouthPathOverride, avatarStyle, idSuffix 
 
   let robeTop = p.robeTop;
   let robeBot = p.robeBot;
-  if (avatarStyle === "modern") {
+  let hasGlasses = false;
+
+  if (avatarStyle === "female_hanfu") {
+    robeTop = "#4F6F52";
+    robeBot = "#3A5240";
+  } else if (avatarStyle === "female_student") {
+    robeTop = "#FCE4EC";
+    robeBot = "#E91E63";
+  } else if (avatarStyle === "female_business") {
+    robeTop = "#2B3E50";
+    robeBot = "#1A252F";
+    hasGlasses = true;
+  } else if (avatarStyle === "female_anchor") {
+    robeTop = "#8E44AD";
+    robeBot = "#5B2C6F";
+  } else if (avatarStyle === "female_princess") {
+    robeTop = "#E74C3C";
+    robeBot = "#78281F";
+  } else if (avatarStyle === "male_scholar") {
+    robeTop = "#A3E4D7";
+    robeBot = "#117864";
+  } else if (avatarStyle === "male_student") {
+    robeTop = "#F1C40F";
+    robeBot = "#D68910";
+  } else if (avatarStyle === "male_business") {
+    robeTop = "#BDC3C7";
+    robeBot = "#7F8C8D";
+    hasGlasses = true;
+  } else if (avatarStyle === "male_anchor") {
+    robeTop = "#1ABC9C";
+    robeBot = "#117864";
+  } else if (avatarStyle === "male_cool") {
+    robeTop = "#34495E";
+    robeBot = "#1C2833";
+  } else if (avatarStyle === "modern") {
     robeTop = "#4A6984";
     robeBot = "#2C3E50";
   } else if (avatarStyle === "ancient") {
@@ -63,6 +97,8 @@ function AvatarSVG({ state, mouthOpen, mouthPathOverride, avatarStyle, idSuffix 
     robeTop = "#E29E4A";
     robeBot = "#B86B1E";
   }
+
+  const isMale = avatarStyle?.startsWith("male_");
 
   const gradientId = `rg-${state}-${avatarStyle || "default"}-${idSuffix}`;
   const skinGradientId = `sg-${state}-${idSuffix}`;
@@ -120,15 +156,72 @@ function AvatarSVG({ state, mouthOpen, mouthPathOverride, avatarStyle, idSuffix 
         transition={{ duration: 2.8, repeat: state === "thinking" ? Infinity : 0, ease: "easeInOut" }} />
 
       {/* Hair */}
-      <path d="M 27 40 Q 28 18 50 17 Q 72 18 73 40 Q 65 27 50 25 Q 35 27 27 40" fill={p.pupil} />
-      <path d="M 28 46 Q 25 34 27 26 Q 29 19 50 17" fill={p.pupil} opacity="0.75" />
-      <path d="M 72 46 Q 75 34 73 26 Q 71 19 50 17" fill={p.pupil} opacity="0.75" />
-
-      {/* Gold hairpin */}
-      <line x1="57" y1="20" x2="68" y2="14" stroke="#D2A053" strokeWidth="1.6" strokeLinecap="round" />
-      <circle cx="68" cy="14" r="2.2" fill="#D2A053" />
-      <circle cx="65" cy="18" r="1.4" fill="#E8C96A" />
-      <circle cx="62" cy="21" r="0.9" fill="#D2A053" opacity="0.7" />
+      {isMale ? (
+        <>
+          <path d="M 26 42 Q 28 15 50 13 Q 72 15 74 42 Q 62 25 50 25 Q 38 25 26 42" fill={p.pupil} />
+          <path d="M 27 38 Q 23 28 29 18 Q 36 14 50 12" fill={p.pupil} opacity="0.8" />
+          <path d="M 73 38 Q 77 28 71 18 Q 64 14 50 12" fill={p.pupil} opacity="0.8" />
+          {/* Custom male hats/details */}
+          {avatarStyle === "male_scholar" && (
+            <>
+              <path d="M 38 22 L 38 10 L 62 10 L 62 22 Z" fill="#2C3E50" />
+              <rect x="36" y="20" width="28" height="4" fill="#D2A053" rx="1" />
+            </>
+          )}
+          {avatarStyle === "male_student" && (
+            <>
+              <path d="M 32 94 Q 50 110 68 94" fill="none" stroke="#FF5722" strokeWidth="4" />
+              <circle cx="30" cy="92" r="4.5" fill="#FF5722" />
+              <circle cx="70" cy="92" r="4.5" fill="#FF5722" />
+            </>
+          )}
+          {avatarStyle === "male_anchor" && (
+            <>
+              <path d="M 30 20 Q 50 6 70 20 Z" fill="#1ABC9C" />
+              <path d="M 40 18 Q 50 12 75 14" stroke="#1ABC9C" strokeWidth="3.5" fill="none" />
+            </>
+          )}
+        </>
+      ) : (
+        <>
+          <path d="M 27 40 Q 28 18 50 17 Q 72 18 73 40 Q 65 27 50 25 Q 35 27 27 40" fill={p.pupil} />
+          <path d="M 28 46 Q 25 34 27 26 Q 29 19 50 17" fill={p.pupil} opacity="0.75" />
+          <path d="M 72 46 Q 75 34 73 26 Q 71 19 50 17" fill={p.pupil} opacity="0.75" />
+          {/* Gold hairpin for Hanfu */}
+          {avatarStyle === "female_hanfu" && (
+            <>
+              <line x1="57" y1="20" x2="68" y2="14" stroke="#D2A053" strokeWidth="1.6" strokeLinecap="round" />
+              <circle cx="68" cy="14" r="2.2" fill="#D2A053" />
+              <circle cx="65" cy="18" r="1.4" fill="#E8C96A" />
+              <circle cx="62" cy="21" r="0.9" fill="#D2A053" opacity="0.7" />
+            </>
+          )}
+          {/* Custom female hats/details */}
+          {avatarStyle === "female_student" && (
+            <>
+              <path d="M 28 35 Q 50 12 72 35" fill="none" stroke="#F48FB1" strokeWidth="3" />
+              <path d="M 32 30 L 26 24 L 28 32 Z" fill="#F48FB1" />
+              <path d="M 32 30 L 38 24 L 36 32 Z" fill="#F48FB1" />
+              <circle cx="32" cy="30" r="2" fill="#E91E63" />
+            </>
+          )}
+          {avatarStyle === "female_anchor" && (
+            <>
+              <path d="M 25 50 Q 50 5 75 50" fill="none" stroke="#BA68C8" strokeWidth="3.5" />
+              <rect x="23" y="46" width="5" height="15" rx="2.5" fill="#8E44AD" />
+              <rect x="72" y="46" width="5" height="15" rx="2.5" fill="#8E44AD" />
+            </>
+          )}
+          {avatarStyle === "female_princess" && (
+            <>
+              <path d="M 40 22 L 44 14 L 50 20 L 56 14 L 60 22 Z" fill="#FFD700" stroke="#DAA520" strokeWidth="1" />
+              <circle cx="44" cy="14" r="1.5" fill="#E74C3C" />
+              <circle cx="50" cy="20" r="1.5" fill="#E74C3C" />
+              <circle cx="56" cy="14" r="1.5" fill="#E74C3C" />
+            </>
+          )}
+        </>
+      )}
 
       {/* Ears */}
       <ellipse cx="27.5" cy="54" rx="3.2" ry="4.5" fill={`url(#${skinGradientId})`} />
@@ -147,6 +240,25 @@ function AvatarSVG({ state, mouthOpen, mouthPathOverride, avatarStyle, idSuffix 
       <ellipse cx="58" cy="52" rx="5" ry={eyeH} fill="white" />
       <ellipse cx="58.8" cy="52" rx="2.8" ry={Math.min(eyeH * 0.72, 3.8)} fill={p.pupil} />
       <ellipse cx="60" cy="50.5" rx="1.1" ry="1.1" fill="rgba(255,255,255,0.75)" />
+
+      {/* Sunglasses for male_cool, Glasses for business */}
+      {avatarStyle === "male_cool" ? (
+        <>
+          <polygon points="34,48 48,48 46,58 36,58" fill="#111" />
+          <polygon points="52,48 66,48 64,58 54,58" fill="#111" />
+          <path d="M 48 50 L 52 50" stroke="#111" strokeWidth="2.5" />
+          <line x1="38" y1="50" x2="42" y2="56" stroke="white" strokeWidth="1" opacity="0.6" />
+          <line x1="56" y1="50" x2="60" y2="56" stroke="white" strokeWidth="1" opacity="0.6" />
+        </>
+      ) : hasGlasses ? (
+        <>
+          <circle cx="42.5" cy="52" r="6" stroke="#D2A053" strokeWidth="1.2" fill="none" />
+          <circle cx="57.5" cy="52" r="6" stroke="#D2A053" strokeWidth="1.2" fill="none" />
+          <path d="M 48.5 52 L 51.5 52" stroke="#D2A053" strokeWidth="1.2" fill="none" />
+          <path d="M 36.5 52 Q 33 50 31.5 49" stroke="#D2A053" strokeWidth="0.9" fill="none" />
+          <path d="M 63.5 52 Q 67 50 68.5 49" stroke="#D2A053" strokeWidth="0.9" fill="none" />
+        </>
+      ) : null}
 
       {/* Nose */}
       <path d="M 49 59 Q 47 64 49 66 Q 51 67 53 66 Q 55 64 51 59"

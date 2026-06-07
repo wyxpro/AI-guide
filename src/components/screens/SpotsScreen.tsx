@@ -1,251 +1,212 @@
 "use client";
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { MapPin, Clock, Star, ChevronRight, Search, Filter } from "lucide-react";
+import { motion } from "framer-motion";
+import { ArrowLeft, Search, MapPin, X } from "lucide-react";
 import Link from "next/link";
-import { CITIES } from "@/lib/data/national-spots";
+import { useRouter } from "next/navigation";
+import { NATIONAL_SPOTS, type NationalSpot } from "@/lib/data/national-spots";
 
-const SPRING = { type: "spring" as const, stiffness: 280, damping: 35 };
-
-interface Spot { id: number; name: string; category: string; description: string; imageUrl: string; duration: number; distance: string; rating: number; visitCount: number; tags: string[] }
-
-const CATS = [
-  { id: "all", label: "全部", color: "#4F6F52" },
-  { id: "national", label: "全国热门", color: "#B8843A" },
-  { id: "cultural", label: "人文", color: "#3A4D39" },
-  { id: "nature", label: "自然", color: "#4F6F52" },
-  { id: "history", label: "历史", color: "#8F7A5A" },
-  { id: "family", label: "亲子", color: "#D2A053" },
+const SIDEBAR_ITEMS = [
+  { id: "hot", label: "热门", city: null },
+  { id: "changsha", label: "长沙市", city: "长沙" },
+  { id: "chongqing", label: "重庆市", city: "重庆" },
+  { id: "chengdu", label: "成都市", city: "成都" },
+  { id: "xian", label: "西安市", city: "西安" },
+  { id: "guilin", label: "桂林市", city: "桂林" },
+  { id: "beijing", label: "北京市", city: "北京" },
+  { id: "hangzhou", label: "杭州市", city: "杭州" },
+  { id: "wuhan", label: "武汉市", city: "武汉" },
 ];
 
-const CAT_ICONS: Record<string, string> = { cultural: "🏯", nature: "🌿", history: "📜", family: "👨‍👩‍👧", all: "✨", national: "🔥" };
+// Hot spots order from screenshot: 布达拉宫, 九寨沟, 西湖, 故宫, 泰山, 黄山
+const HOT_SPOTS_IDS = [10021, 10022, 10005, 10001, 10023, 10024];
 
-function StarRating({ rating }: { rating: number }) {
-  const stars = rating / 10; // out of 5
-  return (
-    <div className="flex items-center gap-0.5">
-      {[1, 2, 3, 4, 5].map((s) => (
-        <Star key={s} className="w-3 h-3" fill={s <= Math.round(stars) ? "#D2A053" : "none"}
-          style={{ color: s <= Math.round(stars) ? "#D2A053" : "#E6E2D8" }} />
-      ))}
-      <span className="ml-1 text-[10px]" style={{ color: "#8F9F8F" }}>{(stars).toFixed(1)}</span>
-    </div>
-  );
-}
+const getShortName = (name: string) => {
+  if (name === "北京故宫博物院") return "故宫博物院";
+  if (name === "杭州西湖风景区") return "西湖";
+  if (name === "秦始皇兵马俑博物馆") return "兵马俑";
+  if (name === "成都大熊猫繁育研究基地") return "大熊猫基地";
+  if (name === "洪崖洞民俗风貌区") return "洪崖洞";
+  if (name === "阳朔漓江竹筏漫游") return "漓江竹筏";
+  if (name === "玉龙雪山国家级风景区") return "玉龙雪山";
+  return name;
+};
+
+const CITY_BANNERS: Record<string, string> = {
+  hot: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=800&q=80",
+  hangzhou: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&q=80",
+  xian: "https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=800&q=80",
+  chongqing: "https://images.unsplash.com/photo-1508873696983-2df519f0397e?w=800&q=80",
+  chengdu: "https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=800&q=80",
+  beijing: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=800&q=80",
+  changsha: "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=800&q=80",
+  wuhan: "https://images.unsplash.com/photo-1542224566-6e85f2e6772f?w=800&q=80",
+  guilin: "https://images.unsplash.com/photo-1523731407965-2430cd12f5e4?w=800&q=80",
+};
 
 export function SpotsScreen() {
-  const [spots, setSpots] = useState<Spot[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [cat, setCat] = useState("all");
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState("hot");
   const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [selectedCity, setSelectedCity] = useState("北京");
+  const [filteredSpots, setFilteredSpots] = useState<NationalSpot[]>([]);
 
   useEffect(() => {
-    const t = setTimeout(() => {
-      setDebouncedSearch(search);
-    }, 350);
-    return () => clearTimeout(t);
-  }, [search]);
+    let list: NationalSpot[] = [];
 
-  useEffect(() => {
-    setLoading(true);
-    const cityParam = cat === "national" ? `&city=${encodeURIComponent(selectedCity)}` : "";
-    const url = `/api/spots?category=${cat}${cityParam}&search=${encodeURIComponent(debouncedSearch)}&limit=50`;
-    fetch(url)
-      .then((r) => r.json())
-      .then((d) => {
-        setSpots(Array.isArray(d) ? d : []);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, [cat, debouncedSearch, selectedCity]);
+    if (search.trim()) {
+      const query = search.trim().toLowerCase();
+      list = NATIONAL_SPOTS.filter(
+        (s) =>
+          s.name.toLowerCase().includes(query) ||
+          s.description.toLowerCase().includes(query) ||
+          s.tags.some((t) => t.toLowerCase().includes(query))
+      );
+    } else {
+      if (activeTab === "hot") {
+        list = HOT_SPOTS_IDS.map((id) => NATIONAL_SPOTS.find((s) => s.id === id)).filter(Boolean) as NationalSpot[];
+      } else {
+        const activeItem = SIDEBAR_ITEMS.find((item) => item.id === activeTab);
+        if (activeItem && activeItem.city) {
+          list = NATIONAL_SPOTS.filter((s) => s.city === activeItem.city);
+        }
+      }
+    }
+    setFilteredSpots(list);
+  }, [activeTab, search]);
+
+  const handleLocationClick = () => {
+    setActiveTab("chengdu");
+    setSearch("");
+  };
+
+  const activeLabel = SIDEBAR_ITEMS.find((i) => i.id === activeTab)?.label || "热门";
 
   return (
-    <div className="min-h-svh" style={{ background: "#FAF8F5" }}>
-      {/* Header */}
-      <div className="sticky top-0 z-10 px-4 pb-3 space-y-3"
-        style={{ background: "rgba(250,248,245,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid #E6E2D8", paddingTop: "calc(env(safe-area-inset-top, 44px) + 8px)" }}>
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold" style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}>景点导览</h2>
-          <div className="flex items-center gap-2">
-            <motion.button whileTap={{ scale: 0.88 }}
-              onClick={() => setViewMode(viewMode === "grid" ? "list" : "grid")}
-              className="p-1.5 rounded-lg" style={{ background: "#F0EDE5", color: "#4F6F52" }}>
-              <Filter className="w-4 h-4" />
-            </motion.button>
-          </div>
-        </div>
-        {/* Search */}
-        <div className="flex items-center gap-2 px-3 py-2 rounded-full"
-          style={{ background: "white", border: "1px solid #E6E2D8" }}>
-          <Search className="w-4 h-4 flex-shrink-0" style={{ color: "#8F9F8F" }} />
-          <input value={search} onChange={(e) => setSearch(e.target.value)}
-            placeholder="搜索景点名称或标签..." className="flex-1 bg-transparent text-sm outline-none"
-            style={{ color: "#1E2522", fontSize: 16 }} />
-        </div>
-        {/* Category tabs */}
-        <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
-          {CATS.map((c) => (
-            <motion.button key={c.id} whileTap={{ scale: 0.92 }} onClick={() => setCat(c.id)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium flex-shrink-0"
-              style={{
-                background: cat === c.id ? c.color : "white",
-                color: cat === c.id ? "white" : "#3A4D39",
-                border: `1px solid ${cat === c.id ? c.color : "#E6E2D8"}`,
-              }}>
-              <span>{CAT_ICONS[c.id]}</span>{c.label}
-            </motion.button>
-          ))}
-        </div>
-        {/* City selector */}
-        <AnimatePresence>
-          {cat === "national" && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={SPRING}
-              className="overflow-hidden"
-            >
-              <div className="flex gap-2 overflow-x-auto py-2 scrollbar-none" style={{ scrollbarWidth: "none" }}>
-                {CITIES.map((city) => (
-                  <motion.button
-                    key={city.id}
-                    whileTap={{ scale: 0.94 }}
-                    onClick={() => setSelectedCity(city.name)}
-                    className="flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold flex-shrink-0 transition-all"
-                    style={{
-                      background: selectedCity === city.name ? "rgba(210,160,83,0.15)" : "#F5F0E8",
-                      color: selectedCity === city.name ? "#B8843A" : "#8F9F8F",
-                      border: `1px solid ${selectedCity === city.name ? "rgba(210,160,83,0.4)" : "transparent"}`,
-                    }}
-                  >
-                    <span>{city.icon}</span>
-                    <span>{city.name}</span>
-                  </motion.button>
-                ))}
-              </div>
-            </motion.div>
+    <div className="min-h-svh flex flex-col bg-white select-none">
+      {/* Top Header */}
+      <div className="px-4 pb-3 flex-shrink-0 flex items-center gap-3 bg-white"
+        style={{ paddingTop: "calc(env(safe-area-inset-top, 44px) + 8px)" }}>
+        
+        <button onClick={() => router.push("/home")}
+          className="p-1 rounded-full text-zinc-700 hover:text-black transition-colors">
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+
+        <div className="flex-1 flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#C4CBD0] bg-white">
+          <Search className="w-4 h-4 text-[#8A959E] flex-shrink-0" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="搜索目的地或景区"
+            className="flex-1 bg-transparent text-sm outline-none text-[#1E2522]"
+            style={{ fontSize: 14 }}
+          />
+          {search && (
+            <button onClick={() => setSearch("")} className="text-zinc-400 hover:text-zinc-600">
+              <X className="w-3.5 h-3.5" />
+            </button>
           )}
-        </AnimatePresence>
+        </div>
       </div>
 
-      {/* Spot count */}
-      <div className="px-4 py-2">
-        <p className="text-[11px]" style={{ color: "#8F9F8F" }}>共 {spots.length} 处景点</p>
+      {/* Location Section */}
+      <div className="px-4 py-2 border-b border-zinc-100 flex-shrink-0 bg-white">
+        <span className="text-[11px] text-[#8A959E] font-medium block">当前定位</span>
+        <motion.div
+          whileTap={{ scale: 0.96 }}
+          onClick={handleLocationClick}
+          className="mt-1 flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold text-[#FF5B45] bg-[#FFF0ED] w-fit cursor-pointer border border-[#FFE2DC] hover:bg-[#FFE6E1] transition-all"
+        >
+          <MapPin className="w-3 h-3 text-[#FF5B45]" fill="#FF5B45" />
+          <span>成都市</span>
+        </motion.div>
       </div>
 
-      {/* List */}
-      <div className={`px-4 pb-8 ${viewMode === "grid" ? "grid grid-cols-2 gap-3" : "space-y-3"}`}>
-        {loading ? (
-          Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className={`skeleton ${viewMode === "grid" ? "h-52" : "h-24"} rounded-xl`} />
-          ))
-        ) : spots.length === 0 ? (
-          <div className="col-span-2 text-center py-16">
-            <p className="text-2xl mb-2">🔍</p>
-            <p className="text-sm" style={{ color: "#8F9F8F" }}>没有找到相关景点</p>
+      {/* Sidebar and content */}
+      <div className="flex-1 flex overflow-hidden bg-white">
+        {/* Left Sidebar */}
+        <div className="w-[100px] flex-shrink-0 bg-[#F5F7F8] border-r border-[#E6E2D8] overflow-y-auto scrollbar-none" style={{ scrollbarWidth: "none" }}>
+          {SIDEBAR_ITEMS.map((item) => {
+            const isActive = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => {
+                  setActiveTab(item.id);
+                  setSearch("");
+                }}
+                className="w-full py-4 px-2 relative text-center text-[13px] transition-all flex items-center justify-center min-h-[52px]"
+                style={{
+                  background: isActive ? "white" : "transparent",
+                  color: isActive ? "#FF5B45" : "#5C6B73",
+                  fontWeight: isActive ? "700" : "500",
+                }}
+              >
+                {isActive && (
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[18px] bg-[#FF5B45] rounded-r" />
+                )}
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Right Content */}
+        <div className="flex-1 bg-white overflow-y-auto px-4 py-3 scrollbar-none" style={{ scrollbarWidth: "none" }}>
+          {!search.trim() && CITY_BANNERS[activeTab] && (
+            <div className="w-full h-24 rounded-xl overflow-hidden relative mb-4 shadow-sm">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={CITY_BANNERS[activeTab]}
+                alt={activeLabel}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-black/30 flex items-center px-4">
+                <span className="text-white font-bold text-sm tracking-wide" style={{ fontFamily: "var(--font-noto-serif)" }}>
+                  遇见{activeLabel.replace("市", "")}
+                </span>
+              </div>
+            </div>
+          )}
+
+          <div className="mb-4">
+            <h2 className="text-[13px] font-bold text-[#1E2522]">
+              {search.trim() ? "搜索结果" : activeLabel}
+            </h2>
           </div>
-        ) : (
-          spots.map((spot, i) => (
-            <motion.div key={spot.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ ...SPRING, delay: i * 0.04 }}>
-              {viewMode === "grid"
-                ? <SpotGridCard spot={spot} />
-                : <SpotListCard spot={spot} />}
-            </motion.div>
-          ))
-        )}
+
+          {filteredSpots.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <span className="text-3xl mb-2">🔍</span>
+              <p className="text-xs text-[#8A959E]">没有找到相关目的地</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 gap-x-2.5 gap-y-4 pb-12">
+              {filteredSpots.map((spot) => (
+                <Link key={spot.id} href={`/spots/${spot.id}`}>
+                  <motion.div
+                    whileTap={{ scale: 0.95 }}
+                    className="flex flex-col items-center cursor-pointer group"
+                  >
+                    <div className="w-full aspect-square rounded-xl overflow-hidden shadow-sm bg-neutral-100 border border-neutral-100">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={spot.imageUrl}
+                        alt={spot.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        loading="lazy"
+                      />
+                    </div>
+                    <span className="mt-1.5 text-[11px] font-medium text-[#2F3E46] text-center w-full truncate px-0.5">
+                      {getShortName(spot.name)}
+                    </span>
+                  </motion.div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
-  );
-}
-
-function SpotGridCard({ spot }: { spot: Spot }) {
-  const catColor = { cultural: "#3A4D39", nature: "#4F6F52", history: "#8F7A5A", family: "#D2A053" }[spot.category] || "#4F6F52";
-  return (
-    <Link href={`/spots/${spot.id}`}>
-      <motion.div whileTap={{ scale: 0.94 }} whileHover={{ y: -4, boxShadow: "0 12px 32px rgba(79,111,82,0.18)" }}
-        className="rounded-2xl overflow-hidden cursor-pointer"
-        style={{ background: "white", border: "1px solid #E6E2D8", boxShadow: "0 2px 10px rgba(0,0,0,0.06)" }}>
-        {/* Image */}
-        <div className="relative" style={{ height: 120 }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={spot.imageUrl || "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400&q=70"}
-            alt={spot.name} className="w-full h-full object-cover" />
-          <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 55%)" }} />
-          {/* Category chip */}
-          <div className="absolute top-2 left-2">
-            <span className="text-[9px] px-2 py-0.5 rounded-full font-semibold"
-              style={{ background: `${catColor}cc`, color: "white", backdropFilter: "blur(4px)" }}>
-              {CAT_ICONS[spot.category]} {CATS.find((c) => c.id === spot.category)?.label}
-            </span>
-          </div>
-          {/* Visit count */}
-          <div className="absolute bottom-2 right-2 flex items-center gap-1">
-            <Star className="w-2.5 h-2.5" fill="#D2A053" style={{ color: "#D2A053" }} />
-            <span className="text-[9px] text-white font-mono">{(spot.rating / 10).toFixed(1)}</span>
-          </div>
-        </div>
-        {/* Info */}
-        <div className="p-2.5">
-          <h4 className="font-semibold text-[12px] leading-tight" style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}>
-            {spot.name}
-          </h4>
-          <div className="flex items-center gap-2 mt-1.5">
-            <div className="flex items-center gap-0.5">
-              <Clock className="w-2.5 h-2.5" style={{ color: "#8F9F8F" }} />
-              <span className="text-[9px]" style={{ color: "#8F9F8F" }}>{spot.duration}分钟</span>
-            </div>
-            <div className="flex items-center gap-0.5">
-              <MapPin className="w-2.5 h-2.5" style={{ color: "#8F9F8F" }} />
-              <span className="text-[9px] truncate" style={{ color: "#8F9F8F" }}>{spot.distance}</span>
-            </div>
-          </div>
-          {/* Rating bar */}
-          <div className="mt-2 h-1 rounded-full overflow-hidden" style={{ background: "#F0EDE5" }}>
-            <motion.div initial={{ width: 0 }} animate={{ width: `${(spot.rating / 50) * 100}%` }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="h-full rounded-full"
-              style={{ background: `linear-gradient(90deg, ${catColor}, #D2A053)` }} />
-          </div>
-        </div>
-      </motion.div>
-    </Link>
-  );
-}
-
-function SpotListCard({ spot }: { spot: Spot }) {
-  return (
-    <Link href={`/spots/${spot.id}`}>
-      <motion.div whileTap={{ scale: 0.98 }}
-        className="flex items-center gap-3 p-3 rounded-xl cursor-pointer"
-        style={{ background: "white", border: "1px solid #E6E2D8" }}>
-        <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={spot.imageUrl || "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400&q=70"} alt={spot.name}
-            className="w-full h-full object-cover" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-0.5">
-            <h4 className="font-semibold text-[13px]" style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}>{spot.name}</h4>
-            <span className="text-[9px] px-1.5 py-0.5 rounded-full" style={{ background: "rgba(79,111,82,0.1)", color: "#4F6F52" }}>
-              {CATS.find((c) => c.id === spot.category)?.label}
-            </span>
-          </div>
-          <StarRating rating={spot.rating} />
-          <p className="text-[11px] mt-1 line-clamp-1" style={{ color: "#8F9F8F" }}>{spot.description}</p>
-          <div className="flex items-center gap-3 mt-1">
-            <span className="text-[10px]" style={{ color: "#8F9F8F" }}><Clock className="w-3 h-3 inline mr-0.5" />{spot.duration}分钟</span>
-            <span className="text-[10px]" style={{ color: "#8F9F8F" }}><MapPin className="w-3 h-3 inline mr-0.5" />{spot.distance}</span>
-          </div>
-        </div>
-        <ChevronRight className="w-4 h-4 flex-shrink-0" style={{ color: "#8F9F8F" }} />
-      </motion.div>
-    </Link>
   );
 }
