@@ -17,7 +17,7 @@ import { toast } from "sonner";
 const SPRING = { type: "spring" as const, stiffness: 280, damping: 35 };
 
 interface VisitRecord { id: number; type: string; spotId: number | null; routeId: number | null; visitedAt: string }
-interface FavoriteRecord { id: number; type: string; spotId: number | null; routeId: number | null }
+interface FavoriteRecord { id: number; type: string; spotId: number | null; routeId: number | null; spotName?: string; routeName?: string; spotImage?: string; routeImage?: string }
 
 type Mode = "standard" | "elder" | "child";
 const MODE_CONFIG: Record<Mode, { label: string; icon: typeof Sun; color: string; desc: string }> = {
@@ -200,12 +200,41 @@ export function ProfileScreen() {
     Promise.all([
       request("/api/user/visits").then(r => r.json()),
       request("/api/user/favorites").then(r => r.json()),
-    ]).then(([v, f]) => {
+      request("/api/user/preferences").then(r => r.json()).catch(() => null),
+    ]).then(([v, f, p]) => {
       setVisits(Array.isArray(v) ? v : []);
       setFavorites(Array.isArray(f) ? f : []);
+      if (p && p.accessibilityMode) {
+        const mapped = p.accessibilityMode === "normal" ? "standard" : p.accessibilityMode;
+        setMode(mapped);
+        localStorage.setItem("accessibility_mode", p.accessibilityMode);
+        document.documentElement.setAttribute("data-accessibility-mode", p.accessibilityMode);
+      } else {
+        const local = localStorage.getItem("accessibility_mode") || "normal";
+        setMode(local === "normal" ? "standard" : (local as Mode));
+      }
       setLoadingData(false);
     }).catch(() => setLoadingData(false));
-  }, []);
+  }, [user]);
+
+  const changeMode = async (newMode: Mode) => {
+    setMode(newMode);
+    const dbMode = newMode === "standard" ? "normal" : newMode;
+    localStorage.setItem("accessibility_mode", dbMode);
+    document.documentElement.setAttribute("data-accessibility-mode", dbMode);
+    window.dispatchEvent(new Event("accessibility-mode-change"));
+    
+    if (user) {
+      try {
+        await request("/api/user/preferences", {
+          method: "PUT",
+          body: JSON.stringify({ accessibilityMode: dbMode })
+        });
+      } catch (err) {
+        console.error("[changeMode] error", err);
+      }
+    }
+  };
 
   const unfavorite = async (id: number) => {
     await request(`/api/user/favorites/${id}`, { method: "DELETE" });
@@ -409,7 +438,7 @@ export function ProfileScreen() {
             style={{ color: theme.subColor }}>导览模式</p>
           <div className="grid grid-cols-3 gap-2">
             {(Object.entries(MODE_CONFIG) as [Mode, typeof MODE_CONFIG[Mode]][]).map(([k, cfg]) => (
-              <motion.button key={k} whileTap={{ scale: 0.93 }} onClick={() => setMode(k)}
+              <motion.button key={k} whileTap={{ scale: 0.93 }} onClick={() => changeMode(k)}
                 className={`flex flex-col items-center gap-1.5 py-3 ${theme.cardRadius} transition-colors`}
                 style={{
                   background: mode === k ? `${cfg.color}14` : "#F5F0E8",
@@ -508,6 +537,7 @@ export function ProfileScreen() {
                         <div className="divide-y" style={{ borderColor: "#F5F2EC" }}>
                           {favorites.map((fav, i) => {
                             const info = fav.spotId ? getSpotInfo(fav.spotId, mode) : null;
+                            const displayName = fav.spotName || fav.routeName || info?.name || "收藏景点";
                             return (
                               <motion.div key={fav.id}
                                 initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}
@@ -518,11 +548,11 @@ export function ProfileScreen() {
                                     background: mode === "child" ? "#FFE5E5" : "#FEF3F3",
                                     border: mode === "child" ? "1px dashed #FFB0B0" : "none"
                                   }}>
-                                  {info?.emoji ?? "❤️"}
+                                  {info?.emoji ?? (fav.type === "route" ? "🗺️" : "📍")}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <p className={`font-bold truncate ${theme.textSizeBody}`} style={{ color: theme.textColor }}>
-                                    {info?.name ?? "收藏景点"}
+                                    {displayName}
                                   </p>
                                   <p className={`mt-0.5 ${theme.textSizeSub}`} style={{ color: theme.subColor }}>已收藏</p>
                                 </div>

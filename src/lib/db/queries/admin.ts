@@ -72,7 +72,15 @@ export async function upsertDailyAnalytics(date: string, data: Partial<{
 }>) {
   const existing = await db.select().from(analyticsDaily).where(eq(analyticsDaily.date, date)).limit(1);
   if (existing[0]) {
-    const rows = await db.update(analyticsDaily).set(data).where(eq(analyticsDaily.date, date)).returning();
+    const updatedValues: any = {};
+    for (const [key, val] of Object.entries(data)) {
+      if (typeof val === "number") {
+        updatedValues[key] = ((existing[0] as any)[key] || 0) + val;
+      } else {
+        updatedValues[key] = val;
+      }
+    }
+    const rows = await db.update(analyticsDaily).set(updatedValues).where(eq(analyticsDaily.date, date)).returning();
     return rows[0];
   } else {
     const rows = await db.insert(analyticsDaily).values({ date, ...data }).returning();

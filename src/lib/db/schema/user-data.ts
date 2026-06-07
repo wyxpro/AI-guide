@@ -1,4 +1,4 @@
-import { pgTable, serial, text, timestamp, integer, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, timestamp, integer, jsonb, unique } from "drizzle-orm/pg-core";
 import type { InferSelectModel } from "drizzle-orm";
 
 // Chat/QA sessions
@@ -25,9 +25,36 @@ export const favorites = pgTable("favorites", {
   routeId: integer("route_id"),
   type: text("type").notNull().default("spot"), // spot | route
   createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+}, (table) => [
+  unique("user_spot_route_unique").on(table.userId, table.spotId, table.routeId)
+]);
 
 export type Favorite = InferSelectModel<typeof favorites>;
+
+// Merchants table
+export const merchants = pgTable("merchants", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  logoUrl: text("logo_url"),
+  description: text("description").notNull().default(""),
+  location: text("location").default(""),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export type Merchant = InferSelectModel<typeof merchants>;
+
+// Coupons table
+export const coupons = pgTable("coupons", {
+  id: serial("id").primaryKey(),
+  merchantId: integer("merchant_id").references(() => merchants.id),
+  title: text("title").notNull(),
+  discountValue: text("discount_value").notNull(), // e.g. "9折" or "满100减20"
+  expiryDate: text("expiry_date").notNull(), // YYYY-MM-DD
+  isActive: integer("is_active").notNull().default(1),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export type Coupon = InferSelectModel<typeof coupons>;
 
 // Visit records
 export const visitRecords = pgTable("visit_records", {
@@ -44,7 +71,6 @@ export const visitRecords = pgTable("visit_records", {
 
 export type VisitRecord = InferSelectModel<typeof visitRecords>;
 
-// User preferences
 export const userPreferences = pgTable("user_preferences", {
   id: serial("id").primaryKey(),
   userId: text("user_id").notNull().unique(),
@@ -56,3 +82,13 @@ export const userPreferences = pgTable("user_preferences", {
 });
 
 export type UserPreference = InferSelectModel<typeof userPreferences>;
+
+// Search queries
+export const searchQueries = pgTable("search_queries", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").default("anonymous"),
+  query: text("query").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export type SearchQuery = InferSelectModel<typeof searchQueries>;

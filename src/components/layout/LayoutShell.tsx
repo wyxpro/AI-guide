@@ -4,6 +4,8 @@ import { BottomTabBar, SidebarNav } from "./Navigation";
 import { auth } from "@eazo/sdk";
 import { useEazo } from "@eazo/sdk/react";
 
+import { useEffect } from "react";
+
 export function LayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAdmin = pathname.startsWith("/admin");
@@ -11,6 +13,16 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
   const user = useEazo((s: any) => s.auth.user);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const loading = useEazo((s: any) => s.auth.loading);
+
+  useEffect(() => {
+    const syncMode = () => {
+      const mode = localStorage.getItem("accessibility_mode") || "normal";
+      document.documentElement.setAttribute("data-accessibility-mode", mode);
+    };
+    syncMode();
+    window.addEventListener("accessibility-mode-change", syncMode);
+    return () => window.removeEventListener("accessibility-mode-change", syncMode);
+  }, []);
 
   const isNoShell = pathname === "/welcome" || pathname === "/login";
 

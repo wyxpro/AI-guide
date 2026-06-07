@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 
 export type AvatarState = "idle" | "thinking" | "speaking" | "happy" | "concerned";
@@ -7,6 +7,7 @@ export type AvatarState = "idle" | "thinking" | "speaking" | "happy" | "concerne
 interface Props {
   state: AvatarState;
   size?: "sm" | "md" | "lg" | "hero";
+  audioElement?: HTMLAudioElement | null; // Pass TTS audio element for lip-sync
 }
 
 const PALETTE: Record<AvatarState, {
@@ -34,7 +35,7 @@ function getEyebrows(state: AvatarState) {
   return { L: "M 36 43 Q 42 40 44 42", R: "M 56 42 Q 58 40 64 43" };
 }
 
-function AvatarSVG({ state, mouthOpen }: { state: AvatarState; mouthOpen: boolean }) {
+function AvatarSVG({ state, mouthOpen, mouthPathOverride }: { state: AvatarState; mouthOpen: boolean; mouthPathOverride?: string }) {
   const p = PALETTE[state];
   const eb = getEyebrows(state);
   const [blink, setBlink] = useState(false);
@@ -135,10 +136,10 @@ function AvatarSVG({ state, mouthOpen }: { state: AvatarState; mouthOpen: boolea
         fill="none" stroke={p.shadow} strokeWidth="0.9" strokeLinecap="round" />
 
       {/* Mouth */}
-      <motion.path d={getMouthPath(state, mouthOpen)}
+      <motion.path d={mouthPathOverride ?? getMouthPath(state, mouthOpen)}
         fill={state === "speaking" || state === "happy" ? p.lipFill + "88" : "none"}
         stroke={p.lipFill} strokeWidth="1.5" strokeLinecap="round"
-        animate={{ d: getMouthPath(state, mouthOpen) }}
+        animate={{ d: mouthPathOverride ?? getMouthPath(state, mouthOpen) }}
         transition={{ duration: 0.1 }} />
 
       {/* Dimples */}
@@ -181,19 +182,94 @@ const STATE_LABEL: Record<AvatarState, string> = {
   idle: "恭候中", thinking: "思考中", speaking: "讲解中", happy: "很高兴", concerned: "关切中",
 };
 
-export function DigitalAvatar({ state, size = "md" }: Props) {
+export function DigitalAvatar({ state, size = "md", audioElement }: Props) {
   const px = SIZES_PX[size];
   const p = PALETTE[state];
   const [mouthOpen, setMouthOpen] = useState(false);
+  const [mouthAmplitude, setMouthAmplitude] = useState(0); // 0–1 normalized loudness
+  const animFrameRef = useRef<number | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
 
+  // Web Audio API analyser for dynamic lip-sync
   useEffect(() => {
+    if (!audioElement) {
+      setMouthOpen(false);
+      setMouthAmplitude(0);
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+      return;
+    }
+
+    const setupAnalyser = () => {
+      try {
+        if (!audioCtxRef.current) {
+          audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+        }
+        const ctx = audioCtxRef.current;
+        if (ctx.state === "suspended") ctx.resume();
+
+        if (!sourceRef.current) {
+          sourceRef.current = ctx.createMediaElementSource(audioElement);
+        }
+        if (!analyserRef.current) {
+          analyserRef.current = ctx.createAnalyser();
+          analyserRef.current.fftSize = 256;
+          analyserRef.current.smoothingTimeConstant = 0.75;
+          sourceRef.current.connect(analyserRef.current);
+          analyserRef.current.connect(ctx.destination);
+        }
+      } catch (e) {
+        console.warn("Web Audio API setup error:", e);
+      }
+    };
+
+    const tick = () => {
+      if (!analyserRef.current) {
+        setMouthOpen(state === "speaking");
+        animFrameRef.current = requestAnimationFrame(tick);
+        return;
+      }
+      const bufLen = analyserRef.current.frequencyBinCount;
+      const data = new Uint8Array(bufLen);
+      analyserRef.current.getByteFrequencyData(data);
+      let sum = 0;
+      for (let i = 0; i < bufLen; i++) sum += data[i];
+      const avg = sum / bufLen;
+      const normalized = Math.min(avg / 80, 1);
+      setMouthAmplitude(normalized);
+      setMouthOpen(normalized > 0.08);
+      animFrameRef.current = requestAnimationFrame(tick);
+    };
+
+    setupAnalyser();
+    animFrameRef.current = requestAnimationFrame(tick);
+
+    return () => {
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    };
+  }, [audioElement, state]);
+
+  // Fallback fixed-interval toggle when no audio element
+  useEffect(() => {
+    if (audioElement) return; // Web Audio API takes over
     if (state !== "speaking") {
-      setTimeout(() => setMouthOpen(false), 0);
+      setMouthOpen(false);
       return;
     }
     const id = setInterval(() => setMouthOpen((v) => !v), 155);
     return () => clearInterval(id);
-  }, [state]);
+  }, [state, audioElement]);
+
+  // Dynamic mouth path based on amplitude
+  const getDynamicMouthPath = (st: AvatarState, open: boolean, amplitude: number): string => {
+    if (audioElement && amplitude > 0) {
+      const openness = 8 + amplitude * 12; // 8–20px arc
+      if (st === "concerned") return "M 45 73 Q 50 69 55 73";
+      return `M 44 71 Q 50 ${71 + openness} 56 71`;
+    }
+    return getMouthPath(st, open);
+  };
 
   if (size === "hero") {
     return (
@@ -208,7 +284,7 @@ export function DigitalAvatar({ state, size = "md" }: Props) {
         <motion.div style={{ width: px, height: px * 1.12 }}
           animate={state === "speaking" ? { y: [0, -3, 0] } : { y: 0 }}
           transition={{ duration: 1.3, repeat: state === "speaking" ? Infinity : 0, ease: "easeInOut" }}>
-          <AvatarSVG state={state} mouthOpen={mouthOpen} />
+          <AvatarSVG state={state} mouthOpen={mouthOpen} mouthPathOverride={audioElement ? getDynamicMouthPath(state, mouthOpen, mouthAmplitude) : undefined} />
         </motion.div>
         {/* Status label + wave */}
         <div className="flex flex-col items-center gap-1 mt-2">
@@ -233,7 +309,7 @@ export function DigitalAvatar({ state, size = "md" }: Props) {
         transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }} />
       <div className="relative w-full h-full rounded-full overflow-hidden"
         style={{ border: `2px solid ${p.ring}`, boxShadow: `0 0 16px ${p.aura}` }}>
-        <AvatarSVG state={state} mouthOpen={mouthOpen} />
+        <AvatarSVG state={state} mouthOpen={mouthOpen} mouthPathOverride={audioElement ? getDynamicMouthPath(state, mouthOpen, mouthAmplitude) : undefined} />
       </div>
       {size === "lg" && (
         <motion.div className="absolute -bottom-1 -right-1 rounded-full flex items-center justify-center"

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db/client";
 import { spots } from "@/lib/db/schema/spots";
 import { eq } from "drizzle-orm";
@@ -14,7 +14,7 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = requireAuth(request);
+  const auth = await requireAdmin(request);
   if (!auth.ok) return auth.response;
   try {
     const body = await request.json();
@@ -25,6 +25,7 @@ export async function POST(request: NextRequest) {
       imageUrl: body.imageUrl ?? "",
       duration: body.duration ?? 30,
       distance: body.distance ?? "",
+      location: body.location ?? { lat: 0, lng: 0 },
       isActive: body.isActive ?? true,
       tags: body.tags ?? [],
     }).returning();

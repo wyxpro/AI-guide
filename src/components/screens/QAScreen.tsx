@@ -10,6 +10,7 @@ import { useSearchParams } from "next/navigation";
 import { SatisfactionModal } from "@/components/ui/SatisfactionModal";
 import { DigitalAvatar, type AvatarState } from "@/components/ui/DigitalAvatar";
 import { CameraRecognize } from "@/components/ui/CameraRecognize";
+import { toast } from "sonner";
 
 const SPRING = { type: "spring" as const, stiffness: 280, damping: 35 };
 interface Message { role: "user" | "assistant"; content: string; timestamp: string }
@@ -21,6 +22,13 @@ const QUICK_PROMPTS = [
 ];
 
 function detectEmotion(text: string): AvatarState {
+  const match = text.match(/\[情感:\s*(愉快|高兴|开心|温和|伤感|抱歉|紧张|思考)\]/);
+  if (match) {
+    const emo = match[1];
+    if (/愉快|高兴|开心/.test(emo)) return "happy";
+    if (/伤感|抱歉|紧张/.test(emo)) return "concerned";
+    if (/思考/.test(emo)) return "thinking";
+  }
   if (/欢迎|很高兴|精彩|美丽|推荐|惊喜/.test(text)) return "happy";
   if (/抱歉|对不起|无法|不知道|暂时/.test(text)) return "concerned";
   if (text.length > 40) return "speaking";
@@ -54,8 +62,43 @@ export function QAScreen() {
   const [subtitle, setSubtitle] = useState(initMsg(spotName).content);
   const satisfactionShownRef = useRef(false);
   const bottomRef = useRef<HTMLDivElement>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  
+  // Audio playback and recording refs
   const recognitionRef = useRef<any>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  
+  // Avatar config state
+  const [avatarConfig, setAvatarConfig] = useState<any>(null);
+
+  useEffect(() => {
+    fetch("/api/qa/avatar-active")
+      .then((r) => r.json())
+      .then((d) => setAvatarConfig(d))
+      .catch((e) => console.error("Failed to load active avatar config", e));
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/qa/chat")
+      .then((r) => r.json())
+      .then((d) => {
+        if (Array.isArray(d) && d.length > 0) {
+          const mapped = d.map((m: any) => ({
+            role: m.role,
+            content: m.content,
+            timestamp: m.timestamp ? new Date(m.timestamp).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }) : new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }),
+          }));
+          setMessages(mapped);
+          const lastMsg = mapped[mapped.length - 1];
+          if (lastMsg) {
+            setSubtitle(lastMsg.content);
+            setAvatarState(detectEmotion(lastMsg.content));
+          }
+        }
+      })
+      .catch((e) => console.error("Failed to load chat history", e));
+  }, []);
 
   const [avatarWidth, setAvatarWidth] = useState(380); // Default to a wider layout (380px)
   const panelRef = useRef<HTMLDivElement>(null);
@@ -89,6 +132,9 @@ export function QAScreen() {
     return () => {
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [handleMouseMove]);
@@ -113,32 +159,140 @@ export function QAScreen() {
     return () => clearTimeout(t);
   }, [loading, messages]);
 
-  const speak = (text: string) => {
-    if (!ttsEnabled || !("speechSynthesis" in window)) return;
-    window.speechSynthesis.cancel();
-    const utter = new SpeechSynthesisUtterance(text.slice(0, 320));
-    utter.lang = "zh-CN"; utter.rate = 0.9; utter.pitch = 1.05;
-    const voices = window.speechSynthesis.getVoices();
-    const v = voices.find((x) => x.lang.startsWith("zh") && x.name.includes("Female"))
-      || voices.find((x) => x.lang.startsWith("zh"));
-    if (v) utter.voice = v;
-    utter.onstart = () => setAvatarState("speaking");
-    utter.onend = () => setAvatarState("idle");
-    window.speechSynthesis.speak(utter);
+  const speak = async (text: string) => {
+    if (!ttsEnabled) return;
+
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+
+    setAvatarState("speaking");
+    try {
+      const payload = {
+        text: text.slice(0, 320),
+        voiceStyle: avatarConfig?.voiceStyle || "warm",
+        speechRate: avatarConfig?.speechRate || 100,
+        pitch: avatarConfig?.pitch || 100,
+      };
+
+      const res = await fetch("/api/qa/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) throw new Error("TTS generation failed");
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      audio.onplay = () => setAvatarState("speaking");
+      audio.onended = () => {
+        setAvatarState("idle");
+        URL.revokeObjectURL(url);
+      };
+      audio.onerror = () => {
+        setAvatarState("idle");
+        URL.revokeObjectURL(url);
+      };
+      await audio.play();
+    } catch (err) {
+      console.error("TTS audio play error, falling back to Web Speech API:", err);
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(text.slice(0, 320));
+        utter.lang = "zh-CN";
+        utter.rate = (avatarConfig?.speechRate || 100) / 110;
+        utter.pitch = (avatarConfig?.pitch || 100) / 100;
+        utter.onstart = () => setAvatarState("speaking");
+        utter.onend = () => setAvatarState("idle");
+        window.speechSynthesis.speak(utter);
+      } else {
+        setAvatarState("idle");
+      }
+    }
   };
 
-  const toggleRecording = () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const toggleRecording = async () => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SR) { setInput("（浏览器不支持语音输入）"); return; }
-    if (recording) { recognitionRef.current?.stop(); setRecording(false); return; }
-    const rec = new SR();
-    rec.lang = "zh-CN"; rec.continuous = false; rec.interimResults = false;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    rec.onresult = (e: any) => setInput(e.results[0][0].transcript);
-    rec.onend = () => setRecording(false);
-    rec.onerror = () => setRecording(false);
-    rec.start(); recognitionRef.current = rec; setRecording(true);
+
+    if (recording) {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+        setRecording(false);
+      } else if (mediaRecorderRef.current) {
+        mediaRecorderRef.current.stop();
+        setRecording(false);
+      }
+      return;
+    }
+
+    if (SR) {
+      const rec = new SR();
+      rec.lang = "zh-CN"; rec.continuous = false; rec.interimResults = false;
+      rec.onresult = (e: any) => {
+        const txt = e.results[0][0].transcript;
+        setInput(txt);
+        sendMessage(txt);
+      };
+      rec.onend = () => setRecording(false);
+      rec.onerror = () => setRecording(false);
+      rec.start();
+      recognitionRef.current = rec;
+      mediaRecorderRef.current = null;
+      setRecording(true);
+    } else {
+      try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          setInput("（浏览器不支持录音）");
+          return;
+        }
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const mediaRecorder = new MediaRecorder(stream);
+        mediaRecorderRef.current = mediaRecorder;
+        recognitionRef.current = null;
+        audioChunksRef.current = [];
+
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunksRef.current.push(event.data);
+          }
+        };
+
+        mediaRecorder.onstop = async () => {
+          stream.getTracks().forEach((track) => track.stop());
+          const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+          const formData = new FormData();
+          formData.append("file", audioBlob, "audio.webm");
+
+          setInput("正在识别语音...");
+          try {
+            const res = await fetch("/api/qa/stt", {
+              method: "POST",
+              body: formData,
+            });
+            const data = await res.json();
+            if (data.text) {
+              setInput(data.text);
+              sendMessage(data.text);
+            } else {
+              setInput("");
+            }
+          } catch (err) {
+            console.error("Whisper STT fallback error:", err);
+            setInput("（语音识别失败）");
+          }
+        };
+
+        mediaRecorder.start();
+        setRecording(true);
+      } catch (err) {
+        console.error("Mic access denied or error:", err);
+        setInput("（无法获取麦克风权限）");
+      }
+    }
   };
 
   const sendMessage = async (question: string) => {
@@ -150,7 +304,8 @@ export function QAScreen() {
       const history = updated.slice(1).map((m) => ({ role: m.role, content: m.content }));
       const res = await request("/api/qa/chat", { method: "POST", body: JSON.stringify({ question, history }) });
       const data = await res.json();
-      const answer = data.answer || "抱歉，暂时无法回答。";
+      const answerRaw = data.answer || "抱歉，暂时无法回答。";
+      const answer = answerRaw.replace(/\[情感:\s*[^\]]+\]/g, "").trim();
       const aiTs = new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
       setMessages((prev) => [...prev, { role: "assistant", content: answer, timestamp: aiTs }]);
       setSubtitle(answer);
@@ -323,7 +478,7 @@ export function QAScreen() {
               <Sparkles className="w-3 h-3" />当前聚焦：<strong>{spotName}</strong>
             </motion.div>
           )}
-          <DigitalAvatar state={avatarState} size="hero" />
+          <DigitalAvatar state={avatarState} size="hero" audioElement={audioRef.current} />
           <AnimatePresence mode="wait">
             <motion.div key={subtitle.slice(0,20)}
               initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
@@ -410,7 +565,7 @@ export function QAScreen() {
           </div>
 
           <div className="relative z-10 flex flex-col items-center px-6 w-full">
-            <DigitalAvatar state={avatarState} size="hero" />
+            <DigitalAvatar state={avatarState} size="hero" audioElement={audioRef.current} />
 
             {spotName && (
               <div className="mt-4 flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px]"
@@ -504,7 +659,18 @@ export function QAScreen() {
       <AnimatePresence>
         {showSatisfaction && (
           <SatisfactionModal onClose={() => setShowSatisfaction(false)}
-            onSubmit={(r, c) => console.info("[sat]", r, c)} />
+            onSubmit={async (rating, comment) => {
+              try {
+                await request("/api/qa/feedback", {
+                  method: "POST",
+                  body: JSON.stringify({ rating, comment })
+                });
+                toast.success("感谢您的评价！");
+              } catch {
+                toast.error("评价提交失败，请稍后再试。");
+              }
+              setShowSatisfaction(false);
+            }} />
         )}
       </AnimatePresence>
       <AnimatePresence>

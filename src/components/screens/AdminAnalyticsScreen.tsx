@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Users, TrendingUp, MapPin, MessageCircle } from "lucide-react";
 import { request } from "@/lib/api/request";
 
@@ -22,6 +22,12 @@ export function AdminAnalyticsScreen() {
   const [hotSpots, setHotSpots] = useState<Array<{ spotId: number; visits: number }>>([]);
   const [wordCloud, setWordCloud] = useState<Array<{ word: string; count: number }>>([]);
 
+  const [selectedSentiment, setSelectedSentiment] = useState<string | null>(null);
+  const [selectedSentimentLabel, setSelectedSentimentLabel] = useState("");
+  const [drillDownLogs, setDrillDownLogs] = useState<any[]>([]);
+  const [loadingLogs, setLoadingLogs] = useState(false);
+  const [showDrillModal, setShowDrillModal] = useState(false);
+
   useEffect(() => {
     Promise.all([
       request("/api/admin/analytics?days=7").then((r) => r.json()),
@@ -34,6 +40,20 @@ export function AdminAnalyticsScreen() {
       setLoading(false);
     }).catch(() => setLoading(false));
   }, []);
+
+  const openDrillDown = (sentiment: string, label: string) => {
+    setSelectedSentiment(sentiment);
+    setSelectedSentimentLabel(label);
+    setLoadingLogs(true);
+    setShowDrillModal(true);
+    request(`/api/admin/analytics/qa-logs?sentiment=${sentiment}`)
+      .then((r) => r.json())
+      .then((d) => {
+        setDrillDownLogs(Array.isArray(d) ? d : []);
+        setLoadingLogs(false);
+      })
+      .catch(() => setLoadingLogs(false));
+  };
 
   const maxQ = Math.max(...data.map((d) => d.totalQuestions), 1);
   const maxV = Math.max(...data.map((d) => d.totalVisitors), 1);
@@ -75,7 +95,7 @@ export function AdminAnalyticsScreen() {
           ))}
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {/* Visitors trend */}
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ ...SPRING, delay: 0.1 }}
             className="card-ink p-5">
@@ -110,6 +130,33 @@ export function AdminAnalyticsScreen() {
                     <span className="text-[8px] font-mono" style={{ color: "#8F9F8F" }}>{d.date.slice(5)}</span>
                   </div>
                 ))}
+              </div>
+            )}
+          </motion.div>
+
+          {/* Sentiment distribution drill-down */}
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ ...SPRING, delay: 0.18 }}
+            className="card-ink p-5">
+            <h3 className="text-sm font-semibold mb-4" style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}>问答情感分布 (点击柱形下钻)</h3>
+            {loading ? <div className="skeleton h-28" /> : (
+              <div className="flex items-end justify-around h-28">
+                {[
+                  { key: "positive", label: "正面/愉快", count: data.reduce((s, d) => s + (d.sentimentPositive || 0), 0), color: "#16A34A" },
+                  { key: "neutral", label: "中立/思考", count: data.reduce((s, d) => s + (d.sentimentNeutral || 0), 0), color: "#8F9F8F" },
+                  { key: "negative", label: "负面/疑虑", count: data.reduce((s, d) => s + (d.sentimentNegative || 0), 0), color: "#DC2626" },
+                ].map((s) => {
+                  const total = data.reduce((sum, d) => sum + (d.sentimentPositive || 0) + (d.sentimentNeutral || 0) + (d.sentimentNegative || 0), 0) || 1;
+                  const pct = Math.round((s.count / total) * 100);
+                  return (
+                    <motion.button key={s.key} whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }}
+                      onClick={() => openDrillDown(s.key, s.label)}
+                      className="flex flex-col items-center gap-1.5 focus:outline-none cursor-pointer">
+                      <span className="text-[9px] font-bold" style={{ color: s.color }}>{s.count}次 ({pct}%)</span>
+                      <div className="w-10 rounded-t-md" style={{ height: `${Math.max(8, (s.count / total) * 70)}px`, backgroundColor: s.color }} />
+                      <span className="text-[10px]" style={{ color: "#3A4D39" }}>{s.label}</span>
+                    </motion.button>
+                  );
+                })}
               </div>
             )}
           </motion.div>
@@ -202,6 +249,60 @@ export function AdminAnalyticsScreen() {
           </motion.div>
         </div>
       </div>
+
+      {/* Drill Down Sidebar Modal */}
+      <AnimatePresence>
+        {showDrillModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-end" style={{ background: "rgba(0,0,0,0.45)", backdropFilter: "blur(4px)" }}>
+            <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={SPRING}
+              className="w-full max-w-lg h-full flex flex-col shadow-2xl"
+              style={{ background: "#FAF8F5" }}>
+              <div className="p-5 border-b border-[#E6E2D8] flex items-center justify-between" style={{ background: "white" }}>
+                <div>
+                  <h3 className="font-bold text-base" style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}>
+                    对话下钻分析：{selectedSentimentLabel}
+                  </h3>
+                  <p className="text-[10px] text-[#8F9F8F] mt-0.5">查看真实游客历史对话片段</p>
+                </div>
+                <button onClick={() => setShowDrillModal(false)} className="text-sm px-3 py-1.5 rounded-lg hover:bg-neutral-100 font-semibold" style={{ color: "#4F6F52" }}>
+                  关闭
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-5 space-y-4">
+                {loadingLogs ? (
+                  Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="skeleton h-24 rounded-xl" />
+                  ))
+                ) : drillDownLogs.length === 0 ? (
+                  <div className="text-center py-12 text-[#8F9F8F] text-xs">
+                    暂无该情感倾向的对话记录
+                  </div>
+                ) : (
+                  drillDownLogs.map((log: any) => (
+                    <div key={log.id} className="p-4 rounded-xl border border-[#E6E2D8] bg-white space-y-3">
+                      <div className="flex items-center justify-between text-[10px] text-[#8F9F8F]">
+                        <span>用户ID: {log.userId?.slice(0, 8) || "游客"}</span>
+                        <span>{new Date(log.createdAt).toLocaleString()}</span>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex gap-2">
+                          <span className="text-[11px] font-bold px-1.5 py-0.5 rounded flex-shrink-0" style={{ background: "rgba(210,160,83,0.15)", color: "#D2A053" }}>问</span>
+                          <p className="text-xs font-semibold text-[#1E2522]">{log.question}</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <span className="text-[11px] font-bold px-1.5 py-0.5 rounded flex-shrink-0" style={{ background: "rgba(79,111,82,0.15)", color: "#4F6F52" }}>答</span>
+                          <p className="text-xs text-[#3A4D39] leading-relaxed">{log.answer}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

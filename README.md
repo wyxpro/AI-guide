@@ -1,4 +1,4 @@
-# 🟢 旅行吧·景区智能导游系统 🤖
+# 🤖旅行吧·景区智能导游系统 
 
 [![Next.js](https://img.shields.io/badge/Next.js-16.2.4-black?style=flat&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.2.4-%2361DAFB?style=flat&logo=react)](https://react.dev/)

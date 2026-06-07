@@ -264,3 +264,32 @@ nextjs-portal, #nextjs-portal, [data-nextjs-toast], [data-nextjs-dialog-overlay]
   display: none !important;
 }
 
+/* === Elder Accessibility Mode Scaling & Text Overrides === */
+html[data-accessibility-mode="elder"] {
+  font-size: 19px !important;
+}
+
+html[data-accessibility-mode="elder"] body {
+  line-height: 1.75 !important;
+}
+
+html[data-accessibility-mode="elder"] .text-\[13px\] {
+  font-size: 16px !important;
+}
+
+html[data-accessibility-mode="elder"] .text-\[12\.5px\] {
+  font-size: 15.5px !important;
+}
+
+html[data-accessibility-mode="elder"] .text-\[11px\] {
+  font-size: 14px !important;
+}
+
+html[data-accessibility-mode="elder"] .text-\[10px\] {
+  font-size: 13px !important;
+}
+
+html[data-accessibility-mode="elder"] .text-\[9px\] {
+  font-size: 12px !important;
+}
+

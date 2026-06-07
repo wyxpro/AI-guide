@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Heart, MessageCircle, Clock, MapPin, Star, Volume2, Users, BookOpen, Camera, Share2 } from "lucide-react";
+import { ArrowLeft, Heart, MessageCircle, Clock, MapPin, Star, Volume2, Users, BookOpen, Camera, Share2, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useEazo } from "@eazo/sdk/react";
 import { request } from "@/lib/api/request";
@@ -12,7 +12,7 @@ import { CameraRecognize } from "@/components/ui/CameraRecognize";
 
 const SPRING = { type: "spring" as const, stiffness: 280, damping: 35 };
 
-interface Spot { id: number; name: string; category: string; description: string; imageUrl: string; audioGuide: string; duration: number; distance: string; rating: number; visitCount: number; tags: string[] }
+interface Spot { id: number; name: string; category: string; description: string; imageUrl: string; audioGuide: string; duration: number; distance: string; rating: number; visitCount: number; tags: string[]; location?: { lat: number; lng: number } }
 
 export function SpotDetailScreen({ spotId }: { spotId: string }) {
   const user = useEazo((s) => s.auth.user);
@@ -23,10 +23,12 @@ export function SpotDetailScreen({ spotId }: { spotId: string }) {
   const [favorited, setFavorited] = useState(false);
   const [favId, setFavId] = useState<number | null>(null);
   const [userRating, setUserRating] = useState(0);
+  const [ratingSubmitted, setRatingSubmitted] = useState(false);
   const [showStory, setShowStory] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [autoplayBanner, setAutoplayBanner] = useState(autoplay);
+  const [nearbySpots, setNearbySpots] = useState<Array<any>>([]);
 
   useEffect(() => {
     fetch(`/api/spots/${spotId}`)
@@ -34,6 +36,53 @@ export function SpotDetailScreen({ spotId }: { spotId: string }) {
       .then((d) => { setSpot(d); setLoading(false); })
       .catch(() => setLoading(false));
   }, [spotId]);
+
+  useEffect(() => {
+    if (!spot) return;
+    fetch("/api/spots?limit=100")
+      .then((r) => r.json())
+      .then((data) => {
+        if (!Array.isArray(data)) return;
+        const others = data.filter((s) => s.id !== spot.id);
+        
+        import("@turf/turf").then((turf) => {
+          const fromLoc = spot.location || { lat: 0, lng: 0 };
+          const fromPt = turf.point([fromLoc.lng, fromLoc.lat]);
+          
+          const mapped = others.map((s) => {
+            const toLoc = s.location || { lat: 0, lng: 0 };
+            const toPt = turf.point([toLoc.lng, toLoc.lat]);
+            const dist = Math.round(turf.distance(fromPt, toPt, { units: "meters" }));
+            return { ...s, distanceMeters: dist };
+          });
+
+          mapped.sort((a, b) => a.distanceMeters - b.distanceMeters);
+          setNearbySpots(mapped.slice(0, 3));
+        });
+      })
+      .catch((e) => console.error("Failed to load nearby spots", e));
+  }, [spot]);
+
+  const submitRating = async () => {
+    if (!user || !spot) return;
+    try {
+      const res = await request(`/api/spots/${spot.id}/rating`, {
+        method: "POST",
+        body: JSON.stringify({ rating: userRating }),
+      });
+      if (res.ok) {
+        setRatingSubmitted(true);
+        toast.success("评分已提交，感谢您的反馈！");
+        fetch(`/api/spots/${spotId}`)
+          .then((r) => r.json())
+          .then((d) => setSpot(d));
+      } else {
+        toast.error("评分提交失败");
+      }
+    } catch {
+      toast.error("提交评分出错，请稍候再试");
+    }
+  };
 
   // Auto-log visit and check favorite status
   useEffect(() => {
@@ -268,7 +317,7 @@ export function SpotDetailScreen({ spotId }: { spotId: string }) {
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-1.5">
                   {[1, 2, 3, 4, 5].map((s) => (
-                    <motion.button key={s} whileTap={{ scale: 0.85 }} onClick={() => setUserRating(s)}>
+                    <motion.button key={s} whileTap={{ scale: 0.85 }} onClick={() => setUserRating(s)} disabled={ratingSubmitted}>
                       <Star className="w-7 h-7" fill={s <= userRating ? "#D2A053" : "none"}
                         style={{ color: s <= userRating ? "#D2A053" : "#E6E2D8" }} />
                     </motion.button>
@@ -280,13 +329,16 @@ export function SpotDetailScreen({ spotId }: { spotId: string }) {
                   </span>
                 )}
               </div>
-              {userRating > 0 && (
+              {userRating > 0 && !ratingSubmitted && (
                 <motion.button whileTap={{ scale: 0.97 }}
                   className="text-xs px-4 py-2 rounded-lg text-white"
                   style={{ background: "linear-gradient(135deg, #4F6F52, #3A5240)" }}
-                  onClick={() => toast.success("评分已提交，感谢您的反馈！")}>
+                  onClick={submitRating}>
                   提交评分
                 </motion.button>
+              )}
+              {ratingSubmitted && (
+                <p className="text-[11px] text-[#8F9F8F]">感谢您的反馈与评价！</p>
               )}
             </div>
           ) : (
@@ -298,11 +350,35 @@ export function SpotDetailScreen({ spotId }: { spotId: string }) {
 
         {/* Related spots suggestion */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ ...SPRING, delay: 0.25 }}
-          className="card-ink p-4">
-          <h3 className="text-sm font-semibold mb-2" style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}>附近推荐</h3>
+          className="card-ink p-4 space-y-3">
+          <h3 className="text-sm font-semibold" style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}>附近推荐</h3>
+          
+          {nearbySpots.length > 0 ? (
+            <div className="grid grid-cols-1 gap-2.5">
+              {nearbySpots.map((nSpot) => (
+                <Link href={`/spots/${nSpot.id}`} key={nSpot.id}>
+                  <motion.div whileTap={{ scale: 0.98 }}
+                    className="flex items-center gap-3 p-2 rounded-xl border border-[#E6E2D8] hover:bg-neutral-50 transition-colors">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={nSpot.imageUrl} alt={nSpot.name} className="w-10 h-10 rounded-lg object-cover" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-[#1E2522] truncate">{nSpot.name}</p>
+                      <p className="text-[10px] text-[#8F9F8F] mt-0.5">
+                        距离当前景点约 <span className="font-mono font-bold text-[#D2A053]">{nSpot.distanceMeters}米</span>
+                      </p>
+                    </div>
+                    <ChevronRight className="w-3.5 h-3.5 text-[#8F9F8F]" />
+                  </motion.div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="text-[11px] text-[#8F9F8F] py-2">正在计算附近推荐景点...</div>
+          )}
+
           <Link href="/spots">
             <motion.div whileTap={{ scale: 0.97 }}
-              className="flex items-center justify-between py-2 text-sm"
+              className="flex items-center justify-between pt-1.5 text-xs font-semibold"
               style={{ color: "#4F6F52" }}>
               查看全部景点导览 →
             </motion.div>

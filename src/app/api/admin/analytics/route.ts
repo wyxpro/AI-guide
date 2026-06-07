@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { getRecentAnalytics, upsertDailyAnalytics } from "@/lib/db/queries";
 
 export async function GET(request: NextRequest) {
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const result = requireAuth(request);
+  const result = await requireAdmin(request);
   if (!result.ok) return result.response;
   try {
     const { date, ...data } = await request.json();

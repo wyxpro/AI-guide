@@ -29,3 +29,44 @@ export function requireAuth(request: NextRequest): AuthResult {
 
   return originalRequireAuth(request);
 }
+
+import { db } from "../db/client";
+import { users } from "../db/schema/users";
+import { eq } from "drizzle-orm";
+
+export async function requireAdmin(request: NextRequest): Promise<{ ok: true; user: any } | { ok: false; response: Response }> {
+  const authResult = requireAuth(request);
+  if (!authResult.ok) return { ok: false, response: authResult.response };
+  
+  let userRole = authResult.user.email === "wyxcode@qq.com" ? "admin" : "user";
+  
+  try {
+    const dbUser = await db.select().from(users).where(eq(users.id, authResult.user.id)).limit(1);
+    if (dbUser[0]?.role) {
+      userRole = dbUser[0].role;
+    }
+  } catch (err) {
+    console.error("Failed to query user role from DB:", err);
+  }
+
+  // Force admin role for the hardcoded admin email
+  if (authResult.user.email === "wyxcode@qq.com") {
+    userRole = "admin";
+  }
+
+  if (userRole !== "admin") {
+    return {
+      ok: false,
+      response: new Response(
+        JSON.stringify({ error: "Forbidden: Admin access required" }),
+        {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        }
+      ),
+    };
+  }
+  
+  return { ok: true, user: { ...authResult.user, role: userRole } };
+}
+

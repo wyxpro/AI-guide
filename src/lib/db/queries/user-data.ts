@@ -1,8 +1,10 @@
 import { eq, desc, and } from "drizzle-orm";
 import { db } from "../client";
 import { chatSessions, favorites, visitRecords, userPreferences } from "../schema/user-data";
+import { spots } from "../schema/spots";
+import { routes } from "../schema/routes";
 
-// Chat sessions
+// Chat/QA sessions
 export async function getChatSessionsByUser(userId: string) {
   return db.select().from(chatSessions).where(eq(chatSessions.userId, userId)).orderBy(desc(chatSessions.updatedAt)).limit(20);
 }
@@ -28,7 +30,25 @@ export async function getChatSessionById(id: number, userId: string) {
 
 // Favorites
 export async function getFavoritesByUser(userId: string) {
-  return db.select().from(favorites).where(eq(favorites.userId, userId)).orderBy(desc(favorites.createdAt));
+  return db
+    .select({
+      id: favorites.id,
+      userId: favorites.userId,
+      spotId: favorites.spotId,
+      routeId: favorites.routeId,
+      type: favorites.type,
+      createdAt: favorites.createdAt,
+      spotName: spots.name,
+      spotImage: spots.imageUrl,
+      spotRating: spots.rating,
+      routeName: routes.name,
+      routeImage: routes.imageUrl,
+    })
+    .from(favorites)
+    .leftJoin(spots, eq(favorites.spotId, spots.id))
+    .leftJoin(routes, eq(favorites.routeId, routes.id))
+    .where(eq(favorites.userId, userId))
+    .orderBy(desc(favorites.createdAt));
 }
 
 export async function addFavorite(userId: string, type: "spot" | "route", id: number) {

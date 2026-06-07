@@ -1,12 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSpotById, incrementVisitCount } from "@/lib/db/queries";
+import { NATIONAL_SPOTS } from "@/lib/data/national-spots";
 
 export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const spot = await getSpotById(Number(id));
+    const spotIdNum = Number(id);
+
+    // Support national popular spots
+    if (spotIdNum >= 10001 && spotIdNum <= 10020) {
+      const nationalSpot = NATIONAL_SPOTS.find((s) => s.id === spotIdNum);
+      if (nationalSpot) {
+        return NextResponse.json(nationalSpot);
+      }
+    }
+
+    const spot = await getSpotById(spotIdNum);
     if (!spot) return NextResponse.json({ error: "Spot not found" }, { status: 404 });
-    await incrementVisitCount(Number(id));
+    await incrementVisitCount(spotIdNum);
     return NextResponse.json(spot);
   } catch (error) {
     console.error("[GET /api/spots/:id]", error);

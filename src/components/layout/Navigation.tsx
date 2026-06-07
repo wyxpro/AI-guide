@@ -12,8 +12,8 @@ import { GlobalSearch } from "@/components/ui/GlobalSearch";
 /* ─── C端标签 ─────────────────────────────────────────────── */
 const C_TABS = [
   { href: "/",        label: "首页",  icon: Home },
-  { href: "/qa",      label: "问答",  icon: MessageCircle },
   { href: "/spots",   label: "景点",  icon: MapPin },
+  { href: "/qa",      label: "问答",  icon: MessageCircle },
   { href: "/routes",  label: "路线",  icon: Navigation },
   { href: "/profile", label: "我的",  icon: User },
 ];
@@ -36,8 +36,8 @@ export function BottomTabBar() {
 
   const MOBILE_TABS = [
     { href: "/",        label: "首页",  icon: Home },
-    { href: "/qa",      label: "AI导览", icon: MessageCircle },
     { href: "/spots",   label: "景点",  icon: MapPin },
+    { href: "/qa",      label: "AI导览", icon: MessageCircle },
     { href: "/routes",  label: "路线",  icon: Navigation },
     { href: "/profile", label: "我的",  icon: User },
   ];

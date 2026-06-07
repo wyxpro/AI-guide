@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Clock, Star, ChevronRight, Search, Filter } from "lucide-react";
 import Link from "next/link";
+import { CITIES } from "@/lib/data/national-spots";
 
 const SPRING = { type: "spring" as const, stiffness: 280, damping: 35 };
 
@@ -10,13 +11,14 @@ interface Spot { id: number; name: string; category: string; description: string
 
 const CATS = [
   { id: "all", label: "全部", color: "#4F6F52" },
+  { id: "national", label: "全国热门", color: "#B8843A" },
   { id: "cultural", label: "人文", color: "#3A4D39" },
   { id: "nature", label: "自然", color: "#4F6F52" },
   { id: "history", label: "历史", color: "#8F7A5A" },
   { id: "family", label: "亲子", color: "#D2A053" },
 ];
 
-const CAT_ICONS: Record<string, string> = { cultural: "🏯", nature: "🌿", history: "📜", family: "👨‍👩‍👧", all: "✨" };
+const CAT_ICONS: Record<string, string> = { cultural: "🏯", nature: "🌿", history: "📜", family: "👨‍👩‍👧", all: "✨", national: "🔥" };
 
 function StarRating({ rating }: { rating: number }) {
   const stars = rating / 10; // out of 5
@@ -36,20 +38,29 @@ export function SpotsScreen() {
   const [loading, setLoading] = useState(true);
   const [cat, setCat] = useState("all");
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [selectedCity, setSelectedCity] = useState("北京");
 
   useEffect(() => {
-    fetch("/api/spots").then((r) => r.json()).then((d) => {
-      setSpots(Array.isArray(d) ? d : []);
-      setLoading(false);
-    }).catch(() => setLoading(false));
-  }, []);
+    const t = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 350);
+    return () => clearTimeout(t);
+  }, [search]);
 
-  const filtered = spots.filter((s) => {
-    const matchCat = cat === "all" || s.category === cat;
-    const matchSearch = !search.trim() || s.name.includes(search) || s.description.includes(search) || (s.tags as string[]).some((t) => t.includes(search));
-    return matchCat && matchSearch;
-  });
+  useEffect(() => {
+    setLoading(true);
+    const cityParam = cat === "national" ? `&city=${encodeURIComponent(selectedCity)}` : "";
+    const url = `/api/spots?category=${cat}${cityParam}&search=${encodeURIComponent(debouncedSearch)}&limit=50`;
+    fetch(url)
+      .then((r) => r.json())
+      .then((d) => {
+        setSpots(Array.isArray(d) ? d : []);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, [cat, debouncedSearch, selectedCity]);
 
   return (
     <div className="min-h-svh" style={{ background: "#FAF8F5" }}>
@@ -88,11 +99,42 @@ export function SpotsScreen() {
             </motion.button>
           ))}
         </div>
+        {/* City selector */}
+        <AnimatePresence>
+          {cat === "national" && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={SPRING}
+              className="overflow-hidden"
+            >
+              <div className="flex gap-2 overflow-x-auto py-2 scrollbar-none" style={{ scrollbarWidth: "none" }}>
+                {CITIES.map((city) => (
+                  <motion.button
+                    key={city.id}
+                    whileTap={{ scale: 0.94 }}
+                    onClick={() => setSelectedCity(city.name)}
+                    className="flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold flex-shrink-0 transition-all"
+                    style={{
+                      background: selectedCity === city.name ? "rgba(210,160,83,0.15)" : "#F5F0E8",
+                      color: selectedCity === city.name ? "#B8843A" : "#8F9F8F",
+                      border: `1px solid ${selectedCity === city.name ? "rgba(210,160,83,0.4)" : "transparent"}`,
+                    }}
+                  >
+                    <span>{city.icon}</span>
+                    <span>{city.name}</span>
+                  </motion.button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Spot count */}
       <div className="px-4 py-2">
-        <p className="text-[11px]" style={{ color: "#8F9F8F" }}>共 {filtered.length} 处景点</p>
+        <p className="text-[11px]" style={{ color: "#8F9F8F" }}>共 {spots.length} 处景点</p>
       </div>
 
       {/* List */}
@@ -101,13 +143,13 @@ export function SpotsScreen() {
           Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className={`skeleton ${viewMode === "grid" ? "h-52" : "h-24"} rounded-xl`} />
           ))
-        ) : filtered.length === 0 ? (
+        ) : spots.length === 0 ? (
           <div className="col-span-2 text-center py-16">
             <p className="text-2xl mb-2">🔍</p>
             <p className="text-sm" style={{ color: "#8F9F8F" }}>没有找到相关景点</p>
           </div>
         ) : (
-          filtered.map((spot, i) => (
+          spots.map((spot, i) => (
             <motion.div key={spot.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}

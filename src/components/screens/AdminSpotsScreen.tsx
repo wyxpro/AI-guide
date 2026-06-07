@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Pencil, Trash2, Search, MapPin, Star, Eye, EyeOff, X, Save, QrCode } from "lucide-react";
 import { toast } from "sonner";
@@ -11,6 +11,7 @@ interface Spot {
   id: number; name: string; category: string; description: string;
   imageUrl: string; duration: number; distance: string; rating: number;
   visitCount: number; isActive: boolean; tags: string[];
+  location?: { lat: number; lng: number };
 }
 
 const CAT_LABELS: Record<string, string> = {
@@ -101,6 +102,62 @@ function SpotFormModal({
               placeholder="https://..." />
           </div>
 
+          <div>
+            <label className="text-[11px] font-medium mb-1 block" style={{ color: "#8F9F8F" }}>地图坐标 (经纬度) *</label>
+            <div className="grid grid-cols-2 gap-3 mb-2">
+              <div>
+                <span className="text-[10px] text-neutral-400">经度 Lng</span>
+                <input type="number" step="0.000001" className="w-full px-3 py-2 rounded-xl text-sm outline-none font-mono"
+                  style={{ background: "#F5F0E8", border: "1px solid #E6E2D8", color: "#1E2522" }}
+                  value={form.location?.lng ?? 120.150000}
+                  onChange={(e) => set("location", { lat: form.location?.lat ?? 30.250000, lng: parseFloat(e.target.value) || 0 })} />
+              </div>
+              <div>
+                <span className="text-[10px] text-neutral-400">纬度 Lat</span>
+                <input type="number" step="0.000001" className="w-full px-3 py-2 rounded-xl text-sm outline-none font-mono"
+                  style={{ background: "#F5F0E8", border: "1px solid #E6E2D8", color: "#1E2522" }}
+                  value={form.location?.lat ?? 30.250000}
+                  onChange={(e) => set("location", { lat: parseFloat(e.target.value) || 0, lng: form.location?.lng ?? 120.150000 })} />
+              </div>
+            </div>
+
+            <div className="relative w-full h-36 rounded-xl overflow-hidden border border-[#E6E2D8] bg-[#E8EFE9] cursor-crosshair group"
+              onClick={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / rect.width;
+                const y = (e.clientY - rect.top) / rect.height;
+                const lng = 120.120000 + x * 0.05;
+                const lat = 30.270000 - y * 0.03;
+                set("location", { lat: parseFloat(lat.toFixed(6)), lng: parseFloat(lng.toFixed(6)) });
+              }}>
+              <div className="absolute inset-0 opacity-40 bg-[radial-gradient(#C4DFB8_1px,transparent_1px)] [background-size:16px_16px]" />
+              <svg className="absolute inset-0 w-full h-full pointer-events-none">
+                <path d="M 0,90 Q 80,40 180,110 T 360,50" fill="none" stroke="#A7C7E7" strokeWidth="12" strokeLinecap="round" />
+                <path d="M 50,0 Q 120,80 200,60 T 400,120" fill="none" stroke="#D1E8D5" strokeWidth="4" strokeDasharray="6,6" />
+                <circle cx="80" cy="40" r="14" fill="#C4DFB8" stroke="#4F6F52" strokeWidth="1" />
+                <text x="80" y="44" fontSize="8" textAnchor="middle" fill="#3A4D39" fontWeight="bold">翠湖</text>
+                <circle cx="280" cy="70" r="14" fill="#E8DBC5" stroke="#D2A053" strokeWidth="1" />
+                <text x="280" y="74" fontSize="8" textAnchor="middle" fill="#7C5923" fontWeight="bold">揽月峰</text>
+              </svg>
+
+              {(() => {
+                const lng = form.location?.lng ?? 120.150000;
+                const lat = form.location?.lat ?? 30.250000;
+                const xPct = ((lng - 120.120000) / 0.05) * 100;
+                const yPct = ((30.270000 - lat) / 0.03) * 100;
+                return (
+                  <div className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none"
+                    style={{ left: `${Math.max(0, Math.min(100, xPct))}%`, top: `${Math.max(0, Math.min(100, yPct))}%` }}>
+                    <MapPin className="w-5 h-5 text-red-500 drop-shadow" />
+                  </div>
+                );
+              })()}
+              <div className="absolute bottom-2 right-2 bg-white/85 text-[8px] px-1.5 py-0.5 rounded border border-[#E6E2D8] text-[#4F6F52]">
+                点击选取位置
+              </div>
+            </div>
+          </div>
+
           <div className="flex items-center gap-3">
             <label className="text-[11px] font-medium" style={{ color: "#8F9F8F" }}>上架状态</label>
             <motion.button whileTap={{ scale: 0.92 }}
@@ -143,6 +200,79 @@ export function AdminSpotsScreen() {
   const [search, setSearch] = useState("");
   const [editSpot, setEditSpot] = useState<Partial<Spot> | null | undefined>(undefined);
   const [catFilter, setCatFilter] = useState("all");
+  const csvRef = useRef<HTMLInputElement>(null);
+
+  const handleCSVImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const toastId = toast.loading("正在导入景点数据...");
+    try {
+      const text = await file.text();
+      const lines = text.split(/\r?\n/).filter(line => line.trim());
+      if (lines.length <= 1) {
+        toast.dismiss(toastId);
+        toast.error("CSV文件为空或只有表头");
+        return;
+      }
+
+      const parseCSVLine = (text: string) => {
+        const result = [];
+        let cur = "";
+        let inQuotes = false;
+        for (let i = 0; i < text.length; i++) {
+          const char = text[i];
+          if (char === '"') {
+            inQuotes = !inQuotes;
+          } else if (char === ',' && !inQuotes) {
+            result.push(cur.trim());
+            cur = "";
+          } else {
+            cur += char;
+          }
+        }
+        result.push(cur.trim());
+        return result;
+      };
+
+      let successCount = 0;
+      for (let i = 1; i < lines.length; i++) {
+        const cols = parseCSVLine(lines[i]);
+        if (cols.length < 1 || !cols[0]) continue;
+
+        const name = cols[0];
+        const category = cols[1] || "cultural";
+        const description = cols[2] || "";
+        const duration = parseInt(cols[3]) || 30;
+        const distance = cols[4] || "";
+        const lat = parseFloat(cols[5]) || 30.25;
+        const lng = parseFloat(cols[6]) || 120.15;
+
+        await request("/api/admin/spots", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name,
+            category,
+            description,
+            duration,
+            distance,
+            location: { lat, lng },
+            isActive: true,
+          }),
+        });
+        successCount++;
+      }
+
+      toast.dismiss(toastId);
+      toast.success(`成功导入 ${successCount} 个景点！`);
+      fetchSpots();
+    } catch (err: any) {
+      console.error(err);
+      toast.dismiss(toastId);
+      toast.error(`导入失败: ${err.message || err}`);
+    }
+  };
 
   const fetchSpots = () => {
     setLoading(true);
@@ -205,12 +335,21 @@ export function AdminSpotsScreen() {
               共 {spots.length} 个景点 · {spots.filter((s) => s.isActive).length} 个上架中
             </p>
           </div>
-          <motion.button whileTap={{ scale: 0.95 }}
-            onClick={() => setEditSpot(null)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white"
-            style={{ background: "linear-gradient(135deg,#4F6F52,#3A5240)", boxShadow: "0 3px 12px rgba(79,111,82,0.3)" }}>
-            <Plus className="w-4 h-4" />新增景点
-          </motion.button>
+          <div className="flex items-center gap-2">
+            <input ref={csvRef} type="file" accept=".csv" className="hidden" onChange={handleCSVImport} />
+            <motion.button whileTap={{ scale: 0.95 }}
+              onClick={() => csvRef.current?.click()}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold"
+              style={{ background: "white", border: "1px solid #E6E2D8", color: "#3A4D39" }}>
+              批量导入 (CSV)
+            </motion.button>
+            <motion.button whileTap={{ scale: 0.95 }}
+              onClick={() => setEditSpot(null)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white"
+              style={{ background: "linear-gradient(135deg,#4F6F52,#3A5240)", boxShadow: "0 3px 12px rgba(79,111,82,0.3)" }}>
+              <Plus className="w-4 h-4" />新增景点
+            </motion.button>
+          </div>
         </div>
 
         {/* Filter bar */}

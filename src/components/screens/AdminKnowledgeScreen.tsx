@@ -52,14 +52,57 @@ export function AdminKnowledgeScreen() {
     load();
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      setEditDoc({ title: file.name.replace(/\.[^.]+$/, ""), category: "general", content: ev.target?.result as string ?? "", fileType: file.name.split(".").pop() ?? "text", tags: [] });
-    };
-    reader.readAsText(file);
+
+    const extension = file.name.split(".").pop()?.toLowerCase();
+    const loadingToast = toast.loading("正在解析文档内容，请稍候...");
+
+    try {
+      let content = "";
+      if (extension === "txt") {
+        content = await file.text();
+      } else if (extension === "pdf") {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdfjs = await import("pdfjs-dist");
+        pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+        const loadingTask = pdfjs.getDocument({ data: new Uint8Array(arrayBuffer) });
+        const pdfDoc = await loadingTask.promise;
+        let fullText = "";
+        for (let i = 1; i <= pdfDoc.numPages; i++) {
+          const page = await pdfDoc.getPage(i);
+          const textContent = await page.getTextContent();
+          const pageText = textContent.items.map((item: any) => item.str).join(" ");
+          fullText += pageText + "\n";
+        }
+        content = fullText;
+      } else if (extension === "doc" || extension === "docx") {
+        const arrayBuffer = await file.arrayBuffer();
+        const mammoth = await import("mammoth");
+        const result = await mammoth.extractRawText({ arrayBuffer });
+        content = result.value;
+      } else {
+        toast.dismiss(loadingToast);
+        toast.error("暂不支持此文件格式");
+        return;
+      }
+
+      setEditDoc({
+        title: file.name.replace(/\.[^.]+$/, ""),
+        category: "general",
+        content: content.trim(),
+        fileType: extension,
+        tags: [],
+        vectorized: false
+      });
+      toast.dismiss(loadingToast);
+      toast.success(`文档「${file.name}」解析成功！请确认后保存。`);
+    } catch (err: any) {
+      console.error("File parse error", err);
+      toast.dismiss(loadingToast);
+      toast.error(`文档解析失败: ${err.message || err}`);
+    }
   };
 
   return (

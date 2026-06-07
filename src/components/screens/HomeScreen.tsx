@@ -288,12 +288,47 @@ function MobileToday() {
 ═══════════════════════════════════════════════════════ */
 function MobileSpots() {
   const [spots, setSpots] = useState<Spot[]>([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(false);
+
+  const loadSpots = async (p: number) => {
+    if (loading) return;
+    setLoading(true);
+    try {
+      const r = await fetch(`/api/spots?page=${p}&limit=4`);
+      const d = await r.json();
+      if (Array.isArray(d)) {
+        if (d.length < 4) setHasMore(false);
+        setSpots(prev => {
+          const ids = new Set(prev.map(s => s.id));
+          const uniq = d.filter(s => !ids.has(s.id));
+          return [...prev, ...uniq];
+        });
+      } else {
+        setHasMore(false);
+      }
+    } catch {
+      setHasMore(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    fetch("/api/spots?limit=6")
-      .then(r => r.json())
-      .then(d => setSpots(Array.isArray(d) ? d.slice(0, 6) : []))
-      .catch(() => {});
+    loadSpots(1);
   }, []);
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const target = e.currentTarget;
+    if (target.scrollLeft + target.clientWidth >= target.scrollWidth - 60) {
+      if (hasMore && !loading) {
+        const next = page + 1;
+        setPage(next);
+        loadSpots(next);
+      }
+    }
+  };
 
   return (
     <div className="pt-3">
@@ -309,8 +344,12 @@ function MobileSpots() {
           </span>
         </Link>
       </div>
-      <div className="flex gap-3 pl-4 pr-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
-        {spots.length === 0
+      <div 
+        className="flex gap-3 pl-4 pr-2 overflow-x-auto pb-1" 
+        style={{ scrollbarWidth: "none" }}
+        onScroll={handleScroll}
+      >
+        {spots.length === 0 && loading
           ? [1, 2, 3].map(i => (
               <div key={i} className="skeleton rounded-2xl flex-shrink-0"
                 style={{ width: 130, height: 160 }} />
@@ -350,6 +389,11 @@ function MobileSpots() {
                 </motion.div>
               </Link>
             ))}
+          {loading && spots.length > 0 && (
+            <div className="flex items-center justify-center flex-shrink-0 w-24 h-[160px] rounded-2xl border border-dashed border-[#8F9F8F] text-[11px]" style={{ color: "#8F9F8F" }}>
+              加载中...
+            </div>
+          )}
       </div>
     </div>
   );

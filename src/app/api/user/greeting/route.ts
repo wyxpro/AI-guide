@@ -3,10 +3,9 @@ import { requireAuth } from "@/lib/auth";
 import { ai } from "@eazo/sdk";
 import { getUserPreferences } from "@/lib/db/queries/user-data";
 import { getVisitRecordsByUser } from "@/lib/db/queries/user-data";
-
-const SPOT_NAMES: Record<number, string> = {
-  1: "揽月亭", 2: "翠玉湖", 3: "听松轩", 4: "百花谷", 5: "古窑遗址", 6: "溪流栈道",
-};
+import { db } from "@/lib/db/client";
+import { spots } from "@/lib/db/schema/spots";
+import { eq } from "drizzle-orm";
 
 function getTimeOfDay() {
   const h = new Date().getHours();
@@ -34,7 +33,13 @@ export async function GET(request: NextRequest) {
       getVisitRecordsByUser(userId),
     ]);
 
-    const lastSpot = visits[0]?.spotId ? SPOT_NAMES[visits[0].spotId] : null;
+    let lastSpot = null;
+    if (visits[0]?.spotId) {
+      const spotRow = await db.select({ name: spots.name }).from(spots).where(eq(spots.id, visits[0].spotId)).limit(1);
+      if (spotRow[0]) {
+        lastSpot = spotRow[0].name;
+      }
+    }
     const mode = prefs?.accessibilityMode ?? "normal";
     const interests = (prefs?.interests as string[] | null)?.slice(0, 2).join("、") || "";
 

@@ -1,9 +1,11 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { X, Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useEazo } from "@eazo/sdk/react";
+import { request } from "@/lib/api/request";
 
 const SPRING = { type: "spring" as const, stiffness: 280, damping: 35 };
 
@@ -16,9 +18,44 @@ const MODES = [
 export function AISettingsScreen() {
   const [selected, setSelected] = useState("normal");
   const router = useRouter();
+  
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const user = useEazo((s: any) => s.auth.user);
 
-  const save = () => {
-    toast.success("设置已保存，重启导览服务...");
+  useEffect(() => {
+    const local = localStorage.getItem("accessibility_mode") || "normal";
+    setSelected(local);
+    if (user) {
+      request("/api/user/preferences")
+        .then(r => r.json())
+        .then(p => {
+          if (p && p.accessibilityMode) {
+            setSelected(p.accessibilityMode);
+            localStorage.setItem("accessibility_mode", p.accessibilityMode);
+            document.documentElement.setAttribute("data-accessibility-mode", p.accessibilityMode);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [user]);
+
+  const save = async () => {
+    localStorage.setItem("accessibility_mode", selected);
+    document.documentElement.setAttribute("data-accessibility-mode", selected);
+    window.dispatchEvent(new Event("accessibility-mode-change"));
+    
+    if (user) {
+      try {
+        await request("/api/user/preferences", {
+          method: "PUT",
+          body: JSON.stringify({ accessibilityMode: selected })
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    
+    toast.success("设置已保存，已为您更新导览模式...");
     setTimeout(() => router.back(), 800);
   };
 

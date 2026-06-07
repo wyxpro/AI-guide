@@ -12,6 +12,7 @@ export const knowledgeDocs = pgTable("knowledge_docs", {
   fileSize: integer("file_size").default(0), // bytes
   status: text("status").notNull().default("active"), // active | inactive | processing
   vectorized: boolean("vectorized").notNull().default(false),
+  embedding: jsonb("embedding").$type<number[]>().default([]),
   tags: jsonb("tags").$type<string[]>().default([]),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
@@ -54,3 +55,17 @@ export const analyticsDaily = pgTable("analytics_daily", {
 });
 
 export type AnalyticsDaily = InferSelectModel<typeof analyticsDaily>;
+
+// QA conversation logs for B-end drill-down
+export const qaLogs = pgTable("qa_logs", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id"),
+  question: text("question").notNull(),
+  answer: text("answer").notNull(),
+  sentiment: text("sentiment").notNull().default("neutral"), // positive | neutral | negative
+  rating: integer("rating"), // user rating/feedback if any (1-5)
+  date: text("date").notNull(), // YYYY-MM-DD
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export type QaLog = InferSelectModel<typeof qaLogs>;
