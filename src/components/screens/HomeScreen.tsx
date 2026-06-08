@@ -72,30 +72,8 @@ function PCView() {
 
   return (
     <div className="w-full min-h-screen flex flex-col bg-[#FAF8F5] text-zinc-800 overflow-y-auto">
-      {/* Desktop Header */}
-      <header className="w-full bg-white border-b border-zinc-200/60 sticky top-0 z-50 px-6 py-3 flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-[#3A4D39] flex items-center justify-center text-white font-serif text-sm font-bold shadow-md">旅</div>
-          <span className="font-bold text-lg tracking-wider" style={{ fontFamily: "var(--font-noto-serif)", color: "#3A4D39" }}>
-            旅行吧 · 智能景区导游
-          </span>
-        </div>
-        <nav className="flex items-center gap-8 text-sm font-medium">
-          <Link href="/home" className="text-[#3A4D39] hover:text-[#4F6F52] transition-colors relative after:content-[''] after:absolute after:bottom-[-6px] after:left-0 after:w-full after:h-[2px] after:bg-[#3A4D39]">首页</Link>
-          <Link href="/spots" className="text-zinc-600 hover:text-zinc-950 transition-colors">景区景点</Link>
-          <Link href="/routes" className="text-zinc-600 hover:text-zinc-950 transition-colors">路线导航</Link>
-          <Link href="/qa" className="text-zinc-600 hover:text-zinc-950 transition-colors">智能问答</Link>
-          <Link href="/profile" className="text-zinc-600 hover:text-zinc-950 transition-colors">个人中心</Link>
-        </nav>
-        <div className="flex items-center gap-3">
-          <span className="text-[10px] font-bold text-[#D2A053] border border-[#D2A053] px-2.5 py-1 rounded-full bg-[#D2A053]/5">
-            国家5A级景区
-          </span>
-        </div>
-      </header>
-
       {/* Main Body */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-8 space-y-10">
+      <div className="flex-1 w-full max-w-full px-6 lg:px-10 py-8 space-y-10">
         {/* Hero Banner Area */}
         <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
           {/* Left: Banner Cover */}
@@ -279,7 +257,7 @@ function PCView() {
                 ))}
           </div>
         </section>
-      </main>
+      </div>
 
       {/* Desktop Footer */}
       <footer className="w-full bg-white border-t border-zinc-200/60 py-6 mt-16 px-6">
@@ -345,26 +323,10 @@ function MobileHeaderAndBanner() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/60" />
       </div>
 
-      {/* 1. Status Bar Row */}
-      <div className="relative z-10 px-4 pt-2.5 flex items-center justify-between text-white text-xs font-semibold select-none">
-        <span>{time}</span>
-        <div className="flex items-center gap-1.5">
-          <span>☀️ 22°C • 晴转多云</span>
-          <div className="flex items-center gap-1 ml-1 opacity-95">
-            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.9-1.9C9.07 19.58 10.49 20 12 20c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 15c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/>
-            </svg>
-            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-            </svg>
-          </div>
-        </div>
-      </div>
-
-      {/* 2. Search Bar Pill + Map Button */}
-      <div className="relative z-10 px-4 mt-3 flex items-center gap-2">
+      {/* 2. Search Bar Pill + Map Button (Weather Status Bar Removed, Height expanded) */}
+      <div className="relative z-10 px-4 pt-5 flex items-center gap-2">
         {/* Search Pill Container */}
-        <div className="flex-1 flex items-center bg-white/95 backdrop-blur-md rounded-full px-3.5 py-1.5 border border-zinc-200/50 shadow-sm">
+        <div className="flex-1 h-12 flex items-center bg-white/95 backdrop-blur-md rounded-full px-4 border border-zinc-200/50 shadow-sm">
           {/* Location Trigger */}
           <Link href="/spots" className="flex items-center gap-0.5 text-xs font-bold text-zinc-800 flex-shrink-0 cursor-pointer">
             <MapPin className="w-3.5 h-3.5 text-zinc-700" fill="currentColor" />
@@ -391,7 +353,7 @@ function MobileHeaderAndBanner() {
 
         {/* Map Button */}
         <Link href="/routes">
-          <div className="w-10 h-10 bg-white/95 backdrop-blur-md border border-zinc-200/50 rounded-xl shadow-sm flex flex-col items-center justify-center cursor-pointer hover:bg-zinc-50 transition-colors">
+          <div className="w-12 h-12 bg-white/95 backdrop-blur-md border border-zinc-200/50 rounded-xl shadow-sm flex flex-col items-center justify-center cursor-pointer hover:bg-zinc-50 transition-colors">
             <svg className="w-4 h-4 text-[#FF5B45]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
               <line x1="9" y1="3" x2="9" y2="18"/>

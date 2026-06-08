@@ -85,10 +85,24 @@ export function RoutesScreen() {
   // Auto-play TTS switch
   const [autoplayEnabled, setAutoplayEnabled] = useState(false);
 
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const [leafletLoaded, setLeafletLoaded] = useState(false);
+
   // Load Leaflet map script and stylesheet dynamically
   useEffect(() => {
     if (typeof window === "undefined") return;
-
+    if ((window as any).L) {
+      setLeafletLoaded(true);
+      return;
+    }
     const link = document.createElement("link");
     link.rel = "stylesheet";
     link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
@@ -97,36 +111,40 @@ export function RoutesScreen() {
     const script = document.createElement("script");
     script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
     script.onload = () => {
-      const L = (window as any).L;
-      if (!L || !mapRef.current) return;
-
-      // Initialize map instance
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-      }
-      
-      const map = L.map(mapRef.current, { zoomControl: false }).setView([29.563, 106.578], 13);
-      mapInstanceRef.current = map;
-
-      // OpenStreetMap Tiles
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; OpenStreetMap'
-      }).addTo(map);
-
-      // Render default markers
-      renderMarkers(CHONGQING_SPOTS);
+      setLeafletLoaded(true);
     };
     document.body.appendChild(script);
+  }, []);
+
+  // Initialize map instance
+  useEffect(() => {
+    if (!leafletLoaded) return;
+    const L = (window as any).L;
+    if (!L || !mapRef.current) return;
+
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.remove();
+      mapInstanceRef.current = null;
+    }
+    
+    const map = L.map(mapRef.current, { zoomControl: false }).setView([29.563, 106.578], 13);
+    mapInstanceRef.current = map;
+
+    // OpenStreetMap Tiles
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    // Render default markers
+    renderMarkers(CHONGQING_SPOTS);
 
     return () => {
-      document.head.removeChild(link);
-      document.body.removeChild(script);
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
     };
-  }, []);
+  }, [leafletLoaded, isMobile]);
 
   // Audio clean up
   useEffect(() => {
@@ -164,7 +182,7 @@ export function RoutesScreen() {
 
       map.fitBounds(routePolylineRef.current.getBounds(), { padding: [60, 60] });
     }
-  }, [activeRoute]);
+  }, [activeRoute, leafletLoaded, isMobile]);
 
   // Render markers function
   const renderMarkers = (spotsList: typeof CHONGQING_SPOTS) => {
@@ -343,11 +361,8 @@ export function RoutesScreen() {
 
   return (
     <div className="relative min-h-svh w-full overflow-hidden bg-neutral-100 select-none">
-      
-      {/* ══════════════════════════════════════════════
-          MOBILE VIEW (Strictly mirrors Image 1)
-          ══════════════════════════════════════════════ */}
-      <div className="md:hidden relative w-full h-svh flex flex-col overflow-hidden">
+      {isMobile ? (
+        <div className="relative w-full h-svh flex flex-col overflow-hidden">
         
         {/* Full Map Container */}
         <div ref={mapRef} className="absolute inset-0 z-0 bg-neutral-200" />
@@ -454,7 +469,7 @@ export function RoutesScreen() {
         </div>
 
         {/* Bottom card & panel layout */}
-        <div className="mt-auto relative z-10 w-full px-3 pb-3 flex flex-col gap-2.5">
+        <div className="mt-auto relative z-10 w-full px-3 pb-[76px] flex flex-col gap-2.5">
           {/* Spot detail card */}
           {activeSpot && (
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
@@ -492,6 +507,16 @@ export function RoutesScreen() {
               </button>
             </motion.div>
           )}
+
+          {/* Smart Route Generation Button */}
+          <button
+            onClick={() => setShowGeneratorDrawer(true)}
+            className="w-full py-2.5 text-white rounded-xl text-[11px] font-black shadow-lg flex items-center justify-center gap-1.5 hover:brightness-105 active:scale-98 transition-all border border-[#4F6F52]/30"
+            style={{ background: "linear-gradient(135deg, #4F6F52, #3A5240)" }}
+          >
+            <Compass className="w-3.5 h-3.5 animate-pulse" />
+            <span>✨ 智能专属路线生成</span>
+          </button>
 
           {/* Under card control bar panel */}
           <div className="bg-[#FAF8F5]/95 backdrop-blur-md border border-zinc-200/50 shadow-2xl rounded-2xl p-2 flex items-center justify-between">
@@ -698,41 +723,10 @@ export function RoutesScreen() {
         </AnimatePresence>
 
       </div>
-
-      {/* ══════════════════════════════════════════════
-          DESKTOP VIEW (Strictly mirrors Image 2)
-          ══════════════════════════════════════════════ */}
-      <div className="hidden md:flex flex-col w-full h-screen overflow-hidden bg-[#F7F6F3]">
-        
-        {/* Desktop Custom Nav Header */}
-        <header className="w-full bg-white border-b border-zinc-200 px-6 py-3 flex items-center justify-between z-10 shadow-sm flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-[#3A4D39] flex items-center justify-center text-white font-serif text-base font-bold shadow-md">灵</div>
-            <div className="flex flex-col">
-              <span className="font-extrabold text-sm tracking-wider text-[#3A4D39]" style={{ fontFamily: "var(--font-noto-serif)" }}>
-                灵山胜境
-              </span>
-              <span className="text-[8px] font-bold text-zinc-400 tracking-widest font-mono uppercase">LINGSHAN SCENIC AREA</span>
-            </div>
-          </div>
-          <nav className="flex items-center gap-7 text-xs font-bold">
-            <Link href="/home" className="text-zinc-500 hover:text-zinc-950 transition-colors">首页</Link>
-            <Link href="/spots" className="text-zinc-500 hover:text-zinc-950 transition-colors">景点</Link>
-            <Link href="/routes" className="text-[#3A4D39] hover:text-[#4F6F52] transition-colors relative after:content-[''] after:absolute after:bottom-[-6px] after:left-0 after:w-full after:h-[2.5px] after:bg-[#3A4D39]">路线</Link>
-            <Link href="/routes" className="text-zinc-500 hover:text-zinc-950 transition-colors">地图导航</Link>
-            <Link href="/spots/5" className="text-zinc-500 hover:text-zinc-950 transition-colors">拈花湾</Link>
-            <Link href="/home" className="text-zinc-500 hover:text-zinc-950 transition-colors">游览指南</Link>
-            <Link href="/profile" className="text-zinc-500 hover:text-zinc-950 transition-colors">历史文化</Link>
-          </nav>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold text-[#D2A053] border border-[#D2A053]/50 px-3 py-1 rounded-full bg-[#D2A053]/5 shadow-sm">
-              ★ 国家5A级景区
-            </span>
-          </div>
-        </header>
-
-        {/* Main Panel Content split into 3 columns */}
-        <div className="flex-1 flex w-full overflow-hidden">
+      ) : (
+        <div className="flex flex-col w-full h-screen overflow-hidden bg-[#F7F6F3]">
+          {/* Main Panel Content split into 3 columns */}
+          <div className="flex-1 flex w-full overflow-hidden">
           
           {/* Column 1: Left Navigation panel */}
           <div className="w-[320px] bg-white border-r border-zinc-200/80 flex flex-col overflow-y-auto p-4 space-y-5 flex-shrink-0 shadow-sm">
@@ -997,9 +991,8 @@ export function RoutesScreen() {
           </div>
 
         </div>
-
       </div>
-
+      )}
     </div>
   );
 }

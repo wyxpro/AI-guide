@@ -181,7 +181,7 @@ export function SpotsScreen() {
               <p className="text-xs text-[#8A959E]">没有找到相关目的地</p>
             </div>
           ) : (
-            <div className="grid grid-cols-3 gap-x-2.5 gap-y-4 pb-12">
+            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-2.5 gap-y-4 pb-12">
               {filteredSpots.map((spot) => (
                 <Link key={spot.id} href={`/spots/${spot.id}`}>
                   <motion.div

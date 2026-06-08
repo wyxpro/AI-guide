@@ -186,6 +186,7 @@ export function ProfileScreen() {
   const user = useEazo((s: any) => s.auth.user) as { name?: string | null; username?: string | null; email?: string | null } | null;
 
   const [visits, setVisits] = useState<VisitRecord[]>([]);
+  const [visitsExpanded, setVisitsExpanded] = useState(false);
   const [favorites, setFavorites] = useState<FavoriteRecord[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [activeTab, setActiveTab] = useState<"visits" | "favorites">("visits");
@@ -488,7 +489,7 @@ export function ProfileScreen() {
                       ? <EmptyState icon="🗺️" text={texts.emptyVisits} />
                       : (
                         <div className="divide-y" style={{ borderColor: "#F5F2EC" }}>
-                          {visits.slice(0,10).map((v, i) => {
+                          {(visitsExpanded ? visits.slice(0, 10) : visits.slice(0, 2)).map((v, i) => {
                             const info = v.spotId ? getSpotInfo(v.spotId, mode) : null;
                             return (
                               <motion.div key={v.id}
@@ -501,7 +502,7 @@ export function ProfileScreen() {
                                     border: mode === "child" ? "1px dashed #FFB0B0" : mode === "elder" ? "1px solid #D2A053" : "none"
                                   }}>
                                   {info?.emoji ?? "📍"}
-                                </div>
+                                  </div>
                                 <div className="flex-1 min-w-0">
                                   <p className={`font-bold truncate ${theme.textSizeBody}`} style={{ color: theme.textColor }}>
                                     {info?.name ?? (v.routeId ? "游览路线" : "景区参观")}
@@ -518,7 +519,16 @@ export function ProfileScreen() {
                               </motion.div>
                             );
                           })}
-                          {visits.length > 10 && (
+                          {visits.length > 2 && (
+                            <button
+                              onClick={() => setVisitsExpanded(!visitsExpanded)}
+                              className="w-full py-3 text-center text-xs font-bold transition-colors hover:bg-neutral-50/50 flex items-center justify-center gap-1"
+                              style={{ color: theme.accentColor, borderTop: "1px solid #F5F2EC" }}
+                            >
+                              {visitsExpanded ? "收起游览记录 ↑" : `展开更多记录 (共 ${visits.length} 条) ↓`}
+                            </button>
+                          )}
+                          {visits.length > 10 && visitsExpanded && (
                             <Link href="/profile/history">
                               <div className="px-4 py-3 text-center font-bold" style={{ color: theme.accentColor, fontSize: mode === "elder" ? 15 : 12 }}>
                                 查看全部 {visits.length} 条 →

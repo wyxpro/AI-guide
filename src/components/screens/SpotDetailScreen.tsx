@@ -151,7 +151,7 @@ export function SpotDetailScreen({ spotId }: { spotId: string }) {
   return (
     <div className="min-h-svh relative" style={{ background: "#FAF8F5" }}>
       {/* Floating Buttons mid-right */}
-      <div className="fixed right-4 top-[55%] -translate-y-1/2 z-40 flex flex-col gap-3.5 max-w-[280px]">
+      <div className="fixed right-4 top-[70%] -translate-y-1/2 z-40 flex flex-col gap-3.5 max-w-[280px]">
         {/* Floating Card 1: 导览官小玉 */}
         <Link href={`/qa?spot=${spot.id}&name=${encodeURIComponent(spot.name)}`}>
           <motion.div
