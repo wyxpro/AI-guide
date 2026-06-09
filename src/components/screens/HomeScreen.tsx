@@ -172,7 +172,7 @@ function PCView() {
         </section>
 
         {/* Entrance Cards Grid */}
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <motion.div
             whileHover={{ y: -4 }}
             onClick={() => router.push("/spots?category=cultural")}
@@ -203,6 +203,22 @@ function PCView() {
               </span>
             </div>
             <span className="text-6xl select-none opacity-80 transition-transform duration-300 group-hover:scale-110">🏺</span>
+          </motion.div>
+
+          <motion.div
+            whileHover={{ y: -4 }}
+            onClick={() => router.push("/vr-recognize")}
+            className="relative bg-gradient-to-br from-[#EEF7F2] to-[#E8F2EC] border border-[#D5EDE0] rounded-3xl p-6 min-h-[120px] flex items-center justify-between overflow-hidden shadow-sm cursor-pointer group"
+          >
+            <div className="space-y-2 relative z-10">
+              <span className="text-lg font-black text-[#4F6F52] tracking-wide block">VR 3D 识景</span>
+              <p className="text-xs text-zinc-600 max-w-[280px]">即拍即识，AI 即时识别并输出深度文化解读，带您开启沉浸式体验。</p>
+              <span className="text-[10px] font-bold text-white bg-[#4F6F52] px-2.5 py-0.5 rounded-full inline-flex items-center gap-0.5 shadow-sm mt-1">
+                立即识别
+                <ChevronRight className="w-3 h-3" />
+              </span>
+            </div>
+            <span className="text-6xl select-none opacity-80 transition-transform duration-300 group-hover:scale-110">🕶️</span>
           </motion.div>
         </section>
 
@@ -483,30 +499,30 @@ function MobileChengduPanel() {
 }
 
 /* ═══════════════════════════════════════════════════════
-   Custom Entrance Buttons (名校导览 & 文博精讲)
+   Custom Entrance Buttons (名校导览 & 文博精讲 & VR识别)
    ═══════════════════════════════════════════════════════ */
 function MobileEntranceCards() {
   const router = useRouter();
 
   return (
-    <div className="px-4 mt-4 grid grid-cols-2 gap-3 select-none">
+    <div className="px-4 mt-4 grid grid-cols-3 gap-2 select-none">
       {/* 1. 名校导览 */}
       <motion.div
         whileTap={{ scale: 0.96 }}
         onClick={() => router.push("/spots?category=cultural")}
-        className="relative bg-gradient-to-br from-[#FFF5F2] to-[#FFF8F6] border border-[#FFE8E2] rounded-2xl p-3.5 h-[84px] flex flex-col justify-between overflow-hidden shadow-[0_2px_8px_rgba(255,91,69,0.03)] cursor-pointer"
+        className="relative bg-gradient-to-br from-[#FFF5F2] to-[#FFF8F6] border border-[#FFE8E2] rounded-2xl p-2.5 h-[84px] flex flex-col justify-between overflow-hidden shadow-[0_2px_8px_rgba(255,91,69,0.03)] cursor-pointer"
       >
         <div className="flex flex-col">
-          <span className="text-xs font-black text-[#FF5B45] tracking-wide">名校导览</span>
-          <span className="text-[8px] font-bold text-white bg-[#FF5B45] px-1.5 py-0.5 rounded-full w-fit mt-1 shadow-sm leading-none flex items-center gap-0.5">
-            感受名校风范
+          <span className="text-[11px] font-black text-[#FF5B45] tracking-wide">名校导览</span>
+          <span className="text-[7.5px] font-bold text-white bg-[#FF5B45] px-1 py-0.5 rounded-full w-fit mt-1 shadow-sm leading-none flex items-center gap-0.5">
+            名校风范
             <svg className="w-1.5 h-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4">
               <polyline points="9 18 15 12 9 6"/>
             </svg>
           </span>
         </div>
         
-        <span className="absolute bottom-1 right-2 text-[38px] leading-none opacity-85 select-none pointer-events-none">
+        <span className="absolute bottom-1 right-1 text-[30px] leading-none opacity-85 select-none pointer-events-none">
           🏫
         </span>
       </motion.div>
@@ -515,20 +531,41 @@ function MobileEntranceCards() {
       <motion.div
         whileTap={{ scale: 0.96 }}
         onClick={() => router.push("/spots?category=history")}
-        className="relative bg-gradient-to-br from-[#FCF8EE] to-[#FAF6E8] border border-[#F5EED8] rounded-2xl p-3.5 h-[84px] flex flex-col justify-between overflow-hidden shadow-[0_2px_8px_rgba(210,160,83,0.03)] cursor-pointer"
+        className="relative bg-gradient-to-br from-[#FCF8EE] to-[#FAF6E8] border border-[#F5EED8] rounded-2xl p-2.5 h-[84px] flex flex-col justify-between overflow-hidden shadow-[0_2px_8px_rgba(210,160,83,0.03)] cursor-pointer"
       >
         <div className="flex flex-col">
-          <span className="text-xs font-black text-[#D2A053] tracking-wide">文博精讲</span>
-          <span className="text-[8px] font-bold text-white bg-[#D2A053] px-1.5 py-0.5 rounded-full w-fit mt-1 shadow-sm leading-none flex items-center gap-0.5">
-            走进历史现场
+          <span className="text-[11px] font-black text-[#D2A053] tracking-wide">文博精讲</span>
+          <span className="text-[7.5px] font-bold text-white bg-[#D2A053] px-1 py-0.5 rounded-full w-fit mt-1 shadow-sm leading-none flex items-center gap-0.5">
+            历史现场
             <svg className="w-1.5 h-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4">
               <polyline points="9 18 15 12 9 6"/>
             </svg>
           </span>
         </div>
         
-        <span className="absolute bottom-1.5 right-2 text-[34px] leading-none opacity-85 select-none pointer-events-none">
+        <span className="absolute bottom-1.5 right-1.5 text-[26px] leading-none opacity-85 select-none pointer-events-none">
           🏺
+        </span>
+      </motion.div>
+
+      {/* 3. VR 识别 */}
+      <motion.div
+        whileTap={{ scale: 0.96 }}
+        onClick={() => router.push("/vr-recognize")}
+        className="relative bg-gradient-to-br from-[#EEF7F2] to-[#E8F2EC] border border-[#D5EDE0] rounded-2xl p-2.5 h-[84px] flex flex-col justify-between overflow-hidden shadow-[0_2px_8px_rgba(79,111,82,0.03)] cursor-pointer"
+      >
+        <div className="flex flex-col">
+          <span className="text-[11px] font-black text-[#4F6F52] tracking-wide">VR识别</span>
+          <span className="text-[7.5px] font-bold text-white bg-[#4F6F52] px-1 py-0.5 rounded-full w-fit mt-1 shadow-sm leading-none flex items-center gap-0.5">
+            即拍即识
+            <svg className="w-1.5 h-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </span>
+        </div>
+        
+        <span className="absolute bottom-1.5 right-1.5 text-[26px] leading-none opacity-85 select-none pointer-events-none">
+          🕶️
         </span>
       </motion.div>
     </div>

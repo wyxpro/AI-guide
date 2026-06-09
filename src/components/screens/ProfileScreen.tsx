@@ -3,8 +3,9 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MapPin, Heart, Clock, Settings, MessageSquare,
-  Share2, Image as ImageIcon, ChevronRight,
-  History, Trophy, Bell, Sun, Zap, Baby, ArrowRight, LogOut, X
+  Share2, Image as ImageIcon, ChevronRight, ChevronLeft,
+  History, Trophy, Bell, Sun, Zap, Baby, ArrowRight, LogOut, X,
+  Shield, Eye, BookOpen, Volume2, Trash2, HelpCircle, Info, Sparkles, Map, User, Navigation
 } from "lucide-react";
 import { useEazo } from "@eazo/sdk/react";
 import { auth } from "@eazo/sdk";
@@ -20,182 +21,31 @@ interface VisitRecord { id: number; type: string; spotId: number | null; routeId
 interface FavoriteRecord { id: number; type: string; spotId: number | null; routeId: number | null; spotName?: string; routeName?: string; spotImage?: string; routeImage?: string }
 
 type Mode = "standard" | "elder" | "child";
-const MODE_CONFIG: Record<Mode, { label: string; icon: typeof Sun; color: string; desc: string }> = {
-  standard: { label: "标准", icon: Sun,  color: "#4F6F52", desc: "默认体验" },
-  elder:    { label: "适老", icon: Zap,  color: "#D2A053", desc: "安全大字" },
-  child:    { label: "童趣", icon: Baby, color: "#FF6B8B", desc: "探险乐园" },
-};
 
-const THEME_STYLES = {
-  standard: {
-    bg: "#F2EEE7",
-    heroBg: "linear-gradient(160deg,#1E2C28 0%,#121815 60%,#0D1510 100%)",
-    cardBg: "white",
-    cardBorder: "1px solid #E6E2D8",
-    textColor: "#1E2522",
-    subColor: "#8F9F8F",
-    accentColor: "#4F6F52",
-    accentBg: "#F5F0E8",
-    titleFont: "var(--font-noto-serif)",
-    textSizeTitle: "text-[19px]",
-    textSizeBody: "text-[13px]",
-    textSizeSub: "text-[11px]",
-    avatarRing: "rgba(210,160,83,0.4)",
-    badgeBg: "#4F6F52",
-    tabActiveBg: "#4F6F52",
-    btnPadding: "py-2.5 px-4",
-    itemGap: "gap-3",
-    cardRadius: "rounded-2xl",
-  },
-  elder: {
-    bg: "#FAF6F0",
-    heroBg: "linear-gradient(160deg,#2D2219 0%,#1F1610 60%,#120B07 100%)",
-    cardBg: "white",
-    cardBorder: "2px solid #D2A053",
-    textColor: "#111111",
-    subColor: "#555555",
-    accentColor: "#B8843A",
-    accentBg: "#FFF8F0",
-    titleFont: "var(--font-noto-sans)",
-    textSizeTitle: "text-[24px]",
-    textSizeBody: "text-[16px]",
-    textSizeSub: "text-[14px]",
-    avatarRing: "#D2A053",
-    badgeBg: "#D2A053",
-    tabActiveBg: "#D2A053",
-    btnPadding: "py-3.5 px-5",
-    itemGap: "gap-4",
-    cardRadius: "rounded-xl",
-  },
-  child: {
-    bg: "#FFFDF9",
-    heroBg: "linear-gradient(135deg,#FF6B8B 0%,#FF8E53 100%)",
-    cardBg: "white",
-    cardBorder: "2px dashed #FFB0B0",
-    textColor: "#2D3748",
-    subColor: "#718096",
-    accentColor: "#FF6B8B",
-    accentBg: "#FFF0F2",
-    titleFont: "var(--font-noto-serif)",
-    textSizeTitle: "text-[21px]",
-    textSizeBody: "text-[14px]",
-    textSizeSub: "text-[11px]",
-    avatarRing: "#FFE5E5",
-    badgeBg: "#FF6B8B",
-    tabActiveBg: "#FF6B8B",
-    btnPadding: "py-3 px-4",
-    itemGap: "gap-3.5",
-    cardRadius: "rounded-[24px]",
-  }
-};
-
-const MODE_TEXTS = {
-  standard: {
-    spotCountLabel: "游览景点",
-    visitCountLabel: "足迹次数",
-    favCountLabel: "我的收藏",
-    visitsTab: "游览记录",
-    favoritesTab: "我的收藏",
-    emptyVisits: "还没有游览记录，快去探索吧！",
-    emptyFavs: "还没有收藏，探索后随心收藏吧",
-    quickQALabel: "历史问答",
-    quickQASub: "查看对话记录",
-    quickBadgeLabel: "我的徽章",
-    quickBadgeSub: (visits: number) => `已获 ${Math.min(Math.ceil(visits/4)+1,3)} 枚`,
-    quickNotifLabel: "消息通知",
-    quickNotifSub: "景区最新动态",
-    quickSettingLabel: "导览设置",
-    quickSettingSub: "偏好与个性化",
-    footerText: "翠玉文旅运营中心 · AI导览官小玉",
-  },
-  elder: {
-    spotCountLabel: "去过的景点",
-    visitCountLabel: "打卡总次数",
-    favCountLabel: "保存的景点",
-    visitsTab: "游览历史记录",
-    favoritesTab: "我的收藏夹",
-    emptyVisits: "暂时还没有去过景点，去景区转转吧！",
-    emptyFavs: "还没有保存过景点，点击心形图标即可保存",
-    quickQALabel: "问答历史记录",
-    quickQASub: "看以前的提问",
-    quickBadgeLabel: "荣誉勋章",
-    quickBadgeSub: (visits: number) => `已获得 ${Math.min(Math.ceil(visits/4)+1,3)} 枚荣誉勋章`,
-    quickNotifLabel: "景区公告通知",
-    quickNotifSub: "看景区的最新消息",
-    quickSettingLabel: "大字导览设置",
-    quickSettingSub: "修改字号与声音偏好",
-    footerText: "翠玉景区服务热线与管理中心 · 祝您旅途愉快",
-  },
-  child: {
-    spotCountLabel: "探索景点 👑",
-    visitCountLabel: "探险足迹 🐾",
-    favCountLabel: "神奇口袋 💖",
-    visitsTab: "我的冒险足迹 🐾",
-    favoritesTab: "魔法口袋宝盒 🎁",
-    emptyVisits: "冒险还没有开始呢，快去寻找宝藏吧！",
-    emptyFavs: "魔法口袋空空的，把喜欢的景点放进来吧！",
-    quickQALabel: "小玉树洞 💬",
-    quickQASub: "翻看历史悄悄话",
-    quickBadgeLabel: "探险家勋章 🏅",
-    quickBadgeSub: (visits: number) => `已收集 ${Math.min(Math.ceil(visits/4)+1,3)} 个神奇勋章`,
-    quickNotifLabel: "景区小喇叭 📢",
-    quickNotifSub: "有什么好玩的活动呢",
-    quickSettingLabel: "魔法口袋设置 ⚙️",
-    quickSettingSub: "调大音量或者更换导游",
-    footerText: "翠玉童趣大冒险乐园 · 探索更多奇妙故事",
-  }
-};
-
-function getSpotInfo(id: number, mode: Mode) {
-  const SPOT_NAMES: Record<number, { name: string; emoji: string }> = {
-    1: { name: "揽月亭", emoji: "🏯" },
-    2: { name: "翠玉湖", emoji: "🌊" },
-    3: { name: "听松轩", emoji: "🌲" },
-    4: { name: "百花谷", emoji: "🌸" },
-    5: { name: "古窑遗址", emoji: "🏺" },
-    6: { name: "溪流栈道", emoji: "🌉" },
-  };
-  const defaultInfo = SPOT_NAMES[id] || { name: "未知景点", emoji: "📍" };
-  if (mode === "child") {
-    const childNames: Record<number, { name: string; emoji: string }> = {
-      1: { name: "揽月大城堡", emoji: "🏰" },
-      2: { name: "绿宝石大湖", emoji: "🏄" },
-      3: { name: "松鼠小松林", emoji: "🏕️" },
-      4: { name: "梦幻百花谷", emoji: "🦋" },
-      5: { name: "时空古窑洞", emoji: "🏺" },
-      6: { name: "溪水大冒险", emoji: "🧗" },
-    };
-    return childNames[id] || defaultInfo;
-  } else if (mode === "elder") {
-    const elderNames: Record<number, { name: string; emoji: string }> = {
-      1: { name: "揽月亭 (平坦步道)", emoji: "🏯" },
-      2: { name: "翠玉湖 (无障碍坡道)", emoji: "🌊" },
-      3: { name: "听松轩 (有歇脚茶水)", emoji: "🌲" },
-      4: { name: "百花谷 (平坦无阶梯)", emoji: "🌸" },
-      5: { name: "古窑遗址 (设休息长椅)", emoji: "🏺" },
-      6: { name: "溪流栈道 (平缓防滑)", emoji: "🌉" },
-    };
-    return elderNames[id] || defaultInfo;
-  }
-  return defaultInfo;
-}
+// Sub-views tabs
+type ActiveSection = "home" | "routes" | "favorites" | "interests" | "settings";
 
 export function ProfileScreen() {
   const router = useRouter();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const user = useEazo((s: any) => s.auth.user) as { name?: string | null; username?: string | null; email?: string | null } | null;
 
+  const [activeSection, setActiveSection] = useState<ActiveSection>("home");
   const [visits, setVisits] = useState<VisitRecord[]>([]);
-  const [visitsExpanded, setVisitsExpanded] = useState(false);
   const [favorites, setFavorites] = useState<FavoriteRecord[]>([]);
   const [loadingData, setLoadingData] = useState(true);
-  const [activeTab, setActiveTab] = useState<"visits" | "favorites">("visits");
   const [mode, setMode] = useState<Mode>("standard");
   const [showPoster, setShowPoster] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
 
-  const displayName = user ? (user.name || user.username || "游客") : "未登录账号";
-  const initial = user ? displayName.slice(0, 1) : "🔑";
+  // States for sub-views
+  const [routeTab, setRouteTab] = useState<"ongoing" | "completed" | "cancelled">("ongoing");
+  const [favoriteTag, setFavoriteTag] = useState<"all" | "spot" | "relic" | "route" | "audio">("all");
+  const [selectedInterests, setSelectedInterests] = useState<string[]>(["history", "nature", "architecture"]);
+  const [cacheSize, setCacheSize] = useState("23.6MB");
+
+  const displayName = user ? (user.name || user.username || "游客小玉") : "游客小玉";
+  const initial = user ? displayName.slice(0, 1) : "玉";
 
   useEffect(() => {
     Promise.all([
@@ -247,408 +97,726 @@ export function ProfileScreen() {
   const favCount = favorites.length;
   const totalVisits = visits.length;
 
-  const getBadge = () => {
-    if (mode === "child") {
-      return totalVisits >= 10
-        ? { label: "传奇冒险王", icon: "👑", color: "#FF6B8B" }
-        : totalVisits >= 4
-        ? { label: "勇敢探险家", icon: "⭐", color: "#FF8E53" }
-        : { label: "见习小勇士", icon: "🌱", color: "#8F9F8F" };
-    } else if (mode === "elder") {
-      return totalVisits >= 10
-        ? { label: "荣誉徐行者", icon: "🏆", color: "#D2A053" }
-        : totalVisits >= 4
-        ? { label: "快乐旅行家", icon: "⭐", color: "#4F6F52" }
-        : { label: "新晋体验官", icon: "🌱", color: "#8F9F8F" };
-    }
-    return totalVisits >= 10
-      ? { label: "资深探索者", icon: "🏆", color: "#D2A053" }
-      : totalVisits >= 4
-      ? { label: "游览达人",   icon: "⭐", color: "#4F6F52" }
-      : { label: "初心游客",   icon: "🌱", color: "#8F9F8F" };
+  // Clear cache action
+  const handleClearCache = () => {
+    setCacheSize("0.0MB");
+    toast.success("本地缓存已成功清除");
   };
 
-  const badge = getBadge();
-  const theme = THEME_STYLES[mode];
-  const texts = MODE_TEXTS[mode];
-
-  const links = [
-    { icon: MessageSquare, label: texts.quickQALabel, sub: texts.quickQASub, href: "/qa", onClick: undefined, color: mode === "child" ? "#FF6B8B" : "#4F6F52", bg: mode === "child" ? "#FFF0F2" : theme.cardBg },
-    { icon: Trophy, label: texts.quickBadgeLabel, sub: texts.quickBadgeSub(totalVisits), href: "/profile/history", onClick: undefined, color: mode === "child" ? "#FFA800" : "#D2A053", bg: mode === "child" ? "#FFFBF0" : theme.cardBg },
-    { icon: Bell, label: texts.quickNotifLabel, sub: texts.quickNotifSub, href: null, onClick: () => setShowNotifications(true), color: mode === "child" ? "#4ECE8C" : "#8FBF8A", bg: mode === "child" ? "#F0FCF5" : theme.cardBg },
-    { icon: Settings, label: texts.quickSettingLabel, sub: texts.quickSettingSub, href: "/ai-settings", onClick: undefined, color: mode === "child" ? "#4D96FF" : "#8F9F8F", bg: mode === "child" ? "#F0F5FF" : theme.cardBg },
-  ];
+  // Switch Interest Tag
+  const toggleInterest = (id: string) => {
+    if (selectedInterests.includes(id)) {
+      setSelectedInterests(prev => prev.filter(item => item !== id));
+    } else {
+      setSelectedInterests(prev => [...prev, id]);
+    }
+  };
 
   return (
-    <div className="min-h-svh transition-colors duration-300" style={{ background: theme.bg }}>
-
-      {/* ── Hero header ── */}
-      <div className="relative overflow-hidden transition-all duration-300"
-        style={{
-          background: theme.heroBg,
-          paddingTop: "calc(env(safe-area-inset-top,44px) + 12px)",
-          paddingBottom: 32,
-        }}>
-
-        {/* ambient glows */}
-        {mode !== "child" && (
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <div className="absolute rounded-full"
-              style={{ width: 300, height: 300, top: -100, left: "50%", transform: "translateX(-50%)",
-                background: "radial-gradient(circle,rgba(210,160,83,0.14) 0%,transparent 65%)" }} />
-            <div className="absolute rounded-full"
-              style={{ width: 200, height: 200, bottom: -40, right: -20,
-                background: "radial-gradient(circle,rgba(79,111,82,0.1) 0%,transparent 65%)" }} />
-          </div>
-        )}
-        {mode === "child" && (
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <div className="absolute rounded-full bg-white/10 w-16 h-16 top-10 left-8 blur-[1px] animate-bounce" style={{ animationDuration: "3s" }} />
-            <div className="absolute rounded-full bg-white/10 w-24 h-24 bottom-6 right-10 blur-[1px] animate-bounce" style={{ animationDuration: "5s" }} />
-            <div className="absolute rounded-full bg-white/5 w-12 h-12 top-4 right-1/4 blur-[1px] animate-pulse" />
-          </div>
-        )}
-
-        <div className="relative px-5 md:max-w-2xl md:mx-auto">
-          {/* Top row: name + settings */}
-          <div className="flex items-start justify-between mb-5">
-            <div className="flex items-center gap-3.5">
-              {/* Avatar */}
-              <div className="relative">
-                <div className="w-[68px] h-[68px] rounded-2xl flex items-center justify-center text-2xl font-black transition-all"
-                  style={{
-                    background: mode === "child" 
-                      ? "linear-gradient(135deg,#FF8E53 0%,#FF6B8B 100%)" 
-                      : "linear-gradient(135deg,#4F6F52 0%,#D2A053 100%)",
-                    fontFamily: theme.titleFont, color: "white",
-                    boxShadow: `0 0 0 3px ${theme.avatarRing}, 0 6px 24px rgba(0,0,0,0.2)`,
-                  }}>
-                  {initial}
-                </div>
-                {/* badge pill */}
-                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full text-[9px] font-bold whitespace-nowrap"
-                  style={{ background: badge.color, color: "white", border: "1.5px solid rgba(255,255,255,0.25)" }}>
-                  {badge.icon} {badge.label}
-                </div>
-              </div>
-              <div className="pt-1">
-                <p className={`font-bold text-white leading-tight ${theme.textSizeTitle}`}
-                  style={{ fontFamily: theme.titleFont }}>{displayName}</p>
-                {!user ? (
-                  <motion.button
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => { window.location.href = "/login"; }}
-                    className="mt-2 px-3 py-1 rounded-full text-[10px] font-black text-white shadow-md cursor-pointer flex items-center gap-1"
-                    style={{
-                      background: "linear-gradient(135deg, #D2A053 0%, #B8843A 100%)",
-                    }}
-                  >
-                    立即登录 <ArrowRight className="w-2.5 h-2.5" />
-                  </motion.button>
-                ) : (
-                  <p className="text-[11px] mt-1.5" style={{ color: mode === "child" ? "rgba(255,255,255,0.7)" : "rgba(255,255,255,0.4)" }}>
-                    {user?.email || "旅行吧游客"}
-                  </p>
-                )}
-              </div>
+    <div className="min-h-svh bg-[#F4F7F5] pb-24 md:pb-12 text-[#2C3E35]">
+      
+      {/* ── Main Viewport Wrapper ── */}
+      <div className="max-w-7xl mx-auto px-0 md:px-6 py-0 md:py-8 grid grid-cols-1 lg:grid-cols-4 gap-8">
+        
+        {/* ── Desktop Sidebar (Hidden on Mobile) ── */}
+        <aside className="hidden lg:block bg-white rounded-[24px] border border-[#E2EAE5] p-6 shadow-sm h-fit">
+          <div className="flex items-center gap-3.5 mb-8">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#4F6F52] to-[#8FBF8A] flex items-center justify-center text-white text-lg font-black shadow-md border-2 border-white">
+              {initial}
             </div>
-            <Link href="/ai-settings">
-              <motion.div whileTap={{ scale: 0.88 }}
-                className="w-9 h-9 rounded-xl flex items-center justify-center"
-                style={{ background: "rgba(255,255,255,0.08)" }}>
-                <Settings className="w-4 h-4" style={{ color: "rgba(255,255,255,0.5)" }} />
-              </motion.div>
-            </Link>
+            <div>
+              <h3 className="font-black text-base leading-tight">{displayName}</h3>
+              <p className="text-[11px] text-zinc-400 mt-1">Lv.5 问鼎江山 | 9步电</p>
+            </div>
           </div>
 
-          {/* Stats row */}
-          <div className="grid grid-cols-3 gap-2 mb-5">
+          {/* Nav list */}
+          <nav className="space-y-1">
             {[
-              { v: spotCount,   label: texts.spotCountLabel, icon: MapPin,   color: mode === "child" ? "#FFE699" : "#8FBF8A" },
-              { v: totalVisits, label: texts.visitCountLabel, icon: Clock,    color: mode === "child" ? "#FFC47E" : "#D2A053" },
-              { v: favCount,    label: texts.favCountLabel, icon: Heart,    color: mode === "child" ? "#FF9E9E" : "#E87878" },
-            ].map(stat => (
-              <div key={stat.label} className="rounded-2xl py-3 text-center transition-all"
-                style={{ 
-                  background: mode === "child" ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.07)", 
-                  border: mode === "child" ? "1px solid rgba(255,255,255,0.25)" : "1px solid rgba(255,255,255,0.1)" 
-                }}>
-                <stat.icon className="w-4 h-4 mx-auto mb-1"
-                  fill={stat.color} style={{ color: stat.color }} />
-                <p className={`font-black text-white leading-none ${mode === "elder" ? "text-[28px]" : "text-[22px]"}`}
-                  style={{ fontFamily: theme.titleFont }}>{stat.v}</p>
-                <p className={`mt-1 ${mode === "elder" ? "text-[12px]" : "text-[9px]"}`} style={{ color: mode === "child" ? "rgba(255,255,255,0.75)" : "rgba(255,255,255,0.38)" }}>{stat.label}</p>
-              </div>
+              { id: "home", label: "01 我的首页", icon: User },
+              { id: "routes", label: "02 我的行程", icon: Map },
+              { id: "favorites", label: "03 我的收藏", icon: Heart },
+              { id: "interests", label: "04 我的兴趣", icon: Sparkles },
+              { id: "settings", label: "05 设置与帮助", icon: Settings },
+            ].map(item => (
+              <button
+                key={item.id}
+                onClick={() => setActiveSection(item.id as ActiveSection)}
+                className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-[13px] font-bold transition-all ${
+                  activeSection === item.id 
+                    ? "bg-[#EBF3EE] text-[#4F6F52]" 
+                    : "text-zinc-600 hover:bg-zinc-50"
+                }`}
+              >
+                <item.icon className={`w-4 h-4 ${activeSection === item.id ? "text-[#4F6F52]" : "text-zinc-400"}`} />
+                {item.label}
+              </button>
             ))}
-          </div>
+          </nav>
+        </aside>
 
-          {/* Action buttons */}
-          <div className="grid grid-cols-2 gap-2.5">
-            <motion.button whileTap={{ scale: 0.95 }}
-              onClick={async () => {
-                if (!user) {
-                  toast.error("请先登录账号以分享游览足迹");
-                  return;
-                }
-                try {
-                  const { share } = await import("@eazo/sdk");
-                  await share.compose({ text: `我在旅行吧游览了 ${spotCount} 处景点！` });
-                } catch { toast.info("分享功能暂不可用"); }
-              }}
-              className={`flex items-center justify-center gap-2 rounded-xl font-semibold transition-all ${theme.textSizeSub} ${theme.btnPadding} cursor-pointer`}
-              style={{ 
-                background: mode === "child" ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.09)", 
-                border: mode === "child" ? "1px solid rgba(255,255,255,0.3)" : "1px solid rgba(255,255,255,0.14)", 
-                color: "white" 
-              }}>
-              <Share2 className="w-3.5 h-3.5" />分享游览足迹
-            </motion.button>
-            <motion.button whileTap={{ scale: 0.95 }}
-              onClick={() => {
-                if (!user) {
-                  toast.error("请先登录账号以生成打卡海报");
-                  return;
-                }
-                setShowPoster(true);
-              }}
-              className={`flex items-center justify-center gap-2 rounded-xl font-semibold transition-all ${theme.textSizeSub} ${theme.btnPadding} cursor-pointer`}
-              style={{ 
-                background: mode === "child" ? "#FFFFFF" : "rgba(210,160,83,0.18)", 
-                border: mode === "child" ? "1px solid #FFE5E5" : "1px solid rgba(210,160,83,0.38)", 
-                color: mode === "child" ? "#FF6B8B" : "#D2A053" 
-              }}>
-              <ImageIcon className="w-3.5 h-3.5" />生成打卡海报
-            </motion.button>
-          </div>
-        </div>
+        {/* ── Main Content Area ── */}
+        <main className="lg:col-span-3 min-h-[600px]">
+          <AnimatePresence mode="wait">
+            
+            {/* ═══════════════════════════════════════════════════════
+               01. 我的首页 (My Homepage)
+               ═══════════════════════════════════════════════════════ */}
+            {activeSection === "home" && (
+              <motion.div
+                key="home"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={SPRING}
+                className="bg-white lg:rounded-[24px] lg:border lg:border-[#E2EAE5] lg:shadow-sm overflow-hidden"
+              >
+                {/* Banner & User profile header */}
+                <div 
+                  className="relative h-[230px] p-6 flex flex-col justify-between"
+                  style={{
+                    backgroundImage: `linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1542224566-6e85f2e6772f?w=1200&q=80')`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black text-white bg-black/40 px-2 py-0.5 rounded-full border border-white/15 backdrop-blur-sm">
+                      游客中心
+                    </span>
+                    <button 
+                      onClick={() => toast.success("编辑资料模块暂未开放")}
+                      className="text-[10px] font-black text-[#4F6F52] bg-white px-3 py-1 rounded-full shadow-md cursor-pointer hover:bg-neutral-50 transition-colors"
+                    >
+                      编辑资料
+                    </button>
+                  </div>
 
-        {/* Wave bottom */}
-        <div className="absolute bottom-0 left-0 right-0 pointer-events-none" style={{ height: 20 }}>
-          <svg viewBox="0 0 400 20" preserveAspectRatio="none" className="w-full h-full">
-            <path d="M0,20 Q100,0 200,10 T400,0 L400,20 Z" fill={theme.bg} style={{ transition: "fill 300ms" }} />
-          </svg>
-        </div>
-      </div>
+                  <div className="flex items-center gap-4 text-white">
+                    <img 
+                      src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80" 
+                      className="w-16 h-16 rounded-full border-2 border-white/60 object-cover shadow-lg"
+                      alt="User Avatar"
+                    />
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-lg font-black">{displayName}</h2>
+                        <span className="text-[9px] font-extrabold bg-[#D2A053] text-white px-1.5 py-0.5 rounded-md">Lv.5 问鼎江山</span>
+                      </div>
+                      <p className="text-[10px] text-white/70 mt-1 flex items-center gap-1">
+                        <span>⚡ 9 步电</span>
+                        <span>|</span>
+                        <span>📍 翠玉游人</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
 
-      {/* ── Body ── */}
-      <div className="px-4 pb-8 mt-2 space-y-4 md:max-w-2xl md:mx-auto">
+                {/* Main Body */}
+                <div className="p-4 sm:p-6 space-y-6">
+                  {/* Energy Score Card */}
+                  <div className="bg-gradient-to-r from-[#2C3E35] to-[#1C2C24] text-white rounded-3xl p-5 shadow-lg flex items-center justify-between relative overflow-hidden">
+                    <div className="absolute right-0 top-0 bottom-0 w-1/3 opacity-10 flex items-center justify-center">
+                      <Trophy className="w-32 h-32 text-white" />
+                    </div>
+                    <div className="space-y-1 relative z-10">
+                      <span className="text-[10px] text-emerald-400 font-extrabold uppercase tracking-widest">今日聚意值</span>
+                      <h3 className="text-3xl font-black font-mono">285 <span className="text-sm font-bold">分</span></h3>
+                      <p className="text-[10px] text-zinc-300">超过了 86% 的游客，恭喜达成游览达人！</p>
+                    </div>
+                    <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-400/30 flex items-center justify-center text-2xl relative z-10 shadow-inner">
+                      🏆
+                    </div>
+                  </div>
 
-        {/* Mode switcher card */}
-        <div className={`${theme.cardRadius} p-4 transition-all duration-300`} style={{ background: theme.cardBg, border: theme.cardBorder }}>
-          <p className="text-[11px] font-semibold mb-3 tracking-wide uppercase"
-            style={{ color: theme.subColor }}>导览模式</p>
-          <div className="grid grid-cols-3 gap-2">
-            {(Object.entries(MODE_CONFIG) as [Mode, typeof MODE_CONFIG[Mode]][]).map(([k, cfg]) => (
-              <motion.button key={k} whileTap={{ scale: 0.93 }} onClick={() => changeMode(k)}
-                className={`flex flex-col items-center gap-1.5 py-3 ${theme.cardRadius} transition-colors`}
-                style={{
-                  background: mode === k ? `${cfg.color}14` : "#F5F0E8",
-                  border: `1.5px solid ${mode === k ? cfg.color : "transparent"}`,
-                }}>
-                <cfg.icon className="w-4 h-4" style={{ color: cfg.color }} />
-                <p className={`${theme.textSizeSub} font-bold`}
-                  style={{ color: mode === k ? cfg.color : "#8F9F8F" }}>{cfg.label}</p>
-                <p className="text-[9px]" style={{ color: "#B8B4AC" }}>{cfg.desc}</p>
-              </motion.button>
-            ))}
-          </div>
-        </div>
-
-        {/* History / Favorites tabs */}
-        <div className={`${theme.cardRadius} overflow-hidden transition-all duration-300`} style={{ background: theme.cardBg, border: theme.cardBorder }}>
-          {/* Tab bar */}
-          <div className="grid grid-cols-2 relative" style={{ borderBottom: "1px solid #F0EDE5" }}>
-            {(["visits", "favorites"] as const).map(tab => (
-              <motion.button key={tab} whileTap={{ scale: 0.97 }} onClick={() => setActiveTab(tab)}
-                className={`py-3.5 font-bold relative flex items-center justify-center gap-1.5 ${theme.textSizeBody}`}
-                style={{ color: activeTab === tab ? theme.accentColor : "#B8B4AC" }}>
-                {tab === "visits"
-                  ? <><History className="w-3.5 h-3.5" />{texts.visitsTab} ({totalVisits})</>
-                  : <><Heart className="w-3.5 h-3.5" />{texts.favoritesTab} ({favCount})</>}
-                {activeTab === tab && (
-                  <motion.div layoutId="profile-tab-line"
-                    className="absolute bottom-0 left-4 right-4 h-0.5 rounded-full"
-                    style={{ background: theme.accentColor }} />
-                )}
-              </motion.button>
-            ))}
-          </div>
-
-          {/* Content */}
-          <div style={{ minHeight: 180 }}>
-            {loadingData ? (
-              <div className="p-4 space-y-3">
-                {[1,2,3].map(i => <div key={i} className="skeleton h-14 rounded-xl" />)}
-              </div>
-            ) : (
-              <AnimatePresence mode="wait">
-                {activeTab === "visits" ? (
-                  <motion.div key="v" initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 12 }} transition={SPRING}>
-                    {visits.length === 0
-                      ? <EmptyState icon="🗺️" text={texts.emptyVisits} />
-                      : (
-                        <div className="divide-y" style={{ borderColor: "#F5F2EC" }}>
-                          {(visitsExpanded ? visits.slice(0, 10) : visits.slice(0, 2)).map((v, i) => {
-                            const info = v.spotId ? getSpotInfo(v.spotId, mode) : null;
-                            return (
-                              <motion.div key={v.id}
-                                initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}
-                                transition={{ ...SPRING, delay: i * 0.03 }}
-                                className="flex items-center gap-3 px-4 py-3">
-                                <div className={`w-10 h-10 ${theme.cardRadius} flex items-center justify-center text-xl flex-shrink-0`}
-                                  style={{ 
-                                    background: mode === "child" ? "#FFF0F2" : mode === "elder" ? "#FFF8F0" : "#F5F0E8",
-                                    border: mode === "child" ? "1px dashed #FFB0B0" : mode === "elder" ? "1px solid #D2A053" : "none"
-                                  }}>
-                                  {info?.emoji ?? "📍"}
-                                  </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className={`font-bold truncate ${theme.textSizeBody}`} style={{ color: theme.textColor }}>
-                                    {info?.name ?? (v.routeId ? "游览路线" : "景区参观")}
-                                  </p>
-                                  <p className={`mt-0.5 ${theme.textSizeSub}`} style={{ color: theme.subColor }}>
-                                    {new Date(v.visitedAt).toLocaleDateString("zh-CN",{ month:"short", day:"numeric", hour:"2-digit", minute:"2-digit" })}
-                                  </p>
-                                </div>
-                                {v.spotId && (
-                                  <Link href={`/spots/${v.spotId}`}>
-                                    <ChevronRight className="w-4 h-4 flex-shrink-0" style={{ color: "#E6E2D8" }} />
-                                  </Link>
-                                )}
-                              </motion.div>
-                            );
-                          })}
-                          {visits.length > 2 && (
-                            <button
-                              onClick={() => setVisitsExpanded(!visitsExpanded)}
-                              className="w-full py-3 text-center text-xs font-bold transition-colors hover:bg-neutral-50/50 flex items-center justify-center gap-1"
-                              style={{ color: theme.accentColor, borderTop: "1px solid #F5F2EC" }}
-                            >
-                              {visitsExpanded ? "收起游览记录 ↑" : `展开更多记录 (共 ${visits.length} 条) ↓`}
-                            </button>
-                          )}
-                          {visits.length > 10 && visitsExpanded && (
-                            <Link href="/profile/history">
-                              <div className="px-4 py-3 text-center font-bold" style={{ color: theme.accentColor, fontSize: mode === "elder" ? 15 : 12 }}>
-                                查看全部 {visits.length} 条 →
-                              </div>
-                            </Link>
+                  {/* 4 Quick Entry Cards */}
+                  <div className="grid grid-cols-4 gap-2 text-center">
+                    {[
+                      { label: "我的行程", color: "bg-[#EBF3EE] text-[#4F6F52]", icon: Map, action: () => setActiveSection("routes") },
+                      { label: "我的收藏", color: "bg-[#FFF0ED] text-[#FF5B45]", icon: Heart, action: () => setActiveSection("favorites") },
+                      { label: "我的兴趣", color: "bg-[#FCF8EE] text-[#D2A053]", icon: Sparkles, action: () => setActiveSection("interests") },
+                      { label: "我的消息", color: "bg-[#F0F5FF] text-[#4D96FF]", icon: Bell, action: () => setShowNotifications(true), badge: 3 },
+                    ].map((btn, index) => (
+                      <motion.div
+                        key={index}
+                        whileTap={{ scale: 0.94 }}
+                        onClick={btn.action}
+                        className="flex flex-col items-center cursor-pointer group"
+                      >
+                        <div className={`w-12 h-12 rounded-2xl ${btn.color} flex items-center justify-center relative shadow-sm group-hover:scale-105 transition-transform duration-200`}>
+                          <btn.icon className="w-5 h-5" />
+                          {btn.badge && (
+                            <span className="absolute -top-1 -right-1 w-4.5 h-4.5 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white shadow-sm">
+                              {btn.badge}
+                            </span>
                           )}
                         </div>
-                      )}
-                  </motion.div>
-                ) : (
-                  <motion.div key="f" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -12 }} transition={SPRING}>
-                    {favorites.length === 0
-                      ? <EmptyState icon="💛" text={texts.emptyFavs} />
-                      : (
-                        <div className="divide-y" style={{ borderColor: "#F5F2EC" }}>
-                          {favorites.map((fav, i) => {
-                            const info = fav.spotId ? getSpotInfo(fav.spotId, mode) : null;
-                            const displayName = fav.spotName || fav.routeName || info?.name || "收藏景点";
-                            return (
-                              <motion.div key={fav.id}
-                                initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}
-                                transition={{ ...SPRING, delay: i * 0.03 }}
-                                className="flex items-center gap-3 px-4 py-3">
-                                <div className={`w-10 h-10 ${theme.cardRadius} flex items-center justify-center text-xl flex-shrink-0`}
-                                  style={{ 
-                                    background: mode === "child" ? "#FFE5E5" : "#FEF3F3",
-                                    border: mode === "child" ? "1px dashed #FFB0B0" : "none"
-                                  }}>
-                                  {info?.emoji ?? (fav.type === "route" ? "🗺️" : "📍")}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className={`font-bold truncate ${theme.textSizeBody}`} style={{ color: theme.textColor }}>
-                                    {displayName}
-                                  </p>
-                                  <p className={`mt-0.5 ${theme.textSizeSub}`} style={{ color: theme.subColor }}>已收藏</p>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  {fav.spotId && (
-                                    <Link href={`/spots/${fav.spotId}`}>
-                                      <motion.span whileTap={{ scale: 0.9 }}
-                                        className="px-3 py-1.5 rounded-lg font-bold block"
-                                        style={{ background: theme.accentBg, color: theme.accentColor, fontSize: mode === "elder" ? 14 : 11 }}>
-                                        查看
-                                      </motion.span>
-                                    </Link>
-                                  )}
-                                  <motion.button whileTap={{ scale: 0.9 }} onClick={() => unfavorite(fav.id)}
-                                    className="w-8 h-8 rounded-lg flex items-center justify-center"
-                                    style={{ background: "rgba(220,38,38,0.07)", color: "#DC2626" }}>
-                                    <Heart className="w-3.5 h-3.5" fill="#DC2626" />
-                                  </motion.button>
-                                </div>
-                              </motion.div>
-                            );
-                          })}
+                        <span className="text-[10.5px] font-bold text-zinc-700 mt-2">{btn.label}</span>
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  {/* Recently Viewed (最近浏览) */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-black flex items-center gap-1.5">
+                        <History className="w-4 h-4 text-[#4F6F52]" />
+                        最近浏览
+                      </h3>
+                      <button 
+                        onClick={() => setActiveSection("favorites")}
+                        className="text-[10px] font-bold text-zinc-400 hover:text-zinc-600 transition-colors"
+                      >
+                        全部 &gt;
+                      </button>
+                    </div>
+
+                    <div className="space-y-2.5">
+                      {[
+                        { name: "岳阳楼", time: "今天 10:32", desc: "江南三大名楼之一", img: "https://images.unsplash.com/photo-1542224566-6e85f2e6772f?w=300&q=80", label: "景点" },
+                        { name: "商后母戊鼎", time: "昨天 18:40", desc: "中国国家博物馆藏", img: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=300&q=80", label: "文物" },
+                        { name: "黄鹤楼", time: "09-15 15:30", desc: "天下江山第一楼", img: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=300&q=80", label: "景点" },
+                      ].map((item, index) => (
+                        <div key={index} className="flex items-center gap-3.5 p-3 rounded-2xl border border-[#EEF2F0] hover:bg-neutral-50 transition-colors">
+                          <img src={item.img} className="w-11 h-11 rounded-xl object-cover shadow-sm flex-shrink-0" alt="" />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="font-extrabold text-[12.5px] truncate">{item.name}</span>
+                              <span className="text-[8.5px] text-zinc-400 bg-zinc-100 px-1 py-0.5 rounded">{item.label}</span>
+                            </div>
+                            <p className="text-[10px] text-zinc-400 truncate mt-0.5">{item.desc}</p>
+                          </div>
+                          <span className="text-[9.5px] font-mono text-zinc-300 flex-shrink-0">{item.time}</span>
                         </div>
-                      )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* AI Banner bottom */}
+                  <div className="bg-gradient-to-br from-[#EEF7F2] to-[#E5F1EB] rounded-3xl p-5 border border-[#D5EDE0] flex items-center justify-between relative overflow-hidden">
+                    <div className="space-y-2.5 relative z-10 max-w-[65%]">
+                      <span className="text-[9px] font-extrabold text-white bg-[#4F6F52] px-2 py-0.5 rounded-full inline-block shadow-sm">
+                        AI 数字人导游
+                      </span>
+                      <h4 className="text-xs font-black text-zinc-800 leading-tight">随时为您提供智能讲解与路线推荐</h4>
+                      <div className="flex items-center gap-2">
+                        <button 
+                          onClick={() => router.push("/qa")}
+                          className="px-3.5 py-1.5 bg-[#4F6F52] text-white text-[10px] font-black rounded-lg shadow-sm hover:bg-[#3D5640] transition-colors cursor-pointer"
+                        >
+                          去对话
+                        </button>
+                        <button 
+                          onClick={() => router.push("/qa")}
+                          className="px-3.5 py-1.5 bg-white text-[#4F6F52] border border-[#D5EDE0] text-[10px] font-black rounded-lg shadow-sm hover:bg-neutral-50 transition-colors cursor-pointer"
+                        >
+                          去问答
+                        </button>
+                      </div>
+                    </div>
+                    <img 
+                      src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&auto=format&fit=crop&q=80" 
+                      className="absolute right-3 bottom-0 w-24 h-24 object-cover object-top rounded-t-full mask-image border-b-0 border border-white/20"
+                      alt=""
+                    />
+                  </div>
+
+                  {/* Mobile Back / Mode switch action */}
+                  <div className="pt-4 border-t border-[#EEF2F0] flex items-center justify-between">
+                    <span className="text-[11px] text-zinc-400">当前体验模式</span>
+                    <div className="flex items-center gap-1.5 bg-zinc-100 p-0.5 rounded-lg">
+                      {(["standard", "elder", "child"] as Mode[]).map(m => (
+                        <button
+                          key={m}
+                          onClick={() => changeMode(m)}
+                          className={`text-[9.5px] font-black px-2 py-1 rounded-md transition-colors ${
+                            mode === m 
+                              ? "bg-white text-[#4F6F52] shadow-sm" 
+                              : "text-zinc-500 hover:text-zinc-700"
+                          }`}
+                        >
+                          {m === "standard" ? "标准" : m === "elder" ? "适老" : "童趣"}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
             )}
-          </div>
-        </div>
 
-        {/* Quick link grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {links.map(item => (
-            <motion.div key={item.label} whileTap={{ scale: 0.96 }}
-              onClick={item.onClick}
-              className={`${theme.cardRadius} p-4 cursor-pointer transition-all duration-300`}
-              style={{ background: item.bg, border: theme.cardBorder }}>
-              {item.href ? (
-                <Link href={item.href}>
-                  <QuickItem item={item} theme={theme} />
-                </Link>
-              ) : <QuickItem item={item} theme={theme} />}
-            </motion.div>
-          ))}
-        </div>
+            {/* ═══════════════════════════════════════════════════════
+               02. 我的行程 (My Itinerary)
+               ═══════════════════════════════════════════════════════ */}
+            {activeSection === "routes" && (
+              <motion.div
+                key="routes"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={SPRING}
+                className="bg-white lg:rounded-[24px] lg:border lg:border-[#E2EAE5] lg:shadow-sm overflow-hidden"
+              >
+                {/* Header view */}
+                <div className="px-6 py-5 border-b border-[#EEF2F0] flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <button 
+                      onClick={() => setActiveSection("home")}
+                      className="lg:hidden p-1.5 hover:bg-neutral-50 rounded-lg"
+                    >
+                      <ChevronLeft className="w-5 h-5 text-zinc-600" />
+                    </button>
+                    <h2 className="text-sm font-black flex items-center gap-1.5">
+                      <Map className="w-4.5 h-4.5 text-[#4F6F52]" />
+                      我的行程
+                    </h2>
+                  </div>
+                  <button 
+                    onClick={() => setShowPoster(true)}
+                    className="text-[10.5px] font-black text-[#4F6F52] bg-[#EBF3EE] px-3 py-1.5 rounded-full flex items-center gap-1 shadow-sm cursor-pointer hover:bg-[#DBEAE0] transition-colors"
+                  >
+                    <ImageIcon className="w-3 h-3" />
+                    生成海报
+                  </button>
+                </div>
 
-        {/* Sign Out Action Card */}
-        {user && (
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            onClick={async () => {
-              try {
-                await auth.logout();
-                toast.success("已成功退出登录");
-                window.location.href = "/welcome";
-              } catch (err: any) {
-                toast.error(err?.message || "退出登录失败");
-              }
-            }}
-            className="w-full py-3.5 rounded-2xl text-xs font-bold text-center transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer"
-            style={{ 
-              background: "rgba(220,38,38,0.06)", 
-              border: "1px solid rgba(220,38,38,0.18)",
-              color: "#DC2626"
-            }}
-          >
-            <LogOut className="w-3.5 h-3.5" /> 退出当前登录
-          </motion.button>
-        )}
+                {/* Sub Tab bar */}
+                <div className="flex border-b border-[#EEF2F0] bg-zinc-50/50">
+                  {[
+                    { id: "ongoing", label: "进行中" },
+                    { id: "completed", label: "已完成" },
+                    { id: "cancelled", label: "已取消" },
+                  ].map(tab => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setRouteTab(tab.id as any)}
+                      className={`flex-1 text-center py-3.5 text-xs font-bold relative transition-colors ${
+                        routeTab === tab.id ? "text-[#4F6F52]" : "text-zinc-400 hover:text-zinc-600"
+                      }`}
+                    >
+                      {tab.label}
+                      {routeTab === tab.id && (
+                        <motion.div 
+                          layoutId="route-tab-border" 
+                          className="absolute bottom-0 left-6 right-6 h-0.5 bg-[#4F6F52] rounded-full" 
+                        />
+                      )}
+                    </button>
+                  ))}
+                </div>
 
-        <p className="text-center text-[10px] py-2" style={{ color: "#C0BAB0" }}>
-          {texts.footerText}
-        </p>
+                {/* Routes Cards List */}
+                <div className="p-4 sm:p-6 space-y-5">
+                  {[
+                    { 
+                      title: "岳阳楼一日游", 
+                      date: "2024.05.20 周一", 
+                      status: "ongoing",
+                      img: "https://images.unsplash.com/photo-1542224566-6e85f2e6772f?w=600&q=80",
+                    },
+                    { 
+                      title: "历史文化之旅", 
+                      date: "2024.05.15 周六", 
+                      status: "completed",
+                      img: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=600&q=80",
+                    },
+                    { 
+                      title: "自然风光之旅", 
+                      date: "2024.05.10 周五", 
+                      status: "cancelled",
+                      img: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=600&q=80",
+                    },
+                  ].filter(r => r.status === routeTab).map((route, idx) => (
+                    <div key={idx} className="rounded-3xl border border-[#EEF2F0] bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+                      <div className="relative h-[160px]">
+                        <img src={route.img} className="w-full h-full object-cover" alt="" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-4 text-white">
+                          <h4 className="text-sm font-black">{route.title}</h4>
+                          <p className="text-[10px] text-white/70 mt-1 flex items-center gap-1.5">
+                            <Clock className="w-3 h-3" />
+                            {route.date}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Control row */}
+                      <div className="grid grid-cols-3 divide-x divide-[#EEF2F0] border-t border-[#EEF2F0] text-center bg-zinc-50/50">
+                        <button 
+                          onClick={() => router.push("/routes")}
+                          className="py-3 text-[11px] font-bold text-zinc-600 hover:text-[#4F6F52] flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                        >
+                          <MapPin className="w-3.5 h-3.5" />
+                          路线地图
+                        </button>
+                        <button 
+                          onClick={() => router.push("/routes")}
+                          className="py-3 text-[11px] font-bold text-zinc-600 hover:text-[#4F6F52] flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                        >
+                          <Navigation className="w-3.5 h-3.5" />
+                          跟走导览
+                        </button>
+                        <button 
+                          onClick={() => toast.success("行程分享链接已复制到剪贴板！")}
+                          className="py-3 text-[11px] font-bold text-zinc-600 hover:text-[#4F6F52] flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                        >
+                          <Share2 className="w-3.5 h-3.5" />
+                          行程分享
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {/* Empty state fallback */}
+                  {routeTab === "cancelled" && (
+                    <div className="py-12 text-center text-zinc-400 space-y-2">
+                      <div className="text-4xl">📭</div>
+                      <p className="text-xs">暂无已取消的行程计划</p>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+
+            {/* ═══════════════════════════════════════════════════════
+               03. 我的收藏 (My Favorites)
+               ═══════════════════════════════════════════════════════ */}
+            {activeSection === "favorites" && (
+              <motion.div
+                key="favorites"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={SPRING}
+                className="bg-white lg:rounded-[24px] lg:border lg:border-[#E2EAE5] lg:shadow-sm overflow-hidden"
+              >
+                {/* Header */}
+                <div className="px-6 py-5 border-b border-[#EEF2F0] flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <button 
+                      onClick={() => setActiveSection("home")}
+                      className="lg:hidden p-1.5 hover:bg-neutral-50 rounded-lg"
+                    >
+                      <ChevronLeft className="w-5 h-5 text-zinc-600" />
+                    </button>
+                    <h2 className="text-sm font-black flex items-center gap-1.5">
+                      <Heart className="w-4.5 h-4.5 text-[#FF5B45]" />
+                      我的收藏
+                    </h2>
+                  </div>
+                  <span className="text-[10px] font-bold text-zinc-400">已选 {favorites.length} 项</span>
+                </div>
+
+                {/* Filter tag list */}
+                <div className="flex gap-1.5 px-4 py-3 border-b border-[#EEF2F0] overflow-x-auto select-none no-scrollbar">
+                  {[
+                    { id: "all", label: "全部" },
+                    { id: "spot", label: "景点" },
+                    { id: "relic", label: "文物" },
+                    { id: "route", label: "路线" },
+                    { id: "audio", label: "讲解" },
+                  ].map(tag => (
+                    <button
+                      key={tag.id}
+                      onClick={() => setFavoriteTag(tag.id as any)}
+                      className={`text-[10.5px] font-bold px-3.5 py-1.5 rounded-full transition-colors flex-shrink-0 cursor-pointer ${
+                        favoriteTag === tag.id 
+                          ? "bg-[#4F6F52] text-white" 
+                          : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+                      }`}
+                    >
+                      {tag.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Favorite cards list */}
+                <div className="p-4 sm:p-6 space-y-3">
+                  {[
+                    { id: 1, type: "relic", name: "商后母戊鼎", desc: "中国国家博物馆藏，商代晚期青铜重器...", date: "2024.06.18 收藏", img: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=300&q=80" },
+                    { id: 2, type: "spot", name: "岳阳楼", desc: "江南三大名楼之一，登楼远眺，气象万千...", date: "2024.05.20 收藏", img: "https://images.unsplash.com/photo-1542224566-6e85f2e6772f?w=300&q=80" },
+                    { id: 3, type: "spot", name: "黄鹤楼", desc: "天下江山第一楼，武汉地标古迹建筑...", date: "2024.05.15 收藏", img: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=300&q=80" },
+                    { id: 4, type: "route", name: "历史文化路线", desc: "探寻千年巴渝文化，感受红岩精神底蕴...", date: "2024.05.10 收藏", img: "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=300&q=80" },
+                    { id: 5, type: "audio", name: "瓷器发展史讲解", desc: "从原始陶器到青花瓷器演变历程的沉浸声景...", date: "2024.05.08 收藏", img: "https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=300&q=80" },
+                  ].filter(item => favoriteTag === "all" || item.type === favoriteTag).map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-3.5 p-3 rounded-2xl border border-[#EEF2F0] hover:bg-neutral-50 transition-colors">
+                      <img src={item.img} className="w-16 h-16 rounded-xl object-cover shadow-sm flex-shrink-0" alt="" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-extrabold text-[13px] truncate">{item.name}</span>
+                          <span className="text-[8.5px] text-zinc-400 bg-zinc-100 px-1 py-0.5 rounded">
+                            {item.type === "relic" ? "文物" : item.type === "spot" ? "景点" : item.type === "route" ? "路线" : "讲解"}
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-zinc-400 truncate mt-0.5">{item.desc}</p>
+                        <span className="text-[9px] text-zinc-300 mt-1 block">{item.date}</span>
+                      </div>
+                      
+                      <div className="flex flex-col gap-1.5">
+                        <motion.button 
+                          whileTap={{ scale: 0.9 }} 
+                          onClick={() => {
+                            if (item.type === "spot") router.push(`/spots/1`);
+                            else router.push(`/routes`);
+                          }}
+                          className="px-2.5 py-1 text-[10px] font-black text-white bg-[#4F6F52] rounded-lg shadow-sm cursor-pointer hover:bg-[#3D5640] transition-colors"
+                        >
+                          查看
+                        </motion.button>
+                        <motion.button 
+                          whileTap={{ scale: 0.9 }} 
+                          onClick={() => toast.success("已取消收藏")}
+                          className="w-7 h-7 bg-red-50 text-red-500 rounded-lg flex items-center justify-center hover:bg-red-100 transition-colors cursor-pointer"
+                        >
+                          <Heart className="w-3.5 h-3.5" fill="#EF4444" stroke="#EF4444" />
+                        </motion.button>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  <div className="text-center py-6 text-zinc-300 text-[10.5px]">
+                    没有更多了
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* ═══════════════════════════════════════════════════════
+               04. 我的兴趣 (My Interests)
+               ═══════════════════════════════════════════════════════ */}
+            {activeSection === "interests" && (
+              <motion.div
+                key="interests"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={SPRING}
+                className="bg-white lg:rounded-[24px] lg:border lg:border-[#E2EAE5] lg:shadow-sm overflow-hidden"
+              >
+                {/* Header */}
+                <div className="px-6 py-5 border-b border-[#EEF2F0] flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <button 
+                      onClick={() => setActiveSection("home")}
+                      className="lg:hidden p-1.5 hover:bg-neutral-50 rounded-lg"
+                    >
+                      <ChevronLeft className="w-5 h-5 text-zinc-600" />
+                    </button>
+                    <h2 className="text-sm font-black flex items-center gap-1.5">
+                      <Sparkles className="w-4.5 h-4.5 text-[#D2A053]" />
+                      我的兴趣
+                    </h2>
+                  </div>
+                  <button 
+                    onClick={() => toast.success("兴趣画像配置保存成功！")}
+                    className="text-[10.5px] font-black text-white bg-[#4F6F52] px-4.5 py-1.5 rounded-full shadow-sm hover:bg-[#3D5640] transition-colors cursor-pointer"
+                  >
+                    保存
+                  </button>
+                </div>
+
+                <div className="p-4 sm:p-6 space-y-6">
+                  {/* Selector Header */}
+                  <div className="space-y-1">
+                    <h4 className="text-xs font-black text-zinc-800">选择你的兴趣偏好</h4>
+                    <p className="text-[10px] text-zinc-400">我们将根据您的喜好偏好推荐更合适的展品讲解、周边商户及游览路线</p>
+                  </div>
+
+                  {/* Interests checklist */}
+                  <div className="space-y-2.5">
+                    {[
+                      { id: "history", label: "历史文化", desc: "博物馆、出土文物与千年古迹讲解", icon: "🏛️" },
+                      { id: "nature", label: "自然风光", desc: "山林古木、溪流栈道与落日拍摄", icon: "🏔️" },
+                      { id: "architecture", label: "古建筑艺术", desc: "飞檐翘角、中式牌楼与传统建筑彩画", icon: "🏯" },
+                      { id: "food", label: "美食体验", desc: "巴渝小吃、盖碗茶与经典川味推荐", icon: "🍵" },
+                      { id: "folklore", label: "民俗风情", desc: "非遗展演、地方手工艺与说书表演", icon: "🏺" },
+                      { id: "family", label: "亲子游玩", desc: "平坦安全步道、故事树洞与童趣互动", icon: "👨‍👩‍👧" },
+                      { id: "photo", label: "摄影打卡", desc: "最美机位标注、逆光打卡时间指南", icon: "📷" },
+                    ].map(item => {
+                      const checked = selectedInterests.includes(item.id);
+                      return (
+                        <div 
+                          key={item.id}
+                          onClick={() => toggleInterest(item.id)}
+                          className={`p-3.5 rounded-2xl border transition-all flex items-center justify-between cursor-pointer ${
+                            checked 
+                              ? "bg-[#EBF3EE] border-[#4F6F52]/30 text-[#4F6F52]" 
+                              : "bg-white border-[#EEF2F0] text-zinc-700 hover:bg-neutral-50"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="text-xl">{item.icon}</span>
+                            <div>
+                              <p className="text-xs font-extrabold">{item.label}</p>
+                              <p className={`text-[9.5px] mt-0.5 ${checked ? "text-[#4F6F52]/70" : "text-zinc-400"}`}>
+                                {item.desc}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${
+                            checked ? "bg-[#4F6F52] border-[#4F6F52] text-white" : "border-zinc-300 bg-white"
+                          }`}>
+                            {checked && (
+                              <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Recommendation Card */}
+                  <div className="space-y-3 pt-2">
+                    <h4 className="text-xs font-black text-zinc-800">根据偏好为您推荐</h4>
+                    <div className="rounded-3xl border border-[#EEF2F0] p-4 bg-zinc-50/50 flex items-center gap-4">
+                      <img 
+                        src="https://images.unsplash.com/photo-1542224566-6e85f2e6772f?w=300&q=80" 
+                        className="w-16 h-16 rounded-2xl object-cover shadow-sm flex-shrink-0"
+                        alt="" 
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-black text-zinc-800">历史文化深度游</span>
+                          <span className="text-[7.5px] font-bold text-white bg-[#D2A053] px-1.5 py-0.5 rounded-full leading-none">官推精选</span>
+                        </div>
+                        <p className="text-[10px] text-zinc-400 mt-1 truncate">文化遗迹 / 古建筑 / 博物馆</p>
+                        <p className="text-[9.5px] text-zinc-400 mt-0.5">时长: 1天 | 步行约 8km</p>
+                      </div>
+                      <button 
+                        onClick={() => router.push("/routes")}
+                        className="px-3 py-1.5 bg-[#4F6F52] text-white text-[10px] font-black rounded-lg shadow-sm flex-shrink-0 hover:bg-[#3D5640] transition-colors cursor-pointer"
+                      >
+                        查看详情
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* ═══════════════════════════════════════════════════════
+               05. 设置与帮助 (Settings & Help)
+               ═══════════════════════════════════════════════════════ */}
+            {activeSection === "settings" && (
+              <motion.div
+                key="settings"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={SPRING}
+                className="bg-white lg:rounded-[24px] lg:border lg:border-[#E2EAE5] lg:shadow-sm overflow-hidden"
+              >
+                {/* Header */}
+                <div className="px-6 py-5 border-b border-[#EEF2F0] flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <button 
+                      onClick={() => setActiveSection("home")}
+                      className="lg:hidden p-1.5 hover:bg-neutral-50 rounded-lg"
+                    >
+                      <ChevronLeft className="w-5 h-5 text-zinc-600" />
+                    </button>
+                    <h2 className="text-sm font-black flex items-center gap-1.5">
+                      <Settings className="w-4.5 h-4.5 text-zinc-600" />
+                      设置与帮助
+                    </h2>
+                  </div>
+                  <span className="text-[10px] text-zinc-400 font-mono">V1.2.0</span>
+                </div>
+
+                <div className="p-4 sm:p-6 space-y-6">
+                  {/* Options List */}
+                  <div className="rounded-3xl border border-[#EEF2F0] overflow-hidden divide-y divide-[#EEF2F0] bg-white">
+                    {[
+                      { label: "账号与安全", icon: Shield },
+                      { label: "隐私设置", icon: Eye },
+                      { label: "消息通知", icon: Bell, action: () => setShowNotifications(true) },
+                      { label: "语音设置", icon: Volume2, action: () => router.push("/ai-settings") },
+                      { label: "清除缓存", icon: Trash2, sub: cacheSize, action: handleClearCache },
+                      { label: "离线地图管理", icon: MapPin },
+                      { label: "意见反馈", icon: MessageSquare },
+                      { label: "关于我们", icon: Info },
+                      { label: "帮助中心", icon: HelpCircle },
+                    ].map((opt, idx) => (
+                      <div 
+                        key={idx} 
+                        onClick={opt.action || (() => toast.info(`${opt.label}模块开发中`))}
+                        className="flex items-center justify-between px-4 py-3.5 hover:bg-zinc-50/50 transition-colors cursor-pointer"
+                      >
+                        <div className="flex items-center gap-3">
+                          <opt.icon className="w-4 h-4 text-zinc-400" />
+                          <span className="text-xs font-semibold text-zinc-700">{opt.label}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-zinc-400">
+                          {opt.sub && <span className="text-[10.5px] font-mono font-bold text-zinc-300">{opt.sub}</span>}
+                          <ChevronRight className="w-4 h-4 text-zinc-300" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* AI banner small */}
+                  <div className="bg-gradient-to-r from-[#F0F5FF] to-[#E5EDFF] rounded-3xl p-4 border border-[#D0DFFA] flex items-center justify-between">
+                    <div className="flex items-center gap-3.5">
+                      <img 
+                        src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&auto=format&fit=crop&q=80" 
+                        className="w-10 h-10 rounded-full object-cover object-top border-2 border-white"
+                        alt="" 
+                      />
+                      <div>
+                        <h4 className="text-xs font-extrabold text-zinc-800">AI数字人导游</h4>
+                        <p className="text-[9.5px] text-zinc-400 mt-0.5">有问题随时问欣欣~</p>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => router.push("/qa")}
+                      className="px-3.5 py-1.5 bg-[#4D96FF] text-white text-[10px] font-black rounded-lg shadow-sm hover:bg-[#3D85EF] transition-colors cursor-pointer"
+                    >
+                      开始对话
+                    </button>
+                  </div>
+
+                  {/* Logout Button */}
+                  {user && (
+                    <motion.button
+                      whileTap={{ scale: 0.98 }}
+                      onClick={async () => {
+                        try {
+                          await auth.logout();
+                          toast.success("已成功退出登录");
+                          window.location.href = "/welcome";
+                        } catch (err: any) {
+                          toast.error(err?.message || "退出登录失败");
+                        }
+                      }}
+                      className="w-full py-3.5 rounded-2xl text-xs font-bold text-center transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+                      style={{ 
+                        background: "rgba(220,38,38,0.06)", 
+                        border: "1px solid rgba(220,38,38,0.18)",
+                        color: "#DC2626"
+                      }}
+                    >
+                      <LogOut className="w-3.5 h-3.5" /> 退出当前登录
+                    </motion.button>
+                  )}
+                </div>
+              </motion.div>
+            )}
+
+          </AnimatePresence>
+        </main>
       </div>
 
-      {/* Poster */}
+      {/* Poster Generator Modal */}
       <AnimatePresence>
         {showPoster && (
           <PosterGenerator
             data={{
               userName: displayName,
               spotsVisited: spotCount,
-              favoriteSpot: favorites[0] ? (getSpotInfo(favorites[0].spotId ?? 0, mode).name) : "揽月亭",
+              favoriteSpot: favorites[0] ? (favorites[0].spotName || "岳阳楼") : "岳阳楼",
               date: new Date().toLocaleDateString("zh-CN"),
-              badge: `${badge.icon} ${badge.label}`,
+              badge: "🏅 资深探索者",
             }}
             onClose={() => setShowPoster(false)}
           />
@@ -669,15 +837,14 @@ export function ProfileScreen() {
               className="w-full max-w-md bg-[#FAF8F5] rounded-3xl border border-[#E6E2D8] overflow-hidden shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Modal Header */}
               <div className="flex items-center justify-between px-6 py-5 border-b border-[#E6E2D8]"
-                style={{ background: theme.accentBg }}>
+                style={{ background: "#EEF7F2" }}>
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: `${theme.accentColor}20`, color: theme.accentColor }}>
+                  <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-[#4F6F52]/20 text-[#4F6F52]">
                     <Bell className="w-4 h-4" />
                   </div>
-                  <h3 className="font-bold text-sm text-[#1E2522]" style={{ fontFamily: "var(--font-noto-serif)" }}>
-                    {texts.quickNotifLabel}
+                  <h3 className="font-bold text-sm text-[#1E2522]">
+                    消息通知
                   </h3>
                 </div>
                 <button onClick={() => setShowNotifications(false)} className="text-[#8F9F8F] hover:text-[#1E2522] transition-colors cursor-pointer">
@@ -685,12 +852,11 @@ export function ProfileScreen() {
                 </button>
               </div>
 
-              {/* Modal Content */}
               <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
                 {[
                   { title: "旅行吧智慧系统版本升级", time: "10分钟前", detail: "已全面更新至 1.2.0 版本。全新引入 3D 拟真对谈数字人与智能避堵路线规划系统，让每一次出游更加得心应手。", type: "update" },
                   { title: "今日景区游览与气象指南", time: "2小时前", detail: "今日气温 22℃-28℃，微风，紫外线强度中等。部分路段正在进行防滑绿化作业，请游客朋友在溪流栈道行走时注意慢行。", type: "info" },
-                  { title: "揽月亭落日集章特惠活动", time: "5小时前", detail: "今天下午 16:30 至 18:30，在揽月亭与 AI 数字人成功开启对话并上传任意落日合影，即可至服务中心兑换景区定制版精美古风徽章一枚！数量有限，先到先得。", type: "promo" }
+                  { title: "览月亭落日集章特惠活动", time: "5小时前", detail: "今天下午 16:30 至 18:30，在揽月亭与 AI 数字人成功开启对话并上传任意落日合影，即可至服务中心兑换景区定制版精美古风徽章一枚！数量有限，先到先得。", type: "promo" }
                 ].map((notif, idx) => (
                   <div key={idx} className="p-4 rounded-2xl border border-[#E6E2D8] bg-white space-y-2 shadow-sm">
                     <div className="flex items-center justify-between">
@@ -703,17 +869,16 @@ export function ProfileScreen() {
                       </span>
                       <span className="text-[9px] text-[#B8B4AC] font-mono">{notif.time}</span>
                     </div>
-                    <h4 className="text-xs font-bold text-[#1E2522]" style={{ fontFamily: "var(--font-noto-serif)" }}>{notif.title}</h4>
+                    <h4 className="text-xs font-bold text-[#1E2522]">{notif.title}</h4>
                     <p className="text-[11px] leading-relaxed text-[#8F9F8F]">{notif.detail}</p>
                   </div>
                 ))}
               </div>
 
-              {/* Modal Footer */}
               <div className="px-6 py-4 bg-[#FAF8F5] border-t border-[#E6E2D8] text-center">
                 <button onClick={() => setShowNotifications(false)}
                   className="w-full py-2.5 rounded-xl text-xs font-bold text-white cursor-pointer"
-                  style={{ background: theme.accentColor }}>
+                  style={{ background: "#4F6F52" }}>
                   我已了解
                 </button>
               </div>
@@ -721,33 +886,33 @@ export function ProfileScreen() {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
-  );
-}
 
-function QuickItem({ item, theme }: {
-  item: { icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>; label: string; sub: string; color: string };
-  theme: typeof THEME_STYLES[Mode];
-}) {
-  return (
-    <div className="flex items-center gap-3">
-      <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-        style={{ background: `${item.color}14` }}>
-        <item.icon className="w-4 h-4" style={{ color: item.color }} />
+      {/* ── Mobile Tab Navigation (Fixed bottom) ── */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-[#E2EAE5] py-2 px-4 flex items-center justify-around z-30 shadow-[0_-2px_10px_rgba(0,0,0,0.03)]">
+        {[
+          { id: "home", label: "我的首页", icon: User },
+          { id: "routes", label: "我的行程", icon: Map },
+          { id: "favorites", label: "我的收藏", icon: Heart },
+          { id: "interests", label: "我的兴趣", icon: Sparkles },
+          { id: "settings", label: "设置与帮助", icon: Settings },
+        ].map(item => (
+          <button
+            key={item.id}
+            onClick={() => setActiveSection(item.id as ActiveSection)}
+            className="flex flex-col items-center gap-1 text-center"
+          >
+            <div className={`p-1.5 rounded-xl transition-colors ${
+              activeSection === item.id ? "bg-[#EBF3EE] text-[#4F6F52]" : "text-zinc-400"
+            }`}>
+              <item.icon className="w-4.5 h-4.5" />
+            </div>
+            <span className={`text-[9px] font-bold ${
+              activeSection === item.id ? "text-[#4F6F52]" : "text-zinc-400"
+            }`}>{item.label.slice(3)}</span>
+          </button>
+        ))}
       </div>
-      <div>
-        <p className={`font-semibold ${theme.textSizeBody}`} style={{ color: theme.textColor }}>{item.label}</p>
-        <p className={`mt-0.5 ${theme.textSizeSub}`} style={{ color: theme.subColor }}>{item.sub}</p>
-      </div>
-    </div>
-  );
-}
 
-function EmptyState({ icon, text }: { icon: string; text: string }) {
-  return (
-    <div className="py-12 text-center">
-      <p className="text-4xl mb-3">{icon}</p>
-      <p className="text-sm" style={{ color: "#8F9F8F" }}>{text}</p>
     </div>
   );
 }
