@@ -23,22 +23,25 @@ const PALETTE: Record<AvatarState, {
 };
 
 function getMouthPath(state: AvatarState, open: boolean): string {
-  if (state === "happy")    return open ? "M 43 72 Q 50 82 57 72" : "M 43 70 Q 50 77 57 70";
-  if (state === "concerned") return "M 45 73 Q 50 69 55 73";
-  if (state === "speaking") return open ? "M 44 71 Q 50 80 56 71" : "M 45 70 Q 50 74 55 70";
+  const safeState = state || "idle";
+  if (safeState === "happy")    return open ? "M 43 72 Q 50 82 57 72" : "M 43 70 Q 50 77 57 70";
+  if (safeState === "concerned") return "M 45 73 Q 50 69 55 73";
+  if (safeState === "speaking") return open ? "M 44 71 Q 50 80 56 71" : "M 45 70 Q 50 74 55 70";
   return "M 45 70 Q 50 74 55 70";
 }
 
 function getEyebrows(state: AvatarState) {
-  if (state === "concerned") return { L: "M 36 42 Q 42 39 44 41", R: "M 56 41 Q 58 39 64 42" };
-  if (state === "happy")     return { L: "M 36 41 Q 42 37 44 39", R: "M 56 39 Q 58 37 64 41" };
-  if (state === "thinking")  return { L: "M 36 42 Q 41 40 44 42", R: "M 56 40 Q 59 38 64 41" };
+  const safeState = state || "idle";
+  if (safeState === "concerned") return { L: "M 36 42 Q 42 39 44 41", R: "M 56 41 Q 58 39 64 42" };
+  if (safeState === "happy")     return { L: "M 36 41 Q 42 37 44 39", R: "M 56 39 Q 58 37 64 41" };
+  if (safeState === "thinking")  return { L: "M 36 42 Q 41 40 44 42", R: "M 56 40 Q 59 38 64 41" };
   return { L: "M 36 43 Q 42 40 44 42", R: "M 56 42 Q 58 40 64 43" };
 }
 
 function AvatarSVG({ state, mouthOpen, mouthPathOverride, avatarStyle, idSuffix }: { state: AvatarState; mouthOpen: boolean; mouthPathOverride?: string; avatarStyle?: string; idSuffix: string }) {
-  const p = PALETTE[state];
-  const eb = getEyebrows(state);
+  const safeState = state || "idle";
+  const p = PALETTE[safeState] || PALETTE.idle;
+  const eb = getEyebrows(safeState);
   const [blink, setBlink] = useState(false);
 
   useEffect(() => {
@@ -228,10 +231,10 @@ function AvatarSVG({ state, mouthOpen, mouthPathOverride, avatarStyle, idSuffix 
       <ellipse cx="72.5" cy="54" rx="3.2" ry="4.5" fill={`url(#${skinGradientId})`} />
 
       {/* Eyebrows */}
-      <motion.path d={eb.L} fill="none" stroke={p.pupil} strokeWidth="1.8" strokeLinecap="round"
-        animate={{ d: eb.L }} transition={{ duration: 0.35 }} />
-      <motion.path d={eb.R} fill="none" stroke={p.pupil} strokeWidth="1.8" strokeLinecap="round"
-        animate={{ d: eb.R }} transition={{ duration: 0.35 }} />
+      <motion.path d={eb?.L || "M 36 43 Q 42 40 44 42"} fill="none" stroke={p?.pupil || "#2B3530"} strokeWidth="1.8" strokeLinecap="round"
+        animate={{ d: eb?.L || "M 36 43 Q 42 40 44 42" }} transition={{ duration: 0.35 }} />
+      <motion.path d={eb?.R || "M 56 42 Q 58 40 64 43"} fill="none" stroke={p?.pupil || "#2B3530"} strokeWidth="1.8" strokeLinecap="round"
+        animate={{ d: eb?.R || "M 56 42 Q 58 40 64 43" }} transition={{ duration: 0.35 }} />
 
       {/* Eyes */}
       <ellipse cx="42" cy="52" rx="5" ry={eyeH} fill="white" />
@@ -265,20 +268,20 @@ function AvatarSVG({ state, mouthOpen, mouthPathOverride, avatarStyle, idSuffix 
         fill="none" stroke={p.shadow} strokeWidth="0.9" strokeLinecap="round" />
 
       {/* Mouth */}
-      <motion.path d={mouthPathOverride ?? getMouthPath(state, mouthOpen)}
-        fill={state === "speaking" || state === "happy" ? p.lipFill + "88" : "none"}
-        stroke={p.lipFill} strokeWidth="1.5" strokeLinecap="round"
-        animate={{ d: mouthPathOverride ?? getMouthPath(state, mouthOpen) }}
+      <motion.path d={mouthPathOverride ?? getMouthPath(safeState, mouthOpen) ?? "M 45 70 Q 50 74 55 70"}
+        fill={safeState === "speaking" || safeState === "happy" ? (p?.lipFill || "#C98B6A") + "88" : "none"}
+        stroke={p?.lipFill || "#C98B6A"} strokeWidth="1.5" strokeLinecap="round"
+        animate={{ d: mouthPathOverride ?? getMouthPath(safeState, mouthOpen) ?? "M 45 70 Q 50 74 55 70" }}
         transition={{ duration: 0.1 }} />
 
       {/* Dimples */}
-      {state === "happy" && <>
-        <circle cx="37" cy="68" r="2.2" fill={p.shadow} opacity="0.3" />
-        <circle cx="63" cy="68" r="2.2" fill={p.shadow} opacity="0.3" />
+      {safeState === "happy" && <>
+        <circle cx="37" cy="68" r="2.2" fill={p?.shadow || "#D4A882"} opacity="0.3" />
+        <circle cx="63" cy="68" r="2.2" fill={p?.shadow || "#D4A882"} opacity="0.3" />
       </>}
 
       {/* Thinking bubbles */}
-      {state === "thinking" && [0, 1, 2].map((i) => (
+      {safeState === "thinking" && [0, 1, 2].map((i) => (
         <motion.circle key={i} cx={73 + i * 5} cy={30 - i * 6} r={1.5 + i * 0.6}
           fill="rgba(210,160,83,0.55)"
           animate={{ opacity: [0, 1, 0], y: [0, -5, 0] }}

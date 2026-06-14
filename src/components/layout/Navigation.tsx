@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Home, MessageCircle, MapPin, Navigation, User,
+  Home, MessageCircle, MapPin, Navigation, User, Music,
   BarChart2, BookOpen, Bot, TrendingUp, Settings, ChevronRight,
 } from "lucide-react";
 import { GlobalSearch } from "@/components/ui/GlobalSearch";
@@ -12,9 +12,9 @@ import { GlobalSearch } from "@/components/ui/GlobalSearch";
 /* ─── C端标签 ─────────────────────────────────────────────── */
 const C_TABS = [
   { href: "/home",    label: "首页",  icon: Home },
-  { href: "/spots",   label: "景点",  icon: MapPin },
-  { href: "/qa",      label: "问答",  icon: MessageCircle },
-  { href: "/routes",  label: "路线",  icon: Navigation },
+  { href: "/spots",   label: "热门景点",  icon: MapPin },
+  { href: "/qa",      label: "AI数字人导游",  icon: MessageCircle },
+  { href: "/routes",  label: "行程规划",  icon: Navigation },
   { href: "/profile", label: "我的",  icon: User },
 ];
 
@@ -35,11 +35,11 @@ export function BottomTabBar() {
   const [showSearch, setShowSearch] = useState(false);
 
   const MOBILE_TABS = [
-    { href: "/home",    label: "首页",  icon: Home },
-    { href: "/spots",   label: "景点",  icon: MapPin },
-    { href: "/qa",      label: "AI导览", icon: MessageCircle },
-    { href: "/routes",  label: "路线",  icon: Navigation },
-    { href: "/profile", label: "我的",  icon: User },
+    { href: "/home",    label: "智能导游",  icon: Home },
+    { href: "/spots",   label: "热门景点",  icon: MapPin },
+    { href: "/qa",      label: "AI数字人导游", icon: MessageCircle },
+    { href: "/routes",  label: "行程规划",  icon: Navigation },
+    { href: "/profile", label: "我的",      icon: User },
   ];
   return (
     <>
@@ -51,18 +51,34 @@ export function BottomTabBar() {
           borderTop: "1px solid #E6E2D8",
           paddingBottom: "env(safe-area-inset-bottom)",
         }}>
-        <div className="flex justify-around items-end h-14">
+        <div className="flex justify-around items-end h-15 px-2">
           {MOBILE_TABS.map((tab) => {
             const active = tab.href && (tab.href === "/" ? pathname === "/" : pathname.startsWith(tab.href));
             const Icon = tab.icon;
-            const el = (
-              <div className="flex flex-col items-center justify-center gap-0.5 flex-1 py-2 min-h-[44px] cursor-pointer">
+            const isCenterButton = tab.label === "AI数字人导游";
+            
+            const el = isCenterButton ? (
+              <div className="relative -top-3 flex flex-col items-center justify-center cursor-pointer min-w-[56px] select-none">
+                <motion.div
+                  animate={{ scale: active ? 1.08 : 1 }}
+                  whileTap={{ scale: 0.92 }}
+                  className="w-12 h-12 rounded-full bg-gradient-to-br from-[#FF7A5A] to-[#FF5B45] border-4 border-[#FFFDF9] shadow-[0_4px_12px_rgba(255,91,69,0.22)] flex items-center justify-center text-white text-[10px] font-black text-center"
+                >
+                  AI导游
+                </motion.div>
+                <span className="text-[9px] font-black mt-1 leading-none transition-colors"
+                  style={{ color: active ? "#FF5B45" : "#B8B4AC" }}>
+                  AI数字人导游
+                </span>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center gap-1 flex-1 py-2 min-h-[44px] cursor-pointer relative">
                 <motion.div animate={{ scale: active ? 1.12 : 1 }}
                   transition={{ type: "spring", stiffness: 400, damping: 20 }}>
-                  <Icon className="w-5 h-5"
+                  <Icon className="w-4.5 h-4.5"
                     style={{ color: active ? "#4F6F52" : "#B8B4AC", strokeWidth: active ? 2.2 : 1.6 }} />
                 </motion.div>
-                <span className="text-[10px] font-medium leading-none"
+                <span className="text-[9px] font-bold leading-none"
                   style={{ color: active ? "#4F6F52" : "#B8B4AC" }}>{tab.label}</span>
                 {active && (
                   <motion.div layoutId="tab-indicator"

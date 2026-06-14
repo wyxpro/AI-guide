@@ -44,8 +44,44 @@ export function ProfileScreen() {
   const [selectedInterests, setSelectedInterests] = useState<string[]>(["history", "nature", "architecture"]);
   const [cacheSize, setCacheSize] = useState("23.6MB");
 
-  const displayName = user ? (user.name || user.username || "游客小玉") : "游客小玉";
-  const initial = user ? displayName.slice(0, 1) : "玉";
+  // Local profile states
+  const [profileName, setProfileName] = useState("游客小玉");
+  const [profileLevel, setProfileLevel] = useState("Lv.5 问鼎江山");
+  const [profileAvatar, setProfileAvatar] = useState("https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80");
+  const [profileBio, setProfileBio] = useState("用双脚丈量世界，用声音感受历史。");
+  const [profileGender, setProfileGender] = useState("女");
+  const [profileRegion, setProfileRegion] = useState("四川 成都");
+
+  // Edit states for form fields
+  const [showEditProfile, setShowEditProfile] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editLevel, setEditLevel] = useState("");
+  const [editAvatar, setEditAvatar] = useState("");
+  const [editBio, setEditBio] = useState("");
+  const [editGender, setEditGender] = useState("");
+  const [editRegion, setEditRegion] = useState("");
+
+  const displayName = profileName;
+  const initial = displayName.slice(0, 1);
+
+  // Sync profile values with local storage and user info on mount/change
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedName = localStorage.getItem("profile_name") || (user ? (user.name || user.username || "游客小玉") : "游客小玉");
+      const storedLevel = localStorage.getItem("profile_level") || "Lv.5 问鼎江山";
+      const storedAvatar = localStorage.getItem("profile_avatar") || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80";
+      const storedBio = localStorage.getItem("profile_bio") || "用双脚丈量世界，用声音感受历史。";
+      const storedGender = localStorage.getItem("profile_gender") || "女";
+      const storedRegion = localStorage.getItem("profile_region") || "四川 成都";
+
+      setProfileName(storedName);
+      setProfileLevel(storedLevel);
+      setProfileAvatar(storedAvatar);
+      setProfileBio(storedBio);
+      setProfileGender(storedGender);
+      setProfileRegion(storedRegion);
+    }
+  }, [user]);
 
   useEffect(() => {
     Promise.all([
@@ -116,17 +152,19 @@ export function ProfileScreen() {
     <div className="min-h-svh bg-[#F4F7F5] pb-24 md:pb-12 text-[#2C3E35]">
       
       {/* ── Main Viewport Wrapper ── */}
-      <div className="max-w-7xl mx-auto px-0 md:px-6 py-0 md:py-8 grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <div className="max-w-5xl mx-auto px-0 md:px-6 py-0 md:py-8 flex flex-col lg:flex-row gap-4 items-start">
         
         {/* ── Desktop Sidebar (Hidden on Mobile) ── */}
-        <aside className="hidden lg:block bg-white rounded-[24px] border border-[#E2EAE5] p-6 shadow-sm h-fit">
+        <aside className="hidden lg:block w-[220px] flex-shrink-0 bg-white rounded-[24px] border border-[#E2EAE5] p-6 shadow-sm h-fit">
           <div className="flex items-center gap-3.5 mb-8">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#4F6F52] to-[#8FBF8A] flex items-center justify-center text-white text-lg font-black shadow-md border-2 border-white">
-              {initial}
-            </div>
+            <img 
+              src={profileAvatar} 
+              className="w-14 h-14 rounded-2xl border-2 border-white shadow-md object-cover flex-shrink-0"
+              alt="Avatar"
+            />
             <div>
               <h3 className="font-black text-base leading-tight">{displayName}</h3>
-              <p className="text-[11px] text-zinc-400 mt-1">Lv.5 问鼎江山 | 9步电</p>
+              <p className="text-[11px] text-[#8F9F8F] mt-1">{profileLevel} | 9步电</p>
             </div>
           </div>
 
@@ -156,7 +194,7 @@ export function ProfileScreen() {
         </aside>
 
         {/* ── Main Content Area ── */}
-        <main className="lg:col-span-3 min-h-[600px]">
+        <main className="flex-1 w-full min-h-[600px]">
           <AnimatePresence mode="wait">
             
             {/* ═══════════════════════════════════════════════════════
@@ -185,7 +223,15 @@ export function ProfileScreen() {
                       游客中心
                     </span>
                     <button 
-                      onClick={() => toast.success("编辑资料模块暂未开放")}
+                      onClick={() => {
+                        setEditName(profileName);
+                        setEditLevel(profileLevel);
+                        setEditAvatar(profileAvatar);
+                        setEditBio(profileBio);
+                        setEditGender(profileGender);
+                        setEditRegion(profileRegion);
+                        setShowEditProfile(true);
+                      }}
                       className="text-[10px] font-black text-[#4F6F52] bg-white px-3 py-1 rounded-full shadow-md cursor-pointer hover:bg-neutral-50 transition-colors"
                     >
                       编辑资料
@@ -194,19 +240,19 @@ export function ProfileScreen() {
 
                   <div className="flex items-center gap-4 text-white">
                     <img 
-                      src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80" 
+                      src={profileAvatar} 
                       className="w-16 h-16 rounded-full border-2 border-white/60 object-cover shadow-lg"
                       alt="User Avatar"
                     />
                     <div>
                       <div className="flex items-center gap-2">
                         <h2 className="text-lg font-black">{displayName}</h2>
-                        <span className="text-[9px] font-extrabold bg-[#D2A053] text-white px-1.5 py-0.5 rounded-md">Lv.5 问鼎江山</span>
+                        <span className="text-[9px] font-extrabold bg-[#D2A053] text-white px-1.5 py-0.5 rounded-md">{profileLevel}</span>
                       </div>
                       <p className="text-[10px] text-white/70 mt-1 flex items-center gap-1">
                         <span>⚡ 9 步电</span>
                         <span>|</span>
-                        <span>📍 翠玉游人</span>
+                        <span>📍 {profileRegion}</span>
                       </p>
                     </div>
                   </div>
@@ -214,19 +260,33 @@ export function ProfileScreen() {
 
                 {/* Main Body */}
                 <div className="p-4 sm:p-6 space-y-6">
-                  {/* Energy Score Card */}
-                  <div className="bg-gradient-to-r from-[#2C3E35] to-[#1C2C24] text-white rounded-3xl p-5 shadow-lg flex items-center justify-between relative overflow-hidden">
-                    <div className="absolute right-0 top-0 bottom-0 w-1/3 opacity-10 flex items-center justify-center">
-                      <Trophy className="w-32 h-32 text-white" />
+                  {/* AI Banner top (Moved from bottom) */}
+                  <div className="bg-gradient-to-br from-[#EEF7F2] to-[#E5F1EB] rounded-3xl p-5 border border-[#D5EDE0] flex items-center justify-between relative overflow-hidden shadow-sm">
+                    <div className="space-y-2.5 relative z-10 max-w-[65%]">
+                      <span className="text-[9px] font-extrabold text-white bg-[#4F6F52] px-2 py-0.5 rounded-full inline-block shadow-sm">
+                        AI 数字人导游
+                      </span>
+                      <h4 className="text-xs font-black text-zinc-800 leading-tight">随时为您提供智能讲解与路线推荐</h4>
+                      <div className="flex items-center gap-2">
+                        <button 
+                          onClick={() => router.push("/qa")}
+                          className="px-3.5 py-1.5 bg-[#4F6F52] text-white text-[10px] font-black rounded-lg shadow-sm hover:bg-[#3D5640] transition-colors cursor-pointer"
+                        >
+                          去对话
+                        </button>
+                        <button 
+                          onClick={() => router.push("/qa")}
+                          className="px-3.5 py-1.5 bg-white text-[#4F6F52] border border-[#D5EDE0] text-[10px] font-black rounded-lg shadow-sm hover:bg-neutral-50 transition-colors cursor-pointer"
+                        >
+                          去问答
+                        </button>
+                      </div>
                     </div>
-                    <div className="space-y-1 relative z-10">
-                      <span className="text-[10px] text-emerald-400 font-extrabold uppercase tracking-widest">今日聚意值</span>
-                      <h3 className="text-3xl font-black font-mono">285 <span className="text-sm font-bold">分</span></h3>
-                      <p className="text-[10px] text-zinc-300">超过了 86% 的游客，恭喜达成游览达人！</p>
-                    </div>
-                    <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-400/30 flex items-center justify-center text-2xl relative z-10 shadow-inner">
-                      🏆
-                    </div>
+                    <img 
+                      src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&auto=format&fit=crop&q=80" 
+                      className="absolute right-3 bottom-0 w-24 h-24 object-cover object-top rounded-t-full mask-image border-b-0 border border-white/20"
+                      alt=""
+                    />
                   </div>
 
                   {/* 4 Quick Entry Cards */}
@@ -290,35 +350,6 @@ export function ProfileScreen() {
                         </div>
                       ))}
                     </div>
-                  </div>
-
-                  {/* AI Banner bottom */}
-                  <div className="bg-gradient-to-br from-[#EEF7F2] to-[#E5F1EB] rounded-3xl p-5 border border-[#D5EDE0] flex items-center justify-between relative overflow-hidden">
-                    <div className="space-y-2.5 relative z-10 max-w-[65%]">
-                      <span className="text-[9px] font-extrabold text-white bg-[#4F6F52] px-2 py-0.5 rounded-full inline-block shadow-sm">
-                        AI 数字人导游
-                      </span>
-                      <h4 className="text-xs font-black text-zinc-800 leading-tight">随时为您提供智能讲解与路线推荐</h4>
-                      <div className="flex items-center gap-2">
-                        <button 
-                          onClick={() => router.push("/qa")}
-                          className="px-3.5 py-1.5 bg-[#4F6F52] text-white text-[10px] font-black rounded-lg shadow-sm hover:bg-[#3D5640] transition-colors cursor-pointer"
-                        >
-                          去对话
-                        </button>
-                        <button 
-                          onClick={() => router.push("/qa")}
-                          className="px-3.5 py-1.5 bg-white text-[#4F6F52] border border-[#D5EDE0] text-[10px] font-black rounded-lg shadow-sm hover:bg-neutral-50 transition-colors cursor-pointer"
-                        >
-                          去问答
-                        </button>
-                      </div>
-                    </div>
-                    <img 
-                      src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&auto=format&fit=crop&q=80" 
-                      className="absolute right-3 bottom-0 w-24 h-24 object-cover object-top rounded-t-full mask-image border-b-0 border border-white/20"
-                      alt=""
-                    />
                   </div>
 
                   {/* Mobile Back / Mode switch action */}
@@ -880,6 +911,176 @@ export function ProfileScreen() {
                   className="w-full py-2.5 rounded-xl text-xs font-bold text-white cursor-pointer"
                   style={{ background: "#4F6F52" }}>
                   我已了解
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit Profile Modal */}
+      <AnimatePresence>
+        {showEditProfile && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            onClick={() => setShowEditProfile(false)}
+          >
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0, y: 20 }} 
+              animate={{ scale: 1, opacity: 1, y: 0 }} 
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={SPRING}
+              className="w-full max-w-md bg-[#FAF8F5] rounded-3xl border border-[#E6E2D8] overflow-hidden shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between px-6 py-5 border-b border-[#E6E2D8]"
+                style={{ background: "#EEF7F2" }}>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-[#4F6F52]/20 text-[#4F6F52]">
+                    <User className="w-4 h-4" />
+                  </div>
+                  <h3 className="font-bold text-sm text-[#1E2522]">
+                    编辑个人资料
+                  </h3>
+                </div>
+                <button onClick={() => setShowEditProfile(false)} className="text-[#8F9F8F] hover:text-[#1E2522] transition-colors cursor-pointer">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="p-6 space-y-5 max-h-[60vh] overflow-y-auto scrollbar-none">
+                {/* Avatar Selection */}
+                <div className="space-y-2">
+                  <label className="text-[11px] font-black text-[#5C6B73] block">选择头像</label>
+                  <div className="flex justify-around items-center gap-3 py-2">
+                    {[
+                      { url: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80", name: "探索者" },
+                      { url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&auto=format&fit=crop&q=80", name: "行者" },
+                      { url: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&auto=format&fit=crop&q=80", name: "摄影师" },
+                      { url: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&auto=format&fit=crop&q=80", name: "冒险家" }
+                    ].map((av) => (
+                      <button
+                        key={av.url}
+                        type="button"
+                        onClick={() => setEditAvatar(av.url)}
+                        className={`relative rounded-full p-1 transition-all duration-300 ${
+                          editAvatar === av.url ? "ring-4 ring-[#4F6F52]" : "ring-2 ring-transparent opacity-75 hover:opacity-100"
+                        }`}
+                      >
+                        <img src={av.url} className="w-12 h-12 rounded-full object-cover" alt={av.name} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Nickname Field */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-black text-[#5C6B73] block">昵称</label>
+                  <input
+                    type="text"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    placeholder="请输入您的昵称"
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#E6E2D8] bg-white text-xs outline-none focus:border-[#4F6F52] focus:ring-1 focus:ring-[#4F6F52] transition-all"
+                  />
+                </div>
+
+                {/* Level / Travel Title */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-black text-[#5C6B73] block">旅行达人称号</label>
+                  <select
+                    value={editLevel}
+                    onChange={(e) => setEditLevel(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#E6E2D8] bg-white text-xs outline-none focus:border-[#4F6F52] transition-all"
+                  >
+                    <option value="Lv.5 问鼎江山">Lv.5 问鼎江山</option>
+                    <option value="Lv.4 独步江湖">Lv.4 独步江湖</option>
+                    <option value="Lv.3 寻幽探秘">Lv.3 寻幽探秘</option>
+                    <option value="Lv.2 浮生半闲">Lv.2 浮生半闲</option>
+                    <option value="Lv.1 初出茅庐">Lv.1 初出茅庐</option>
+                  </select>
+                </div>
+
+                {/* Gender selector */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-black text-[#5C6B73] block">性别</label>
+                  <div className="flex gap-2">
+                    {["男", "女", "保密"].map((g) => (
+                      <button
+                        type="button"
+                        key={g}
+                        onClick={() => setEditGender(g)}
+                        className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-all ${
+                          editGender === g 
+                            ? "bg-[#4F6F52] border-[#4F6F52] text-white shadow-sm" 
+                            : "bg-white border-[#E6E2D8] text-zinc-600 hover:bg-neutral-50"
+                        }`}
+                      >
+                        {g}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Location / Region */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-black text-[#5C6B73] block">常用定位 / 地区</label>
+                  <input
+                    type="text"
+                    value={editRegion}
+                    onChange={(e) => setEditRegion(e.target.value)}
+                    placeholder="例如: 四川 成都"
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#E6E2D8] bg-white text-xs outline-none focus:border-[#4F6F52] focus:ring-1 focus:ring-[#4F6F52] transition-all"
+                  />
+                </div>
+
+                {/* Bio */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-black text-[#5C6B73] block">个人签名</label>
+                  <textarea
+                    value={editBio}
+                    onChange={(e) => setEditBio(e.target.value)}
+                    placeholder="介绍一下自己吧..."
+                    rows={3}
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#E6E2D8] bg-white text-xs outline-none focus:border-[#4F6F52] focus:ring-1 focus:ring-[#4F6F52] transition-all resize-none"
+                  />
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="px-6 py-4 bg-[#FAF8F5] border-t border-[#E6E2D8] flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowEditProfile(false)}
+                  className="flex-1 py-2.5 rounded-xl text-xs font-bold bg-white border border-[#E6E2D8] text-zinc-600 hover:bg-neutral-50 transition-colors cursor-pointer"
+                >
+                  取消
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setProfileName(editName);
+                    setProfileLevel(editLevel);
+                    setProfileAvatar(editAvatar);
+                    setProfileBio(editBio);
+                    setProfileGender(editGender);
+                    setProfileRegion(editRegion);
+                    localStorage.setItem("profile_name", editName);
+                    localStorage.setItem("profile_level", editLevel);
+                    localStorage.setItem("profile_avatar", editAvatar);
+                    localStorage.setItem("profile_bio", editBio);
+                    localStorage.setItem("profile_gender", editGender);
+                    localStorage.setItem("profile_region", editRegion);
+                    setShowEditProfile(false);
+                    toast.success("个人资料保存成功！");
+                  }}
+                  className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white hover:bg-[#3A5240] transition-colors cursor-pointer"
+                  style={{ background: "#4F6F52" }}
+                >
+                  保存修改
                 </button>
               </div>
             </motion.div>

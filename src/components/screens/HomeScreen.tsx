@@ -191,18 +191,18 @@ function PCView() {
 
           <motion.div
             whileHover={{ y: -4 }}
-            onClick={() => router.push("/spots?category=history")}
+            onClick={() => router.push("/fm")}
             className="relative bg-gradient-to-br from-[#FCF8EE] to-[#FAF6E8] border border-[#F5EED8] rounded-3xl p-6 min-h-[120px] flex items-center justify-between overflow-hidden shadow-sm cursor-pointer group"
           >
             <div className="space-y-2 relative z-10">
-              <span className="text-lg font-black text-[#D2A053] tracking-wide block">文博精讲</span>
-              <p className="text-xs text-zinc-600 max-w-[280px]">聆听历史的回响，沉浸体验国家一级馆的文物精髓讲解。</p>
+              <span className="text-lg font-black text-[#D2A053] tracking-wide block">伴游FM</span>
+              <p className="text-xs text-zinc-600 max-w-[280px]">聆听历史的回响，伴随旅途开启FM精讲与人文漫步收听。</p>
               <span className="text-[10px] font-bold text-white bg-[#D2A053] px-2.5 py-0.5 rounded-full inline-flex items-center gap-0.5 shadow-sm mt-1">
-                立即解密
+                立即收听
                 <ChevronRight className="w-3 h-3" />
               </span>
             </div>
-            <span className="text-6xl select-none opacity-80 transition-transform duration-300 group-hover:scale-110">🏺</span>
+            <span className="text-6xl select-none opacity-80 transition-transform duration-300 group-hover:scale-110">📻</span>
           </motion.div>
 
           <motion.div
@@ -526,17 +526,16 @@ function MobileEntranceCards() {
           🏫
         </span>
       </motion.div>
-
-      {/* 2. 文博精讲 */}
+      {/* 2. 伴游FM */}
       <motion.div
         whileTap={{ scale: 0.96 }}
-        onClick={() => router.push("/spots?category=history")}
+        onClick={() => router.push("/fm")}
         className="relative bg-gradient-to-br from-[#FCF8EE] to-[#FAF6E8] border border-[#F5EED8] rounded-2xl p-2.5 h-[84px] flex flex-col justify-between overflow-hidden shadow-[0_2px_8px_rgba(210,160,83,0.03)] cursor-pointer"
       >
         <div className="flex flex-col">
-          <span className="text-[11px] font-black text-[#D2A053] tracking-wide">文博精讲</span>
+          <span className="text-[11px] font-black text-[#D2A053] tracking-wide">伴游FM</span>
           <span className="text-[7.5px] font-bold text-white bg-[#D2A053] px-1 py-0.5 rounded-full w-fit mt-1 shadow-sm leading-none flex items-center gap-0.5">
-            历史现场
+            旅途FM
             <svg className="w-1.5 h-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4">
               <polyline points="9 18 15 12 9 6"/>
             </svg>
@@ -544,10 +543,9 @@ function MobileEntranceCards() {
         </div>
         
         <span className="absolute bottom-1.5 right-1.5 text-[26px] leading-none opacity-85 select-none pointer-events-none">
-          🏺
+          📻
         </span>
       </motion.div>
-
       {/* 3. VR 识别 */}
       <motion.div
         whileTap={{ scale: 0.96 }}

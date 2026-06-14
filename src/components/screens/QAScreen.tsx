@@ -68,7 +68,7 @@ function initMsg(spotName?: string | null): Message {
     content: spotName
       ? `您好！我已为您准备好「${spotName}」的详细讲解，想了解历史渊源、文化典故还是游览小贴士？`
       : "您好！我是旅行吧AI导览官小玉，随时为您解答景区一切问题。可语音提问，也可文字输入。",
-    timestamp: new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }),
+    timestamp: "刚刚",
   };
 }
 
@@ -136,14 +136,14 @@ export function QAScreen() {
   }, [avatarConfig]);
 
   useEffect(() => {
-    fetch("/api/qa/avatar-active")
+    request("/api/qa/avatar-active")
       .then((r) => r.json())
       .then((d) => setAvatarConfig(d))
       .catch((e) => console.error("Failed to load active avatar config", e));
   }, []);
 
   useEffect(() => {
-    fetch("/api/qa/chat")
+    request("/api/qa/chat")
       .then((r) => r.json())
       .then((d) => {
         if (Array.isArray(d) && d.length > 0) {
@@ -239,7 +239,7 @@ export function QAScreen() {
         pitch: avatarConfig?.pitch || 100,
       };
 
-      const res = await fetch("/api/qa/tts", {
+      const res = await request("/api/qa/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -332,7 +332,7 @@ export function QAScreen() {
 
           setInput("正在识别语音...");
           try {
-            const res = await fetch("/api/qa/stt", {
+            const res = await request("/api/qa/stt", {
               method: "POST",
               body: formData,
             });
@@ -370,7 +370,7 @@ export function QAScreen() {
 
     try {
       const history = updated.slice(1).map((m) => ({ role: m.role, content: m.content }));
-      const res = await fetch("/api/qa/chat", {
+      const res = await request("/api/qa/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question, history, stream: true }),

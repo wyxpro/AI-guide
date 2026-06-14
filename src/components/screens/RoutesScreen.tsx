@@ -4,11 +4,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Compass, ArrowRight, Loader2, MapPin, Clock, ChevronLeft,
   Share2, MessageSquare, ShieldAlert, Award, Search, Send,
-  Volume2, VolumeX, Eye, BookOpen, Navigation, Landmark, Sparkles
+  Volume2, VolumeX, Eye, BookOpen, Navigation, Landmark, Sparkles,
+  X, Smile
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { request } from "@/lib/api/request";
 
 const SPRING = { type: "spring" as const, stiffness: 280, damping: 35 };
 
@@ -81,6 +83,7 @@ export function RoutesScreen() {
   ]);
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
+  const [showFloatChat, setShowFloatChat] = useState(true);
 
   // Auto-play TTS switch
   const [autoplayEnabled, setAutoplayEnabled] = useState(false);
@@ -333,30 +336,33 @@ export function RoutesScreen() {
     toast.success(`已锁定「${preset.name}」，请在地图上查看。`);
   };
 
-  // AI Chat Local responder
+  // AI Chat responder using backend Q&A RAG chat
   const handleSendChatMessage = async () => {
     if (!chatInput.trim()) return;
     const userMsg = chatInput;
-    setChatMessages(prev => [...prev, { role: "user", content: userMsg }]);
+    const updated = [...chatMessages, { role: "user" as const, content: userMsg }];
+    setChatMessages(updated);
     setChatInput("");
     setChatLoading(true);
 
-    await new Promise(resolve => setTimeout(resolve, 800));
-
-    let reply = "您好！我是您的智能助手。我可以为您介绍重庆景点的特色、门票、开放时间等，请问还有什么疑问吗？";
-    const q = userMsg.toLowerCase();
-    if (q.includes("洪崖洞")) {
-      reply = "洪崖洞以经典的吊脚楼风貌著称，夜景一般在每天18:00后点亮，无需门票免费参观，非常推荐从江北嘴一侧远眺拍摄！";
-    } else if (q.includes("门票")) {
-      reply = "重庆的主流街区景点如洪崖洞、解放碑、朝天门都是免费开放的。长江索道往返30元/单程20元，建议提前线上预约预约购票。";
-    } else if (q.includes("路线") || q.includes("怎么走")) {
-      reply = "建议您点击左下角的「推荐游览路线」，我们预设了‘巴渝文化历史游’，完美融合了三峡博物馆和洪崖洞，或者您可以直接使用智能生成器！";
-    } else if (q.includes("美食") || q.includes("好吃")) {
-      reply = "来到重庆一定要尝尝九宫格火锅、重庆小面、酸辣粉和磁器口的陈麻花，这些在洪崖洞和解放碑步行街周边均能轻松找到！";
+    try {
+      const spotsContext = CHONGQING_SPOTS.map(s => `- ${s.name}: ${s.desc} (类型: ${s.type}, 价格: ${s.price}, 开放时间: ${s.time}, 地址: ${s.addr})`).join("\n");
+      const questionWithContext = `【景区导航地图信息】:\n${spotsContext}\n\n【用户问题】:\n${userMsg}`;
+      const history = updated.slice(0, -1).map(m => ({ role: m.role, content: m.content }));
+      
+      const res = await request("/api/qa/chat", {
+        method: "POST",
+        body: JSON.stringify({ question: questionWithContext, history })
+      });
+      const data = await res.json();
+      const answerRaw = data.answer || "抱歉，暂时无法回答。";
+      const answer = answerRaw.replace(/\[情感:\s*[^\]]+\]/g, "").trim();
+      setChatMessages(prev => [...prev, { role: "assistant", content: answer }]);
+    } catch {
+      setChatMessages(prev => [...prev, { role: "assistant", content: "目前AI服务正在维护中，请稍候片刻。如需帮助，请前往景区服务中心。" }]);
+    } finally {
+      setChatLoading(false);
     }
-
-    setChatMessages(prev => [...prev, { role: "assistant", content: reply }]);
-    setChatLoading(false);
   };
 
   return (
@@ -919,75 +925,119 @@ export function RoutesScreen() {
                 </div>
               </div>
             )}
-          </div>
 
-          {/* Column 3: Right floating / side panel AI chat Guide widget */}
-          <div className="w-[300px] bg-white border-l border-zinc-200 flex flex-col overflow-hidden h-full flex-shrink-0">
-            {/* AI widget header */}
-            <div className="p-4 border-b flex items-center justify-between bg-neutral-50">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl overflow-hidden border bg-neutral-100 flex-shrink-0">
-                  <img
-                    src="https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=100&q=80"
-                    alt="Panda"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div>
-                  <h3 className="font-extrabold text-xs text-zinc-800">AI 导游小慧</h3>
-                  <span className="text-[9px] text-[#4F6F52] font-semibold flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-ping"></span>
-                    景区服务中
-                  </span>
-                </div>
-              </div>
-              <button className="text-zinc-400 hover:text-zinc-700">
-                <ChevronLeft className="w-4 h-4 rotate-180" />
-              </button>
-            </div>
-
-            {/* Chat dialog messages list */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3.5 bg-neutral-50/50">
-              {chatMessages.map((msg, i) => (
-                <div key={i} className={`flex gap-2.5 ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
-                  <div className={`w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-bold ${msg.role === "assistant" ? "bg-[#3A4D39] text-white" : "bg-neutral-200 text-zinc-700"}`}>
-                    {msg.role === "assistant" ? "慧" : "我"}
-                  </div>
-                  <div className={`p-2.5 rounded-2xl text-[11px] leading-relaxed max-w-[80%] ${msg.role === "assistant" ? "bg-white border text-zinc-800 shadow-sm" : "bg-[#3A4D39] text-white"}`}>
-                    {msg.content}
-                  </div>
-                </div>
-              ))}
-              {chatLoading && (
-                <div className="flex gap-2.5">
-                  <div className="w-6 h-6 rounded-full bg-[#3A4D39] text-white flex items-center justify-center text-[10px] font-bold">慧</div>
-                  <div className="p-2.5 rounded-2xl bg-white border flex items-center gap-1">
-                    <div className="w-1 h-1 bg-[#3A4D39] rounded-full animate-bounce" />
-                    <div className="w-1 h-1 bg-[#3A4D39] rounded-full animate-bounce [animation-delay:0.1s]" />
-                    <div className="w-1 h-1 bg-[#3A4D39] rounded-full animate-bounce [animation-delay:0.2s]" />
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Chat panel bottom input bar */}
-            <div className="p-3 border-t bg-white flex items-center gap-2">
-              <input
-                type="text"
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSendChatMessage()}
-                placeholder="向小慧提问... (Enter发送)"
-                className="flex-1 bg-neutral-50 border border-zinc-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-[#3A4D39]"
-              />
+            {/* Float chat toggle button */}
+            {!showFloatChat && (
               <button
-                onClick={handleSendChatMessage}
-                className="w-8 h-8 rounded-xl bg-[#3A4D39] text-white flex items-center justify-center hover:bg-[#4F6F52] transition-colors shadow-sm flex-shrink-0"
+                onClick={() => setShowFloatChat(true)}
+                className="absolute right-6 bottom-6 z-[1010] w-14 h-14 rounded-full bg-gradient-to-br from-[#4F6F52] to-[#3A5240] text-white shadow-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all border border-[#4F6F52]/30 cursor-pointer"
+                title="打开AI导游"
               >
-                <Send className="w-3.5 h-3.5" />
+                <MessageSquare className="w-6 h-6 text-white" />
               </button>
-            </div>
+            )}
 
+            {/* Floating AI Guide Widget (Image 1 Style) */}
+            <AnimatePresence>
+              {showFloatChat && (
+                <motion.div
+                  initial={{ opacity: 0, y: 50, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 50, scale: 0.95 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  className="absolute right-6 bottom-6 z-[1010] w-[360px] h-[520px] bg-white border border-[#E6E2D8] rounded-[24px] shadow-2xl flex flex-col overflow-hidden"
+                >
+                  {/* Header */}
+                  <div className="px-4 py-3.5 flex items-center justify-between bg-[#FAF6EE] border-b border-[#E6E2D8]/70 flex-shrink-0">
+                    <div className="flex items-center gap-2.5">
+                      {/* Avatar */}
+                      <div className="w-10 h-10 rounded-full overflow-hidden border border-[#D2A053]/30 bg-neutral-100 flex-shrink-0">
+                        <img
+                          src="https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=100&q=80"
+                          alt="AI导游小慧"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="text-left">
+                        <h3 className="font-extrabold text-sm text-[#2C3E35]">AI导游小慧</h3>
+                        <span className="text-[10px] text-[#4F6F52] font-semibold flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+                          灵山胜境 • 在线服务中
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button className="text-zinc-500 hover:text-zinc-800 p-1.5 rounded-lg hover:bg-black/5 transition-colors">
+                        <Smile className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => setShowFloatChat(false)}
+                        className="text-zinc-500 hover:text-zinc-800 p-1.5 rounded-lg hover:bg-black/5 transition-colors cursor-pointer"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Chat Dialog Messages */}
+                  <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#FDFBF7] scrollbar-thin">
+                    {chatMessages.map((msg, i) => {
+                      const isUser = msg.role === "user";
+                      return (
+                        <div key={i} className={`flex gap-2.5 ${isUser ? "flex-row-reverse" : ""}`}>
+                          <div className={`w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-bold ${isUser ? "bg-neutral-200 text-zinc-700" : "bg-[#3A4D39] text-white"}`}>
+                            {isUser ? "我" : "慧"}
+                          </div>
+                          <div className="flex flex-col space-y-1 max-w-[75%]">
+                            <div className={`p-3 rounded-2xl text-[11px] leading-relaxed shadow-sm text-left ${isUser ? "bg-[#4F6F52] text-white rounded-tr-none" : "bg-white border border-[#E6E2D8] text-[#2C3E35] rounded-tl-none"}`}>
+                              {msg.content}
+                            </div>
+                            <span className={`text-[8.5px] text-zinc-400 font-mono px-1 ${isUser ? "text-right" : "text-left"}`}>
+                              {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {chatLoading && (
+                      <div className="flex gap-2.5">
+                        <div className="w-6 h-6 rounded-full bg-[#3A4D39] text-white flex items-center justify-center text-[10px] font-bold">慧</div>
+                        <div className="p-3 rounded-2xl bg-white border border-[#E6E2D8] flex items-center gap-1">
+                          <div className="w-1 h-1 bg-[#3A4D39] rounded-full animate-bounce" />
+                          <div className="w-1 h-1 bg-[#3A4D39] rounded-full animate-bounce [animation-delay:0.1s]" />
+                          <div className="w-1 h-1 bg-[#3A4D39] rounded-full animate-bounce [animation-delay:0.2s]" />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Input Bar */}
+                  <div className="p-3.5 border-t border-[#E6E2D8]/70 bg-white flex items-center gap-2.5 flex-shrink-0">
+                    <button className="w-9 h-9 rounded-full border border-[#E6E2D8] bg-white flex items-center justify-center text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50 transition-colors shadow-sm cursor-pointer">
+                      <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" />
+                      </svg>
+                    </button>
+                    
+                    <input
+                      type="text"
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleSendChatMessage()}
+                      placeholder="向小慧提问...（Enter发送）"
+                      className="flex-1 bg-neutral-50 border border-zinc-200/80 rounded-full px-4 py-2 text-xs outline-none focus:border-[#4F6F52] focus:bg-white transition-all text-[#2C3E35]"
+                    />
+                    
+                    <button
+                      onClick={handleSendChatMessage}
+                      className="w-9 h-9 rounded-full bg-[#4F6F52] text-white flex items-center justify-center hover:bg-[#3A5240] transition-colors shadow-md flex-shrink-0 active:scale-95 cursor-pointer"
+                    >
+                      <Send className="w-4 h-4 text-white" />
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
         </div>

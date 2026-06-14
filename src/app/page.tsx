@@ -109,19 +109,17 @@ const COMP_PRODUCTS = [
   },
 ];
 
-// 3. User Reviews Data
-const REVIEWS = [
+// 3. User Reviews Data for Double-row Marquee
+const ROW1_REVIEWS = [
   {
-    id: 1,
     name: "王建国 (67岁)",
     role: "退休教师 / 银发旅客",
     avatar: "👴",
     rating: 5,
-    tag: "适老模式",
+    tag: "适老陪伴",
     comment: "大字模式和慢速声音真的太贴心了！以前跟不上导游的脚步，用这个AI导览，自己能看着大字，听着慢慢悠悠的讲解，走到哪讲到哪，极其舒服！",
   },
   {
-    id: 2,
     name: "林小萌与妈妈",
     role: "亲子家庭",
     avatar: "👩‍👦",
@@ -130,22 +128,55 @@ const REVIEWS = [
     comment: "小糖果数字人说话萌萌的，孩子一路上跟着听知识问答，平时很调皮这回倒非常专注。路线还很细心地规划了无障碍和厕所，省了我们不少力气。",
   },
   {
-    id: 3,
     name: "Alex",
     role: "户外旅行博主",
     avatar: "🧑‍💻",
     rating: 5,
     tag: "高效打卡",
-    comment: "特种兵路线吹爆！半天时间把整个翠玉湖和揽月亭最火的机位全走了一遍，AI还能根据前方的实时拥堵避开人群，顺光拍出的大片直接出圈！",
+    comment: "特种兵路线吹爆！半天时间把整个渝中半岛最火的机位全走了一遍，AI还能根据前方的实时拥堵避开人群，顺光拍出的大片直接出圈！",
   },
   {
-    id: 4,
     name: "陈华教授",
     role: "大学历史系教师",
     avatar: "🧔",
     rating: 5,
     tag: "深度考证",
-    comment: "本以为景区的AI只是应付了事，没想到对揽月亭的牌匾典故、宋代古窑的微量元素演变讲解得十分详备扎实，甚至给出了古籍出处，专业度惊人。",
+    comment: "本以为景区的AI只是应付了事，没想到对洪崖洞的牌匾典故、宋代古迹的微量元素演变讲解得十分详备扎实，甚至给出了古籍出处，专业度惊人。",
+  },
+];
+
+const ROW2_REVIEWS = [
+  {
+    name: "李阿姨 (62岁)",
+    role: "退休职工 / 银发游客",
+    avatar: "👵",
+    rating: 5,
+    tag: "语言适配",
+    comment: "这个系统的语音非常清晰，支持方言识别，我的普通话不标准它也能听懂！而且还会推荐平坦的轮椅通道，对老人太方便了。",
+  },
+  {
+    name: "张阳 (28岁)",
+    role: "科技数码狂热者",
+    avatar: "🧑",
+    rating: 5,
+    tag: "3D扫描",
+    comment: "用手机扫一扫珍玩古迹，3D扫描拓扑结构马上就出来了，数字人导游还能进行中英文双语高精讲解，交互延迟低，体验极其硬核！",
+  },
+  {
+    name: "沫沫与爸爸",
+    role: "小学生家庭",
+    avatar: "👧",
+    rating: 5,
+    tag: "科普探索",
+    comment: "AI导游变成了一个可爱的数字人，一边讲古遗迹的科学奥秘一边给我们发徽章奖励。沫沫玩了一天也不喊累，学到了不少历史知识！",
+  },
+  {
+    name: "杜航 (33岁)",
+    role: "自由行达人",
+    avatar: "🎒",
+    rating: 5,
+    tag: "智能避堵",
+    comment: "下午三点突然下大雨，系统自动帮我把户外路线改成了重庆大剧院和室内博物馆，不仅防雨而且人流极少，这个智能避堵和实时微调简直神了。",
   },
 ];
 
@@ -210,29 +241,7 @@ const PLANS = [
 
 export default function WelcomePage() {
   const [activePersona, setActivePersona] = useState(0);
-  const [carouselIndex, setCarouselIndex] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
-
-  const stopAutoPlay = () => {
-    if (autoPlayRef.current) {
-      clearInterval(autoPlayRef.current);
-    }
-  };
-
-  const startAutoPlay = () => {
-    stopAutoPlay();
-    autoPlayRef.current = setInterval(() => {
-      setCarouselIndex((prev) => (prev + 1) % REVIEWS.length);
-    }, 5000);
-  };
-
-  // Auto transition user reviews
-  useEffect(() => {
-    startAutoPlay();
-    return () => stopAutoPlay();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const handleStart = () => {
     window.location.href = "/login";
@@ -452,49 +461,7 @@ export default function WelcomePage() {
         </div>
       </section>
  
-      {/* Project Introduction (项目简介) */}
-      <section id="intro" className="py-20 bg-white border-y border-[#E6E2D8]">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center space-y-3 mb-16">
-            <span className="text-xs font-bold tracking-widest text-[#4F6F52] uppercase">Introduction</span>
-            <h3 className="text-3xl md:text-4xl font-black" style={{ fontFamily: "var(--font-noto-serif)" }}>旅行吧智慧，服务每一个瞬间</h3>
-            <div className="w-12 h-1 rounded bg-[#4F6F52] mx-auto mt-2" />
-            <p className="text-sm text-[#8F9F8F] max-w-xl mx-auto">以技术之美重新诠释景区导游，为每位游客提供专属的管家式贴身服务。</p>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="p-8 rounded-3xl border border-[#E6E2D8] hover:shadow-xl transition-all duration-300 space-y-4" style={{ background: "#FAF8F5" }}>
-              <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: "rgba(79,111,82,0.1)", color: "#4F6F52" }}>
-                <Bot className="w-6 h-6" />
-              </div>
-              <h4 className="text-lg font-bold" style={{ fontFamily: "var(--font-noto-serif)" }}>24H多模态数字人伴游</h4>
-              <p className="text-sm leading-relaxed text-[#8F9F8F]">
-                高度还原东方神韵的AI数字人讲解员，支持无延迟语音交互，表情动作与故事节奏完美契合，让历史传说不再是枯燥的文字。
-              </p>
-            </div>
-
-            <div className="p-8 rounded-3xl border border-[#E6E2D8] hover:shadow-xl transition-all duration-300 space-y-4" style={{ background: "#FAF8F5" }}>
-              <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: "rgba(210,160,83,0.1)", color: "#D2A053" }}>
-                <Users className="w-6 h-6" />
-              </div>
-              <h4 className="text-lg font-bold" style={{ fontFamily: "var(--font-noto-serif)" }}>无障碍多画像适配</h4>
-              <p className="text-sm leading-relaxed text-[#8F9F8F]">
-                全行业首创的多重体验预设。可智能切换“适老陪伴”、“童趣探秘”、“文史考证”或“特种兵极致游”等专属展示 and 解说引擎。
-              </p>
-            </div>
-
-            <div className="p-8 rounded-3xl border border-[#E6E2D8] hover:shadow-xl transition-all duration-300 space-y-4" style={{ background: "#FAF8F5" }}>
-              <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: "rgba(79,111,82,0.1)", color: "#4F6F52" }}>
-                <Navigation className="w-6 h-6" />
-              </div>
-              <h4 className="text-lg font-bold" style={{ fontFamily: "var(--font-noto-serif)" }}>动态避堵算法路线</h4>
-              <p className="text-sm leading-relaxed text-[#8F9F8F]">
-                不再依赖死板的游览推荐。AI根据景区人流、天气变化、实时营业时间以及您的行进速度，动态重新寻找最佳游行轨迹。
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* User Personas (用户画像) */}
       <section id="persona" className="py-20">
@@ -759,84 +726,111 @@ export default function WelcomePage() {
       </section>
 
       {/* User Reviews (游客评价 - 轮播图) */}
-      <section id="reviews" className="py-20 bg-white border-y border-[#E6E2D8]">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center space-y-3 mb-16">
-            <span className="text-xs font-bold tracking-widest text-[#4F6F52] uppercase">Reviews</span>
-            <h3 className="text-3xl md:text-4xl font-black" style={{ fontFamily: "var(--font-noto-serif)" }}>看看他们怎么说</h3>
-            <div className="w-12 h-1 rounded bg-[#4F6F52] mx-auto mt-2" />
-            <p className="text-sm text-[#8F9F8F] max-w-xl mx-auto">数万名来自全国各地的游客体验了旅行吧的陪伴游，真实好评如潮。</p>
-          </div>
+      <section id="reviews" className="py-20 bg-white border-y border-[#E6E2D8] overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 mb-12 text-center space-y-3">
+          <span className="text-xs font-bold tracking-widest text-[#4F6F52] uppercase">Reviews</span>
+          <h3 className="text-3xl md:text-4xl font-black" style={{ fontFamily: "var(--font-noto-serif)" }}>听听他们怎么说</h3>
+          <div className="w-12 h-1 rounded bg-[#4F6F52] mx-auto mt-2" />
+          <p className="text-sm text-[#8F9F8F] max-w-xl mx-auto">数万名来自全国各地的游客体验了旅行吧的陪伴游，真实好评如潮。</p>
+        </div>
 
-          {/* Testimonial Carousel */}
-          <div className="relative max-w-4xl mx-auto">
-            <div className="overflow-hidden p-6 md:p-10 rounded-3xl border border-[#E6E2D8] bg-[#FAF8F5] shadow-lg min-h-[220px] flex flex-col justify-between"
-                 onMouseEnter={stopAutoPlay}
-                 onMouseLeave={startAutoPlay}>
-              
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={carouselIndex}
-                  initial={{ opacity: 0, x: 30 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -30 }}
-                  transition={{ duration: 0.4 }}
-                  className="space-y-4"
-                >
-                  <div className="flex justify-between items-center flex-wrap gap-3">
-                    <div className="flex items-center gap-3">
-                      <span className="text-4xl">{REVIEWS[carouselIndex].avatar}</span>
-                      <div>
-                        <h4 className="font-bold text-[#1E2522]">{REVIEWS[carouselIndex].name}</h4>
-                        <p className="text-xs text-[#8F9F8F]">{REVIEWS[carouselIndex].role}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-[#4F6F52]/10 text-[#4F6F52] font-semibold">{REVIEWS[carouselIndex].tag}</span>
-                      <div className="flex gap-0.5">
-                        {[...Array(REVIEWS[carouselIndex].rating)].map((_, i) => (
-                          <Star key={i} className="w-3.5 h-3.5 fill-yellow-400 stroke-yellow-400" />
-                        ))}
-                      </div>
+        {/* Custom Keyframe Styles */}
+        <style jsx global>{`
+          @keyframes marquee-left {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+          @keyframes marquee-right {
+            0% { transform: translateX(-50%); }
+            100% { transform: translateX(0); }
+          }
+          .animate-marquee-left {
+            animation: marquee-left 35s linear infinite;
+          }
+          .animate-marquee-right {
+            animation: marquee-right 35s linear infinite;
+          }
+          .marquee-container:hover .animate-marquee-left,
+          .marquee-container:hover .animate-marquee-right {
+            animation-play-state: paused;
+          }
+        `}</style>
+
+        <div className="marquee-container space-y-6 w-full overflow-hidden relative">
+          {/* Fade edges overlays */}
+          <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
+
+          {/* Row 1: Leftward Marquee */}
+          <div className="flex w-[200%] md:w-max gap-6 animate-marquee-left">
+            {[...ROW1_REVIEWS, ...ROW1_REVIEWS].map((rev, idx) => (
+              <div 
+                key={idx} 
+                className="w-[310px] md:w-[350px] flex-shrink-0 bg-[#FAF8F5] border border-[#E6E2D8] rounded-3xl p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition-all duration-300 relative group"
+              >
+                <span className="absolute top-4 right-6 text-5xl text-[#4F6F52]/10 font-serif pointer-events-none select-none">“</span>
+                
+                <div className="space-y-4">
+                  <div className="flex gap-0.5">
+                    {[...Array(rev.rating)].map((_, i) => (
+                      <Star key={i} className="w-3.5 h-3.5 fill-yellow-500 stroke-yellow-500" />
+                    ))}
+                  </div>
+                  <p className="text-[13px] leading-relaxed text-[#3A4D39] font-medium min-h-[72px] text-left">
+                    {rev.comment}
+                  </p>
+                </div>
+
+                <div className="mt-5 pt-4 border-t border-[#E6E2D8]/60 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="text-3xl">{rev.avatar}</span>
+                    <div className="text-left">
+                      <h4 className="font-bold text-xs text-[#1E2522]">{rev.name}</h4>
+                      <p className="text-[10px] text-[#8F9F8F]">{rev.role}</p>
                     </div>
                   </div>
-
-                  <p className="text-sm md:text-base leading-relaxed text-[#3A4D39] italic pt-2">
-                    &ldquo;{REVIEWS[carouselIndex].comment}&rdquo;
-                  </p>
-                </motion.div>
-              </AnimatePresence>
-
-              {/* Indicator dots & pagination */}
-              <div className="flex justify-between items-center pt-8 border-t border-[#E6E2D8]/50 mt-6">
-                <div className="flex gap-1.5">
-                  {REVIEWS.map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setCarouselIndex(i)}
-                      className={`w-2.5 h-2.5 rounded-full transition-all ${
-                        carouselIndex === i ? "w-6 bg-[#4F6F52]" : "bg-[#8F9F8F]/40"
-                      }`}
-                    />
-                  ))}
-                </div>
-
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setCarouselIndex((prev) => (prev - 1 + REVIEWS.length) % REVIEWS.length)}
-                    className="p-1.5 rounded-lg border border-[#E6E2D8] hover:bg-white transition-colors"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => setCarouselIndex((prev) => (prev + 1) % REVIEWS.length)}
-                    className="p-1.5 rounded-lg border border-[#E6E2D8] hover:bg-white transition-colors"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
+                  <span className="text-[10px] px-2 py-1 rounded-full bg-[#4F6F52]/10 text-[#4F6F52] font-extrabold flex-shrink-0">
+                    {rev.tag}
+                  </span>
                 </div>
               </div>
-            </div>
+            ))}
+          </div>
+
+          {/* Row 2: Rightward Marquee */}
+          <div className="flex w-[200%] md:w-max gap-6 animate-marquee-right">
+            {[...ROW2_REVIEWS, ...ROW2_REVIEWS].map((rev, idx) => (
+              <div 
+                key={idx} 
+                className="w-[310px] md:w-[350px] flex-shrink-0 bg-[#FAF8F5] border border-[#E6E2D8] rounded-3xl p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition-all duration-300 relative group"
+              >
+                <span className="absolute top-4 right-6 text-5xl text-[#4F6F52]/10 font-serif pointer-events-none select-none">“</span>
+                
+                <div className="space-y-4">
+                  <div className="flex gap-0.5">
+                    {[...Array(rev.rating)].map((_, i) => (
+                      <Star key={i} className="w-3.5 h-3.5 fill-yellow-500 stroke-yellow-500" />
+                    ))}
+                  </div>
+                  <p className="text-[13px] leading-relaxed text-[#3A4D39] font-medium min-h-[72px] text-left">
+                    {rev.comment}
+                  </p>
+                </div>
+
+                <div className="mt-5 pt-4 border-t border-[#E6E2D8]/60 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="text-3xl">{rev.avatar}</span>
+                    <div className="text-left">
+                      <h4 className="font-bold text-xs text-[#1E2522]">{rev.name}</h4>
+                      <p className="text-[10px] text-[#8F9F8F]">{rev.role}</p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] px-2 py-1 rounded-full bg-[#D2A053]/15 text-[#D2A053] font-extrabold flex-shrink-0">
+                    {rev.tag}
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>

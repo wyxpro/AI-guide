@@ -26,29 +26,115 @@ export function AdminAvatarScreen() {
   const [configs, setConfigs] = useState<AvatarConfig[]>([]);
   const [selected, setSelected] = useState<AvatarConfig | null>(null);
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [previewText, setPreviewText] = useState("您好，欢迎来到翠玉景区！我是您的专属AI导览官，很高兴为您服务。");
 
   useEffect(() => {
-    request("/api/admin/avatar").then((r) => r.json()).then((d) => {
-      const list = Array.isArray(d) ? d : [];
-      setConfigs(list);
-      setSelected(list.find((c: AvatarConfig) => c.isDefault) ?? list[0] ?? null);
-    });
+    setLoading(true);
+    request("/api/admin/avatar")
+      .then((r) => {
+        if (!r.ok) {
+          throw new Error(`请求失败 (HTTP ${r.status})`);
+        }
+        return r.json();
+      })
+      .then((d) => {
+        if (d && d.error) {
+          setError(d.error);
+          setLoading(false);
+          return;
+        }
+        const list = Array.isArray(d) ? d : [];
+        setConfigs(list);
+        if (list.length > 0) {
+          setSelected(list.find((c: AvatarConfig) => c.isDefault) ?? list[0]);
+        } else {
+          // Fallback initial draft config
+          const fallback: AvatarConfig = {
+            id: 0,
+            name: "默认数字人",
+            avatarStyle: "default",
+            voiceStyle: "warm",
+            speechRate: 100,
+            pitch: 100,
+            greeting: "您好，欢迎来到翠玉景区，我是您的专属AI导览官，很高兴为您服务。",
+            isDefault: true,
+          };
+          setConfigs([fallback]);
+          setSelected(fallback);
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message || "获取数字人配置失败");
+        setLoading(false);
+      });
   }, []);
 
   const save = async () => {
     if (!selected) return;
     setSaving(true);
-    await request("/api/admin/avatar", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(selected) });
-    toast.success("配置已保存");
-    setSaving(false);
+    try {
+      if (selected.id === 0) {
+        // Create new
+        const res = await request("/api/admin/avatar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: selected.name,
+            avatarStyle: selected.avatarStyle,
+            voiceStyle: selected.voiceStyle,
+            speechRate: selected.speechRate,
+            pitch: selected.pitch,
+            greeting: selected.greeting
+          })
+        });
+        const newDoc = await res.json();
+        if (newDoc && newDoc.id) {
+          setSelected(newDoc);
+          setConfigs([newDoc]);
+          toast.success("配置已创建并保存");
+        } else {
+          toast.error(newDoc.error || "保存失败");
+        }
+      } else {
+        // Update existing
+        await request("/api/admin/avatar", { 
+          method: "PUT", 
+          headers: { "Content-Type": "application/json" }, 
+          body: JSON.stringify(selected) 
+        });
+        toast.success("配置已更新");
+      }
+    } catch {
+      toast.error("保存失败，请检查网络");
+    } finally {
+      setSaving(false);
+    }
   };
 
-  if (!selected) return (
-    <div className="min-h-svh flex items-center justify-center" style={{ background: "#FAF8F5" }}>
-      <Loader2 className="w-6 h-6 animate-spin" style={{ color: "#4F6F52" }} />
-    </div>
-  );
+  if (loading) {
+    return (
+      <div className="min-h-svh flex items-center justify-center" style={{ background: "#FAF8F5" }}>
+        <Loader2 className="w-6 h-6 animate-spin" style={{ color: "#4F6F52" }} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-svh flex flex-col items-center justify-center p-6" style={{ background: "#FAF8F5" }}>
+        <div className="text-red-500 font-bold mb-2">加载失败</div>
+        <p className="text-sm text-zinc-500 mb-4">{error}</p>
+        <button onClick={() => window.location.reload()} className="px-4 py-2 bg-[#4F6F52] text-white rounded-lg text-sm">
+          重试
+        </button>
+      </div>
+    );
+  }
+
+  if (!selected) return null;
 
   return (
     <div className="min-h-svh" style={{ background: "#FAF8F5" }}>
