@@ -38,7 +38,7 @@ export async function requireAdmin(request: NextRequest): Promise<{ ok: true; us
   const authResult = requireAuth(request);
   if (!authResult.ok) return { ok: false, response: authResult.response };
   
-  let userRole = authResult.user.email === "wyxcode@qq.com" ? "admin" : "user";
+  let userRole = (authResult.user.email === "wyxcode@qq.com" || process.env.NODE_ENV === "development") ? "admin" : "user";
   
   try {
     const dbUser = await db.select().from(users).where(eq(users.id, authResult.user.id)).limit(1);
@@ -49,8 +49,8 @@ export async function requireAdmin(request: NextRequest): Promise<{ ok: true; us
     console.error("Failed to query user role from DB:", err);
   }
 
-  // Force admin role for the hardcoded admin email
-  if (authResult.user.email === "wyxcode@qq.com") {
+  // Force admin role for the hardcoded admin email or development environment
+  if (authResult.user.email === "wyxcode@qq.com" || process.env.NODE_ENV === "development") {
     userRole = "admin";
   }
 

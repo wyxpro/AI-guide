@@ -152,7 +152,7 @@ export function ProfileScreen() {
     <div className="min-h-svh bg-[#F4F7F5] pb-24 md:pb-12 text-[#2C3E35]">
       
       {/* ── Main Viewport Wrapper ── */}
-      <div className="max-w-5xl mx-auto px-0 md:px-6 py-0 md:py-8 flex flex-col lg:flex-row gap-4 items-start">
+      <div className="w-full max-w-[1280px] lg:mx-0 lg:pl-24 px-0 md:px-6 py-0 md:py-8 flex flex-col lg:flex-row gap-6 items-start">
         
         {/* ── Desktop Sidebar (Hidden on Mobile) ── */}
         <aside className="hidden lg:block w-[220px] flex-shrink-0 bg-white rounded-[24px] border border-[#E2EAE5] p-6 shadow-sm h-fit">
@@ -238,22 +238,41 @@ export function ProfileScreen() {
                     </button>
                   </div>
 
-                  <div className="flex items-center gap-4 text-white">
-                    <img 
-                      src={profileAvatar} 
-                      className="w-16 h-16 rounded-full border-2 border-white/60 object-cover shadow-lg"
-                      alt="User Avatar"
-                    />
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h2 className="text-lg font-black">{displayName}</h2>
-                        <span className="text-[9px] font-extrabold bg-[#D2A053] text-white px-1.5 py-0.5 rounded-md">{profileLevel}</span>
+                  <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 text-white w-full">
+                    <div className="flex items-center gap-4">
+                      <img 
+                        src={profileAvatar} 
+                        className="w-16 h-16 rounded-full border-2 border-white/60 object-cover shadow-lg"
+                        alt="User Avatar"
+                      />
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h2 className="text-lg font-black">{displayName}</h2>
+                          <span className="text-[9px] font-extrabold bg-[#D2A053] text-white px-1.5 py-0.5 rounded-md">{profileLevel}</span>
+                        </div>
+                        <p className="text-[10px] text-white/70 mt-1 flex items-center gap-1">
+                          <span>⚡ 9 步电</span>
+                          <span>|</span>
+                          <span>📍 {profileRegion}</span>
+                        </p>
                       </div>
-                      <p className="text-[10px] text-white/70 mt-1 flex items-center gap-1">
-                        <span>⚡ 9 步电</span>
-                        <span>|</span>
-                        <span>📍 {profileRegion}</span>
-                      </p>
+                    </div>
+
+                    {/* Redesigned Experience Mode Toggle Switcher */}
+                    <div className="bg-white/10 backdrop-blur-md border border-white/20 p-1 rounded-2xl flex items-center gap-1 shadow-inner h-fit self-start sm:self-end">
+                      {(["standard", "elder", "child"] as Mode[]).map(m => (
+                        <button
+                          key={m}
+                          onClick={() => changeMode(m)}
+                          className={`text-[9.5px] font-bold px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
+                            mode === m 
+                              ? "bg-white text-[#4F6F52] shadow-md scale-105" 
+                              : "text-white/80 hover:text-white hover:bg-white/5"
+                          }`}
+                        >
+                          {m === "standard" ? "标准" : m === "elder" ? "适老" : "童趣"}
+                        </button>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -288,6 +307,8 @@ export function ProfileScreen() {
                       alt=""
                     />
                   </div>
+
+
 
                   {/* 4 Quick Entry Cards */}
                   <div className="grid grid-cols-4 gap-2 text-center">
@@ -348,26 +369,6 @@ export function ProfileScreen() {
                           </div>
                           <span className="text-[9.5px] font-mono text-zinc-300 flex-shrink-0">{item.time}</span>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Mobile Back / Mode switch action */}
-                  <div className="pt-4 border-t border-[#EEF2F0] flex items-center justify-between">
-                    <span className="text-[11px] text-zinc-400">当前体验模式</span>
-                    <div className="flex items-center gap-1.5 bg-zinc-100 p-0.5 rounded-lg">
-                      {(["standard", "elder", "child"] as Mode[]).map(m => (
-                        <button
-                          key={m}
-                          onClick={() => changeMode(m)}
-                          className={`text-[9.5px] font-black px-2 py-1 rounded-md transition-colors ${
-                            mode === m 
-                              ? "bg-white text-[#4F6F52] shadow-sm" 
-                              : "text-zinc-500 hover:text-zinc-700"
-                          }`}
-                        >
-                          {m === "standard" ? "标准" : m === "elder" ? "适老" : "童趣"}
-                        </button>
                       ))}
                     </div>
                   </div>

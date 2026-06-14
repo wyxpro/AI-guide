@@ -31,6 +31,8 @@ export function SpotDetailScreen({ spotId }: { spotId: string }) {
   const [nearbySpots, setNearbySpots] = useState<Array<any>>([]);
   const [activeMedia, setActiveMedia] = useState<"image" | "video">("image");
   const [currentImgIdx, setCurrentImgIdx] = useState(0);
+  const [guideExpanded, setGuideExpanded] = useState(false);
+  const [storyExpanded, setStoryExpanded] = useState(false);
 
   useEffect(() => {
     fetch(`/api/spots/${spotId}`)
@@ -150,49 +152,107 @@ export function SpotDetailScreen({ spotId }: { spotId: string }) {
 
   return (
     <div className="min-h-svh relative" style={{ background: "#FAF8F5" }}>
-      {/* Floating Buttons mid-right */}
-      <div className="fixed right-4 top-[70%] -translate-y-1/2 z-40 flex flex-col gap-3.5 max-w-[280px]">
-        {/* Floating Card 1: 导览官小玉 */}
-        <Link href={`/qa?spot=${spot.id}&name=${encodeURIComponent(spot.name)}`}>
-          <motion.div
-            whileHover={{ scale: 1.04, x: -6 }}
-            whileTap={{ scale: 0.98 }}
-            className="flex items-center gap-3 p-3.5 rounded-2xl shadow-xl border border-[#D2A053]/45 cursor-pointer backdrop-blur-md"
-            style={{
-              background: "linear-gradient(135deg, rgba(26,45,35,0.95), rgba(52,82,64,0.9))",
-              boxShadow: "0 8px 32px rgba(210,160,83,0.15)"
-            }}
-          >
-            <div className="w-10 h-10 rounded-full bg-[#1F2E26] border border-[#D2A053]/60 flex items-center justify-center text-sm font-bold text-[#D2A053]" style={{ fontFamily: "var(--font-noto-serif)" }}>
-              玉
-            </div>
-            <div className="flex-1 text-left min-w-0">
-              <h4 className="text-xs font-bold text-[#D2A053] tracking-wide" style={{ fontFamily: "var(--font-noto-serif)" }}>导览官小玉</h4>
-              <p className="text-[10px] text-white/75 mt-0.5 leading-tight truncate">向我提问关于景区历史与文化</p>
-            </div>
-          </motion.div>
-        </Link>
-
-        {/* Floating Card 2: 故事讲解模式 */}
+      {/* Draggable & Expandable Card 1: 导览官小玉 */}
+      <motion.div
+        drag
+        dragMomentum={false}
+        className="fixed z-40 touch-none"
+        style={{ right: 16, top: "55%" }}
+      >
         <motion.div
-          whileHover={{ scale: 1.04, x: -6 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => setShowStory(true)}
-          className="flex items-center gap-3 p-3.5 rounded-2xl shadow-xl border border-orange-500/45 cursor-pointer backdrop-blur-md"
+          layout
+          className="flex flex-row-reverse items-center shadow-xl border border-[#D2A053]/50 backdrop-blur-md overflow-hidden bg-[#1A2D23]/95"
           style={{
-            background: "linear-gradient(135deg, rgba(60,26,26,0.95), rgba(107,35,35,0.9))",
-            boxShadow: "0 8px 32px rgba(249,115,22,0.15)"
+            borderRadius: guideExpanded ? "16px" : "28px",
+            padding: "8px",
+            boxShadow: "0 12px 40px rgba(0,0,0,0.3)"
           }}
         >
-          <div className="w-10 h-10 rounded-full bg-[#3C1A1A] border border-orange-500/60 flex items-center justify-center text-base">
-            📖
-          </div>
-          <div className="flex-1 text-left min-w-0">
-            <h4 className="text-xs font-bold text-orange-400 tracking-wide" style={{ fontFamily: "var(--font-noto-serif)" }}>故事讲解模式</h4>
-            <p className="text-[10px] text-white/75 mt-0.5 leading-tight truncate">4章节沉浸式语音+文字剧情</p>
-          </div>
+          {/* The circle button avatar on the right */}
+          <motion.button
+            layout
+            onClick={() => setGuideExpanded(!guideExpanded)}
+            className="w-12 h-12 rounded-full bg-[#1F2E26] border border-[#D2A053]/70 flex items-center justify-center text-sm font-extrabold text-[#D2A053] shadow-md flex-shrink-0 cursor-pointer hover:scale-105 active:scale-95 transition-transform"
+            style={{ fontFamily: "var(--font-noto-serif)" }}
+          >
+            玉
+          </motion.button>
+
+          {/* Expanded Content on the left */}
+          <AnimatePresence>
+            {guideExpanded && (
+              <motion.div
+                initial={{ width: 0, opacity: 0 }}
+                animate={{ width: 220, opacity: 1 }}
+                exit={{ width: 0, opacity: 0 }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                className="overflow-hidden flex items-center gap-3 pr-3"
+              >
+                <div className="flex flex-col text-left w-32 flex-shrink-0">
+                  <h4 className="text-xs font-black text-[#D2A053]" style={{ fontFamily: "var(--font-noto-serif)" }}>导览官小玉</h4>
+                  <p className="text-[9px] text-white/70 mt-0.5 leading-tight truncate">提问景区历史与文化</p>
+                </div>
+                <Link href={`/qa?spot=${spot.id}&name=${encodeURIComponent(spot.name)}`} className="flex-shrink-0">
+                  <button className="px-3 py-1.5 bg-[#D2A053] hover:bg-[#cda052] text-[#1A2D23] text-[10px] font-black rounded-lg shadow-sm whitespace-nowrap cursor-pointer transition-colors">
+                    去对话
+                  </button>
+                </Link>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
-      </div>
+      </motion.div>
+
+      {/* Draggable & Expandable Card 2: 故事讲解模式 */}
+      <motion.div
+        drag
+        dragMomentum={false}
+        className="fixed z-40 touch-none"
+        style={{ right: 16, top: "67%" }}
+      >
+        <motion.div
+          layout
+          className="flex flex-row-reverse items-center shadow-xl border border-orange-500/50 backdrop-blur-md overflow-hidden bg-[#3C1A1A]/95"
+          style={{
+            borderRadius: storyExpanded ? "16px" : "28px",
+            padding: "8px",
+            boxShadow: "0 12px 40px rgba(0,0,0,0.3)"
+          }}
+        >
+          {/* The circle button avatar on the right */}
+          <motion.button
+            layout
+            onClick={() => setStoryExpanded(!storyExpanded)}
+            className="w-12 h-12 rounded-full bg-[#3C1A1A] border border-orange-500/70 flex items-center justify-center text-lg flex-shrink-0 cursor-pointer shadow-md hover:scale-105 active:scale-95 transition-transform"
+          >
+            📖
+          </motion.button>
+
+          {/* Expanded Content on the left */}
+          <AnimatePresence>
+            {storyExpanded && (
+              <motion.div
+                initial={{ width: 0, opacity: 0 }}
+                animate={{ width: 220, opacity: 1 }}
+                exit={{ width: 0, opacity: 0 }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                className="overflow-hidden flex items-center gap-3 pr-3"
+              >
+                <div className="flex flex-col text-left w-32 flex-shrink-0">
+                  <h4 className="text-xs font-black text-orange-400" style={{ fontFamily: "var(--font-noto-serif)" }}>故事讲解模式</h4>
+                  <p className="text-[9px] text-white/70 mt-0.5 leading-tight truncate">4章节沉浸式语音剧情</p>
+                </div>
+                <button
+                  onClick={() => { setShowStory(true); setStoryExpanded(false); }}
+                  className="px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-[10px] font-black rounded-lg shadow-sm whitespace-nowrap cursor-pointer transition-colors"
+                >
+                  开始
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+      </motion.div>
 
       {/* PC layout wrapper */}
       <div className="md:flex md:h-svh md:overflow-hidden">

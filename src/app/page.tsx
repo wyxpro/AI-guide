@@ -463,6 +463,112 @@ export default function WelcomePage() {
  
 
 
+      {/* Featured Capabilities (特色功能) - Redesigned & moved above persona */}
+      <section id="feature" className="py-24 bg-white border-y border-[#E6E2D8] relative overflow-hidden">
+        {/* Subtle background graphics */}
+        <div className="absolute top-0 right-0 w-[30vw] h-[30vw] rounded-full filter blur-[100px] pointer-events-none opacity-5" style={{ background: "radial-gradient(circle, #D2A053, transparent)" }} />
+        <div className="absolute bottom-0 left-0 w-[30vw] h-[30vw] rounded-full filter blur-[100px] pointer-events-none opacity-5" style={{ background: "radial-gradient(circle, #4F6F52, transparent)" }} />
+
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
+          <div className="text-center space-y-4 mb-20">
+            <span className="text-xs font-black tracking-[0.2em] text-[#4F6F52] uppercase block">
+              Features
+            </span>
+            <h3 className="text-3xl md:text-5xl font-black tracking-tight" style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}>
+              沉浸式交互，数字科技重塑旅途
+            </h3>
+            <div className="w-12 h-1.5 rounded-full bg-[#4F6F52] mx-auto mt-4" />
+            <p className="text-sm md:text-base text-[#8F9F8F] max-w-2xl mx-auto leading-relaxed">
+              集顶尖算法于一身，让AI成为最懂您的全能私人出行向导。
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              {
+                icon: Bot,
+                num: "01",
+                title: "虚拟人3D形象",
+                desc: "多样化的汉服仕女、童趣卡通、现代精英形象，具备自然表情流露与拟真口型算法。",
+                color: "#4F6F52",
+                glow: "radial-gradient(circle, rgba(79, 111, 82, 0.15) 0%, transparent 70%)"
+              },
+              {
+                icon: MessageCircle,
+                num: "02",
+                title: "全天候语音对谈",
+                desc: "极速的语音语义流式处理，打破呆板的按键指引，就像与一位温婉知性的文史专家面对面交谈。",
+                color: "#D2A053",
+                glow: "radial-gradient(circle, rgba(210, 160, 83, 0.15) 0%, transparent 70%)"
+              },
+              {
+                icon: MapPin,
+                num: "03",
+                title: "自适应兴趣探路",
+                desc: "支持输入您当前的兴趣偏好，如“历史文化优先、走林荫道”，AI自动寻找并规划出最优的旅游足迹。",
+                color: "#4F6F52",
+                glow: "radial-gradient(circle, rgba(79, 111, 82, 0.15) 0%, transparent 70%)"
+              },
+              {
+                icon: TrendingUp,
+                num: "04",
+                title: "景区分析大屏",
+                desc: "景区管理后台支持游客情感指数雷达监测、高频热搜词云实时流计算及今日客流量科学预测。",
+                color: "#D2A053",
+                glow: "radial-gradient(circle, rgba(210, 160, 83, 0.15) 0%, transparent 70%)"
+              }
+            ].map((f, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1, duration: 0.5 }}
+                whileHover={{ 
+                  y: -12, 
+                  boxShadow: "0 20px 40px -15px rgba(0, 0, 0, 0.08)",
+                  borderColor: f.color
+                }}
+                className="relative p-8 rounded-[32px] border border-[#E6E2D8] bg-[#FAF8F5] transition-all duration-300 flex flex-col justify-between group overflow-hidden"
+              >
+                <div 
+                  className="absolute -top-12 -left-12 w-36 h-36 rounded-full pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500" 
+                  style={{ background: f.glow }}
+                />
+
+                <div className="space-y-6 relative z-10">
+                  <div className="flex justify-between items-start">
+                    <div 
+                      className="w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 shadow-sm"
+                      style={{ background: "white", border: `1.5px solid ${f.color}25` }}
+                    >
+                      <f.icon className="w-6 h-6 transition-colors duration-300" style={{ color: f.color }} />
+                    </div>
+                    <span className="text-3xl font-black tracking-tight select-none opacity-10 group-hover:opacity-25 transition-opacity duration-300 font-mono" style={{ color: f.color }}>
+                      {f.num}
+                    </span>
+                  </div>
+
+                  <div className="space-y-3">
+                    <h4 className="text-lg font-bold text-[#1E2522] tracking-tight group-hover:text-[#4F6F52] transition-colors duration-300">
+                      {f.title}
+                    </h4>
+                    <p className="text-xs leading-relaxed text-[#8F9F8F] group-hover:text-[#6B7B6B] transition-colors duration-300 min-h-[72px]">
+                      {f.desc}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pt-6 mt-6 border-t border-[#E6E2D8]/50 flex items-center gap-2 text-xs font-bold relative z-10 transition-colors duration-300" style={{ color: f.color }}>
+                  <span>了解更多</span>
+                  <ChevronRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1.5" />
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* User Personas (用户画像) */}
       <section id="persona" className="py-20">
         <div className="max-w-7xl mx-auto px-6">
@@ -547,59 +653,6 @@ export default function WelcomePage() {
                 </motion.div>
               </AnimatePresence>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Capabilities (特色功能) */}
-      <section id="feature" className="py-20 bg-white border-y border-[#E6E2D8]">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center space-y-3 mb-16">
-            <span className="text-xs font-bold tracking-widest text-[#4F6F52] uppercase">Features</span>
-            <h3 className="text-3xl md:text-4xl font-black" style={{ fontFamily: "var(--font-noto-serif)" }}>沉浸式交互，数字科技重塑旅途</h3>
-            <div className="w-12 h-1 rounded bg-[#4F6F52] mx-auto mt-2" />
-            <p className="text-sm text-[#8F9F8F] max-w-xl mx-auto">集顶尖算法于一身，让AI成为最懂您的全能私人出行向导。</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              {
-                icon: Bot,
-                title: "虚拟人3D形象",
-                desc: "多样化的汉服仕女、童趣卡通、现代精英形象，具备自然表情流露与拟真口型算法。",
-                color: "#4F6F52"
-              },
-              {
-                icon: MessageCircle,
-                title: "全天候语音对谈",
-                desc: "极速的语音语义流式处理，打破呆板的按键指引，就像与一位温婉知性的文史专家面对面交谈。",
-                color: "#D2A053"
-              },
-              {
-                icon: MapPin,
-                title: "自适应兴趣探路",
-                desc: "支持输入您当前的兴趣偏好，如“历史文化优先、走林荫道”，AI自动寻找并规划出最优的旅游足迹。",
-                color: "#4F6F52"
-              },
-              {
-                icon: TrendingUp,
-                title: "景区分析大屏",
-                desc: "景区管理后台支持游客情感指数雷达监测、高频热搜词云实时流计算及今日客流量科学预测。",
-                color: "#D2A053"
-              }
-            ].map((f, i) => (
-              <motion.div
-                key={i}
-                whileHover={{ y: -8 }}
-                className="p-6 rounded-3xl border border-[#E6E2D8] bg-[#FAF8F5] transition-all hover:shadow-xl space-y-4"
-              >
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: "white", border: "1px solid #E6E2D8" }}>
-                  <f.icon className="w-5 h-5" style={{ color: f.color }} />
-                </div>
-                <h4 className="text-base font-bold text-[#1E2522]">{f.title}</h4>
-                <p className="text-xs leading-relaxed text-[#8F9F8F]">{f.desc}</p>
-              </motion.div>
-            ))}
           </div>
         </div>
       </section>

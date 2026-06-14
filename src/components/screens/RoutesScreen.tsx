@@ -1,11 +1,11 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useDragControls } from "framer-motion";
 import {
   Compass, ArrowRight, Loader2, MapPin, Clock, ChevronLeft,
   Share2, MessageSquare, ShieldAlert, Award, Search, Send,
   Volume2, VolumeX, Eye, BookOpen, Navigation, Landmark, Sparkles,
-  X, Smile
+  X, Smile, Image as ImageIcon, Film
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -87,6 +87,31 @@ export function RoutesScreen() {
 
   // Auto-play TTS switch
   const [autoplayEnabled, setAutoplayEnabled] = useState(false);
+  const [routeGenExpanded, setRouteGenExpanded] = useState(false);
+
+  const dragControls = useDragControls();
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
+  const [attachedMedia, setAttachedMedia] = useState<Array<{type: 'image' | 'video', url: string, name: string}>>([]);
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        setAttachedMedia(prev => [...prev, { type: 'image', url: ev.target?.result as string, name: file.name }]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleVideoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    files.forEach(file => {
+      const url = URL.createObjectURL(file);
+      setAttachedMedia(prev => [...prev, { type: 'video', url, name: file.name }]);
+    });
+  };
 
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -338,11 +363,17 @@ export function RoutesScreen() {
 
   // AI Chat responder using backend Q&A RAG chat
   const handleSendChatMessage = async () => {
-    if (!chatInput.trim()) return;
-    const userMsg = chatInput;
+    if (!chatInput.trim() && attachedMedia.length === 0) return;
+    let content = chatInput.trim();
+    if (attachedMedia.length > 0) {
+      const mediaText = attachedMedia.map(m => m.type === 'image' ? `![图片](${m.url})` : `🎬 [视频: ${m.name}]`).join('\n');
+      content = mediaText + (chatInput.trim() ? '\n\n' + chatInput.trim() : '');
+    }
+    const userMsg = content;
     const updated = [...chatMessages, { role: "user" as const, content: userMsg }];
     setChatMessages(updated);
     setChatInput("");
+    setAttachedMedia([]);
     setChatLoading(true);
 
     try {
@@ -455,6 +486,57 @@ export function RoutesScreen() {
           </div>
         </div>
 
+        {/* Draggable & Expandable Smart Route Generator Button */}
+        <motion.div
+          drag
+          dragMomentum={false}
+          className="absolute z-30 touch-none"
+          style={{ right: 12, top: "370px" }}
+        >
+          <motion.div
+            layout
+            className="flex flex-row-reverse items-center shadow-xl border border-[#D2A053]/50 backdrop-blur-md overflow-hidden bg-[#1A2D23]/95"
+            style={{
+              borderRadius: routeGenExpanded ? "16px" : "28px",
+              padding: "8px",
+              boxShadow: "0 12px 40px rgba(0,0,0,0.3)"
+            }}
+          >
+            {/* The circle button avatar on the right */}
+            <motion.button
+              layout
+              onClick={() => setRouteGenExpanded(!routeGenExpanded)}
+              className="w-12 h-12 rounded-full bg-[#1F2E26] border border-[#D2A053]/70 flex items-center justify-center text-sm font-bold text-[#D2A053] shadow-md flex-shrink-0 cursor-pointer active:scale-95 transition-transform"
+            >
+              🧭
+            </motion.button>
+
+            {/* Expanded Content on the left */}
+            <AnimatePresence>
+              {routeGenExpanded && (
+                <motion.div
+                  initial={{ width: 0, opacity: 0 }}
+                  animate={{ width: 220, opacity: 1 }}
+                  exit={{ width: 0, opacity: 0 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  className="overflow-hidden flex items-center gap-3 pr-3"
+                >
+                  <div className="flex flex-col text-left w-32 flex-shrink-0">
+                    <h4 className="text-xs font-black text-[#D2A053]" style={{ fontFamily: "var(--font-noto-serif)" }}>专属路线生成</h4>
+                    <p className="text-[9px] text-white/70 mt-0.5 leading-tight truncate">智能AI量身规划路径</p>
+                  </div>
+                  <button
+                    onClick={() => { setShowGeneratorDrawer(true); setRouteGenExpanded(false); }}
+                    className="px-3 py-1.5 bg-[#D2A053] hover:bg-[#cda052] text-[#1A2D23] text-[10px] font-black rounded-lg shadow-sm whitespace-nowrap cursor-pointer transition-colors"
+                  >
+                    去生成
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        </motion.div>
+
         {/* GPS location target button */}
         <button
           onClick={() => {
@@ -514,15 +596,7 @@ export function RoutesScreen() {
             </motion.div>
           )}
 
-          {/* Smart Route Generation Button */}
-          <button
-            onClick={() => setShowGeneratorDrawer(true)}
-            className="w-full py-2.5 text-white rounded-xl text-[11px] font-black shadow-lg flex items-center justify-center gap-1.5 hover:brightness-105 active:scale-98 transition-all border border-[#4F6F52]/30"
-            style={{ background: "linear-gradient(135deg, #4F6F52, #3A5240)" }}
-          >
-            <Compass className="w-3.5 h-3.5 animate-pulse" />
-            <span>✨ 智能专属路线生成</span>
-          </button>
+
 
           {/* Under card control bar panel */}
           <div className="bg-[#FAF8F5]/95 backdrop-blur-md border border-zinc-200/50 shadow-2xl rounded-2xl p-2 flex items-center justify-between">
@@ -941,15 +1015,22 @@ export function RoutesScreen() {
             <AnimatePresence>
               {showFloatChat && (
                 <motion.div
+                  drag
+                  dragControls={dragControls}
+                  dragListener={false}
+                  dragMomentum={false}
                   initial={{ opacity: 0, y: 50, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 50, scale: 0.95 }}
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  className="absolute right-6 bottom-6 z-[1010] w-[360px] h-[520px] bg-white border border-[#E6E2D8] rounded-[24px] shadow-2xl flex flex-col overflow-hidden"
+                  className="absolute right-6 bottom-6 z-[1010] w-[360px] h-[520px] bg-white border border-[#E6E2D8] rounded-[24px] shadow-2xl flex flex-col overflow-hidden touch-none"
                 >
                   {/* Header */}
-                  <div className="px-4 py-3.5 flex items-center justify-between bg-[#FAF6EE] border-b border-[#E6E2D8]/70 flex-shrink-0">
-                    <div className="flex items-center gap-2.5">
+                  <div
+                    onPointerDown={(e) => dragControls.start(e)}
+                    className="cursor-move select-none px-4 py-3.5 flex items-center justify-between bg-[#FAF6EE] border-b border-[#E6E2D8]/70 flex-shrink-0"
+                  >
+                    <div className="flex items-center gap-2.5 pointer-events-none">
                       {/* Avatar */}
                       <div className="w-10 h-10 rounded-full overflow-hidden border border-[#D2A053]/30 bg-neutral-100 flex-shrink-0">
                         <img
@@ -967,9 +1048,6 @@ export function RoutesScreen() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <button className="text-zinc-500 hover:text-zinc-800 p-1.5 rounded-lg hover:bg-black/5 transition-colors">
-                        <Smile className="w-4 h-4" />
-                      </button>
                       <button
                         onClick={() => setShowFloatChat(false)}
                         className="text-zinc-500 hover:text-zinc-800 p-1.5 rounded-lg hover:bg-black/5 transition-colors cursor-pointer"
@@ -990,7 +1068,23 @@ export function RoutesScreen() {
                           </div>
                           <div className="flex flex-col space-y-1 max-w-[75%]">
                             <div className={`p-3 rounded-2xl text-[11px] leading-relaxed shadow-sm text-left ${isUser ? "bg-[#4F6F52] text-white rounded-tr-none" : "bg-white border border-[#E6E2D8] text-[#2C3E35] rounded-tl-none"}`}>
-                              {msg.content}
+                              {/* Attached image renderer */}
+                              {msg.content.includes('![图片](') && (
+                                <div className="mb-1.5 space-y-1">
+                                  {msg.content.match(/!\[图片\]\(([^)]+)\)/g)?.map((match, idx) => {
+                                    const url = match.match(/!\[图片\]\(([^)]+)\)/)?.[1];
+                                    return url ? <img key={idx} src={url} alt="上传的图片" className="max-w-full max-h-[120px] rounded-lg object-contain border border-white/20 shadow" /> : null;
+                                  })}
+                                </div>
+                              )}
+                              {/* Attached video renderer */}
+                              {msg.content.includes('🎬 [视频:') && (
+                                <div className="mb-1.5 flex items-center gap-1.5 text-[9px] text-[#2C3E35] bg-neutral-100 p-1.5 rounded-lg border border-[#E6E2D8]">
+                                  <span>🎬</span>
+                                  <span className="truncate flex-1 font-mono">{msg.content.match(/🎬 \[视频: ([^\]]+)\]/)?.[1] || "视频文件"}</span>
+                                </div>
+                              )}
+                              <div>{msg.content.replace(/!\[图片\]\([^)]+\)\n?/g, '').replace(/🎬 \[视频: [^\]]+\]\n?/g, '')}</div>
                             </div>
                             <span className={`text-[8.5px] text-zinc-400 font-mono px-1 ${isUser ? "text-right" : "text-left"}`}>
                               {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -1011,12 +1105,52 @@ export function RoutesScreen() {
                     )}
                   </div>
 
+                  {/* Attached Media Previews */}
+                  {attachedMedia.length > 0 && (
+                    <div className="flex gap-2 flex-wrap px-4 py-2 border-t border-[#E6E2D8]/50 bg-[#FDFBF7] flex-shrink-0">
+                      {attachedMedia.map((m, idx) => (
+                        <div key={idx} className="relative">
+                          {m.type === 'image' ? (
+                            <img src={m.url} alt={m.name} className="w-12 h-12 rounded-lg object-cover border border-[#E6E2D8]" />
+                          ) : (
+                            <div className="w-12 h-12 rounded-lg bg-neutral-100 flex flex-col items-center justify-center border border-[#E6E2D8] text-[10px]">
+                              <span className="text-base">🎬</span>
+                              <span className="text-[8px] text-zinc-500 scale-90 truncate max-w-full">视频</span>
+                            </div>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => setAttachedMedia(prev => prev.filter((_, i) => i !== idx))}
+                            className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-white flex items-center justify-center text-[8px] shadow hover:bg-red-600 cursor-pointer"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
                   {/* Input Bar */}
-                  <div className="p-3.5 border-t border-[#E6E2D8]/70 bg-white flex items-center gap-2.5 flex-shrink-0">
-                    <button className="w-9 h-9 rounded-full border border-[#E6E2D8] bg-white flex items-center justify-center text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50 transition-colors shadow-sm cursor-pointer">
-                      <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" />
-                      </svg>
+                  <div className="p-3.5 border-t border-[#E6E2D8]/70 bg-white flex items-center gap-2 flex-shrink-0">
+                    <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
+                    <input ref={videoInputRef} type="file" accept="video/*" className="hidden" onChange={handleVideoSelect} />
+
+                    <button
+                      type="button"
+                      onClick={() => imageInputRef.current?.click()}
+                      className="w-9 h-9 rounded-full border border-[#E6E2D8] bg-white flex items-center justify-center text-zinc-500 hover:text-[#4F6F52] hover:bg-zinc-50 transition-colors shadow-sm cursor-pointer"
+                      title="上传图片"
+                    >
+                      <ImageIcon className="w-4.5 h-4.5" />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => videoInputRef.current?.click()}
+                      className="w-9 h-9 rounded-full border border-[#E6E2D8] bg-white flex items-center justify-center text-zinc-500 hover:text-[#4F6F52] hover:bg-zinc-50 transition-colors shadow-sm cursor-pointer"
+                      title="上传视频"
+                    >
+                      <Film className="w-4.5 h-4.5" />
                     </button>
                     
                     <input
