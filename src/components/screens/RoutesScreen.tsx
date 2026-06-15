@@ -5,7 +5,7 @@ import {
   Compass, ArrowRight, Loader2, MapPin, Clock, ChevronLeft,
   Share2, MessageSquare, ShieldAlert, Award, Search, Send,
   Volume2, VolumeX, Eye, BookOpen, Navigation, Landmark, Sparkles,
-  X, Smile, Image as ImageIcon, Film
+  X, Smile, Image as ImageIcon, Film, Mic
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -93,6 +93,90 @@ export function RoutesScreen() {
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
   const [attachedMedia, setAttachedMedia] = useState<Array<{type: 'image' | 'video', url: string, name: string}>>([]);
+
+  // Voice recording states & refs
+  const [recording, setRecording] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const recognitionRef = useRef<any>(null);
+
+  const toggleRecording = async () => {
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    if (recording) {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+        setRecording(false);
+      } else if (mediaRecorderRef.current) {
+        mediaRecorderRef.current.stop();
+        setRecording(false);
+      }
+      return;
+    }
+
+    if (SR) {
+      const rec = new SR();
+      rec.lang = "zh-CN"; rec.continuous = false; rec.interimResults = false;
+      rec.onresult = (e: any) => {
+        const txt = e.results[0][0].transcript;
+        setChatInput(txt);
+      };
+      rec.onend = () => setRecording(false);
+      rec.onerror = () => setRecording(false);
+      rec.start();
+      recognitionRef.current = rec;
+      mediaRecorderRef.current = null;
+      setRecording(true);
+    } else {
+      try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          setChatInput("（浏览器不支持录音）");
+          return;
+        }
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const mediaRecorder = new MediaRecorder(stream);
+        mediaRecorderRef.current = mediaRecorder;
+        recognitionRef.current = null;
+        audioChunksRef.current = [];
+
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunksRef.current.push(event.data);
+          }
+        };
+
+        mediaRecorder.onstop = async () => {
+          stream.getTracks().forEach((track) => track.stop());
+          const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+          const formData = new FormData();
+          formData.append("file", audioBlob, "audio.webm");
+
+          setChatInput("正在识别语音...");
+          try {
+            const res = await request("/api/qa/stt", {
+              method: "POST",
+              body: formData,
+            });
+            const data = await res.json();
+            if (data.text) {
+              setChatInput(data.text);
+            } else {
+              setChatInput("");
+            }
+          } catch (err) {
+            console.error("Whisper STT fallback error:", err);
+            setChatInput("（语音识别失败）");
+          }
+        };
+
+        mediaRecorder.start();
+        setRecording(true);
+      } catch (err) {
+        console.error("Mic access denied or error:", err);
+        setChatInput("（无法获取麦克风权限）");
+      }
+    }
+  };
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -1152,13 +1236,37 @@ export function RoutesScreen() {
                     >
                       <Film className="w-4.5 h-4.5" />
                     </button>
+
+                    <button
+                      type="button"
+                      onClick={toggleRecording}
+                      className="w-9 h-9 rounded-full border border-[#E6E2D8] flex items-center justify-center transition-colors shadow-sm cursor-pointer relative"
+                      style={{
+                        background: recording ? "rgba(79,111,82,0.15)" : "white",
+                        borderColor: recording ? "rgba(79,111,82,0.5)" : "#E6E2D8",
+                        color: recording ? "#D2A053" : "#71717a"
+                      }}
+                      title="语音输入"
+                    >
+                      {recording && (
+                        <motion.div animate={{ scale: [1, 1.8, 1], opacity: [0.5, 0, 0.5] }}
+                          transition={{ duration: 0.9, repeat: Infinity }}
+                          className="absolute inset-0 rounded-full"
+                          style={{ background: "rgba(210,160,83,0.15)" }} />
+                      )}
+                      {recording ? (
+                        <Mic className="w-4.5 h-4.5 animate-bounce text-[#D2A053]" />
+                      ) : (
+                        <Mic className="w-4.5 h-4.5" />
+                      )}
+                    </button>
                     
                     <input
                       type="text"
                       value={chatInput}
                       onChange={(e) => setChatInput(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && handleSendChatMessage()}
-                      placeholder="向小慧提问...（Enter发送）"
+                      placeholder={recording ? "正在聆听..." : "向小慧提问...（Enter发送）"}
                       className="flex-1 bg-neutral-50 border border-zinc-200/80 rounded-full px-4 py-2 text-xs outline-none focus:border-[#4F6F52] focus:bg-white transition-all text-[#2C3E35]"
                     />
                     

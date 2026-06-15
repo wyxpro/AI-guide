@@ -140,7 +140,7 @@ function PCView() {
                   </span>
                 </div>
               </div>
-              
+
               <div className="p-4 rounded-2xl bg-[#FDFBF7] border border-[#F5EED8] text-xs leading-relaxed text-zinc-700">
                 "欢迎来到智慧文旅门户！我是您的AI导览官小玉。点击下方播放按钮即可听取城市景区的专属语音导览讲解，或点击视频互动按钮直接与我的数字人分身开启聊天！"
               </div>
@@ -152,8 +152,8 @@ function PCView() {
                 className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm ${isPlaying ? 'bg-[#FF5B45] text-white animate-pulse' : 'bg-[#FFF0ED] text-[#FF5B45] hover:bg-[#FFE0DB]'}`}
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
-                  <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
+                  <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
+                  <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
                 </svg>
                 {isPlaying ? "讲解中..." : "语音讲解"}
               </button>
@@ -163,7 +163,7 @@ function PCView() {
                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-[#3A4D39] text-white hover:bg-[#4F6F52] transition-colors shadow-sm"
               >
                 <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-                  <polygon points="5 3 19 12 5 21 5 3"/>
+                  <polygon points="5 3 19 12 5 21 5 3" />
                 </svg>
                 视频互动
               </button>
@@ -237,40 +237,40 @@ function PCView() {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
             {loading || spots.length === 0
               ? [1, 2, 3, 4].map(i => (
-                  <div key={i} className="skeleton h-[240px] rounded-3xl" />
-                ))
+                <div key={i} className="skeleton h-[240px] rounded-3xl" />
+              ))
               : spots.slice(0, 8).map((spot, i) => (
-                  <Link key={spot.id} href={`/spots/${spot.id}`} className="block">
-                    <motion.div
-                      whileHover={{ y: -6, boxShadow: "0 12px 28px rgba(0,0,0,0.08)" }}
-                      className="rounded-3xl overflow-hidden bg-white border border-zinc-200/60 shadow-sm flex flex-col h-full"
-                    >
-                      <div className="relative h-[150px] overflow-hidden">
-                        <img
-                          src={spot.imageUrl || "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400&q=70"}
-                          alt={spot.name}
-                          className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
-                        <div className="absolute bottom-3 right-3 flex items-center gap-0.5 bg-black/45 backdrop-blur-md px-2 py-0.5 rounded-full">
-                          <Star className="w-3.5 h-3.5 text-[#D2A053]" fill="#D2A053" />
-                          <span className="text-[11px] text-white font-bold">
-                            {(spot.rating / 10).toFixed(1)}
-                          </span>
-                        </div>
+                <Link key={spot.id} href={`/spots/${spot.id}`} className="block">
+                  <motion.div
+                    whileHover={{ y: -6, boxShadow: "0 12px 28px rgba(0,0,0,0.08)" }}
+                    className="rounded-3xl overflow-hidden bg-white border border-zinc-200/60 shadow-sm flex flex-col h-full"
+                  >
+                    <div className="relative h-[150px] overflow-hidden">
+                      <img
+                        src={spot.imageUrl || "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400&q=70"}
+                        alt={spot.name}
+                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
+                      <div className="absolute bottom-3 right-3 flex items-center gap-0.5 bg-black/45 backdrop-blur-md px-2 py-0.5 rounded-full">
+                        <Star className="w-3.5 h-3.5 text-[#D2A053]" fill="#D2A053" />
+                        <span className="text-[11px] text-white font-bold">
+                          {(spot.rating / 10).toFixed(1)}
+                        </span>
                       </div>
-                      <div className="p-4 flex-1 flex flex-col justify-between space-y-2">
-                        <h4 className="font-bold text-zinc-900 text-sm truncate" style={{ fontFamily: "var(--font-noto-serif)" }}>
-                          {spot.name}
-                        </h4>
-                        <div className="flex items-center gap-1.5 text-xs text-zinc-500">
-                          <Clock className="w-3.5 h-3.5 text-zinc-400" />
-                          <span>建议游玩 {spot.duration} 分钟</span>
-                        </div>
+                    </div>
+                    <div className="p-4 flex-1 flex flex-col justify-between space-y-2">
+                      <h4 className="font-bold text-zinc-900 text-sm truncate" style={{ fontFamily: "var(--font-noto-serif)" }}>
+                        {spot.name}
+                      </h4>
+                      <div className="flex items-center gap-1.5 text-xs text-zinc-500">
+                        <Clock className="w-3.5 h-3.5 text-zinc-400" />
+                        <span>建议游玩 {spot.duration} 分钟</span>
                       </div>
-                    </motion.div>
-                  </Link>
-                ))}
+                    </div>
+                  </motion.div>
+                </Link>
+              ))}
           </div>
         </section>
       </div>
@@ -278,7 +278,7 @@ function PCView() {
       {/* Desktop Footer */}
       <footer className="w-full bg-white border-t border-zinc-200/60 py-6 mt-16 px-6">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between text-xs text-zinc-400">
-          <span>© 2026 旅行吧智能景区导游系统. All Rights Reserved.</span>
+          <span>© 2026 旅行家智能景区导游系统. All Rights Reserved.</span>
           <div className="flex gap-4 mt-2 md:mt-0">
             <a href="#" className="hover:text-zinc-600">服务条款</a>
             <a href="#" className="hover:text-zinc-600">隐私权政策</a>
@@ -350,7 +350,7 @@ function MobileHeaderAndBanner() {
             <ChevronRight className="w-3 h-3 text-zinc-500 rotate-90" />
           </Link>
           <div className="w-[1px] h-3.5 bg-zinc-300 mx-2" />
-          
+
           {/* Search Input */}
           <div className="flex-1 flex items-center gap-1.5">
             <input
@@ -371,9 +371,9 @@ function MobileHeaderAndBanner() {
         <Link href="/routes">
           <div className="w-12 h-12 bg-white/95 backdrop-blur-md border border-zinc-200/50 rounded-xl shadow-sm flex flex-col items-center justify-center cursor-pointer hover:bg-zinc-50 transition-colors">
             <svg className="w-4 h-4 text-[#FF5B45]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
-              <line x1="9" y1="3" x2="9" y2="18"/>
-              <line x1="15" y1="6" x2="15" y2="21"/>
+              <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" />
+              <line x1="9" y1="3" x2="9" y2="18" />
+              <line x1="15" y1="6" x2="15" y2="21" />
             </svg>
             <span className="text-[8px] font-bold text-zinc-800 mt-0.5 leading-none">地图</span>
           </div>
@@ -388,7 +388,7 @@ function MobileHeaderAndBanner() {
         <h2 className="text-xl font-bold text-white tracking-wide mt-0.5 drop-shadow-md" style={{ fontFamily: "var(--font-noto-serif)" }}>
           邀你登顶揽胜
         </h2>
-        
+
         {/* Soft translucent red sub-banner */}
         <div className="mt-2.5 bg-[#FF5B45]/90 text-white text-[10px] px-3.5 py-1.5 rounded-full font-semibold w-fit shadow-sm">
           去爬爬山，呼吸下新鲜空气，看看不一样的风景！
@@ -442,7 +442,7 @@ function MobileChengduPanel() {
   return (
     <div className="relative z-20 px-4 -mt-6">
       <div className="bg-white rounded-2xl p-3 flex items-center justify-between shadow-[0_8px_24px_rgba(0,0,0,0.06)] border border-neutral-100">
-        
+
         {/* Left: Panda Avatar and title */}
         <div className="flex items-center gap-2">
           <div className="w-9 h-9 rounded-full overflow-hidden border border-neutral-100 flex-shrink-0 bg-neutral-50">
@@ -458,7 +458,7 @@ function MobileChengduPanel() {
             <div className="flex items-center gap-0.5 mt-0.5 cursor-pointer">
               <span className="text-[10px] text-zinc-500 font-semibold">讲解词</span>
               <svg className="w-2.5 h-2.5 text-zinc-400 rotate-90" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                <polyline points="9 18 15 12 9 6"/>
+                <polyline points="9 18 15 12 9 6" />
               </svg>
             </div>
           </div>
@@ -467,27 +467,27 @@ function MobileChengduPanel() {
         {/* Right: Audio and Video buttons */}
         <div className="flex items-center gap-3">
           {/* Audio/Explain button */}
-          <div 
+          <div
             onClick={handleAudioPlay}
             className="flex flex-col items-center cursor-pointer select-none group"
           >
             <div className={`w-8 h-8 rounded-full flex items-center justify-center shadow-sm transition-all ${isPlaying ? 'bg-[#FF5B45] text-white animate-pulse' : 'bg-[#FFF0ED] text-[#FF5B45] hover:bg-[#FFE0DB]'}`}>
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
-                <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
+                <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
+                <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
               </svg>
             </div>
             <span className="text-[9px] font-bold text-zinc-700 mt-1">讲解</span>
           </div>
 
           {/* Video button */}
-          <div 
+          <div
             onClick={() => router.push("/qa")}
             className="flex flex-col items-center cursor-pointer select-none group"
           >
             <div className="w-8 h-8 rounded-full bg-[#FFF0ED] text-[#FF5B45] flex items-center justify-center shadow-sm hover:bg-[#FFE0DB] transition-colors">
               <svg className="w-4 h-4 ml-0.5" viewBox="0 0 24 24" fill="currentColor">
-                <polygon points="5 3 19 12 5 21 5 3"/>
+                <polygon points="5 3 19 12 5 21 5 3" />
               </svg>
             </div>
             <span className="text-[9px] font-bold text-zinc-700 mt-1">视频</span>
@@ -517,11 +517,11 @@ function MobileEntranceCards() {
           <span className="text-[7.5px] font-bold text-white bg-[#FF5B45] px-1 py-0.5 rounded-full w-fit mt-1 shadow-sm leading-none flex items-center gap-0.5">
             名校风范
             <svg className="w-1.5 h-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4">
-              <polyline points="9 18 15 12 9 6"/>
+              <polyline points="9 18 15 12 9 6" />
             </svg>
           </span>
         </div>
-        
+
         <span className="absolute bottom-1 right-1 text-[30px] leading-none opacity-85 select-none pointer-events-none">
           🏫
         </span>
@@ -537,11 +537,11 @@ function MobileEntranceCards() {
           <span className="text-[7.5px] font-bold text-white bg-[#D2A053] px-1 py-0.5 rounded-full w-fit mt-1 shadow-sm leading-none flex items-center gap-0.5">
             旅途FM
             <svg className="w-1.5 h-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4">
-              <polyline points="9 18 15 12 9 6"/>
+              <polyline points="9 18 15 12 9 6" />
             </svg>
           </span>
         </div>
-        
+
         <span className="absolute bottom-1.5 right-1.5 text-[26px] leading-none opacity-85 select-none pointer-events-none">
           📻
         </span>
@@ -557,11 +557,11 @@ function MobileEntranceCards() {
           <span className="text-[7.5px] font-bold text-white bg-[#4F6F52] px-1 py-0.5 rounded-full w-fit mt-1 shadow-sm leading-none flex items-center gap-0.5">
             即拍即识
             <svg className="w-1.5 h-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4">
-              <polyline points="9 18 15 12 9 6"/>
+              <polyline points="9 18 15 12 9 6" />
             </svg>
           </span>
         </div>
-        
+
         <span className="absolute bottom-1.5 right-1.5 text-[26px] leading-none opacity-85 select-none pointer-events-none">
           🕶️
         </span>
@@ -631,56 +631,58 @@ function MobileSpots() {
           </span>
         </Link>
       </div>
-      <div 
-        className="flex gap-3 pl-4 pr-2 overflow-x-auto pb-1" 
+      <div
+        className="flex gap-3 pl-4 pr-2 overflow-x-auto pb-1"
         style={{ scrollbarWidth: "none" }}
         onScroll={handleScroll}
       >
         {spots.length === 0 && loading
           ? [1, 2, 3].map(i => (
-              <div key={i} className="skeleton rounded-2xl flex-shrink-0"
-                style={{ width: 130, height: 160 }} />
-            ))
+            <div key={i} className="skeleton rounded-2xl flex-shrink-0"
+              style={{ width: 130, height: 160 }} />
+          ))
           : spots.map((spot, i) => (
-              <Link key={spot.id} href={`/spots/${spot.id}`} className="flex-shrink-0 block" style={{ width: 130 }}>
-                <motion.div whileTap={{ scale: 0.94 }}
-                  initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }}
-                  transition={{ ...SPRING, delay: i * 0.05 }}
-                  className="w-full h-full rounded-2xl overflow-hidden"
-                  style={{ background: "white", border: "1px solid #E6E2D8",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
-                  <div className="relative" style={{ height: 100 }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={spot.imageUrl || "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=300&q=70"}
-                      alt={spot.name} className="w-full h-full object-cover" />
-                    <div className="absolute inset-0"
-                      style={{ background: "linear-gradient(to top,rgba(0,0,0,0.38) 0%,transparent 55%)" }} />
-                    <div className="absolute bottom-1.5 right-2 flex items-center gap-0.5">
-                      <Star className="w-2.5 h-2.5" fill="#D2A053" style={{ color: "#D2A053" }} />
-                      <span className="text-[10px] text-white font-semibold">
-                        {(spot.rating / 10).toFixed(1)}
-                      </span>
-                    </div>
+            <Link key={spot.id} href={`/spots/${spot.id}`} className="flex-shrink-0 block" style={{ width: 130 }}>
+              <motion.div whileTap={{ scale: 0.94 }}
+                initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }}
+                transition={{ ...SPRING, delay: i * 0.05 }}
+                className="w-full h-full rounded-2xl overflow-hidden"
+                style={{
+                  background: "white", border: "1px solid #E6E2D8",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.06)"
+                }}>
+                <div className="relative" style={{ height: 100 }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={spot.imageUrl || "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=300&q=70"}
+                    alt={spot.name} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0"
+                    style={{ background: "linear-gradient(to top,rgba(0,0,0,0.38) 0%,transparent 55%)" }} />
+                  <div className="absolute bottom-1.5 right-2 flex items-center gap-0.5">
+                    <Star className="w-2.5 h-2.5" fill="#D2A053" style={{ color: "#D2A053" }} />
+                    <span className="text-[10px] text-white font-semibold">
+                      {(spot.rating / 10).toFixed(1)}
+                    </span>
                   </div>
-                  <div className="px-2.5 py-2">
-                    <p className="font-semibold text-[12px] truncate"
-                      style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}>
-                      {spot.name}
-                    </p>
-                    <div className="flex items-center gap-1 mt-0.5">
-                      <Clock className="w-2.5 h-2.5" style={{ color: "#8F9F8F" }} />
-                      <span className="text-[10px]" style={{ color: "#8F9F8F" }}>{spot.duration}分钟</span>
-                    </div>
+                </div>
+                <div className="px-2.5 py-2">
+                  <p className="font-semibold text-[12px] truncate"
+                    style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}>
+                    {spot.name}
+                  </p>
+                  <div className="flex items-center gap-1 mt-0.5">
+                    <Clock className="w-2.5 h-2.5" style={{ color: "#8F9F8F" }} />
+                    <span className="text-[10px]" style={{ color: "#8F9F8F" }}>{spot.duration}分钟</span>
                   </div>
-                </motion.div>
-              </Link>
-            ))}
-          {loading && spots.length > 0 && (
-            <div className="flex items-center justify-center flex-shrink-0 w-24 h-[160px] rounded-2xl border border-dashed border-[#8F9F8F] text-[11px]" style={{ color: "#8F9F8F" }}>
-              加载中...
-            </div>
-          )}
+                </div>
+              </motion.div>
+            </Link>
+          ))}
+        {loading && spots.length > 0 && (
+          <div className="flex items-center justify-center flex-shrink-0 w-24 h-[160px] rounded-2xl border border-dashed border-[#8F9F8F] text-[11px]" style={{ color: "#8F9F8F" }}>
+            加载中...
+          </div>
+        )}
       </div>
     </div>
   );

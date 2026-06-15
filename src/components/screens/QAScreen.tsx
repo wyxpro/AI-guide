@@ -67,7 +67,7 @@ function initMsg(spotName?: string | null): Message {
     role: "assistant",
     content: spotName
       ? `您好！我已为您准备好「${spotName}」的详细讲解，想了解历史渊源、文化典故还是游览小贴士？`
-      : "您好！我是旅行吧AI导览官小玉，随时为您解答景区一切问题。可语音提问，也可文字输入。",
+      : "您好！我是旅行家AI导览官小玉，随时为您解答景区一切问题。可语音提问，也可文字输入。",
     timestamp: "刚刚",
   };
 }
@@ -89,13 +89,13 @@ export function QAScreen() {
   const [subtitle, setSubtitle] = useState(initMsg(spotName).content);
   const satisfactionShownRef = useRef(false);
   const bottomRef = useRef<HTMLDivElement>(null);
-  
+
   // Audio playback and recording refs
   const recognitionRef = useRef<any>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  
+
   // Avatar config state
   const [avatarConfig, setAvatarConfig] = useState<any>(null);
 
@@ -546,8 +546,8 @@ export function QAScreen() {
           </div>
           <div className="px-4 py-3 flex items-center gap-1.5"
             style={{ background: "white", border: "1px solid #E6E2D8", borderRadius: "4px 16px 16px 16px" }}>
-            {[0,1,2].map((i) => (
-              <motion.div key={i} animate={{ y: [0,-5,0] }}
+            {[0, 1, 2].map((i) => (
+              <motion.div key={i} animate={{ y: [0, -5, 0] }}
                 transition={{ duration: 0.55, delay: i * 0.14, repeat: Infinity }}
                 className="w-1.5 h-1.5 rounded-full" style={{ background: "#4F6F52" }} />
             ))}
@@ -576,17 +576,21 @@ export function QAScreen() {
       <motion.button whileTap={{ scale: 0.84 }} onClick={toggleRecording}
         className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 relative"
         style={{
-          background: recording ? "rgba(220,38,38,0.1)" : dark ? "rgba(255,255,255,0.1)" : "rgba(79,111,82,0.09)",
-          border: `1.5px solid ${recording ? "rgba(220,38,38,0.45)" : dark ? "rgba(255,255,255,0.2)" : "rgba(79,111,82,0.28)"}`,
-          color: recording ? "#DC2626" : dark ? "rgba(255,255,255,0.6)" : "#4F6F52",
+          background: recording ? "rgba(79,111,82,0.15)" : dark ? "rgba(255,255,255,0.1)" : "rgba(79,111,82,0.09)",
+          border: `1.5px solid ${recording ? "rgba(79,111,82,0.5)" : dark ? "rgba(255,255,255,0.2)" : "rgba(79,111,82,0.28)"}`,
+          color: recording ? "#D2A053" : dark ? "rgba(255,255,255,0.6)" : "#4F6F52",
         }}>
         {recording && (
-          <motion.div animate={{ scale: [1,1.8,1], opacity: [0.5,0,0.5] }}
+          <motion.div animate={{ scale: [1, 1.8, 1], opacity: [0.5, 0, 0.5] }}
             transition={{ duration: 0.9, repeat: Infinity }}
             className="absolute inset-0 rounded-full"
-            style={{ background: "rgba(220,38,38,0.15)" }} />
+            style={{ background: "rgba(210,160,83,0.15)" }} />
         )}
-        {recording ? <MicOff className="w-4 h-4 relative z-10" /> : <Mic className="w-4 h-4" />}
+        {recording ? (
+          <Mic className="w-4 h-4 relative z-10 animate-bounce text-[#D2A053]" />
+        ) : (
+          <Mic className="w-4 h-4" />
+        )}
       </motion.button>
 
       {/* Text input */}
@@ -644,7 +648,7 @@ export function QAScreen() {
             <motion.div animate={{ backgroundColor: loading ? "#D2A053" : "#34C759" }}
               className="w-2 h-2 rounded-full" />
             <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.45)" }}>
-              {loading ? "小玉思考中…" : "旅行吧导览官 · 在线"}
+              {loading ? "小玉思考中…" : "旅行家导览官 · 在线"}
             </span>
           </div>
           <div className="flex gap-2 relative">
@@ -724,7 +728,7 @@ export function QAScreen() {
           )}
           <DigitalAvatar state={avatarState} size="hero" audioElement={audioRef.current} avatarStyle={avatarConfig?.avatarStyle} />
           <AnimatePresence mode="wait">
-            <motion.div key={subtitle.slice(0,20)}
+            <motion.div key={subtitle.slice(0, 20)}
               initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }} transition={{ ...SPRING, delay: 0.1 }}
               className="mt-5 mx-4 px-4 py-3 rounded-2xl text-center max-w-xs"
@@ -733,9 +737,9 @@ export function QAScreen() {
                 style={{ color: "rgba(255,255,255,0.82)" }}>
                 {loading ? (
                   <span className="flex items-center justify-center gap-2 py-1">
-                    {[0,1,2].map((i) => (
-                      <motion.span key={i} animate={{ y: [0,-4,0] }}
-                        transition={{ duration: 0.6, delay: i*0.18, repeat: Infinity }}
+                    {[0, 1, 2].map((i) => (
+                      <motion.span key={i} animate={{ y: [0, -4, 0] }}
+                        transition={{ duration: 0.6, delay: i * 0.18, repeat: Infinity }}
                         className="w-1.5 h-1.5 rounded-full inline-block bg-[#D2A053]" />
                     ))}
                   </span>
@@ -803,7 +807,7 @@ export function QAScreen() {
           {/* Desktop Left Panel Floating Controls */}
           <div className="absolute top-8 left-4 right-4 flex justify-between items-center z-20">
             <div className="text-[11px] font-medium tracking-wide text-white/50 bg-black/30 backdrop-blur px-2.5 py-1 rounded-full border border-white/5">
-              旅行吧导览官 · 在线
+              旅行家导览官 · 在线
             </div>
             <div className="flex gap-2 relative">
               <motion.button whileTap={{ scale: 0.85 }} onClick={() => { setShowBgMenu(!showBgMenu); setShowPersonaMenu(false); }}
@@ -879,7 +883,7 @@ export function QAScreen() {
 
             {/* Subtitle bubble */}
             <AnimatePresence mode="wait">
-              <motion.div key={subtitle.slice(0,20)}
+              <motion.div key={subtitle.slice(0, 20)}
                 initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }} transition={SPRING}
                 className="mt-4 w-full px-4 py-3 rounded-2xl text-center text-[12.5px] leading-relaxed max-h-40 overflow-y-auto"

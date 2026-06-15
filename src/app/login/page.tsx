@@ -141,14 +141,14 @@ export default function LoginPage() {
   };
 
   return (
-    <div 
+    <div
       className="min-h-svh w-full flex items-center justify-center relative overflow-hidden px-4 md:px-6 py-12"
       style={{
         background: "radial-gradient(circle at 50% 50%, #1a2520 0%, #0e1710 100%)",
       }}
     >
       {/* Back button */}
-      <button 
+      <button
         onClick={() => router.push("/welcome")}
         className="absolute top-6 left-6 flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-full border border-white/10 hover:border-white/20 text-white/60 hover:text-white transition-all bg-white/5 backdrop-blur-md cursor-pointer z-50"
       >
@@ -156,7 +156,7 @@ export default function LoginPage() {
       </button>
 
       {/* Dynamic Cursor Light Orb */}
-      <motion.div 
+      <motion.div
         className="absolute pointer-events-none w-[350px] h-[350px] rounded-full filter blur-[120px] opacity-25 z-0"
         style={{
           x: useSpring(useTransform(mouseX, (val) => val - 175), { damping: 45, stiffness: 200 }),
@@ -171,19 +171,19 @@ export default function LoginPage() {
 
       {/* Main Container */}
       <div className="relative z-10 w-full max-w-lg flex flex-col items-center">
-        
+
         {/* Brand Header */}
         <div className="text-center mb-8 space-y-2">
           <div className="w-14 h-14 rounded-3xl mx-auto flex items-center justify-center text-2xl font-black text-white shadow-lg shadow-[#4f6f52]/20"
-            style={{ 
-              background: "linear-gradient(135deg,#4F6F52,#3A5240)", 
+            style={{
+              background: "linear-gradient(135deg,#4F6F52,#3A5240)",
               fontFamily: "var(--font-noto-serif)",
               border: "1px solid rgba(255,255,255,0.1)"
             }}>
             旅
           </div>
           <h2 className="text-2xl font-black text-white tracking-wider" style={{ fontFamily: "var(--font-noto-serif)" }}>
-            旅行吧 · 智能向导
+            旅行家 · 智能向导
           </h2>
           <p className="text-xs text-[#8F9F8F]">
             开启您的多模态虚拟数字伴游新时代
@@ -199,28 +199,26 @@ export default function LoginPage() {
           <div className="grid grid-cols-2 gap-1.5 p-1 bg-black/30 rounded-2xl mb-8 relative z-10">
             <button
               onClick={() => setTab("password")}
-              className={`py-2 text-xs font-bold rounded-xl transition-all ${
-                tab === "password" 
-                  ? "bg-[#4F6F52] text-white shadow-md" 
+              className={`py-2 text-xs font-bold rounded-xl transition-all ${tab === "password"
+                  ? "bg-[#4F6F52] text-white shadow-md"
                   : "text-white/40 hover:text-white/60"
-              }`}
+                }`}
             >
               密码登录
             </button>
             <button
               onClick={() => setTab("code")}
-              className={`py-2 text-xs font-bold rounded-xl transition-all ${
-                tab === "code" 
-                  ? "bg-[#4F6F52] text-white shadow-md" 
+              className={`py-2 text-xs font-bold rounded-xl transition-all ${tab === "code"
+                  ? "bg-[#4F6F52] text-white shadow-md"
                   : "text-white/40 hover:text-white/60"
-              }`}
+                }`}
             >
               验证码登录
             </button>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-5 relative z-10">
-            
+
             {/* Email Field */}
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold tracking-widest text-[#8F9F8F] uppercase block">

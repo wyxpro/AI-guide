@@ -110,7 +110,7 @@ export function ProfileScreen() {
     localStorage.setItem("accessibility_mode", dbMode);
     document.documentElement.setAttribute("data-accessibility-mode", dbMode);
     window.dispatchEvent(new Event("accessibility-mode-change"));
-    
+
     if (user) {
       try {
         await request("/api/user/preferences", {
@@ -150,15 +150,15 @@ export function ProfileScreen() {
 
   return (
     <div className="min-h-svh bg-[#F4F7F5] pb-24 md:pb-12 text-[#2C3E35]">
-      
+
       {/* ── Main Viewport Wrapper ── */}
-      <div className="w-full max-w-[1280px] lg:mx-0 lg:pl-24 px-0 md:px-6 py-0 md:py-8 flex flex-col lg:flex-row gap-6 items-start">
-        
+      <div className="w-full max-w-[1280px] lg:mx-0 lg:pl-12 px-0 md:px-6 py-0 md:py-8 flex flex-col lg:flex-row gap-6 items-start">
+
         {/* ── Desktop Sidebar (Hidden on Mobile) ── */}
         <aside className="hidden lg:block w-[220px] flex-shrink-0 bg-white rounded-[24px] border border-[#E2EAE5] p-6 shadow-sm h-fit">
           <div className="flex items-center gap-3.5 mb-8">
-            <img 
-              src={profileAvatar} 
+            <img
+              src={profileAvatar}
               className="w-14 h-14 rounded-2xl border-2 border-white shadow-md object-cover flex-shrink-0"
               alt="Avatar"
             />
@@ -180,11 +180,10 @@ export function ProfileScreen() {
               <button
                 key={item.id}
                 onClick={() => setActiveSection(item.id as ActiveSection)}
-                className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-[13px] font-bold transition-all ${
-                  activeSection === item.id 
-                    ? "bg-[#EBF3EE] text-[#4F6F52]" 
+                className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-[13px] font-bold transition-all ${activeSection === item.id
+                    ? "bg-[#EBF3EE] text-[#4F6F52]"
                     : "text-zinc-600 hover:bg-zinc-50"
-                }`}
+                  }`}
               >
                 <item.icon className={`w-4 h-4 ${activeSection === item.id ? "text-[#4F6F52]" : "text-zinc-400"}`} />
                 {item.label}
@@ -196,7 +195,7 @@ export function ProfileScreen() {
         {/* ── Main Content Area ── */}
         <main className="flex-1 w-full min-h-[600px]">
           <AnimatePresence mode="wait">
-            
+
             {/* ═══════════════════════════════════════════════════════
                01. 我的首页 (My Homepage)
                ═══════════════════════════════════════════════════════ */}
@@ -210,7 +209,7 @@ export function ProfileScreen() {
                 className="bg-white lg:rounded-[24px] lg:border lg:border-[#E2EAE5] lg:shadow-sm overflow-hidden"
               >
                 {/* Banner & User profile header */}
-                <div 
+                <div
                   className="relative h-[230px] p-6 flex flex-col justify-between"
                   style={{
                     backgroundImage: `linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1542224566-6e85f2e6772f?w=1200&q=80')`,
@@ -222,7 +221,7 @@ export function ProfileScreen() {
                     <span className="text-[10px] font-black text-white bg-black/40 px-2 py-0.5 rounded-full border border-white/15 backdrop-blur-sm">
                       游客中心
                     </span>
-                    <button 
+                    <button
                       onClick={() => {
                         setEditName(profileName);
                         setEditLevel(profileLevel);
@@ -238,17 +237,33 @@ export function ProfileScreen() {
                     </button>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 text-white w-full">
-                    <div className="flex items-center gap-4">
-                      <img 
-                        src={profileAvatar} 
-                        className="w-16 h-16 rounded-full border-2 border-white/60 object-cover shadow-lg"
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-white w-full">
+                    <div className="flex items-center gap-4 w-full">
+                      <img
+                        src={profileAvatar}
+                        className="w-16 h-16 rounded-full border-2 border-white/60 object-cover shadow-lg flex-shrink-0"
                         alt="User Avatar"
                       />
-                      <div>
-                        <div className="flex items-center gap-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <h2 className="text-lg font-black">{displayName}</h2>
-                          <span className="text-[9px] font-extrabold bg-[#D2A053] text-white px-1.5 py-0.5 rounded-md">{profileLevel}</span>
+                          <span className="text-[9px] font-extrabold bg-[#D2A053] text-white px-1.5 py-0.5 rounded-md flex-shrink-0">{profileLevel}</span>
+                          
+                          {/* Redesigned Experience Mode Toggle Switcher */}
+                          <div className="bg-white/10 backdrop-blur-md border border-white/20 p-0.5 rounded-xl flex items-center gap-0.5 shadow-inner ml-2 flex-shrink-0">
+                            {(["standard", "elder", "child"] as Mode[]).map(m => (
+                              <button
+                                key={m}
+                                onClick={() => changeMode(m)}
+                                className={`text-[8.5px] font-bold px-2 py-0.5 rounded-lg transition-all cursor-pointer ${mode === m
+                                    ? "bg-white text-[#4F6F52] shadow-sm scale-105"
+                                    : "text-white/80 hover:text-white hover:bg-white/5"
+                                  }`}
+                              >
+                                {m === "standard" ? "标准" : m === "elder" ? "适老" : "童趣"}
+                              </button>
+                            ))}
+                          </div>
                         </div>
                         <p className="text-[10px] text-white/70 mt-1 flex items-center gap-1">
                           <span>⚡ 9 步电</span>
@@ -256,23 +271,6 @@ export function ProfileScreen() {
                           <span>📍 {profileRegion}</span>
                         </p>
                       </div>
-                    </div>
-
-                    {/* Redesigned Experience Mode Toggle Switcher */}
-                    <div className="bg-white/10 backdrop-blur-md border border-white/20 p-1 rounded-2xl flex items-center gap-1 shadow-inner h-fit self-start sm:self-end">
-                      {(["standard", "elder", "child"] as Mode[]).map(m => (
-                        <button
-                          key={m}
-                          onClick={() => changeMode(m)}
-                          className={`text-[9.5px] font-bold px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
-                            mode === m 
-                              ? "bg-white text-[#4F6F52] shadow-md scale-105" 
-                              : "text-white/80 hover:text-white hover:bg-white/5"
-                          }`}
-                        >
-                          {m === "standard" ? "标准" : m === "elder" ? "适老" : "童趣"}
-                        </button>
-                      ))}
                     </div>
                   </div>
                 </div>
@@ -287,13 +285,13 @@ export function ProfileScreen() {
                       </span>
                       <h4 className="text-xs font-black text-zinc-800 leading-tight">随时为您提供智能讲解与路线推荐</h4>
                       <div className="flex items-center gap-2">
-                        <button 
+                        <button
                           onClick={() => router.push("/qa")}
                           className="px-3.5 py-1.5 bg-[#4F6F52] text-white text-[10px] font-black rounded-lg shadow-sm hover:bg-[#3D5640] transition-colors cursor-pointer"
                         >
                           去对话
                         </button>
-                        <button 
+                        <button
                           onClick={() => router.push("/qa")}
                           className="px-3.5 py-1.5 bg-white text-[#4F6F52] border border-[#D5EDE0] text-[10px] font-black rounded-lg shadow-sm hover:bg-neutral-50 transition-colors cursor-pointer"
                         >
@@ -301,8 +299,8 @@ export function ProfileScreen() {
                         </button>
                       </div>
                     </div>
-                    <img 
-                      src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&auto=format&fit=crop&q=80" 
+                    <img
+                      src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&auto=format&fit=crop&q=80"
                       className="absolute right-3 bottom-0 w-24 h-24 object-cover object-top rounded-t-full mask-image border-b-0 border border-white/20"
                       alt=""
                     />
@@ -344,7 +342,7 @@ export function ProfileScreen() {
                         <History className="w-4 h-4 text-[#4F6F52]" />
                         最近浏览
                       </h3>
-                      <button 
+                      <button
                         onClick={() => setActiveSection("favorites")}
                         className="text-[10px] font-bold text-zinc-400 hover:text-zinc-600 transition-colors"
                       >
@@ -391,7 +389,7 @@ export function ProfileScreen() {
                 {/* Header view */}
                 <div className="px-6 py-5 border-b border-[#EEF2F0] flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
-                    <button 
+                    <button
                       onClick={() => setActiveSection("home")}
                       className="lg:hidden p-1.5 hover:bg-neutral-50 rounded-lg"
                     >
@@ -402,7 +400,7 @@ export function ProfileScreen() {
                       我的行程
                     </h2>
                   </div>
-                  <button 
+                  <button
                     onClick={() => setShowPoster(true)}
                     className="text-[10.5px] font-black text-[#4F6F52] bg-[#EBF3EE] px-3 py-1.5 rounded-full flex items-center gap-1 shadow-sm cursor-pointer hover:bg-[#DBEAE0] transition-colors"
                   >
@@ -421,15 +419,14 @@ export function ProfileScreen() {
                     <button
                       key={tab.id}
                       onClick={() => setRouteTab(tab.id as any)}
-                      className={`flex-1 text-center py-3.5 text-xs font-bold relative transition-colors ${
-                        routeTab === tab.id ? "text-[#4F6F52]" : "text-zinc-400 hover:text-zinc-600"
-                      }`}
+                      className={`flex-1 text-center py-3.5 text-xs font-bold relative transition-colors ${routeTab === tab.id ? "text-[#4F6F52]" : "text-zinc-400 hover:text-zinc-600"
+                        }`}
                     >
                       {tab.label}
                       {routeTab === tab.id && (
-                        <motion.div 
-                          layoutId="route-tab-border" 
-                          className="absolute bottom-0 left-6 right-6 h-0.5 bg-[#4F6F52] rounded-full" 
+                        <motion.div
+                          layoutId="route-tab-border"
+                          className="absolute bottom-0 left-6 right-6 h-0.5 bg-[#4F6F52] rounded-full"
                         />
                       )}
                     </button>
@@ -439,21 +436,21 @@ export function ProfileScreen() {
                 {/* Routes Cards List */}
                 <div className="p-4 sm:p-6 space-y-5">
                   {[
-                    { 
-                      title: "岳阳楼一日游", 
-                      date: "2024.05.20 周一", 
+                    {
+                      title: "岳阳楼一日游",
+                      date: "2024.05.20 周一",
                       status: "ongoing",
                       img: "https://images.unsplash.com/photo-1542224566-6e85f2e6772f?w=600&q=80",
                     },
-                    { 
-                      title: "历史文化之旅", 
-                      date: "2024.05.15 周六", 
+                    {
+                      title: "历史文化之旅",
+                      date: "2024.05.15 周六",
                       status: "completed",
                       img: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=600&q=80",
                     },
-                    { 
-                      title: "自然风光之旅", 
-                      date: "2024.05.10 周五", 
+                    {
+                      title: "自然风光之旅",
+                      date: "2024.05.10 周五",
                       status: "cancelled",
                       img: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=600&q=80",
                     },
@@ -472,21 +469,21 @@ export function ProfileScreen() {
 
                       {/* Control row */}
                       <div className="grid grid-cols-3 divide-x divide-[#EEF2F0] border-t border-[#EEF2F0] text-center bg-zinc-50/50">
-                        <button 
+                        <button
                           onClick={() => router.push("/routes")}
                           className="py-3 text-[11px] font-bold text-zinc-600 hover:text-[#4F6F52] flex items-center justify-center gap-1 transition-colors cursor-pointer"
                         >
                           <MapPin className="w-3.5 h-3.5" />
                           路线地图
                         </button>
-                        <button 
+                        <button
                           onClick={() => router.push("/routes")}
                           className="py-3 text-[11px] font-bold text-zinc-600 hover:text-[#4F6F52] flex items-center justify-center gap-1 transition-colors cursor-pointer"
                         >
                           <Navigation className="w-3.5 h-3.5" />
                           跟走导览
                         </button>
-                        <button 
+                        <button
                           onClick={() => toast.success("行程分享链接已复制到剪贴板！")}
                           className="py-3 text-[11px] font-bold text-zinc-600 hover:text-[#4F6F52] flex items-center justify-center gap-1 transition-colors cursor-pointer"
                         >
@@ -496,7 +493,7 @@ export function ProfileScreen() {
                       </div>
                     </div>
                   ))}
-                  
+
                   {/* Empty state fallback */}
                   {routeTab === "cancelled" && (
                     <div className="py-12 text-center text-zinc-400 space-y-2">
@@ -523,7 +520,7 @@ export function ProfileScreen() {
                 {/* Header */}
                 <div className="px-6 py-5 border-b border-[#EEF2F0] flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
-                    <button 
+                    <button
                       onClick={() => setActiveSection("home")}
                       className="lg:hidden p-1.5 hover:bg-neutral-50 rounded-lg"
                     >
@@ -549,11 +546,10 @@ export function ProfileScreen() {
                     <button
                       key={tag.id}
                       onClick={() => setFavoriteTag(tag.id as any)}
-                      className={`text-[10.5px] font-bold px-3.5 py-1.5 rounded-full transition-colors flex-shrink-0 cursor-pointer ${
-                        favoriteTag === tag.id 
-                          ? "bg-[#4F6F52] text-white" 
+                      className={`text-[10.5px] font-bold px-3.5 py-1.5 rounded-full transition-colors flex-shrink-0 cursor-pointer ${favoriteTag === tag.id
+                          ? "bg-[#4F6F52] text-white"
                           : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
-                      }`}
+                        }`}
                     >
                       {tag.label}
                     </button>
@@ -581,10 +577,10 @@ export function ProfileScreen() {
                         <p className="text-[10px] text-zinc-400 truncate mt-0.5">{item.desc}</p>
                         <span className="text-[9px] text-zinc-300 mt-1 block">{item.date}</span>
                       </div>
-                      
+
                       <div className="flex flex-col gap-1.5">
-                        <motion.button 
-                          whileTap={{ scale: 0.9 }} 
+                        <motion.button
+                          whileTap={{ scale: 0.9 }}
                           onClick={() => {
                             if (item.type === "spot") router.push(`/spots/1`);
                             else router.push(`/routes`);
@@ -593,8 +589,8 @@ export function ProfileScreen() {
                         >
                           查看
                         </motion.button>
-                        <motion.button 
-                          whileTap={{ scale: 0.9 }} 
+                        <motion.button
+                          whileTap={{ scale: 0.9 }}
                           onClick={() => toast.success("已取消收藏")}
                           className="w-7 h-7 bg-red-50 text-red-500 rounded-lg flex items-center justify-center hover:bg-red-100 transition-colors cursor-pointer"
                         >
@@ -603,7 +599,7 @@ export function ProfileScreen() {
                       </div>
                     </div>
                   ))}
-                  
+
                   <div className="text-center py-6 text-zinc-300 text-[10.5px]">
                     没有更多了
                   </div>
@@ -626,7 +622,7 @@ export function ProfileScreen() {
                 {/* Header */}
                 <div className="px-6 py-5 border-b border-[#EEF2F0] flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
-                    <button 
+                    <button
                       onClick={() => setActiveSection("home")}
                       className="lg:hidden p-1.5 hover:bg-neutral-50 rounded-lg"
                     >
@@ -637,7 +633,7 @@ export function ProfileScreen() {
                       我的兴趣
                     </h2>
                   </div>
-                  <button 
+                  <button
                     onClick={() => toast.success("兴趣画像配置保存成功！")}
                     className="text-[10.5px] font-black text-white bg-[#4F6F52] px-4.5 py-1.5 rounded-full shadow-sm hover:bg-[#3D5640] transition-colors cursor-pointer"
                   >
@@ -665,14 +661,13 @@ export function ProfileScreen() {
                     ].map(item => {
                       const checked = selectedInterests.includes(item.id);
                       return (
-                        <div 
+                        <div
                           key={item.id}
                           onClick={() => toggleInterest(item.id)}
-                          className={`p-3.5 rounded-2xl border transition-all flex items-center justify-between cursor-pointer ${
-                            checked 
-                              ? "bg-[#EBF3EE] border-[#4F6F52]/30 text-[#4F6F52]" 
+                          className={`p-3.5 rounded-2xl border transition-all flex items-center justify-between cursor-pointer ${checked
+                              ? "bg-[#EBF3EE] border-[#4F6F52]/30 text-[#4F6F52]"
                               : "bg-white border-[#EEF2F0] text-zinc-700 hover:bg-neutral-50"
-                          }`}
+                            }`}
                         >
                           <div className="flex items-center gap-3">
                             <span className="text-xl">{item.icon}</span>
@@ -684,9 +679,8 @@ export function ProfileScreen() {
                             </div>
                           </div>
 
-                          <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${
-                            checked ? "bg-[#4F6F52] border-[#4F6F52] text-white" : "border-zinc-300 bg-white"
-                          }`}>
+                          <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${checked ? "bg-[#4F6F52] border-[#4F6F52] text-white" : "border-zinc-300 bg-white"
+                            }`}>
                             {checked && (
                               <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                                 <polyline points="20 6 9 17 4 12" />
@@ -702,10 +696,10 @@ export function ProfileScreen() {
                   <div className="space-y-3 pt-2">
                     <h4 className="text-xs font-black text-zinc-800">根据偏好为您推荐</h4>
                     <div className="rounded-3xl border border-[#EEF2F0] p-4 bg-zinc-50/50 flex items-center gap-4">
-                      <img 
-                        src="https://images.unsplash.com/photo-1542224566-6e85f2e6772f?w=300&q=80" 
+                      <img
+                        src="https://images.unsplash.com/photo-1542224566-6e85f2e6772f?w=300&q=80"
                         className="w-16 h-16 rounded-2xl object-cover shadow-sm flex-shrink-0"
-                        alt="" 
+                        alt=""
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
@@ -715,7 +709,7 @@ export function ProfileScreen() {
                         <p className="text-[10px] text-zinc-400 mt-1 truncate">文化遗迹 / 古建筑 / 博物馆</p>
                         <p className="text-[9.5px] text-zinc-400 mt-0.5">时长: 1天 | 步行约 8km</p>
                       </div>
-                      <button 
+                      <button
                         onClick={() => router.push("/routes")}
                         className="px-3 py-1.5 bg-[#4F6F52] text-white text-[10px] font-black rounded-lg shadow-sm flex-shrink-0 hover:bg-[#3D5640] transition-colors cursor-pointer"
                       >
@@ -742,7 +736,7 @@ export function ProfileScreen() {
                 {/* Header */}
                 <div className="px-6 py-5 border-b border-[#EEF2F0] flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
-                    <button 
+                    <button
                       onClick={() => setActiveSection("home")}
                       className="lg:hidden p-1.5 hover:bg-neutral-50 rounded-lg"
                     >
@@ -770,8 +764,8 @@ export function ProfileScreen() {
                       { label: "关于我们", icon: Info },
                       { label: "帮助中心", icon: HelpCircle },
                     ].map((opt, idx) => (
-                      <div 
-                        key={idx} 
+                      <div
+                        key={idx}
                         onClick={opt.action || (() => toast.info(`${opt.label}模块开发中`))}
                         className="flex items-center justify-between px-4 py-3.5 hover:bg-zinc-50/50 transition-colors cursor-pointer"
                       >
@@ -790,17 +784,17 @@ export function ProfileScreen() {
                   {/* AI banner small */}
                   <div className="bg-gradient-to-r from-[#F0F5FF] to-[#E5EDFF] rounded-3xl p-4 border border-[#D0DFFA] flex items-center justify-between">
                     <div className="flex items-center gap-3.5">
-                      <img 
-                        src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&auto=format&fit=crop&q=80" 
+                      <img
+                        src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&auto=format&fit=crop&q=80"
                         className="w-10 h-10 rounded-full object-cover object-top border-2 border-white"
-                        alt="" 
+                        alt=""
                       />
                       <div>
                         <h4 className="text-xs font-extrabold text-zinc-800">AI数字人导游</h4>
                         <p className="text-[9.5px] text-zinc-400 mt-0.5">有问题随时问欣欣~</p>
                       </div>
                     </div>
-                    <button 
+                    <button
                       onClick={() => router.push("/qa")}
                       className="px-3.5 py-1.5 bg-[#4D96FF] text-white text-[10px] font-black rounded-lg shadow-sm hover:bg-[#3D85EF] transition-colors cursor-pointer"
                     >
@@ -822,8 +816,8 @@ export function ProfileScreen() {
                         }
                       }}
                       className="w-full py-3.5 rounded-2xl text-xs font-bold text-center transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer"
-                      style={{ 
-                        background: "rgba(220,38,38,0.06)", 
+                      style={{
+                        background: "rgba(220,38,38,0.06)",
                         border: "1px solid rgba(220,38,38,0.18)",
                         color: "#DC2626"
                       }}
@@ -861,9 +855,9 @@ export function ProfileScreen() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
             onClick={() => setShowNotifications(false)}>
-            <motion.div 
-              initial={{ scale: 0.9, opacity: 0 }} 
-              animate={{ scale: 1, opacity: 1 }} 
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               transition={SPRING}
               className="w-full max-w-md bg-[#FAF8F5] rounded-3xl border border-[#E6E2D8] overflow-hidden shadow-2xl"
@@ -886,14 +880,14 @@ export function ProfileScreen() {
 
               <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
                 {[
-                  { title: "旅行吧智慧系统版本升级", time: "10分钟前", detail: "已全面更新至 1.2.0 版本。全新引入 3D 拟真对谈数字人与智能避堵路线规划系统，让每一次出游更加得心应手。", type: "update" },
+                  { title: "旅行家智慧系统版本升级", time: "10分钟前", detail: "已全面更新至 1.2.0 版本。全新引入 3D 拟真对谈数字人与智能避堵路线规划系统，让每一次出游更加得心应手。", type: "update" },
                   { title: "今日景区游览与气象指南", time: "2小时前", detail: "今日气温 22℃-28℃，微风，紫外线强度中等。部分路段正在进行防滑绿化作业，请游客朋友在溪流栈道行走时注意慢行。", type: "info" },
                   { title: "览月亭落日集章特惠活动", time: "5小时前", detail: "今天下午 16:30 至 18:30，在揽月亭与 AI 数字人成功开启对话并上传任意落日合影，即可至服务中心兑换景区定制版精美古风徽章一枚！数量有限，先到先得。", type: "promo" }
                 ].map((notif, idx) => (
                   <div key={idx} className="p-4 rounded-2xl border border-[#E6E2D8] bg-white space-y-2 shadow-sm">
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-black px-2 py-0.5 rounded-full"
-                        style={{ 
+                        style={{
                           background: notif.type === "update" ? "rgba(77,150,255,0.1)" : notif.type === "info" ? "rgba(79,111,82,0.1)" : "rgba(210,160,83,0.1)",
                           color: notif.type === "update" ? "#4D96FF" : notif.type === "info" ? "#4F6F52" : "#D2A053"
                         }}>
@@ -922,16 +916,16 @@ export function ProfileScreen() {
       {/* Edit Profile Modal */}
       <AnimatePresence>
         {showEditProfile && (
-          <motion.div 
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
             onClick={() => setShowEditProfile(false)}
           >
-            <motion.div 
-              initial={{ scale: 0.9, opacity: 0, y: 20 }} 
-              animate={{ scale: 1, opacity: 1, y: 0 }} 
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
               transition={SPRING}
               className="w-full max-w-md bg-[#FAF8F5] rounded-3xl border border-[#E6E2D8] overflow-hidden shadow-2xl"
@@ -967,9 +961,8 @@ export function ProfileScreen() {
                         key={av.url}
                         type="button"
                         onClick={() => setEditAvatar(av.url)}
-                        className={`relative rounded-full p-1 transition-all duration-300 ${
-                          editAvatar === av.url ? "ring-4 ring-[#4F6F52]" : "ring-2 ring-transparent opacity-75 hover:opacity-100"
-                        }`}
+                        className={`relative rounded-full p-1 transition-all duration-300 ${editAvatar === av.url ? "ring-4 ring-[#4F6F52]" : "ring-2 ring-transparent opacity-75 hover:opacity-100"
+                          }`}
                       >
                         <img src={av.url} className="w-12 h-12 rounded-full object-cover" alt={av.name} />
                       </button>
@@ -1014,11 +1007,10 @@ export function ProfileScreen() {
                         type="button"
                         key={g}
                         onClick={() => setEditGender(g)}
-                        className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-all ${
-                          editGender === g 
-                            ? "bg-[#4F6F52] border-[#4F6F52] text-white shadow-sm" 
+                        className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-all ${editGender === g
+                            ? "bg-[#4F6F52] border-[#4F6F52] text-white shadow-sm"
                             : "bg-white border-[#E6E2D8] text-zinc-600 hover:bg-neutral-50"
-                        }`}
+                          }`}
                       >
                         {g}
                       </button>
@@ -1103,14 +1095,12 @@ export function ProfileScreen() {
             onClick={() => setActiveSection(item.id as ActiveSection)}
             className="flex flex-col items-center gap-1 text-center"
           >
-            <div className={`p-1.5 rounded-xl transition-colors ${
-              activeSection === item.id ? "bg-[#EBF3EE] text-[#4F6F52]" : "text-zinc-400"
-            }`}>
+            <div className={`p-1.5 rounded-xl transition-colors ${activeSection === item.id ? "bg-[#EBF3EE] text-[#4F6F52]" : "text-zinc-400"
+              }`}>
               <item.icon className="w-4.5 h-4.5" />
             </div>
-            <span className={`text-[9px] font-bold ${
-              activeSection === item.id ? "text-[#4F6F52]" : "text-zinc-400"
-            }`}>{item.label.slice(3)}</span>
+            <span className={`text-[9px] font-bold ${activeSection === item.id ? "text-[#4F6F52]" : "text-zinc-400"
+              }`}>{item.label.slice(3)}</span>
           </button>
         ))}
       </div>

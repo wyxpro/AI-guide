@@ -87,7 +87,7 @@ const RADAR_METRICS = [
 
 const COMP_PRODUCTS = [
   {
-    name: "旅行吧",
+    name: "旅行家",
     color: "#4F6F52",
     fill: "rgba(79, 111, 82, 0.4)",
     points: "150,55 235.6,122.2 205.8,226.9 92.4,229.3 64.4,122.2", // Values: 95, 90, 95, 98, 90
@@ -242,6 +242,22 @@ const PLANS = [
 export default function WelcomePage() {
   const [activePersona, setActivePersona] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activeFeatureIndex, setActiveFeatureIndex] = useState(2); // Center initial card
+  const [windowWidth, setWindowWidth] = useState(1200);
+
+  useEffect(() => {
+    setWindowWidth(window.innerWidth);
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveFeatureIndex((prev) => (prev + 1) % 6);
+    }, 3200);
+    return () => clearInterval(timer);
+  }, []);
 
   const handleStart = () => {
     window.location.href = "/login";
@@ -264,7 +280,7 @@ export default function WelcomePage() {
             </div>
             <div>
               <h1 className="text-[17px] font-black tracking-wide" style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}>
-                旅行吧
+                旅行家
               </h1>
               <p className="text-[10px] tracking-widest text-[#8F9F8F] uppercase">Next-Gen Virtual Guide</p>
             </div>
@@ -288,10 +304,10 @@ export default function WelcomePage() {
             >
               立即使用 <ArrowRight className="w-4 h-4" />
             </button>
-            
+
             {/* Mobile Menu Toggle */}
-            <button 
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="md:hidden p-2 rounded-xl border border-[#E6E2D8] hover:bg-[#F5F0E8] transition-colors"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -308,7 +324,7 @@ export default function WelcomePage() {
         {/* Mobile Dropdown Nav */}
         <AnimatePresence>
           {isMobileMenuOpen && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
@@ -335,16 +351,16 @@ export default function WelcomePage() {
       {/* Hero Section */}
       <section className="relative pt-12 md:pt-24 pb-20 max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
         <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={SPRING}
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold"
             style={{ background: "rgba(210,160,83,0.12)", color: "#D2A053", border: "1px solid rgba(210,160,83,0.25)" }}
           >
-            <Sparkles className="w-3.5 h-3.5 animate-pulse" /> 旅行吧·AI智能交互导览系统
+            <Sparkles className="w-3.5 h-3.5 animate-pulse" /> 旅行家·AI智能交互导览系统
           </motion.div>
-          <motion.h2 
+          <motion.h2
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ ...SPRING, delay: 0.1 }}
@@ -354,7 +370,7 @@ export default function WelcomePage() {
             让每一块玉石，<br />
             都为你<span className="text-transparent bg-clip-text" style={{ backgroundImage: "linear-gradient(135deg,#4F6F52,#D2A053)" }}>娓娓道来</span>
           </motion.h2>
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ ...SPRING, delay: 0.2 }}
@@ -362,7 +378,7 @@ export default function WelcomePage() {
           >
             融汇领先大语言模型与多模态AI技术，推出集「24小时多模态数字人对谈」、「多重无障碍画像关怀」及「即时路线动态规划」于一身的革命性智慧导游平台。
           </motion.p>
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ ...SPRING, delay: 0.3 }}
@@ -375,7 +391,7 @@ export default function WelcomePage() {
             >
               立即使用体验 <ArrowRight className="w-5 h-5" />
             </button>
-            <a 
+            <a
               href="#feature"
               className="w-full sm:w-auto px-8 py-4 rounded-full text-base font-bold transition-all hover:bg-[#F5F0E8] active:scale-95 border border-[#E6E2D8] flex items-center justify-center gap-2"
               style={{ color: "#3A4D39", background: "white" }}
@@ -387,12 +403,12 @@ export default function WelcomePage() {
 
         {/* 3D Simulation Virtual Human Block */}
         <div className="lg:col-span-5 flex justify-center">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, rotateY: 20 }}
             animate={{ opacity: 1, rotateY: 0 }}
             transition={{ ...SPRING, delay: 0.2 }}
             className="relative w-80 h-96 md:w-96 md:h-[450px] rounded-[48px] p-6 shadow-2xl flex flex-col justify-between overflow-hidden group"
-            style={{ 
+            style={{
               background: "linear-gradient(180deg, #1C2420 0%, #121815 100%)",
               border: "4px solid #D2A053",
               transformStyle: "preserve-3d",
@@ -402,7 +418,7 @@ export default function WelcomePage() {
             {/* Interactive Hologram Effect */}
             <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(79,111,82,0.1)_1px,transparent_1px)] bg-[size:100%_4px] pointer-events-none opacity-40" />
             <div className="absolute top-12 left-12 w-48 h-48 rounded-full bg-[#D2A053]/10 filter blur-[40px] pointer-events-none group-hover:scale-125 transition-transform duration-1000" />
-            
+
             {/* Top Indicator */}
             <div className="flex justify-between items-center relative z-10">
               <span className="text-[11px] font-bold px-3 py-1 rounded-full text-white bg-[#4F6F52] flex items-center gap-1.5">
@@ -415,12 +431,12 @@ export default function WelcomePage() {
             <div className="my-auto flex flex-col items-center relative z-10 translate-z-10 group-hover:translate-z-20 transition-transform duration-500">
               <div className="relative w-36 h-36 rounded-full flex items-center justify-center mb-6"
                 style={{ background: "radial-gradient(circle, rgba(210,160,83,0.18) 0%, transparent 70%)", border: "2px dashed rgba(210,160,83,0.4)" }}>
-                
+
                 {/* Rotating ring */}
-                <motion.div 
+                <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-                  className="absolute inset-0 rounded-full border-t border-b border-[#D2A053]/40" 
+                  className="absolute inset-0 rounded-full border-t border-b border-[#D2A053]/40"
                 />
 
                 <svg width="100" height="110" viewBox="0 0 100 120" className="drop-shadow-[0_8px_16px_rgba(210,160,83,0.3)]">
@@ -438,43 +454,43 @@ export default function WelcomePage() {
 
               {/* Digital Human Name & Speech Bubble */}
               <div className="text-center space-y-1.5">
-                <h4 className="text-[#FAF8F5] text-sm font-bold tracking-wider" style={{ fontFamily: "var(--font-noto-serif)" }}>旅行吧AI向导「小旅」</h4>
+                <h4 className="text-[#FAF8F5] text-sm font-bold tracking-wider" style={{ fontFamily: "var(--font-noto-serif)" }}>旅行家AI向导「小旅」</h4>
                 <p className="text-[11px] text-[#8F9F8F] px-4 py-1.5 rounded-xl bg-white/5 border border-white/10 italic">
                   &ldquo;您好，我是您的AI导游，今天想去揽月亭还是翠玉湖呢？&rdquo;
                 </p>
               </div>
             </div>
- 
+
             {/* Voice Audio Wave */}
             <div className="flex justify-center items-end gap-1.5 h-8 relative z-10">
               {[3, 6, 8, 4, 9, 6, 8, 3, 5, 7, 4].map((h, i) => (
-                <motion.div 
-                  key={i} 
+                <motion.div
+                  key={i}
                   animate={{ height: [h * 2, h * 3.5, h * 2] }}
                   transition={{ duration: 0.8, delay: i * 0.08, repeat: Infinity }}
-                  className="w-1.5 rounded-full" 
-                  style={{ background: i % 2 === 0 ? "#D2A053" : "#4F6F52" }} 
+                  className="w-1.5 rounded-full"
+                  style={{ background: i % 2 === 0 ? "#D2A053" : "#4F6F52" }}
                 />
               ))}
             </div>
           </motion.div>
         </div>
       </section>
- 
 
 
-      {/* Featured Capabilities (特色功能) - Redesigned & moved above persona */}
-      <section id="feature" className="py-24 bg-white border-y border-[#E6E2D8] relative overflow-hidden">
-        {/* Subtle background graphics */}
-        <div className="absolute top-0 right-0 w-[30vw] h-[30vw] rounded-full filter blur-[100px] pointer-events-none opacity-5" style={{ background: "radial-gradient(circle, #D2A053, transparent)" }} />
-        <div className="absolute bottom-0 left-0 w-[30vw] h-[30vw] rounded-full filter blur-[100px] pointer-events-none opacity-5" style={{ background: "radial-gradient(circle, #4F6F52, transparent)" }} />
+
+      {/* Featured Capabilities (特色功能) - 3D Auto-play Carousel (Light Theme & Upload Style) */}
+      <section id="feature" className="py-24 bg-[#FAF8F5] border-y border-[#E6E2D8] relative overflow-hidden text-[#1E2522]">
+        {/* Subtle background glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] rounded-full filter blur-[120px] pointer-events-none opacity-10" 
+          style={{ background: "radial-gradient(circle, #4F6F52 0%, transparent 70%)" }} />
 
         <div className="max-w-7xl mx-auto px-6 relative z-10">
-          <div className="text-center space-y-4 mb-20">
+          <div className="text-center space-y-4 mb-12">
             <span className="text-xs font-black tracking-[0.2em] text-[#4F6F52] uppercase block">
               Features
             </span>
-            <h3 className="text-3xl md:text-5xl font-black tracking-tight" style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}>
+            <h3 className="text-3xl md:text-5xl font-black tracking-tight text-[#1E2522]" style={{ fontFamily: "var(--font-noto-serif)" }}>
               沉浸式交互，数字科技重塑旅途
             </h3>
             <div className="w-12 h-1.5 rounded-full bg-[#4F6F52] mx-auto mt-4" />
@@ -483,87 +499,158 @@ export default function WelcomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {/* Carousel Container */}
+          <div className="relative w-full h-[400px] md:h-[460px] flex items-center justify-center overflow-hidden">
             {[
               {
                 icon: Bot,
                 num: "01",
-                title: "虚拟人3D形象",
-                desc: "多样化的汉服仕女、童趣卡通、现代精英形象，具备自然表情流露与拟真口型算法。",
-                color: "#4F6F52",
-                glow: "radial-gradient(circle, rgba(79, 111, 82, 0.15) 0%, transparent 70%)"
+                title: "虚拟人3D拟真交互",
+                desc: "提供仕女古风、童趣卡通、现代精英数字人形象，具备自然表情流露与拟真口型算法。",
+                color: "#8B5CF6", // Purple
               },
               {
                 icon: MessageCircle,
                 num: "02",
-                title: "全天候语音对谈",
+                title: "全天候双工语音对谈",
                 desc: "极速的语音语义流式处理，打破呆板的按键指引，就像与一位温婉知性的文史专家面对面交谈。",
-                color: "#D2A053",
-                glow: "radial-gradient(circle, rgba(210, 160, 83, 0.15) 0%, transparent 70%)"
+                color: "#10B981", // Emerald
               },
               {
                 icon: MapPin,
                 num: "03",
-                title: "自适应兴趣探路",
-                desc: "支持输入您当前的兴趣偏好，如“历史文化优先、走林荫道”，AI自动寻找并规划出最优的旅游足迹。",
-                color: "#4F6F52",
-                glow: "radial-gradient(circle, rgba(79, 111, 82, 0.15) 0%, transparent 70%)"
+                title: "自适应智能专属路径",
+                desc: "支持输入您当前的兴趣偏好，如“历史文化优先、走平坦道”，AI自动动态避堵并规划最优旅游足迹。",
+                color: "#D2A053", // Gold/Amber
+              },
+              {
+                icon: Sparkles,
+                num: "04",
+                title: "AR/VR实景研判识别",
+                desc: "对准展品文物拍摄即可开展多模态文物识别，提取背后的深度文化故事，变走马观花为沉浸感悟。",
+                color: "#06B6D4", // Cyan
+              },
+              {
+                icon: Users,
+                num: "05",
+                title: "适老/童趣多模态适配",
+                desc: "首创三大体验模式，老年大字伴读、儿童故事科普、标准沉浸研读，贴心照顾全家出游偏好。",
+                color: "#EC4899", // Rose/Pink
               },
               {
                 icon: TrendingUp,
-                num: "04",
-                title: "景区分析大屏",
+                num: "06",
+                title: "景区大屏与情感雷达",
                 desc: "景区管理后台支持游客情感指数雷达监测、高频热搜词云实时流计算及今日客流量科学预测。",
-                color: "#D2A053",
-                glow: "radial-gradient(circle, rgba(210, 160, 83, 0.15) 0%, transparent 70%)"
+                color: "#3B82F6", // Blue
               }
-            ].map((f, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1, duration: 0.5 }}
-                whileHover={{ 
-                  y: -12, 
-                  boxShadow: "0 20px 40px -15px rgba(0, 0, 0, 0.08)",
-                  borderColor: f.color
-                }}
-                className="relative p-8 rounded-[32px] border border-[#E6E2D8] bg-[#FAF8F5] transition-all duration-300 flex flex-col justify-between group overflow-hidden"
-              >
-                <div 
-                  className="absolute -top-12 -left-12 w-36 h-36 rounded-full pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500" 
-                  style={{ background: f.glow }}
-                />
+            ].map((f, i) => {
+              // Calculate relative offset wrap-around correctly in range [-3, 2]
+              let diff = i - activeFeatureIndex;
+              if (diff < -3) diff += 6;
+              if (diff > 2) diff -= 6;
 
-                <div className="space-y-6 relative z-10">
-                  <div className="flex justify-between items-start">
-                    <div 
-                      className="w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 shadow-sm"
-                      style={{ background: "white", border: `1.5px solid ${f.color}25` }}
-                    >
-                      <f.icon className="w-6 h-6 transition-colors duration-300" style={{ color: f.color }} />
+              const isActive = diff === 0;
+              const isPrev = diff === -1;
+              const isNext = diff === 1;
+              const isFarPrev = diff === -2;
+              const isFarNext = diff === 2;
+
+              // Responsive offsets
+              const isMobile = windowWidth < 768;
+              let translateX = 0;
+              if (isMobile) {
+                translateX = diff * 280;
+              } else {
+                if (isActive) translateX = 0;
+                else if (isPrev) translateX = -380;
+                else if (isNext) translateX = 380;
+                else if (isFarPrev) translateX = -720;
+                else if (isFarNext) translateX = 720;
+                else translateX = diff < 0 ? -1060 : 1060;
+              }
+
+              return (
+                <motion.div
+                  key={i}
+                  onClick={() => setActiveFeatureIndex(i)}
+                  animate={{
+                    x: translateX,
+                    scale: isActive ? 1.05 : 0.85,
+                    opacity: isActive ? 1 : (Math.abs(diff) === 1 ? 0.55 : (Math.abs(diff) === 2 ? 0.15 : 0)),
+                    zIndex: isActive ? 10 : (Math.abs(diff) === 1 ? 5 : 2),
+                    pointerEvents: isActive || Math.abs(diff) === 1 ? "auto" : "none"
+                  }}
+                  transition={{ type: "spring", stiffness: 150, damping: 22 }}
+                  style={{
+                    background: isActive 
+                      ? "linear-gradient(180deg, #FFFFFF 0%, #FAF8F5 100%)" 
+                      : "linear-gradient(180deg, rgba(255, 255, 255, 0.65) 0%, rgba(250, 248, 245, 0.65) 100%)",
+                    border: isActive 
+                      ? `1.5px solid ${f.color}50` 
+                      : "1px solid #E6E2D8",
+                    boxShadow: isActive 
+                      ? `0 15px 35px -10px ${f.color}20` 
+                      : "0 4px 12px rgba(0,0,0,0.02)"
+                  }}
+                  className={`absolute w-[260px] md:w-[350px] h-[340px] md:h-[380px] rounded-3xl p-6 md:p-8 flex flex-col justify-between cursor-pointer select-none transition-shadow duration-300 group`}
+                >
+                  <div className="space-y-4 md:space-y-6">
+                    <div className="flex justify-between items-start">
+                      <div
+                        className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-md transition-all duration-300 group-hover:scale-105"
+                        style={{
+                          background: `linear-gradient(135deg, ${f.color} 0%, rgba(255,255,255,0.4) 100%)`,
+                          boxShadow: `0 8px 20px ${f.color}15`
+                        }}
+                      >
+                        <f.icon className="w-6 h-6 text-white" />
+                      </div>
+                      <span className="text-xl md:text-3xl font-black font-mono select-none opacity-10 tracking-tight" style={{ color: f.color }}>
+                        {f.num}
+                      </span>
                     </div>
-                    <span className="text-3xl font-black tracking-tight select-none opacity-10 group-hover:opacity-25 transition-opacity duration-300 font-mono" style={{ color: f.color }}>
-                      {f.num}
-                    </span>
+
+                    <div className="space-y-2 text-left">
+                      <h4 className="text-base md:text-xl font-bold text-[#1E2522] tracking-tight group-hover:text-[#4F6F52] transition-colors duration-300">
+                        {f.title}
+                      </h4>
+                      <p className="text-xs md:text-sm leading-relaxed text-[#6B7B6B] min-h-[50px] md:min-h-[72px]">
+                        {f.desc}
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="space-y-3">
-                    <h4 className="text-lg font-bold text-[#1E2522] tracking-tight group-hover:text-[#4F6F52] transition-colors duration-300">
-                      {f.title}
-                    </h4>
-                    <p className="text-xs leading-relaxed text-[#8F9F8F] group-hover:text-[#6B7B6B] transition-colors duration-300 min-h-[72px]">
-                      {f.desc}
-                    </p>
+                  <div 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleStart();
+                    }}
+                    className="pt-4 mt-4 border-t border-[#E6E2D8]/80 flex items-center gap-2 text-xs font-bold transition-all duration-300 hover:opacity-80 justify-start" 
+                    style={{ color: f.color }}
+                  >
+                    <span>立即体验</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
                   </div>
-                </div>
+                </motion.div>
+              );
+            })}
+          </div>
 
-                <div className="pt-6 mt-6 border-t border-[#E6E2D8]/50 flex items-center gap-2 text-xs font-bold relative z-10 transition-colors duration-300" style={{ color: f.color }}>
-                  <span>了解更多</span>
-                  <ChevronRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1.5" />
-                </div>
-              </motion.div>
+          {/* Dots Indicator */}
+          <div className="flex justify-center items-center gap-2 mt-10">
+            {[...Array(6)].map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setActiveFeatureIndex(idx)}
+                className="h-2 rounded-full transition-all duration-300"
+                style={{
+                  width: activeFeatureIndex === idx ? "24px" : "8px",
+                  backgroundColor: activeFeatureIndex === idx 
+                    ? "#4F6F52" 
+                    : "rgba(79, 111, 82, 0.2)"
+                }}
+              />
             ))}
           </div>
         </div>
@@ -576,7 +663,7 @@ export default function WelcomePage() {
             <span className="text-xs font-bold tracking-widest text-[#D2A053] uppercase">Target Personas</span>
             <h3 className="text-3xl md:text-4xl font-black" style={{ fontFamily: "var(--font-noto-serif)" }}>定制化解说，听你想听的声音</h3>
             <div className="w-12 h-1 rounded bg-[#D2A053] mx-auto mt-2" />
-            <p className="text-sm text-[#8F9F8F] max-w-xl mx-auto">大字、童趣、学术、极速——点击切换，抢先预览不同人群画像的参数定制。</p>
+            <p className="text-sm text-[#8F9F8F] max-w-xl mx-auto">大字、童趣、学术、极速——鼠标悬停切换，抢先预览不同人群画像的参数定制。</p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
@@ -585,12 +672,12 @@ export default function WelcomePage() {
               {PERSONAS.map((p, i) => (
                 <button
                   key={i}
+                  onMouseEnter={() => setActivePersona(i)}
                   onClick={() => setActivePersona(i)}
-                  className={`w-full p-5 rounded-2xl text-left border transition-all flex items-center gap-4 ${
-                    activePersona === i
+                  className={`w-full p-5 rounded-2xl text-left border transition-all flex items-center gap-4 ${activePersona === i
                       ? "border-l-4 bg-white shadow-md"
                       : "border-[#E6E2D8] bg-[#FAF8F5] opacity-75 hover:opacity-100"
-                  }`}
+                    }`}
                   style={{ borderLeftColor: activePersona === i ? p.themeColor : undefined }}
                 >
                   <span className="text-3xl">{p.icon}</span>
@@ -664,7 +751,7 @@ export default function WelcomePage() {
             <span className="text-xs font-bold tracking-widest text-[#D2A053] uppercase">Competitor Analysis</span>
             <h3 className="text-3xl md:text-4xl font-black" style={{ fontFamily: "var(--font-noto-serif)" }}>核心指标大PK，AI导览完胜</h3>
             <div className="w-12 h-1 rounded bg-[#D2A053] mx-auto mt-2" />
-            <p className="text-sm text-[#8F9F8F] max-w-xl mx-auto">对比传统语音指南App与昂贵的人工导游，旅行吧提供高性价比、全方位的完美体验。</p>
+            <p className="text-sm text-[#8F9F8F] max-w-xl mx-auto">对比传统语音指南App与昂贵的人工导游，旅行家提供高性价比、全方位的完美体验。</p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
@@ -751,7 +838,7 @@ export default function WelcomePage() {
                 <thead>
                   <tr style={{ background: "#F5F0E8" }}>
                     <th className="px-5 py-4 text-xs font-bold text-[#8F9F8F] uppercase">评测维度</th>
-                    <th className="px-5 py-4 text-xs font-bold text-[#4F6F52] uppercase">旅行吧</th>
+                    <th className="px-5 py-4 text-xs font-bold text-[#4F6F52] uppercase">旅行家</th>
                     <th className="px-5 py-4 text-xs font-bold text-[#8F9F8F] uppercase">传统导览App</th>
                     <th className="px-5 py-4 text-xs font-bold text-[#D2A053] uppercase">人工金牌导游</th>
                   </tr>
@@ -784,7 +871,7 @@ export default function WelcomePage() {
           <span className="text-xs font-bold tracking-widest text-[#4F6F52] uppercase">Reviews</span>
           <h3 className="text-3xl md:text-4xl font-black" style={{ fontFamily: "var(--font-noto-serif)" }}>听听他们怎么说</h3>
           <div className="w-12 h-1 rounded bg-[#4F6F52] mx-auto mt-2" />
-          <p className="text-sm text-[#8F9F8F] max-w-xl mx-auto">数万名来自全国各地的游客体验了旅行吧的陪伴游，真实好评如潮。</p>
+          <p className="text-sm text-[#8F9F8F] max-w-xl mx-auto">数万名来自全国各地的游客体验了旅行家的陪伴游，真实好评如潮。</p>
         </div>
 
         {/* Custom Keyframe Styles */}
@@ -817,12 +904,12 @@ export default function WelcomePage() {
           {/* Row 1: Leftward Marquee */}
           <div className="flex w-[200%] md:w-max gap-6 animate-marquee-left">
             {[...ROW1_REVIEWS, ...ROW1_REVIEWS].map((rev, idx) => (
-              <div 
-                key={idx} 
+              <div
+                key={idx}
                 className="w-[310px] md:w-[350px] flex-shrink-0 bg-[#FAF8F5] border border-[#E6E2D8] rounded-3xl p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition-all duration-300 relative group"
               >
                 <span className="absolute top-4 right-6 text-5xl text-[#4F6F52]/10 font-serif pointer-events-none select-none">“</span>
-                
+
                 <div className="space-y-4">
                   <div className="flex gap-0.5">
                     {[...Array(rev.rating)].map((_, i) => (
@@ -853,12 +940,12 @@ export default function WelcomePage() {
           {/* Row 2: Rightward Marquee */}
           <div className="flex w-[200%] md:w-max gap-6 animate-marquee-right">
             {[...ROW2_REVIEWS, ...ROW2_REVIEWS].map((rev, idx) => (
-              <div 
-                key={idx} 
+              <div
+                key={idx}
                 className="w-[310px] md:w-[350px] flex-shrink-0 bg-[#FAF8F5] border border-[#E6E2D8] rounded-3xl p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition-all duration-300 relative group"
               >
                 <span className="absolute top-4 right-6 text-5xl text-[#4F6F52]/10 font-serif pointer-events-none select-none">“</span>
-                
+
                 <div className="space-y-4">
                   <div className="flex gap-0.5">
                     {[...Array(rev.rating)].map((_, i) => (
@@ -898,40 +985,40 @@ export default function WelcomePage() {
             <p className="text-sm text-[#8F9F8F] max-w-xl mx-auto">价格透明划算，自由定制出行偏好，解锁更深度的景区历史古迹游览特权。</p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch max-w-6xl mx-auto">
+          <div className="grid grid-cols-3 lg:grid-cols-3 gap-2 md:gap-8 items-stretch max-w-6xl mx-auto">
             {PLANS.map((plan) => (
               <motion.div
                 key={plan.name}
                 whileHover={{ y: -8 }}
-                className={`rounded-3xl p-8 border flex flex-col justify-between relative overflow-hidden shadow-md ${plan.border}`}
+                className={`rounded-xl md:rounded-3xl p-3 md:p-8 border flex flex-col justify-between relative overflow-hidden shadow-md ${plan.border}`}
                 style={{ background: plan.gradient }}
               >
                 {plan.popular && (
-                  <div className="absolute top-0 right-0 bg-[#D2A053] text-white text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-bl-xl">
+                  <div className="absolute top-0 right-0 bg-[#D2A053] text-white text-[6px] md:text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 md:px-4 md:py-1.5 rounded-bl-lg">
                     POPULAR
                   </div>
                 )}
 
-                <div className="space-y-6">
+                <div className="space-y-2 md:space-y-6">
                   <div className="space-y-1">
-                    <h4 className={`text-lg font-bold ${plan.popular ? "text-[#D2A053]" : "text-[#1E2522]"}`} style={{ fontFamily: "var(--font-noto-serif)" }}>
+                    <h4 className={`text-[10px] md:text-lg font-bold leading-tight ${plan.popular ? "text-[#D2A053]" : "text-[#1E2522]"}`} style={{ fontFamily: "var(--font-noto-serif)" }}>
                       {plan.name}
                     </h4>
-                    <p className={`text-xs ${plan.popular ? "text-white/60" : "text-[#8F9F8F]"}`}>{plan.desc}</p>
+                    <p className={`text-[8px] leading-tight md:text-xs ${plan.popular ? "text-white/60" : "text-[#8F9F8F]"}`}>{plan.desc}</p>
                   </div>
 
-                  <div className="flex items-baseline">
-                    <span className={`text-4xl md:text-5xl font-black ${plan.popular ? "text-white" : "text-[#1E2522]"}`}>
+                  <div className="flex items-baseline flex-wrap md:flex-nowrap">
+                    <span className={`text-base md:text-5xl font-black ${plan.popular ? "text-white" : "text-[#1E2522]"}`}>
                       ￥{plan.price}
                     </span>
-                    <span className={`text-xs ml-1 ${plan.popular ? "text-white/50" : "text-[#8F9F8F]"}`}>/{plan.period}</span>
+                    <span className={`text-[8px] ml-0.5 md:ml-1 ${plan.popular ? "text-white/50" : "text-[#8F9F8F]"}`}>/{plan.period}</span>
                   </div>
 
                   {/* Divider */}
-                  <div className={`h-px w-full ${plan.popular ? "bg-white/10" : "bg-[#E6E2D8]"}`} />
+                  <div className={`h-px w-full my-1 md:my-3 ${plan.popular ? "bg-white/10" : "bg-[#E6E2D8]"}`} />
 
                   {/* Feature list */}
-                  <ul className="space-y-3">
+                  <ul className="space-y-3 hidden md:block">
                     {plan.features.map((feature, idx) => (
                       <li key={idx} className="flex items-start gap-2.5 text-xs leading-relaxed">
                         <Check className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: plan.popular ? "#D2A053" : "#4F6F52" }} />
@@ -941,14 +1028,16 @@ export default function WelcomePage() {
                   </ul>
                 </div>
 
-                <div className="pt-8">
+                <div className="pt-2 md:pt-8">
                   <motion.button
                     whileTap={{ scale: 0.95 }}
                     onClick={handleStart}
-                    className="w-full py-3.5 rounded-xl text-xs font-bold transition-all active:scale-98 shadow-sm flex items-center justify-center gap-2"
+                    className="w-full py-1.5 md:py-3.5 rounded-lg md:rounded-xl text-[8px] md:text-xs font-bold transition-all active:scale-98 shadow-sm flex items-center justify-center gap-1 md:gap-2"
                     style={plan.buttonStyle}
                   >
-                    {plan.cta} <ArrowRight className="w-3.5 h-3.5" />
+                    <span className="md:hidden">{plan.price === "0" ? "体验" : plan.popular ? "畅游" : "特权"}</span>
+                    <span className="hidden md:inline">{plan.cta}</span>
+                    <ArrowRight className="w-2.5 md:w-3.5 h-2.5 md:h-3.5 flex-shrink-0" />
                   </motion.button>
                 </div>
               </motion.div>
@@ -966,7 +1055,7 @@ export default function WelcomePage() {
                 style={{ background: "linear-gradient(135deg,#D2A053,#B8843A)" }}>
                 旅
               </div>
-              <span className="text-white font-bold text-base" style={{ fontFamily: "var(--font-noto-serif)" }}>旅行吧</span>
+              <span className="text-white font-bold text-base" style={{ fontFamily: "var(--font-noto-serif)" }}>旅行家</span>
             </div>
             <p className="text-xs leading-relaxed">
               智能AI数字导览系统。将现代AI数字人对谈与景点人文底蕴完美结合，开启沉浸导览新纪元。
@@ -1007,7 +1096,7 @@ export default function WelcomePage() {
         </div>
 
         <div className="max-w-7xl mx-auto px-6 mt-12 pt-6 border-t border-white/5 text-center text-[10px]">
-          <p>© {new Date().getFullYear()} 旅行吧 Inc. 保留所有权利。由 Eazo Platform 强力驱动。</p>
+          <p>© {new Date().getFullYear()} 旅行家 Inc. 保留所有权利。由 Eazo Platform 强力驱动。</p>
         </div>
       </footer>
     </div>
