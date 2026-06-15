@@ -13,6 +13,21 @@ const SPRING = { type: "spring" as const, stiffness: 100, damping: 20 };
 // 1. User Personas Data
 const PERSONAS = [
   {
+    title: "特种兵极致打卡",
+    role: "独立青年探索者",
+    icon: "⚡",
+    desc: "高效出片首选。算法定制“用时最少、打卡点最全、拍照光线最佳”的极致路线，实时应对拥堵动态规划。",
+    sliders: [
+      { name: "时间紧凑度", value: 98 },
+      { name: "出片出圈率", value: 90 },
+      { name: "线路自主性", value: 85 },
+      { name: "缓步休憩度", value: 10 },
+    ],
+    bg: "rgba(240, 249, 255, 0.95)",
+    border: "border-blue-200",
+    themeColor: "#3B82F6",
+  },
+  {
     title: "银发暖心旅伴",
     role: "中老年游客 (60岁+)",
     icon: "🌸",
@@ -56,21 +71,6 @@ const PERSONAS = [
     bg: "rgba(240, 253, 244, 0.95)",
     border: "border-green-200",
     themeColor: "#22C55E",
-  },
-  {
-    title: "特种兵极致打卡",
-    role: "独立青年探索者",
-    icon: "⚡",
-    desc: "高效出片首选。算法定制“用时最少、打卡点最全、拍照光线最佳”的极致路线，实时应对拥堵动态规划。",
-    sliders: [
-      { name: "时间紧凑度", value: 98 },
-      { name: "出片出圈率", value: 90 },
-      { name: "线路自主性", value: 85 },
-      { name: "缓步休憩度", value: 10 },
-    ],
-    bg: "rgba(240, 249, 255, 0.95)",
-    border: "border-blue-200",
-    themeColor: "#3B82F6",
   },
 ];
 
@@ -183,7 +183,7 @@ const ROW2_REVIEWS = [
 // 4. Membership Plans
 const PLANS = [
   {
-    name: "绿野体验版",
+    name: "Free 体验版",
     price: "0",
     period: "天",
     desc: "适合单日轻度尝鲜的游客",
@@ -200,9 +200,9 @@ const PLANS = [
     buttonStyle: { background: "#FAF8F5", color: "#4F6F52", border: "1px solid #4F6F52" },
   },
   {
-    name: "黄金畅游卡",
+    name: "VIP 畅游卡",
     price: "19",
-    period: "次/24小时",
+    period: "次/24h",
     desc: "最受游客欢迎的深度畅玩计划",
     features: [
       "专属虚拟人 (古典/宋代/童趣) 形象任选",
@@ -210,16 +210,15 @@ const PLANS = [
       "AI独家定制黄金游览路线（防拥堵）",
       "学术级古迹讲解与历史考证档案",
       "离线音频与地图包下载",
-      "赠送景区精美电子明信片",
     ],
-    cta: "畅享尊贵体验",
+    cta: "畅游体验",
     popular: true,
     gradient: "linear-gradient(135deg, #1A2520, #121815)",
     border: "border-[#D2A053]",
     buttonStyle: { background: "linear-gradient(135deg,#D2A053,#B8843A)", color: "#ffffff" },
   },
   {
-    name: "翡翠家庭年卡",
+    name: "SVIP 家庭年卡",
     price: "199",
     period: "年",
     desc: "适合家庭出游 and 深度常客",
@@ -228,14 +227,31 @@ const PLANS = [
       "全年无限制使用所有数字人形象",
       "儿童科普小助手专享特权",
       "特聘历史学者级语音档案更新",
-      "景区线下文创店及特色餐饮85折优惠",
-      "专属客服1对1协助",
+      "景区线下文创及特色餐饮85折优惠",
     ],
-    cta: "解锁家庭特权",
+    cta: "解锁特权",
     popular: false,
     gradient: "linear-gradient(135deg, #FAF8F5, #F0EDE5)",
     border: "border-[#E6E2D8]",
     buttonStyle: { background: "linear-gradient(135deg,#4F6F52,#3A5240)", color: "#ffffff" },
+  },
+  {
+    name: "终身至尊会员",
+    price: "399",
+    period: "永久",
+    desc: "一次性解锁全部终身特权权益",
+    features: [
+      "终身免费无限制全平台服务",
+      "优先体验AI新功能与3D数字人",
+      "线下VIP金牌接待绿色通道",
+      "全国合作景区通用导览特权",
+      "特邀历史文化线下沙龙名额",
+    ],
+    cta: "尊享特权",
+    popular: false,
+    gradient: "linear-gradient(135deg, #FAF8F5, #F0EDE5)",
+    border: "border-[#D2A053]/50",
+    buttonStyle: { background: "linear-gradient(135deg,#D2A053,#9E7233)", color: "#ffffff" },
   },
 ];
 
@@ -577,45 +593,45 @@ export default function WelcomePage() {
                   animate={{
                     x: translateX,
                     scale: isActive ? 1.05 : 0.85,
-                    opacity: isActive ? 1 : (Math.abs(diff) === 1 ? 0.55 : (Math.abs(diff) === 2 ? 0.15 : 0)),
+                    opacity: isActive ? 1 : (Math.abs(diff) === 1 ? 0.75 : (Math.abs(diff) === 2 ? 0.3 : 0)),
                     zIndex: isActive ? 10 : (Math.abs(diff) === 1 ? 5 : 2),
                     pointerEvents: isActive || Math.abs(diff) === 1 ? "auto" : "none"
                   }}
                   transition={{ type: "spring", stiffness: 150, damping: 22 }}
                   style={{
                     background: isActive 
-                      ? "linear-gradient(180deg, #FFFFFF 0%, #FAF8F5 100%)" 
-                      : "linear-gradient(180deg, rgba(255, 255, 255, 0.65) 0%, rgba(250, 248, 245, 0.65) 100%)",
+                      ? "linear-gradient(180deg, #FFFFFF 0%, #FFFDF9 100%)" 
+                      : "linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(250, 248, 245, 0.9) 100%)",
                     border: isActive 
-                      ? `1.5px solid ${f.color}50` 
-                      : "1px solid #E6E2D8",
+                      ? `2px solid ${f.color}` 
+                      : `1px solid ${f.color}40`,
                     boxShadow: isActive 
-                      ? `0 15px 35px -10px ${f.color}20` 
-                      : "0 4px 12px rgba(0,0,0,0.02)"
+                      ? `0 20px 45px -12px ${f.color}35` 
+                      : `0 4px 15px -3px ${f.color}10`
                   }}
                   className={`absolute w-[260px] md:w-[350px] h-[340px] md:h-[380px] rounded-3xl p-6 md:p-8 flex flex-col justify-between cursor-pointer select-none transition-shadow duration-300 group`}
                 >
                   <div className="space-y-4 md:space-y-6">
                     <div className="flex justify-between items-start">
                       <div
-                        className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-md transition-all duration-300 group-hover:scale-105"
+                        className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-300 group-hover:scale-105"
                         style={{
-                          background: `linear-gradient(135deg, ${f.color} 0%, rgba(255,255,255,0.4) 100%)`,
-                          boxShadow: `0 8px 20px ${f.color}15`
+                          background: `linear-gradient(135deg, ${f.color} 0%, ${f.color}bb 100%)`,
+                          boxShadow: `0 8px 20px ${f.color}30`
                         }}
                       >
                         <f.icon className="w-6 h-6 text-white" />
                       </div>
-                      <span className="text-xl md:text-3xl font-black font-mono select-none opacity-10 tracking-tight" style={{ color: f.color }}>
+                      <span className="text-xl md:text-3xl font-black font-mono select-none opacity-25 tracking-tight" style={{ color: f.color }}>
                         {f.num}
                       </span>
                     </div>
 
                     <div className="space-y-2 text-left">
-                      <h4 className="text-base md:text-xl font-bold text-[#1E2522] tracking-tight group-hover:text-[#4F6F52] transition-colors duration-300">
+                      <h4 className="text-base md:text-xl font-black text-[#1E2522] tracking-tight group-hover:text-[#4F6F52] transition-colors duration-300">
                         {f.title}
                       </h4>
-                      <p className="text-xs md:text-sm leading-relaxed text-[#6B7B6B] min-h-[50px] md:min-h-[72px]">
+                      <p className="text-xs md:text-sm leading-relaxed text-[#374151] font-medium min-h-[50px] md:min-h-[72px]">
                         {f.desc}
                       </p>
                     </div>
@@ -626,7 +642,7 @@ export default function WelcomePage() {
                       e.stopPropagation();
                       handleStart();
                     }}
-                    className="pt-4 mt-4 border-t border-[#E6E2D8]/80 flex items-center gap-2 text-xs font-bold transition-all duration-300 hover:opacity-80 justify-start" 
+                    className="pt-4 mt-4 border-t border-[#E6E2D8] flex items-center gap-2 text-xs font-black transition-all duration-300 hover:opacity-80 justify-start" 
                     style={{ color: f.color }}
                   >
                     <span>立即体验</span>
@@ -656,94 +672,6 @@ export default function WelcomePage() {
         </div>
       </section>
 
-      {/* User Personas (用户画像) */}
-      <section id="persona" className="py-20">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center space-y-3 mb-16">
-            <span className="text-xs font-bold tracking-widest text-[#D2A053] uppercase">Target Personas</span>
-            <h3 className="text-3xl md:text-4xl font-black" style={{ fontFamily: "var(--font-noto-serif)" }}>定制化解说，听你想听的声音</h3>
-            <div className="w-12 h-1 rounded bg-[#D2A053] mx-auto mt-2" />
-            <p className="text-sm text-[#8F9F8F] max-w-xl mx-auto">大字、童趣、学术、极速——鼠标悬停切换，抢先预览不同人群画像的参数定制。</p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-            {/* Left selector */}
-            <div className="lg:col-span-5 space-y-3">
-              {PERSONAS.map((p, i) => (
-                <button
-                  key={i}
-                  onMouseEnter={() => setActivePersona(i)}
-                  onClick={() => setActivePersona(i)}
-                  className={`w-full p-5 rounded-2xl text-left border transition-all flex items-center gap-4 ${activePersona === i
-                      ? "border-l-4 bg-white shadow-md"
-                      : "border-[#E6E2D8] bg-[#FAF8F5] opacity-75 hover:opacity-100"
-                    }`}
-                  style={{ borderLeftColor: activePersona === i ? p.themeColor : undefined }}
-                >
-                  <span className="text-3xl">{p.icon}</span>
-                  <div>
-                    <h4 className="font-bold text-sm text-[#1E2522]">{p.title}</h4>
-                    <p className="text-xs text-[#8F9F8F] mt-0.5">{p.role}</p>
-                  </div>
-                  <ChevronRight className="w-4 h-4 ml-auto opacity-50" />
-                </button>
-              ))}
-            </div>
-
-            {/* Right details */}
-            <div className="lg:col-span-7 flex">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activePersona}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={SPRING}
-                  className={`w-full p-8 rounded-3xl border flex flex-col justify-between ${PERSONAS[activePersona].border}`}
-                  style={{ background: PERSONAS[activePersona].bg }}
-                >
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-2xl font-bold" style={{ color: PERSONAS[activePersona].themeColor }}>
-                        {PERSONAS[activePersona].title}
-                      </span>
-                      <span className="text-xs font-semibold px-3 py-1 rounded-full bg-white border border-[#E6E2D8]" style={{ color: "#3A4D39" }}>
-                        {PERSONAS[activePersona].role}
-                      </span>
-                    </div>
-                    <p className="text-sm leading-relaxed text-[#1E2522]">
-                      {PERSONAS[activePersona].desc}
-                    </p>
-                  </div>
-
-                  {/* Preference sliders */}
-                  <div className="space-y-4 pt-6 border-t border-[#E6E2D8]/50">
-                    <p className="text-xs font-bold uppercase tracking-wider text-[#8F9F8F]">AI系统适配参数</p>
-                    {PERSONAS[activePersona].sliders.map((s, idx) => (
-                      <div key={idx} className="space-y-1.5">
-                        <div className="flex justify-between text-xs font-medium">
-                          <span>{s.name}</span>
-                          <span style={{ color: PERSONAS[activePersona].themeColor }}>{s.value}%</span>
-                        </div>
-                        <div className="w-full h-2.5 rounded-full bg-[#FAF8F5] border border-[#E6E2D8]/30 overflow-hidden">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${s.value}%` }}
-                            transition={{ duration: 0.8, delay: idx * 0.1 }}
-                            className="h-full rounded-full"
-                            style={{ backgroundColor: PERSONAS[activePersona].themeColor }}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
-              </AnimatePresence>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Competitive Analysis (竞品分析) */}
       <section id="comp" className="py-20">
         <div className="max-w-7xl mx-auto px-6">
@@ -754,6 +682,7 @@ export default function WelcomePage() {
             <p className="text-sm text-[#8F9F8F] max-w-xl mx-auto">对比传统语音指南App与昂贵的人工导游，旅行家提供高性价比、全方位的完美体验。</p>
           </div>
 
+          {/* Radar Chart & Details */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             {/* Left: Radar Chart (custom SVG) */}
             <div className="lg:col-span-5 flex justify-center">
@@ -860,6 +789,94 @@ export default function WelcomePage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* User Personas (用户画像) */}
+      <section id="persona" className="py-20">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center space-y-3 mb-16">
+            <span className="text-xs font-bold tracking-widest text-[#D2A053] uppercase">Target Personas</span>
+            <h3 className="text-3xl md:text-4xl font-black" style={{ fontFamily: "var(--font-noto-serif)" }}>定制化解说，听你想听的声音</h3>
+            <div className="w-12 h-1 rounded bg-[#D2A053] mx-auto mt-2" />
+            <p className="text-sm text-[#8F9F8F] max-w-xl mx-auto">大字、童趣、学术、极速——鼠标悬停切换，抢先预览不同人群画像的参数定制。</p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+            {/* Left selector */}
+            <div className="lg:col-span-5 space-y-3">
+              {PERSONAS.map((p, i) => (
+                <button
+                  key={i}
+                  onMouseEnter={() => setActivePersona(i)}
+                  onClick={() => setActivePersona(i)}
+                  className={`w-full p-5 rounded-2xl text-left border transition-all flex items-center gap-4 ${activePersona === i
+                      ? "border-l-4 bg-white shadow-md"
+                      : "border-[#E6E2D8] bg-[#FAF8F5] opacity-75 hover:opacity-100"
+                    }`}
+                  style={{ borderLeftColor: activePersona === i ? p.themeColor : undefined }}
+                >
+                  <span className="text-3xl">{p.icon}</span>
+                  <div>
+                    <h4 className="font-bold text-sm text-[#1E2522]">{p.title}</h4>
+                    <p className="text-xs text-[#8F9F8F] mt-0.5">{p.role}</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 ml-auto opacity-50" />
+                </button>
+              ))}
+            </div>
+
+            {/* Right details */}
+            <div className="lg:col-span-7 flex">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activePersona}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={SPRING}
+                  className={`w-full p-8 rounded-3xl border flex flex-col justify-between ${PERSONAS[activePersona].border}`}
+                  style={{ background: PERSONAS[activePersona].bg }}
+                >
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-2xl font-bold" style={{ color: PERSONAS[activePersona].themeColor }}>
+                        {PERSONAS[activePersona].title}
+                      </span>
+                      <span className="text-xs font-semibold px-3 py-1 rounded-full bg-white border border-[#E6E2D8]" style={{ color: "#3A4D39" }}>
+                        {PERSONAS[activePersona].role}
+                      </span>
+                    </div>
+                    <p className="text-sm leading-relaxed text-[#1E2522]">
+                      {PERSONAS[activePersona].desc}
+                    </p>
+                  </div>
+
+                  {/* Preference sliders */}
+                  <div className="space-y-4 pt-6 border-t border-[#E6E2D8]/50">
+                    <p className="text-xs font-bold uppercase tracking-wider text-[#8F9F8F]">AI系统适配参数</p>
+                    {PERSONAS[activePersona].sliders.map((s, idx) => (
+                      <div key={idx} className="space-y-1.5">
+                        <div className="flex justify-between text-xs font-medium">
+                          <span>{s.name}</span>
+                          <span style={{ color: PERSONAS[activePersona].themeColor }}>{s.value}%</span>
+                        </div>
+                        <div className="w-full h-2.5 rounded-full bg-[#FAF8F5] border border-[#E6E2D8]/30 overflow-hidden">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${s.value}%` }}
+                            transition={{ duration: 0.8, delay: idx * 0.1 }}
+                            className="h-full rounded-full"
+                            style={{ backgroundColor: PERSONAS[activePersona].themeColor }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              </AnimatePresence>
             </div>
           </div>
         </div>
@@ -985,12 +1002,12 @@ export default function WelcomePage() {
             <p className="text-sm text-[#8F9F8F] max-w-xl mx-auto">价格透明划算，自由定制出行偏好，解锁更深度的景区历史古迹游览特权。</p>
           </div>
 
-          <div className="grid grid-cols-3 lg:grid-cols-3 gap-2 md:gap-8 items-stretch max-w-6xl mx-auto">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8 items-stretch max-w-6xl mx-auto">
             {PLANS.map((plan) => (
               <motion.div
                 key={plan.name}
                 whileHover={{ y: -8 }}
-                className={`rounded-xl md:rounded-3xl p-3 md:p-8 border flex flex-col justify-between relative overflow-hidden shadow-md ${plan.border}`}
+                className={`rounded-xl md:rounded-3xl p-4 md:p-8 border flex flex-col justify-start relative overflow-hidden shadow-md ${plan.border}`}
                 style={{ background: plan.gradient }}
               >
                 {plan.popular && (
@@ -999,16 +1016,16 @@ export default function WelcomePage() {
                   </div>
                 )}
 
-                <div className="space-y-2 md:space-y-6">
+                <div className="space-y-3 md:space-y-6">
                   <div className="space-y-1">
-                    <h4 className={`text-[10px] md:text-lg font-bold leading-tight ${plan.popular ? "text-[#D2A053]" : "text-[#1E2522]"}`} style={{ fontFamily: "var(--font-noto-serif)" }}>
+                    <h4 className={`text-xs md:text-lg font-bold leading-tight ${plan.popular ? "text-[#D2A053]" : "text-[#1E2522]"}`} style={{ fontFamily: "var(--font-noto-serif)" }}>
                       {plan.name}
                     </h4>
-                    <p className={`text-[8px] leading-tight md:text-xs ${plan.popular ? "text-white/60" : "text-[#8F9F8F]"}`}>{plan.desc}</p>
+                    <p className={`text-[9px] leading-tight md:text-xs ${plan.popular ? "text-white/60" : "text-[#8F9F8F]"}`}>{plan.desc}</p>
                   </div>
 
                   <div className="flex items-baseline flex-wrap md:flex-nowrap">
-                    <span className={`text-base md:text-5xl font-black ${plan.popular ? "text-white" : "text-[#1E2522]"}`}>
+                    <span className={`text-sm md:text-5xl font-black ${plan.popular ? "text-white" : "text-[#1E2522]"}`}>
                       ￥{plan.price}
                     </span>
                     <span className={`text-[8px] ml-0.5 md:ml-1 ${plan.popular ? "text-white/50" : "text-[#8F9F8F]"}`}>/{plan.period}</span>
@@ -1018,27 +1035,14 @@ export default function WelcomePage() {
                   <div className={`h-px w-full my-1 md:my-3 ${plan.popular ? "bg-white/10" : "bg-[#E6E2D8]"}`} />
 
                   {/* Feature list */}
-                  <ul className="space-y-3 hidden md:block">
+                  <ul className="space-y-1.5 md:space-y-3">
                     {plan.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-start gap-2.5 text-xs leading-relaxed">
-                        <Check className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: plan.popular ? "#D2A053" : "#4F6F52" }} />
+                      <li key={idx} className="flex items-start gap-1.5 md:gap-2.5 text-[9px] md:text-xs leading-relaxed">
+                        <Check className="w-3 h-3 md:w-4 md:h-4 mt-0.5 flex-shrink-0" style={{ color: plan.popular ? "#D2A053" : "#4F6F52" }} />
                         <span className={plan.popular ? "text-white/80" : "text-[#3A4D39]"}>{feature}</span>
                       </li>
                     ))}
                   </ul>
-                </div>
-
-                <div className="pt-2 md:pt-8">
-                  <motion.button
-                    whileTap={{ scale: 0.95 }}
-                    onClick={handleStart}
-                    className="w-full py-1.5 md:py-3.5 rounded-lg md:rounded-xl text-[8px] md:text-xs font-bold transition-all active:scale-98 shadow-sm flex items-center justify-center gap-1 md:gap-2"
-                    style={plan.buttonStyle}
-                  >
-                    <span className="md:hidden">{plan.price === "0" ? "体验" : plan.popular ? "畅游" : "特权"}</span>
-                    <span className="hidden md:inline">{plan.cta}</span>
-                    <ArrowRight className="w-2.5 md:w-3.5 h-2.5 md:h-3.5 flex-shrink-0" />
-                  </motion.button>
                 </div>
               </motion.div>
             ))}
@@ -1048,8 +1052,8 @@ export default function WelcomePage() {
 
       {/* Footer */}
       <footer className="bg-[#121815] text-[#8F9F8F] border-t border-white/5 py-12">
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="space-y-4">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+          <div className="space-y-5 max-w-3xl">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-xl flex items-center justify-center text-sm font-black text-white"
                 style={{ background: "linear-gradient(135deg,#D2A053,#B8843A)" }}>
@@ -1057,32 +1061,33 @@ export default function WelcomePage() {
               </div>
               <span className="text-white font-bold text-base" style={{ fontFamily: "var(--font-noto-serif)" }}>旅行家</span>
             </div>
-            <p className="text-xs leading-relaxed">
+            <p className="text-xs leading-relaxed max-w-xl">
               智能AI数字导览系统。将现代AI数字人对谈与景点人文底蕴完美结合，开启沉浸导览新纪元。
             </p>
+
+            {/* Footer Links in a single row */}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs border-t border-white/5 pt-4 text-[#8F9F8F]">
+              <span className="text-white font-bold">产品路线：</span>
+              <a href="#intro" className="hover:text-white transition-colors">项目简介</a>
+              <span className="text-white/10">•</span>
+              <a href="#feature" className="hover:text-white transition-colors">特色功能</a>
+              <span className="text-white/10">•</span>
+              <a href="#membership" className="hover:text-white transition-colors">尊享会员计划</a>
+              
+              <span className="text-white/20 mx-2 hidden lg:inline">|</span>
+              
+              <span className="text-white font-bold">关于我们：</span>
+              <span>智慧文旅开发组</span>
+              <span className="text-white/10">•</span>
+              <span>Eazo 平台官方应用支撑</span>
+              <span className="text-white/10">•</span>
+              <span>联系邮箱：support@eazo.ai</span>
+            </div>
           </div>
 
-          <div>
-            <h4 className="text-white text-xs font-bold tracking-widest uppercase mb-4">产品路线</h4>
-            <ul className="space-y-2 text-xs">
-              <li><a href="#intro" className="hover:text-white transition-colors">项目简介</a></li>
-              <li><a href="#feature" className="hover:text-white transition-colors">特色功能</a></li>
-              <li><a href="#membership" className="hover:text-white transition-colors">尊享会员计划</a></li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="text-white text-xs font-bold tracking-widest uppercase mb-4">关于我们</h4>
-            <ul className="space-y-2 text-xs">
-              <li><span className="hover:text-white transition-colors">智慧文旅开发组</span></li>
-              <li><span className="hover:text-white transition-colors">Eazo 平台官方应用支撑</span></li>
-              <li><span className="hover:text-white transition-colors">联系邮箱: support@eazo.ai</span></li>
-            </ul>
-          </div>
-
-          <div className="space-y-4">
+          <div className="w-full md:w-64 space-y-3 bg-white/5 p-5 rounded-2xl border border-white/5 flex-shrink-0">
             <h4 className="text-white text-xs font-bold tracking-widest uppercase">立即体验</h4>
-            <p className="text-xs">
+            <p className="text-[11px] leading-relaxed text-[#8F9F8F]">
               点击下方按钮即可一键登录/注册，立即解锁多模态虚拟人数字伴游。
             </p>
             <button
