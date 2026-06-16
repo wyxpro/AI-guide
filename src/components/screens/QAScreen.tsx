@@ -11,6 +11,7 @@ import { useSearchParams } from "next/navigation";
 import { SatisfactionModal } from "@/components/ui/SatisfactionModal";
 import { DigitalAvatar, type AvatarState } from "@/components/ui/DigitalAvatar";
 import { CameraRecognize } from "@/components/ui/CameraRecognize";
+import { AvatarSelectorModal } from "@/components/ui/AvatarSelectorModal";
 import { toast } from "sonner";
 
 const SPRING = { type: "spring" as const, stiffness: 280, damping: 35 };
@@ -49,7 +50,7 @@ const PERSONAS_MALE = [
 const PERSONAS = [...PERSONAS_FEMALE, ...PERSONAS_MALE];
 
 function detectEmotion(text: string): AvatarState {
-  const match = text.match(/\[情感:\s*(愉快|高兴|开心|温和|伤感|抱歉|紧张|思考)\]/);
+  const match = text.match(/\[情感[:：]\s*(愉快|高兴|开心|温和|伤感|抱歉|紧张|思考)\]/);
   if (match) {
     const emo = match[1];
     if (/愉快|高兴|开心/.test(emo)) return "happy";
@@ -104,11 +105,13 @@ export function QAScreen() {
   const [showBgMenu, setShowBgMenu] = useState(false);
 
   // Persona selection state
-  const [selectedStyle, setSelectedStyle] = useState<string>("female_hanfu");
+  const [selectedStyle, setSelectedStyle] = useState<string>("");
   const [showPersonaMenu, setShowPersonaMenu] = useState(false);
-  const [activeGenderTab, setActiveGenderTab] = useState<"female" | "male">("female");
+  const [allAvatars, setAllAvatars] = useState<any[]>([]);
+  const [customAvatars, setCustomAvatars] = useState<any[]>([]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const avatarUploadRef = useRef<HTMLInputElement>(null);
 
   const handleBgUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -124,21 +127,104 @@ export function QAScreen() {
     }
   };
 
+  const loadAvatars = () => {
+    request("/api/qa/avatars")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setAllAvatars(data);
+          const defaultAvatar = data.find((a) => a.isDefault);
+          if (defaultAvatar && !selectedStyle) {
+            setSelectedStyle(defaultAvatar.avatarStyle);
+            setAvatarConfig(defaultAvatar);
+          }
+        }
+      })
+      .catch((e) => console.error("Failed to load avatars", e));
+  };
+
+  useEffect(() => {
+    loadAvatars();
+    try {
+      const stored = localStorage.getItem("custom_avatars");
+      if (stored) {
+        setCustomAvatars(JSON.parse(stored));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, []);
+
+  const selectAvatar = (styleUrlOrId: string) => {
+    setSelectedStyle(styleUrlOrId);
+    const found = [...allAvatars, ...customAvatars].find((a) => a.avatarStyle === styleUrlOrId);
+    if (found) {
+      setAvatarConfig(found);
+    } else {
+      setAvatarConfig({
+        avatarStyle: styleUrlOrId,
+        voiceStyle: "warm",
+        speechRate: 100,
+        pitch: 100,
+      });
+    }
+  };
+
+  const handleCustomAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const toastId = toast.loading("正在上传您的分身形象...");
+    try {
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.url) {
+        const name = prompt("请输入您分身形象的名称：", `分身形象 #${customAvatars.length + 1}`) || `分身形象 #${customAvatars.length + 1}`;
+        const newAvatar = {
+          id: -Date.now(),
+          name,
+          avatarStyle: data.url,
+          imageUrl: data.url,
+          voiceStyle: "warm",
+          speechRate: 100,
+          pitch: 100,
+        };
+        const updated = [newAvatar, ...customAvatars];
+        setCustomAvatars(updated);
+        localStorage.setItem("custom_avatars", JSON.stringify(updated));
+        selectAvatar(data.url);
+        toast.success("分身生成并启用成功！");
+      } else {
+        toast.error(data.error || "上传失败");
+      }
+    } catch {
+      toast.error("网络故障，上传失败");
+    } finally {
+      toast.dismiss(toastId);
+    }
+  };
+
   // Sync loaded default style
   useEffect(() => {
     if (avatarConfig?.avatarStyle) {
-      if (avatarConfig.avatarStyle === "default") {
-        setSelectedStyle("female_hanfu");
-      } else {
-        setSelectedStyle(avatarConfig.avatarStyle);
-      }
+      setSelectedStyle(avatarConfig.avatarStyle);
     }
   }, [avatarConfig]);
 
   useEffect(() => {
     request("/api/qa/avatar-active")
       .then((r) => r.json())
-      .then((d) => setAvatarConfig(d))
+      .then((d) => {
+        if (d && d.avatarStyle) {
+          setAvatarConfig(d);
+        }
+      })
       .catch((e) => console.error("Failed to load active avatar config", e));
   }, []);
 
@@ -203,7 +289,11 @@ export function QAScreen() {
   }, [handleMouseMove]);
 
   useEffect(() => {
-    if (chatExpanded) bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    const timer = setTimeout(() => {
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 120);
+    return () => clearTimeout(timer);
   }, [messages, chatExpanded]);
 
   useEffect(() => {
@@ -403,19 +493,20 @@ export function QAScreen() {
             if (delta) {
               fullAnswer += delta;
               ttsBuffer += delta;
-              const clean = fullAnswer.replace(/\[情感:\s*[^\]]+\]/g, "").trim();
+              const clean = fullAnswer.replace(/\[情感[:：]\s*[^\]]+\]/g, "").trim();
               // Update streaming message in real-time
               setMessages((prev) => {
                 const copy = [...prev];
                 copy[copy.length - 1] = { ...copy[copy.length - 1], content: clean };
                 return copy;
               });
+              bottomRef.current?.scrollIntoView({ behavior: "auto" });
               setSubtitle(clean);
               // Detect sentence boundary → flush TTS
               const sentenceEnd = /[。！？.!?]/.test(delta);
-              if (sentenceEnd && !ttsStarted && ttsBuffer.replace(/\[情感:\s*[^\]]+\]/g, "").trim().length > 12) {
+              if (sentenceEnd && !ttsStarted && ttsBuffer.replace(/\[情感[:：]\s*[^\]]+\]/g, "").trim().length > 12) {
                 ttsStarted = true;
-                const firstSentence = ttsBuffer.replace(/\[情感:\s*[^\]]+\]/g, "").trim();
+                const firstSentence = ttsBuffer.replace(/\[情感[:：]\s*[^\]]+\]/g, "").trim();
                 ttsBuffer = "";
                 flushTTS(firstSentence);
               }
@@ -426,15 +517,11 @@ export function QAScreen() {
 
       // If TTS wasn't started yet (short answer), speak the full answer
       if (!ttsStarted) {
-        const clean = fullAnswer.replace(/\[情感:\s*[^\]]+\]/g, "").trim();
+        const clean = fullAnswer.replace(/\[情感[:：]\s*[^\]]+\]/g, "").trim();
         speak(clean);
       }
 
-      const exchanges = updated.filter((m) => m.role === "user").length;
-      if (exchanges >= 3 && !satisfactionShownRef.current) {
-        satisfactionShownRef.current = true;
-        setTimeout(() => setShowSatisfaction(true), 1500);
-      }
+      // Satisfaction modal disabled per user request
     } catch {
       // Fallback to non-streaming
       try {
@@ -442,7 +529,7 @@ export function QAScreen() {
         const res2 = await request("/api/qa/chat", { method: "POST", body: JSON.stringify({ question, history }) });
         const data = await res2.json();
         const answerRaw = data.answer || "抱歉，暂时无法回答。";
-        const answer = answerRaw.replace(/\[情感:\s*[^\]]+\]/g, "").trim();
+        const answer = answerRaw.replace(/\[情感[:：]\s*[^\]]+\]/g, "").trim();
         setMessages((prev) => {
           const copy = [...prev];
           copy[copy.length - 1] = { ...copy[copy.length - 1], content: answer };
@@ -469,91 +556,70 @@ export function QAScreen() {
     toast.success(`已识别「${subject}」，正在小玉讲解中…`);
   };
 
-  const renderPersonaDropdownContent = () => (
-    <div className="flex flex-col space-y-2.5">
-      <div className="flex bg-white/10 rounded-xl p-0.5 select-none">
-        <button
-          type="button"
-          onClick={() => setActiveGenderTab("female")}
-          className={`flex-1 py-1 text-center text-[10px] font-bold rounded-lg transition-all ${activeGenderTab === "female" ? "bg-[#D2A053] text-black shadow-sm" : "text-white/70 hover:text-white"}`}
-        >
-          女性形象
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveGenderTab("male")}
-          className={`flex-1 py-1 text-center text-[10px] font-bold rounded-lg transition-all ${activeGenderTab === "male" ? "bg-[#D2A053] text-black shadow-sm" : "text-white/70 hover:text-white"}`}
-        >
-          男性形象
-        </button>
-      </div>
-      <div className="space-y-1.5 max-h-52 overflow-y-auto pr-0.5 scrollbar-thin">
-        {(activeGenderTab === "female" ? PERSONAS_FEMALE : PERSONAS_MALE).map((p) => (
-          <button key={p.id} onClick={() => { setSelectedStyle(p.id); setShowPersonaMenu(false); }}
-            className="w-full p-2 rounded-lg text-left transition-all border text-white hover:bg-white/10 flex items-center justify-between"
-            style={{
-              borderColor: (selectedStyle === p.id) ? "#D2A053" : "transparent",
-              background: (selectedStyle === p.id) ? "rgba(210,160,83,0.25)" : "rgba(255,255,255,0.05)"
-            }}>
-            <div>
-              <div className="text-[11px] font-semibold">{p.label}</div>
-              <div className="text-[9px] text-white/50">{p.desc}</div>
-            </div>
-            {selectedStyle === p.id && <Sparkles className="w-3.5 h-3.5 text-[#D2A053]" />}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
+  // AvatarSelectorModal takes care of selection dialog now
 
   /* ── Message list (shared between mobile & desktop) ── */
-  const renderMessageList = () => (
+  const renderMessageList = (isMobileImmersive = false) => (
     <div className="space-y-3">
       {messages.map((msg, i) => (
         <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
           transition={{ ...SPRING, delay: 0 }}
-          className={`flex gap-2 ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
-          <div className="w-7 h-7 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center">
+          className={`flex gap-2 items-end ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
+          {/* Avatar */}
+          <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center shadow-md"
+            style={{ border: isMobileImmersive ? "1.5px solid rgba(255,255,255,0.25)" : "1.5px solid #E6E2D8" }}>
             {msg.role === "assistant" ? (
               <div className="w-full h-full bg-[#1A2520]">
                 <DigitalAvatar state="idle" size="sm" avatarStyle={selectedStyle} />
               </div>
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-[11px] font-bold bg-neutral-200 text-zinc-700 rounded-full">
+              <div className="w-full h-full flex items-center justify-center text-[11px] font-black rounded-full"
+                style={{ background: "linear-gradient(135deg,#4B9EFF,#2563EB)", color: "white" }}>
                 我
               </div>
             )}
           </div>
-          <div className={`flex flex-col gap-0.5 max-w-[78%] ${msg.role === "user" ? "items-end" : ""}`}>
-            <div className="px-3.5 py-2.5 text-[13px] leading-relaxed"
-              style={{
+          {/* Bubble */}
+          <div className={`flex flex-col gap-0.5 max-w-[76%] ${msg.role === "user" ? "items-end" : ""}`}>
+            <div className="px-4 py-3 text-[13px] leading-relaxed"
+              style={isMobileImmersive ? {
+                borderRadius: msg.role === "assistant" ? "4px 18px 18px 18px" : "18px 4px 18px 18px",
+                background: msg.role === "assistant"
+                  ? "linear-gradient(135deg, rgba(255,100,160,0.82) 0%, rgba(180,60,220,0.82) 100%)"
+                  : "linear-gradient(135deg, rgba(59,130,246,0.92) 0%, rgba(37,99,235,0.92) 100%)",
+                backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
+                border: msg.role === "assistant"
+                  ? "1px solid rgba(255,120,180,0.35)"
+                  : "1px solid rgba(96,165,250,0.35)",
+                color: "white",
+                boxShadow: msg.role === "assistant"
+                  ? "0 4px 20px rgba(220,60,180,0.25)"
+                  : "0 4px 20px rgba(37,99,235,0.3)",
+              } : {
                 borderRadius: msg.role === "assistant" ? "4px 16px 16px 16px" : "16px 4px 16px 16px",
                 background: msg.role === "assistant" ? "white" : "linear-gradient(135deg,#4F6F52,#3A5240)",
                 border: msg.role === "assistant" ? "1px solid #E6E2D8" : "none",
                 color: msg.role === "assistant" ? "#1E2522" : "white",
                 boxShadow: "0 1px 6px rgba(0,0,0,0.06)",
               }}>
-              {msg.content}
+              {msg.role === "assistant" && !msg.content.trim() ? (
+                <span className="flex items-center gap-1.5 py-1">
+                  {[0, 1, 2].map((i) => (
+                    <motion.span key={i} animate={{ y: [0, -4, 0] }}
+                      transition={{ duration: 0.55, delay: i * 0.14, repeat: Infinity }}
+                      className="w-1.5 h-1.5 rounded-full inline-block"
+                      style={{ background: isMobileImmersive ? "rgba(255,255,255,0.9)" : "#4F6F52" }} />
+                  ))}
+                </span>
+              ) : (
+                msg.content.replace(/\[情感[:：]\s*[^\]]+\]/g, "").trim()
+              )}
             </div>
-            <span className="text-[9px] font-mono px-1" style={{ color: "#B8B4AC" }}>{msg.timestamp}</span>
+            <span className="text-[9px] font-mono px-1" style={{ color: isMobileImmersive ? "rgba(255,255,255,0.4)" : "#B8B4AC" }}>{msg.timestamp}</span>
           </div>
         </motion.div>
       ))}
-      {loading && (
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex gap-2">
-          <div className="w-7 h-7 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center bg-[#1A2520]">
-            <DigitalAvatar state="thinking" size="sm" avatarStyle={selectedStyle} />
-          </div>
-          <div className="px-4 py-3 flex items-center gap-1.5"
-            style={{ background: "white", border: "1px solid #E6E2D8", borderRadius: "4px 16px 16px 16px" }}>
-            {[0, 1, 2].map((i) => (
-              <motion.div key={i} animate={{ y: [0, -5, 0] }}
-                transition={{ duration: 0.55, delay: i * 0.14, repeat: Infinity }}
-                className="w-1.5 h-1.5 rounded-full" style={{ background: "#4F6F52" }} />
-            ))}
-          </div>
-        </motion.div>
-      )}
       <div ref={bottomRef} />
     </div>
   );
@@ -563,33 +629,39 @@ export function QAScreen() {
     <div className={`flex items-center gap-2`}>
       {/* Camera */}
       <motion.button whileTap={{ scale: 0.84 }} onClick={() => setShowCamera(true)}
-        className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+        className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 shadow-md transition-all hover:brightness-105"
         style={{
-          background: dark ? "rgba(255,255,255,0.1)" : "rgba(210,160,83,0.1)",
-          border: `1.5px solid ${dark ? "rgba(255,255,255,0.2)" : "rgba(210,160,83,0.3)"}`,
-          color: dark ? "rgba(255,255,255,0.6)" : "#D2A053",
+          background: "linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%)",
+          boxShadow: "0 2px 8px rgba(245, 158, 11, 0.3)",
+          border: "1.5px solid rgba(255, 255, 255, 0.25)",
+          color: "white",
         }}>
         <Camera className="w-4 h-4" />
       </motion.button>
 
       {/* Voice */}
       <motion.button whileTap={{ scale: 0.84 }} onClick={toggleRecording}
-        className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 relative"
+        className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 relative shadow-md transition-all hover:brightness-105"
         style={{
-          background: recording ? "rgba(79,111,82,0.15)" : dark ? "rgba(255,255,255,0.1)" : "rgba(79,111,82,0.09)",
-          border: `1.5px solid ${recording ? "rgba(79,111,82,0.5)" : dark ? "rgba(255,255,255,0.2)" : "rgba(79,111,82,0.28)"}`,
-          color: recording ? "#D2A053" : dark ? "rgba(255,255,255,0.6)" : "#4F6F52",
+          background: recording 
+            ? "linear-gradient(135deg,#EF4444,#DC2626)" 
+            : "linear-gradient(135deg,#10B981,#059669)",
+          boxShadow: recording 
+            ? "0 2px 8px rgba(220, 38, 38, 0.3)" 
+            : "0 2px 8px rgba(5, 150, 105, 0.3)",
+          border: "1.5px solid rgba(255, 255, 255, 0.25)",
+          color: "white",
         }}>
         {recording && (
           <motion.div animate={{ scale: [1, 1.8, 1], opacity: [0.5, 0, 0.5] }}
             transition={{ duration: 0.9, repeat: Infinity }}
             className="absolute inset-0 rounded-full"
-            style={{ background: "rgba(210,160,83,0.15)" }} />
+            style={{ background: "rgba(255,255,255,0.25)" }} />
         )}
         {recording ? (
-          <Mic className="w-4 h-4 relative z-10 animate-bounce text-[#D2A053]" />
+          <Mic className="w-4 h-4 relative z-10 animate-bounce text-white" />
         ) : (
-          <Mic className="w-4 h-4" />
+          <Mic className="w-4 h-4 text-white" />
         )}
       </motion.button>
 
@@ -632,8 +704,9 @@ export function QAScreen() {
       {/* ══════════════════════════════════════════════
           MOBILE — full-screen immersive (hidden on md+)
           ══════════════════════════════════════════════ */}
-      <div className="flex flex-col min-h-svh md:hidden transition-all duration-500"
+      <div className="flex flex-col md:hidden transition-all duration-500 overflow-hidden"
         style={{
+          height: "calc(100svh - 56px - env(safe-area-inset-bottom, 0px))",
           background: bgImage
             ? `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.5)), url(${bgImage})`
             : "linear-gradient(180deg,#131C18 0%,#1A2520 45%,#0E1710 100%)",
@@ -657,7 +730,7 @@ export function QAScreen() {
               style={{ background: "rgba(255,255,255,0.08)", color: showBgMenu ? "#D2A053" : "rgba(255,255,255,0.6)" }}>
               <ImageIcon className="w-3.5 h-3.5" />
             </motion.button>
-            <motion.button whileTap={{ scale: 0.85 }} onClick={() => { setShowPersonaMenu(!showPersonaMenu); setShowBgMenu(false); }}
+            <motion.button whileTap={{ scale: 0.85 }} onClick={() => { setShowPersonaMenu(true); setShowBgMenu(false); }}
               className="w-8 h-8 rounded-full flex items-center justify-center animate-fade-in"
               style={{ background: "rgba(255,255,255,0.08)", color: showPersonaMenu ? "#D2A053" : "rgba(255,255,255,0.6)" }}>
               <User className="w-3.5 h-3.5" />
@@ -701,17 +774,6 @@ export function QAScreen() {
                 </div>
               </div>
             )}
-
-            {/* Persona Dropdown Menu */}
-            {showPersonaMenu && (
-              <div className="absolute right-0 top-10 z-50 w-56 rounded-2xl p-3 border border-white/10 backdrop-blur-xl bg-black/80 shadow-2xl space-y-2">
-                <div className="flex justify-between items-center pb-1.5 border-b border-white/10">
-                  <span className="text-xs font-semibold text-white/90">切换数字人形象</span>
-                  <button onClick={() => setShowPersonaMenu(false)} className="text-white/40 hover:text-white"><X className="w-3 h-3" /></button>
-                </div>
-                {renderPersonaDropdownContent()}
-              </div>
-            )}
           </div>
         </div>
 
@@ -727,60 +789,115 @@ export function QAScreen() {
             </motion.div>
           )}
           <DigitalAvatar state={avatarState} size="hero" audioElement={audioRef.current} avatarStyle={avatarConfig?.avatarStyle} />
-          <AnimatePresence mode="wait">
-            <motion.div key={subtitle.slice(0, 20)}
-              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }} transition={{ ...SPRING, delay: 0.1 }}
-              className="mt-5 mx-4 px-4 py-3 rounded-2xl text-center max-w-xs"
-              style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)", backdropFilter: "blur(8px)" }}>
-              <p className="text-[13px] leading-relaxed line-clamp-3"
-                style={{ color: "rgba(255,255,255,0.82)" }}>
-                {loading ? (
-                  <span className="flex items-center justify-center gap-2 py-1">
-                    {[0, 1, 2].map((i) => (
-                      <motion.span key={i} animate={{ y: [0, -4, 0] }}
-                        transition={{ duration: 0.6, delay: i * 0.18, repeat: Infinity }}
-                        className="w-1.5 h-1.5 rounded-full inline-block bg-[#D2A053]" />
-                    ))}
-                  </span>
-                ) : subtitle}
-              </p>
-            </motion.div>
-          </AnimatePresence>
         </div>
 
-        {/* Chat drawer */}
+        {/* Chat drawer — fully transparent, no background mask */}
         <motion.div
           animate={{ height: chatExpanded ? "42vh" : 0 }}
           transition={{ type: "spring", stiffness: 260, damping: 30 }}
-          className="overflow-hidden flex-shrink-0 mx-3 rounded-t-2xl"
-          style={{ background: "rgba(255,255,255,0.05)", backdropFilter: "blur(12px)", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
-          <div className="h-full overflow-y-auto px-4 py-3">
-            {renderMessageList()}
+          className="overflow-hidden flex-shrink-0 mx-3 rounded-t-2xl relative">
+          <div className="h-full overflow-y-auto px-4 py-3"
+            style={{
+              maskImage: "linear-gradient(to bottom, transparent 0%, black 12%, black 86%, transparent 100%)",
+              WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 12%, black 86%, transparent 100%)",
+            }}>
+            {renderMessageList(true)}
           </div>
         </motion.div>
 
-        {/* Input zone */}
-        <div className="flex-shrink-0 px-3 pb-[calc(env(safe-area-inset-bottom,0px)+72px)] pt-2"
-          style={{ background: "rgba(0,0,0,0.2)", backdropFilter: "blur(16px)" }}>
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none mb-3 px-1 py-0.5">
+        {/* Input zone — styled like reference image */}
+        <div className="flex-shrink-0 px-3 pb-3 pt-2">
+          {/* Quick prompts */}
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none mb-2.5 px-1">
             {["揽月亭历史故事", "景区门票价格", "适合老人路线", "翠玉湖怎么走"].map((p) => (
               <motion.button
                 key={p}
                 whileTap={{ scale: 0.94 }}
                 onClick={() => sendMessage(p)}
-                className="flex-shrink-0 text-[11px] px-3.5 py-1.5 rounded-full backdrop-blur-md transition-colors"
+                className="flex-shrink-0 text-[11px] px-3.5 py-1.5 rounded-full transition-colors"
                 style={{
-                  background: "rgba(255,255,255,0.12)",
-                  border: "1px solid rgba(255,255,255,0.18)",
-                  color: "rgba(255,255,255,0.85)"
+                  background: "rgba(255,255,255,0.15)",
+                  backdropFilter: "blur(8px)",
+                  border: "1px solid rgba(255,255,255,0.22)",
+                  color: "rgba(255,255,255,0.9)"
                 }}
               >
                 {p}
               </motion.button>
             ))}
           </div>
-          {renderInputBar(true)}
+          {/* Input row: [Camera] [Mic] [Input pill] [Send/Camera] */}
+          <div className="flex items-center gap-2.5">
+            {/* Camera button — left of mic */}
+            <motion.button whileTap={{ scale: 0.88 }} onClick={() => setShowCamera(true)}
+              className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg transition-all hover:brightness-105"
+              style={{
+                background: "linear-gradient(135deg, #F59E0B 0%, #D97706 100%)",
+                boxShadow: "0 4px 14px rgba(217, 119, 6, 0.4)",
+                border: "1.5px solid rgba(255,255,255,0.25)",
+              }}>
+              <Camera className="w-5 h-5 text-white" />
+            </motion.button>
+
+            {/* Voice button */}
+            <motion.button whileTap={{ scale: 0.88 }} onClick={toggleRecording}
+              className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 relative shadow-lg transition-all hover:brightness-105"
+              style={{
+                background: recording
+                  ? "linear-gradient(135deg,#EF4444,#DC2626)"
+                  : "linear-gradient(135deg,#10B981,#059669)",
+                boxShadow: recording
+                  ? "0 4px 14px rgba(220, 38, 38, 0.45)"
+                  : "0 4px 14px rgba(5, 150, 105, 0.45)",
+                border: "1.5px solid rgba(255,255,255,0.25)",
+              }}>
+              {recording && (
+                <motion.div animate={{ scale: [1, 1.6, 1], opacity: [0.6, 0, 0.6] }}
+                  transition={{ duration: 0.9, repeat: Infinity }}
+                  className="absolute inset-0 rounded-full"
+                  style={{ background: "rgba(255,255,255,0.3)" }} />
+              )}
+              {recording
+                ? <MicOff className="w-5 h-5 text-white relative z-10" />
+                : <Mic className="w-5 h-5 text-white" />}
+            </motion.button>
+
+            {/* Text input pill */}
+            <div className="flex-1 flex items-center px-4 py-3 rounded-full"
+              style={{
+                background: "rgba(255,255,255,0.18)",
+                backdropFilter: "blur(20px)",
+                WebkitBackdropFilter: "blur(20px)",
+                border: "1px solid rgba(255,255,255,0.28)",
+                minHeight: 48,
+              }}>
+              <input type="text" value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage(input)}
+                placeholder={recording ? "正在聆听…" : "想聊点什么…"}
+                className="flex-1 bg-transparent outline-none"
+                style={{ color: "rgba(255,255,255,0.95)", fontSize: 15, caretColor: "white" }} />
+            </div>
+
+            {/* Send button */}
+            <AnimatePresence mode="wait">
+              {input.trim() ? (
+                <motion.button key="send"
+                  initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0, opacity: 0 }} whileTap={{ scale: 0.84 }}
+                  onClick={() => sendMessage(input)}
+                  className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+                  style={{
+                    background: "linear-gradient(135deg,rgba(255,255,255,0.9),rgba(220,220,220,0.9))",
+                    boxShadow: "0 4px 16px rgba(255,255,255,0.25)",
+                  }}>
+                  <Send className="w-4.5 h-4.5" style={{ color: "#1A2520" }} />
+                </motion.button>
+              ) : (
+                <div key="gap" className="w-12 h-12 flex-shrink-0" />
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
 
@@ -815,7 +932,7 @@ export function QAScreen() {
                 style={{ color: showBgMenu ? "#D2A053" : "rgba(255,255,255,0.75)" }}>
                 <ImageIcon className="w-3.5 h-3.5" />
               </motion.button>
-              <motion.button whileTap={{ scale: 0.85 }} onClick={() => { setShowPersonaMenu(!showPersonaMenu); setShowBgMenu(false); }}
+              <motion.button whileTap={{ scale: 0.85 }} onClick={() => { setShowPersonaMenu(true); setShowBgMenu(false); }}
                 className="w-8 h-8 rounded-full flex items-center justify-center bg-black/35 backdrop-blur hover:bg-black/55 transition-colors border border-white/10"
                 style={{ color: showPersonaMenu ? "#D2A053" : "rgba(255,255,255,0.75)" }}>
                 <User className="w-3.5 h-3.5" />
@@ -849,16 +966,7 @@ export function QAScreen() {
                 </div>
               )}
 
-              {/* Persona Dropdown Menu */}
-              {showPersonaMenu && (
-                <div className="absolute right-0 top-10 z-50 w-56 rounded-2xl p-3 border border-white/10 backdrop-blur-xl bg-black/80 shadow-2xl space-y-2">
-                  <div className="flex justify-between items-center pb-1.5 border-b border-white/10">
-                    <span className="text-xs font-semibold text-white/90">切换数字人形象</span>
-                    <button onClick={() => setShowPersonaMenu(false)} className="text-white/40 hover:text-white"><X className="w-3 h-3" /></button>
-                  </div>
-                  {renderPersonaDropdownContent()}
-                </div>
-              )}
+
             </div>
           </div>
 
@@ -880,19 +988,6 @@ export function QAScreen() {
                 <Sparkles className="w-3 h-3" />聚焦：{spotName}
               </div>
             )}
-
-            {/* Subtitle bubble */}
-            <AnimatePresence mode="wait">
-              <motion.div key={subtitle.slice(0, 20)}
-                initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }} transition={SPRING}
-                className="mt-4 w-full px-4 py-3 rounded-2xl text-center text-[12.5px] leading-relaxed max-h-40 overflow-y-auto"
-                style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)" }}>
-                <p style={{ color: "rgba(255,255,255,0.85)" }}>
-                  {loading ? "正在思考中…" : subtitle}
-                </p>
-              </motion.div>
-            </AnimatePresence>
 
             {/* TTS + history controls */}
             <div className="mt-5 flex gap-2 justify-center">
@@ -934,10 +1029,14 @@ export function QAScreen() {
             </div>
           </div>
 
-          {/* Messages */}
+          {/* Messages — same immersive bubble style as mobile */}
           <div className="flex-1 overflow-y-auto px-6 py-4"
-            style={{ background: "#FAF8F5" }}>
-            {renderMessageList()}
+            style={{
+              background: "#FAF8F5",
+              maskImage: "linear-gradient(to bottom, transparent 0%, black 6%, black 94%, transparent 100%)",
+              WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 6%, black 94%, transparent 100%)",
+            }}>
+            {renderMessageList(true)}
           </div>
 
           {/* Input */}
@@ -962,6 +1061,7 @@ export function QAScreen() {
 
       {/* ── Modals ── */}
       <input type="file" ref={fileInputRef} onChange={handleBgUpload} accept="image/*" className="hidden" />
+      <input type="file" ref={avatarUploadRef} onChange={handleCustomAvatarUpload} accept="image/*,video/*" className="hidden" />
       <AnimatePresence>
         {showHistory && <HistorySheet onClose={() => setShowHistory(false)} onResume={(q) => { setShowHistory(false); sendMessage(q); }} />}
       </AnimatePresence>
@@ -984,6 +1084,18 @@ export function QAScreen() {
       </AnimatePresence>
       <AnimatePresence>
         {showCamera && <CameraRecognize currentSpot={spotName ?? undefined} onClose={() => setShowCamera(false)} onRecognized={handleCameraRecognized} />}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showPersonaMenu && (
+          <AvatarSelectorModal
+            onClose={() => setShowPersonaMenu(false)}
+            allAvatars={allAvatars}
+            customAvatars={customAvatars}
+            selectedStyle={selectedStyle}
+            onSelect={selectAvatar}
+            onUploadClick={() => avatarUploadRef.current?.click()}
+          />
+        )}
       </AnimatePresence>
     </>
   );

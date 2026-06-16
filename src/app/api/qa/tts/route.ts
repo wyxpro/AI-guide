@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { synthesizeSpeech } from "@/lib/api/xfyun-tts";
 
 export async function POST(request: NextRequest) {
   try {
@@ -7,7 +8,31 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Text is required" }, { status: 400 });
     }
 
-    // ElevenLabs API integration if key exists
+    // 1. Try iFlytek TTS if variables are present
+    const xfyunAppId = process.env.XFYUN_APP_ID;
+    const xfyunApiKey = process.env.XFYUN_API_KEY;
+    const xfyunApiSecret = process.env.XFYUN_API_SECRET;
+
+    if (xfyunAppId && xfyunApiKey && xfyunApiSecret) {
+      try {
+        const audioBuffer = await synthesizeSpeech({
+          text,
+          vcn: voiceStyle === "professional" ? "aisjinger" : "aisjiuxu",
+          speed: speechRate ?? 50,
+          pitch: pitch ?? 50,
+        });
+
+        return new NextResponse(audioBuffer as any, {
+          headers: {
+            "Content-Type": "audio/mpeg",
+          },
+        });
+      } catch (err) {
+        console.error("[TTS Route] iFlytek TTS synthesis failed, falling back:", err);
+      }
+    }
+
+    // 2. ElevenLabs API integration if key exists
     const elevenLabsKey = process.env.ELEVENLABS_API_KEY;
     if (elevenLabsKey) {
       let voiceId = "21m00Tcm4TlvDq8ikWAM"; // Rachel
@@ -40,7 +65,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Fallback: Google Translate TTS which supports the ttsspeed parameter
+    // 3. Fallback: Google Translate TTS which supports the ttsspeed parameter
     const rate = speechRate ? (speechRate / 100).toFixed(1) : "1.0";
     const googleTtsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text.slice(0, 200))}&tl=zh-CN&client=tw-ob&ttsspeed=${rate}`;
 

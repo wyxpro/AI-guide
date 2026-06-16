@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { ai } from "@eazo/sdk";
+import { deepseekChat } from "@/lib/api/deepseek";
 import { getUserPreferences } from "@/lib/db/queries/user-data";
 import { getVisitRecordsByUser } from "@/lib/db/queries/user-data";
 import { db } from "@/lib/db/client";
@@ -52,8 +53,8 @@ export async function GET(request: NextRequest) {
 - ${mode === "elder" ? "语气温和简洁，适合老年人" : mode === "child" ? "活泼可爱，适合小朋友" : "自然亲切"}
 - 限制：30字以内，不要带任何emoji，不要说"欢迎来到"`;
 
-    const response = await ai.chat({
-      model: "deepseek.v3.1",
+    const response = await deepseekChat({
+      model: "deepseek-v4-pro",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: "生成欢迎语" },

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth";
-import { getAllAvatarConfigs, updateAvatarConfig, createAvatarConfig } from "@/lib/db/queries";
+import { getAllAvatarConfigs, updateAvatarConfig, createAvatarConfig, deleteAvatarConfig } from "@/lib/db/queries";
 
 async function checkAdmin(request: NextRequest) {
   const result = await requireAdmin(request);
@@ -40,5 +40,19 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(config);
   } catch {
     return NextResponse.json({ error: "Failed to update avatar config" }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  const auth = await checkAdmin(request);
+  if (!auth.ok) return auth.response;
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = Number(searchParams.get("id"));
+    if (!id) return NextResponse.json({ error: "Missing ID" }, { status: 400 });
+    await deleteAvatarConfig(id);
+    return NextResponse.json({ success: true });
+  } catch {
+    return NextResponse.json({ error: "Failed to delete avatar config" }, { status: 500 });
   }
 }

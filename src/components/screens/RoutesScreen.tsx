@@ -471,7 +471,7 @@ export function RoutesScreen() {
       });
       const data = await res.json();
       const answerRaw = data.answer || "抱歉，暂时无法回答。";
-      const answer = answerRaw.replace(/\[情感:\s*[^\]]+\]/g, "").trim();
+      const answer = answerRaw.replace(/\[情感[:：]\s*[^\]]+\]/g, "").trim();
       setChatMessages(prev => [...prev, { role: "assistant", content: answer }]);
     } catch {
       setChatMessages(prev => [...prev, { role: "assistant", content: "目前AI服务正在维护中，请稍候片刻。如需帮助，请前往景区服务中心。" }]);

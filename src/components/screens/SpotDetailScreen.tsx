@@ -35,6 +35,16 @@ export function SpotDetailScreen({ spotId }: { spotId: string }) {
   const [storyExpanded, setStoryExpanded] = useState(false);
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const isPC = window.innerWidth >= 768;
+      if (isPC) {
+        setGuideExpanded(true);
+        setStoryExpanded(true);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     fetch(`/api/spots/${spotId}`)
       .then((r) => r.json())
       .then((d) => { setSpot(d); setLoading(false); })

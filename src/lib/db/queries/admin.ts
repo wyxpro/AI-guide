@@ -37,8 +37,8 @@ export async function getDefaultAvatarConfig() {
 }
 
 export async function updateAvatarConfig(id: number, data: Partial<{
-  avatarStyle: string; voiceStyle: string; speechRate: number;
-  pitch: number; greeting: string; isDefault: boolean;
+  name: string; avatarStyle: string; voiceStyle: string; speechRate: number;
+  pitch: number; greeting: string; isDefault: boolean; imageUrl: string; isActive: boolean;
 }>) {
   if (data.isDefault) {
     await db.update(avatarConfigs).set({ isDefault: false });
@@ -50,9 +50,18 @@ export async function updateAvatarConfig(id: number, data: Partial<{
 export async function createAvatarConfig(data: {
   name: string; avatarStyle: string; voiceStyle: string;
   speechRate: number; pitch: number; greeting: string;
+  imageUrl?: string; isDefault?: boolean; isActive?: boolean;
 }) {
+  if (data.isDefault) {
+    await db.update(avatarConfigs).set({ isDefault: false });
+  }
   const rows = await db.insert(avatarConfigs).values(data).returning();
   return rows[0];
+}
+
+export async function deleteAvatarConfig(id: number) {
+  // Hard delete is clean for user-uploaded custom or preset deletions
+  await db.delete(avatarConfigs).where(eq(avatarConfigs.id, id));
 }
 
 // Analytics

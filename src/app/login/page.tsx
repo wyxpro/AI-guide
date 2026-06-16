@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
-import { Mail, Lock, ShieldCheck, ArrowRight, ArrowLeft, RefreshCw } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Mail, Lock, ShieldCheck, ArrowRight, ArrowLeft, RefreshCw, Sparkles, Eye, EyeOff } from "lucide-react";
 import { auth } from "@eazo/sdk";
 import { toast } from "sonner";
 
@@ -13,21 +13,9 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(0);
-
-  // Floating ambient mouse tracker
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-
-  useEffect(() => {
-    const handleGlobalMouseMove = (e: MouseEvent) => {
-      mouseX.set(e.clientX);
-      mouseY.set(e.clientY);
-    };
-    window.addEventListener("mousemove", handleGlobalMouseMove);
-    return () => window.removeEventListener("mousemove", handleGlobalMouseMove);
-  }, [mouseX, mouseY]);
 
   // Countdown timer for code verification
   useEffect(() => {
@@ -141,135 +129,192 @@ export default function LoginPage() {
   };
 
   return (
-    <div
-      className="min-h-svh w-full flex items-center justify-center relative overflow-hidden px-4 md:px-6 py-12"
-      style={{
-        background: "radial-gradient(circle at 50% 50%, #1a2520 0%, #0e1710 100%)",
-      }}
-    >
-      {/* Back button */}
-      <button
-        onClick={() => router.push("/welcome")}
-        className="absolute top-6 left-6 flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-full border border-white/10 hover:border-white/20 text-white/60 hover:text-white transition-all bg-white/5 backdrop-blur-md cursor-pointer z-50"
-      >
-        <ArrowLeft className="w-3.5 h-3.5" /> 返回官网页
-      </button>
+    <div className="min-h-svh w-full flex bg-white overflow-hidden font-sans">
+      
+      {/* Left Panel - Dark thematic area (hidden on mobile, visible on lg+) */}
+      <div className="hidden lg:flex lg:w-[45%] bg-[#0B1311] relative flex-col justify-between p-16 text-white overflow-hidden select-none">
+        
+        {/* Constellation animated/mesh background */}
+        <svg className="absolute inset-0 w-full h-full opacity-35 pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="leftGlow" cx="20%" cy="30%" r="60%">
+              <stop offset="0%" stopColor="#10a37f" stopOpacity="0.35" />
+              <stop offset="100%" stopColor="transparent" stopOpacity="0" />
+            </radialGradient>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#leftGlow)" />
+          <circle cx="120" cy="180" r="2.5" fill="#10a37f" />
+          <circle cx="280" cy="210" r="3" fill="#10a37f" opacity="0.8" />
+          <circle cx="360" cy="320" r="2" fill="#10a37f" />
+          <circle cx="200" cy="400" r="3" fill="#10a37f" opacity="0.7" />
+          <circle cx="310" cy="480" r="2.5" fill="#10a37f" />
+          <circle cx="140" cy="550" r="3.5" fill="#10a37f" opacity="0.6" />
+          <line x1="120" y1="180" x2="280" y2="210" stroke="rgba(16, 163, 127, 0.2)" strokeWidth="1" />
+          <line x1="280" y1="210" x2="360" y2="320" stroke="rgba(16, 163, 127, 0.2)" strokeWidth="1" />
+          <line x1="360" y1="320" x2="200" y2="400" stroke="rgba(16, 163, 127, 0.2)" strokeWidth="1" />
+          <line x1="200" y1="400" x2="310" y2="480" stroke="rgba(16, 163, 127, 0.2)" strokeWidth="1" />
+          <line x1="310" y1="480" x2="140" y2="550" stroke="rgba(16, 163, 127, 0.2)" strokeWidth="1" />
+          <line x1="140" y1="550" x2="120" y2="180" stroke="rgba(16, 163, 127, 0.2)" strokeWidth="1" />
+        </svg>
 
-      {/* Dynamic Cursor Light Orb */}
-      <motion.div
-        className="absolute pointer-events-none w-[350px] h-[350px] rounded-full filter blur-[120px] opacity-25 z-0"
-        style={{
-          x: useSpring(useTransform(mouseX, (val) => val - 175), { damping: 45, stiffness: 200 }),
-          y: useSpring(useTransform(mouseY, (val) => val - 175), { damping: 45, stiffness: 200 }),
-          background: "radial-gradient(circle, #D2A053 0%, transparent 70%)"
-        }}
-      />
-
-      {/* Constant ambient light */}
-      <div className="absolute top-[20%] left-[-10%] w-[300px] h-[300px] rounded-full filter blur-[100px] bg-[#4F6F52] opacity-10 pointer-events-none" />
-      <div className="absolute bottom-[20%] right-[-10%] w-[350px] h-[350px] rounded-full filter blur-[120px] bg-[#D2A053] opacity-15 pointer-events-none" />
-
-      {/* Main Container */}
-      <div className="relative z-10 w-full max-w-lg flex flex-col items-center">
-
-        {/* Brand Header */}
-        <div className="text-center mb-8 space-y-2">
-          <div className="w-14 h-14 rounded-3xl mx-auto flex items-center justify-center text-2xl font-black text-white shadow-lg shadow-[#4f6f52]/20"
-            style={{
-              background: "linear-gradient(135deg,#4F6F52,#3A5240)",
-              fontFamily: "var(--font-noto-serif)",
-              border: "1px solid rgba(255,255,255,0.1)"
-            }}>
-            旅
+        {/* Brand Logo & Name */}
+        <div className="flex items-center gap-3.5 z-10">
+          <div className="w-10 h-10 rounded-xl bg-[#10a37f] flex items-center justify-center text-white shadow-md shadow-[#10a37f]/20">
+            <svg className="w-5.5 h-5.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+            </svg>
           </div>
-          <h2 className="text-2xl font-black text-white tracking-wider" style={{ fontFamily: "var(--font-noto-serif)" }}>
-            旅行家 · 智能向导
-          </h2>
-          <p className="text-xs text-[#8F9F8F]">
-            开启您的多模态虚拟数字伴游新时代
-          </p>
+          <div>
+            <h2 className="text-base font-extrabold tracking-wide text-white">旅行家</h2>
+            <p className="text-[10px] text-neutral-500 font-medium mt-0.5">个性化多智能体伴游系统</p>
+          </div>
         </div>
 
-        {/* Flat Form Card */}
-        <div className="w-full bg-[#1b2520]/80 border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl backdrop-blur-xl relative overflow-hidden">
-          {/* Subtle inside glow */}
-          <div className="absolute inset-0 pointer-events-none bg-gradient-to-tr from-white/0 to-white/[0.04]" />
+        {/* Slogans and details */}
+        <div className="space-y-8 z-10 my-auto pr-6">
+          <div className="space-y-4">
+            <h1 className="text-4xl font-extrabold leading-tight text-white tracking-tight">
+              让旅行更<span className="text-[#10a37f] px-1">聪明</span>，<br />
+              让感悟更<span className="text-[#10a37f] px-1">精准</span>
+            </h1>
+            <p className="text-sm text-neutral-400 leading-relaxed max-w-sm">
+              基于多智能体协作，提供AI数字人伴游、景区文化历史深度讲解与个性化游览路线定制。
+            </p>
+          </div>
+
+          {/* Features Checkmarks */}
+          <div className="space-y-4 pt-4">
+            {[
+              "伴游数字人多模态交互",
+              "景区文化历史深度讲解",
+              "沉浸式章节音视剧情",
+              "拍照识景即时互动体验"
+            ].map((text, idx) => (
+              <div key={idx} className="flex items-center gap-3.5">
+                <div className="w-5 h-5 rounded-full bg-[#10a37f]/10 border border-[#10a37f]/30 flex items-center justify-center text-[#10a37f] flex-shrink-0">
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <span className="text-sm text-neutral-300 font-medium">{text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Bottom stats badge */}
+        <div className="z-10 flex items-center gap-3 bg-[#14221F] border border-[#1E3A33]/60 rounded-2xl px-4 py-2.5 text-xs text-neutral-300 w-fit">
+          <div className="flex gap-1">
+            <span className="px-1.5 py-0.5 bg-[#10a37f] text-white rounded text-[9px] font-bold">陈</span>
+            <span className="px-1.5 py-0.5 bg-[#D2A053] text-white rounded text-[9px] font-bold">李</span>
+            <span className="px-1.5 py-0.5 bg-blue-600 text-white rounded text-[9px] font-bold">王</span>
+            <span className="px-1.5 py-0.5 bg-purple-600 text-white rounded text-[9px] font-bold">赵</span>
+          </div>
+          <span className="font-medium">50,000+ 位旅客正在使用</span>
+        </div>
+
+      </div>
+
+      {/* Right Panel - Form panel */}
+      <div className="w-full lg:w-[55%] flex items-center justify-center p-6 md:p-16 bg-white relative">
+        
+        {/* Back Link at the top-right */}
+        <button
+          onClick={() => router.push("/welcome")}
+          className="absolute top-8 right-8 flex items-center gap-1.5 text-xs font-semibold text-neutral-400 hover:text-neutral-700 transition-colors cursor-pointer"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" /> 返回官网
+        </button>
+
+        {/* Central Card Form */}
+        <div className="w-full max-w-sm flex flex-col justify-center">
+          
+          {/* Welcome Titles */}
+          <div>
+            <h2 className="text-2xl font-black text-neutral-900 tracking-tight">欢迎回来 👋</h2>
+            <p className="text-sm text-neutral-500 mt-1">登录开启您的探索之旅</p>
+          </div>
 
           {/* Form Tabs */}
-          <div className="grid grid-cols-2 gap-1.5 p-1 bg-black/30 rounded-2xl mb-8 relative z-10">
+          <div className="grid grid-cols-2 gap-1 p-1 bg-neutral-100 rounded-xl mt-8">
             <button
+              type="button"
               onClick={() => setTab("password")}
-              className={`py-2 text-xs font-bold rounded-xl transition-all ${tab === "password"
-                  ? "bg-[#4F6F52] text-white shadow-md"
-                  : "text-white/40 hover:text-white/60"
-                }`}
+              className={`py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                tab === "password"
+                  ? "bg-white text-neutral-900 shadow-sm"
+                  : "text-neutral-500 hover:text-neutral-800"
+              }`}
             >
-              密码登录
+              登录
             </button>
             <button
+              type="button"
               onClick={() => setTab("code")}
-              className={`py-2 text-xs font-bold rounded-xl transition-all ${tab === "code"
-                  ? "bg-[#4F6F52] text-white shadow-md"
-                  : "text-white/40 hover:text-white/60"
-                }`}
+              className={`py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                tab === "code"
+                  ? "bg-white text-neutral-900 shadow-sm"
+                  : "text-neutral-500 hover:text-neutral-800"
+              }`}
             >
-              验证码登录
+              注册
             </button>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-5 relative z-10">
-
+          {/* Form Content */}
+          <form onSubmit={handleLogin} className="mt-6 space-y-4">
+            
             {/* Email Field */}
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold tracking-widest text-[#8F9F8F] uppercase block">
-                电子邮箱
-              </label>
+              <label className="text-xs font-semibold text-neutral-700">邮箱</label>
               <div className="relative">
-                <Mail className="absolute left-4 top-3.5 w-4 h-4 text-white/30" />
+                <Mail className="absolute left-3.5 top-3.5 w-4 h-4 text-neutral-400" />
                 <input
                   type="email"
-                  placeholder="name@example.com"
+                  placeholder="admin@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-black/25 border border-white/5 focus:border-[#4F6F52] text-sm text-white pl-11 pr-4 py-3 rounded-2xl focus:outline-none focus:ring-1 focus:ring-[#4F6F52]/50 transition-all placeholder:text-white/20"
+                  className="w-full bg-[#f3f4f6] focus:bg-white border border-transparent focus:border-[#10a37f] text-sm text-neutral-900 pl-10 pr-4 py-3 rounded-xl focus:outline-none transition-all placeholder:text-neutral-400"
                   required
                 />
               </div>
             </div>
 
-            {/* Password Tab Form Fields */}
+            {/* Password / Verification Code */}
             {tab === "password" ? (
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold tracking-widest text-[#8F9F8F] uppercase block">
-                  账户密码
-                </label>
+                <label className="text-xs font-semibold text-neutral-700">密码</label>
                 <div className="relative">
-                  <Lock className="absolute left-4 top-3.5 w-4 h-4 text-white/30" />
+                  <Lock className="absolute left-3.5 top-3.5 w-4 h-4 text-neutral-400" />
                   <input
-                    type="password"
-                    placeholder="••••••••"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full bg-black/25 border border-white/5 focus:border-[#4F6F52] text-sm text-white pl-11 pr-4 py-3 rounded-2xl focus:outline-none focus:ring-1 focus:ring-[#4F6F52]/50 transition-all placeholder:text-white/20"
+                    className="w-full bg-[#f3f4f6] focus:bg-white border border-transparent focus:border-[#10a37f] text-sm text-neutral-900 pl-10 pr-10 py-3 rounded-xl focus:outline-none transition-all placeholder:text-neutral-400"
                     required={tab === "password"}
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-3 w-5 h-5 text-neutral-400 hover:text-neutral-600 transition-colors flex items-center justify-center cursor-pointer"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
               </div>
             ) : (
-              // Verification Code Tab Form Fields
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold tracking-widest text-[#8F9F8F] uppercase block">
-                  验证码
-                </label>
+                <label className="text-xs font-semibold text-neutral-700">验证码</label>
                 <div className="flex gap-2">
                   <div className="relative flex-1">
-                    <ShieldCheck className="absolute left-4 top-3.5 w-4 h-4 text-white/30" />
+                    <ShieldCheck className="absolute left-3.5 top-3.5 w-4 h-4 text-neutral-400" />
                     <input
                       type="text"
                       placeholder="6位验证码"
                       value={code}
                       onChange={(e) => setCode(e.target.value)}
-                      className="w-full bg-black/25 border border-white/5 focus:border-[#4F6F52] text-sm text-white pl-11 pr-4 py-3 rounded-2xl focus:outline-none focus:ring-1 focus:ring-[#4F6F52]/50 transition-all placeholder:text-white/20"
+                      className="w-full bg-[#f3f4f6] focus:bg-white border border-transparent focus:border-[#10a37f] text-sm text-neutral-900 pl-10 pr-4 py-3 rounded-xl focus:outline-none transition-all placeholder:text-neutral-400"
                       maxLength={6}
                       required={tab === "code"}
                     />
@@ -278,65 +323,63 @@ export default function LoginPage() {
                     type="button"
                     disabled={loading || countdown > 0}
                     onClick={handleSendCode}
-                    className="px-4 text-xs font-bold rounded-2xl border border-[#4F6F52] text-[#8FBF8A] hover:bg-[#4F6F52]/20 active:scale-95 transition-all disabled:opacity-50 disabled:pointer-events-none"
+                    className="px-4 text-xs font-semibold rounded-xl border border-neutral-300 hover:border-neutral-400 text-neutral-700 hover:bg-neutral-50 active:scale-95 transition-all disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
                   >
-                    {countdown > 0 ? `${countdown}秒后重新获取` : "获取验证码"}
+                    {countdown > 0 ? `${countdown}秒后获取` : "获取验证码"}
                   </button>
                 </div>
               </div>
             )}
 
-            {/* Login CTA Button */}
-            <motion.button
+            {/* Login Submission */}
+            <button
               type="submit"
               disabled={loading}
-              whileTap={{ scale: 0.98 }}
-              className="w-full py-3.5 rounded-2xl text-sm font-bold text-white shadow-xl shadow-[#4f6f52]/10 flex items-center justify-center gap-2 hover:brightness-110 active:brightness-95 transition-all cursor-pointer"
-              style={{
-                background: "linear-gradient(135deg, #4F6F52 0%, #3A5240 100%)",
-              }}
+              className="w-full py-3.5 mt-2 rounded-xl text-sm font-bold text-white bg-[#10a37f] hover:bg-[#0da179] active:bg-[#0b8a67] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-[#10a37f]/15"
             >
               {loading ? (
                 <RefreshCw className="w-4 h-4 animate-spin" />
               ) : (
-                <>
-                  立即开启探索 <ArrowRight className="w-4 h-4" />
-                </>
+                <>登录账号</>
               )}
-            </motion.button>
+            </button>
           </form>
 
-          {/* Test Account Login divider */}
-          <div className="relative my-6 z-10 flex items-center justify-center">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-white/5" />
-            </div>
-            <span className="relative px-3 bg-[#1c2621] text-[10px] text-white/30 font-bold uppercase tracking-wider">
-              测试账号快捷登录
-            </span>
+          {/* Tab Redirect Text */}
+          <div className="text-center mt-4">
+            <span className="text-xs text-neutral-400">没有账号？</span>
+            <button
+              onClick={() => setTab("code")}
+              className="text-xs text-[#10a37f] hover:underline font-semibold ml-1 cursor-pointer"
+            >
+              立即注册
+            </button>
           </div>
 
-          {/* Test Account buttons */}
-          <div className="grid grid-cols-2 gap-3 relative z-10">
-            <button
-              onClick={() => handleQuickLogin("wyxcode@qq.com", "123456")}
-              disabled={loading}
-              className="flex flex-col items-center justify-center py-2.5 rounded-2xl border border-[#D2A053]/20 bg-[#D2A053]/5 hover:bg-[#D2A053]/10 hover:border-[#D2A053]/40 active:scale-95 transition-all text-xs font-bold text-[#D2A053] cursor-pointer"
-            >
-              <span>管理员登录</span>
-              <span className="text-[9px] text-white/40 font-normal mt-0.5">wyxcode@qq.com</span>
-            </button>
+          {/* Quick Login Section */}
+          <div className="mt-8 space-y-3">
             <button
               onClick={() => handleQuickLogin("user1@example.com", "123456")}
               disabled={loading}
-              className="flex flex-col items-center justify-center py-2.5 rounded-2xl border border-white/5 bg-black/25 text-white/70 hover:text-white hover:bg-black/40 hover:border-white/10 active:scale-95 transition-all text-xs font-bold cursor-pointer"
+              className="w-full py-3.5 rounded-xl border border-dashed border-[#10a37f] bg-[#e6f7f4] text-[#10a37f] hover:bg-[#d0f2eb] active:scale-98 transition-all text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer"
             >
-              <span>游客登录</span>
-              <span className="text-[9px] text-white/40 font-normal mt-0.5">user1@example.com</span>
+              <Sparkles className="w-4 h-4" />
+              游客一键登录 · 无需注册，立即体验
+            </button>
+
+            <button
+              onClick={() => handleQuickLogin("wyxcode@qq.com", "123456")}
+              disabled={loading}
+              className="w-full py-2.5 rounded-xl border border-neutral-200 bg-neutral-50 hover:bg-neutral-100 active:scale-98 transition-all text-xs font-semibold text-neutral-600 flex items-center justify-center gap-1 cursor-pointer"
+            >
+              管理员快捷登录 (测试用)
             </button>
           </div>
+
         </div>
+
       </div>
+
     </div>
   );
 }

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
+import fs from "fs";
+import path from "path";
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,6 +11,30 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
+    // 1. Try Vosk local ASR if model folder exists
+    const voskModelPath = path.join(process.cwd(), "models", "vosk-model-cn");
+    if (fs.existsSync(voskModelPath)) {
+      try {
+        const { Model, Recognizer } = require("vosk");
+        const arrayBuffer = await file.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        
+        const model = new Model(voskModelPath);
+        const recognizer = new Recognizer({ model: model, sampleRate: 16000 });
+        
+        recognizer.acceptWaveform(buffer);
+        const result = recognizer.finalResult();
+        recognizer.free();
+        
+        if (result && result.text) {
+          return NextResponse.json({ text: result.text });
+        }
+      } catch (voskError) {
+        console.warn("[STT Route] Local Vosk ASR failed, falling back to Whisper:", voskError);
+      }
+    }
+
+    // 2. Whisper ASR Fallback
     const apiKey = process.env.EAZO_PRIVATE_KEY;
     const baseURL = `${process.env.EAZO_PLATFORM_API_BASE || "https://eazo.ai"}/v1`;
 

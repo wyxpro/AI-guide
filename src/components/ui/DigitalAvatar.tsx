@@ -45,11 +45,27 @@ function AvatarSVG({ state, mouthOpen, mouthPathOverride, avatarStyle, idSuffix 
   const [blink, setBlink] = useState(false);
 
   useEffect(() => {
-    const id = setInterval(() => {
+    let timeoutId: any;
+    
+    const triggerBlink = () => {
       setBlink(true);
-      setTimeout(() => setBlink(false), 110);
-    }, 3000 + Math.random() * 2000);
-    return () => clearInterval(id);
+      setTimeout(() => {
+        setBlink(false);
+        // 20% chance of double blink
+        if (Math.random() < 0.20) {
+          timeoutId = setTimeout(() => {
+            setBlink(true);
+            setTimeout(() => setBlink(false), 90);
+          }, 150);
+        }
+      }, 110);
+      
+      const nextDelay = 2000 + Math.random() * 4000;
+      timeoutId = setTimeout(triggerBlink, nextDelay);
+    };
+    
+    timeoutId = setTimeout(triggerBlink, 3000);
+    return () => clearTimeout(timeoutId);
   }, []);
 
   const eyeH = blink ? 0.4 : state === "happy" ? 3 : 4.5;
@@ -106,6 +122,41 @@ function AvatarSVG({ state, mouthOpen, mouthPathOverride, avatarStyle, idSuffix 
   const gradientId = `rg-${state}-${avatarStyle || "default"}-${idSuffix}`;
   const skinGradientId = `sg-${state}-${idSuffix}`;
 
+  // Breathing animation (15-18 breaths per minute -> ~3.5s per cycle)
+  const bodyAnimate = {
+    scaleY: state === "speaking" 
+      ? [1, 1.012, 1] 
+      : state === "happy"
+      ? [1, 1.015, 1]
+      : [1, 1.006, 1],
+    y: state === "happy" ? [0, -1, 0] : [0, 0, 0]
+  };
+  const bodyTransition = {
+    duration: state === "speaking" ? 1.2 : state === "happy" ? 0.8 : 3.5,
+    repeat: Infinity,
+    ease: "easeInOut" as const
+  };
+
+  const headAnimate = {
+    y: state === "speaking" 
+      ? [0, -0.6, 0] 
+      : state === "thinking"
+      ? [0, 0.4, 0]
+      : [0, -0.3, 0],
+    rotate: state === "thinking" 
+      ? [-3, 3, -3] 
+      : state === "speaking"
+      ? [-1.5, 1.5, -1.5]
+      : state === "happy"
+      ? [-1, 2, -1]
+      : [0, 0, 0]
+  };
+  const headTransition = {
+    duration: state === "speaking" ? 1.8 : state === "thinking" ? 3.2 : state === "happy" ? 1.5 : 3.5,
+    repeat: Infinity,
+    ease: "easeInOut" as const
+  };
+
   return (
     <svg viewBox="0 0 100 120" width="100%" height="100%" style={{ overflow: "visible" }}>
       <defs>
@@ -141,9 +192,9 @@ function AvatarSVG({ state, mouthOpen, mouthPathOverride, avatarStyle, idSuffix 
       {/* Body robe */}
       <motion.path d="M 15 120 Q 18 94 30 90 L 42 86 Q 50 92 58 86 L 70 90 Q 82 94 85 120 Z"
         fill={`url(#${gradientId})`} filter="url(#ds)"
-        animate={state === "speaking" ? { scaleY: [1, 1.01, 1] } : { scaleY: 1 }}
+        animate={bodyAnimate}
         style={{ transformOrigin: "50% 100%" }}
-        transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }} />
+        transition={bodyTransition} />
 
       {/* Collar gold trim */}
       <path d="M 42 86 Q 50 97 58 86" fill="none" stroke="rgba(210,160,83,0.65)" strokeWidth="1.4" />
@@ -152,141 +203,146 @@ function AvatarSVG({ state, mouthOpen, mouthPathOverride, avatarStyle, idSuffix 
       {/* Neck */}
       <rect x="44" y="79" width="12" height="11" rx="5" fill={`url(#${skinGradientId})`} />
 
-      {/* Head */}
-      <motion.ellipse cx="50" cy="52" rx="22.5" ry="27"
-        fill={`url(#${skinGradientId})`} filter="url(#ds)"
-        animate={state === "thinking" ? { rotate: [-4, 4, -4] } : { rotate: 0 }}
-        transition={{ duration: 2.8, repeat: state === "thinking" ? Infinity : 0, ease: "easeInOut" }} />
+      {/* Head Group: groups all facial elements and hair together for coherent movement/rotation */}
+      <motion.g
+        animate={headAnimate}
+        transition={headTransition}
+        style={{ transformOrigin: "50px 79px" }}
+      >
+        {/* Head Base */}
+        <ellipse cx="50" cy="52" rx="22.5" ry="27" fill={`url(#${skinGradientId})`} filter="url(#ds)" />
 
-      {/* Hair */}
-      {isMale ? (
-        <>
-          <path d="M 26 42 Q 28 15 50 13 Q 72 15 74 42 Q 62 25 50 25 Q 38 25 26 42" fill={p.pupil} />
-          <path d="M 27 38 Q 23 28 29 18 Q 36 14 50 12" fill={p.pupil} opacity="0.8" />
-          <path d="M 73 38 Q 77 28 71 18 Q 64 14 50 12" fill={p.pupil} opacity="0.8" />
-          {/* Custom male hats/details */}
-          {avatarStyle === "male_scholar" && (
-            <>
-              <path d="M 38 22 L 38 10 L 62 10 L 62 22 Z" fill="#2C3E50" />
-              <rect x="36" y="20" width="28" height="4" fill="#D2A053" rx="1" />
-            </>
-          )}
-          {avatarStyle === "male_student" && (
-            <>
-              <path d="M 32 94 Q 50 110 68 94" fill="none" stroke="#FF5722" strokeWidth="4" />
-              <circle cx="30" cy="92" r="4.5" fill="#FF5722" />
-              <circle cx="70" cy="92" r="4.5" fill="#FF5722" />
-            </>
-          )}
-          {avatarStyle === "male_anchor" && (
-            <>
-              <path d="M 30 20 Q 50 6 70 20 Z" fill="#1ABC9C" />
-              <path d="M 40 18 Q 50 12 75 14" stroke="#1ABC9C" strokeWidth="3.5" fill="none" />
-            </>
-          )}
-        </>
-      ) : (
-        <>
-          <path d="M 27 40 Q 28 18 50 17 Q 72 18 73 40 Q 65 27 50 25 Q 35 27 27 40" fill={p.pupil} />
-          <path d="M 28 46 Q 25 34 27 26 Q 29 19 50 17" fill={p.pupil} opacity="0.75" />
-          <path d="M 72 46 Q 75 34 73 26 Q 71 19 50 17" fill={p.pupil} opacity="0.75" />
-          {/* Gold hairpin for Hanfu */}
-          {avatarStyle === "female_hanfu" && (
-            <>
-              <line x1="57" y1="20" x2="68" y2="14" stroke="#D2A053" strokeWidth="1.6" strokeLinecap="round" />
-              <circle cx="68" cy="14" r="2.2" fill="#D2A053" />
-              <circle cx="65" cy="18" r="1.4" fill="#E8C96A" />
-              <circle cx="62" cy="21" r="0.9" fill="#D2A053" opacity="0.7" />
-            </>
-          )}
-          {/* Custom female hats/details */}
-          {avatarStyle === "female_student" && (
-            <>
-              <path d="M 28 35 Q 50 12 72 35" fill="none" stroke="#F48FB1" strokeWidth="3" />
-              <path d="M 32 30 L 26 24 L 28 32 Z" fill="#F48FB1" />
-              <path d="M 32 30 L 38 24 L 36 32 Z" fill="#F48FB1" />
-              <circle cx="32" cy="30" r="2" fill="#E91E63" />
-            </>
-          )}
-          {avatarStyle === "female_anchor" && (
-            <>
-              <path d="M 25 50 Q 50 5 75 50" fill="none" stroke="#BA68C8" strokeWidth="3.5" />
-              <rect x="23" y="46" width="5" height="15" rx="2.5" fill="#8E44AD" />
-              <rect x="72" y="46" width="5" height="15" rx="2.5" fill="#8E44AD" />
-            </>
-          )}
-          {avatarStyle === "female_princess" && (
-            <>
-              <path d="M 40 22 L 44 14 L 50 20 L 56 14 L 60 22 Z" fill="#FFD700" stroke="#DAA520" strokeWidth="1" />
-              <circle cx="44" cy="14" r="1.5" fill="#E74C3C" />
-              <circle cx="50" cy="20" r="1.5" fill="#E74C3C" />
-              <circle cx="56" cy="14" r="1.5" fill="#E74C3C" />
-            </>
-          )}
-        </>
-      )}
+        {/* Hair */}
+        {isMale ? (
+          <>
+            <path d="M 26 42 Q 28 15 50 13 Q 72 15 74 42 Q 62 25 50 25 Q 38 25 26 42" fill={p.pupil} />
+            <path d="M 27 38 Q 23 28 29 18 Q 36 14 50 12" fill={p.pupil} opacity="0.8" />
+            <path d="M 73 38 Q 77 28 71 18 Q 64 14 50 12" fill={p.pupil} opacity="0.8" />
+            {/* Custom male hats/details */}
+            {avatarStyle === "male_scholar" && (
+              <>
+                <path d="M 38 22 L 38 10 L 62 10 L 62 22 Z" fill="#2C3E50" />
+                <rect x="36" y="20" width="28" height="4" fill="#D2A053" rx="1" />
+              </>
+            )}
+            {avatarStyle === "male_student" && (
+              <>
+                <path d="M 32 94 Q 50 110 68 94" fill="none" stroke="#FF5722" strokeWidth="4" />
+                <circle cx="30" cy="92" r="4.5" fill="#FF5722" />
+                <circle cx="70" cy="92" r="4.5" fill="#FF5722" />
+              </>
+            )}
+            {avatarStyle === "male_anchor" && (
+              <>
+                <path d="M 30 20 Q 50 6 70 20 Z" fill="#1ABC9C" />
+                <path d="M 40 18 Q 50 12 75 14" stroke="#1ABC9C" strokeWidth="3.5" fill="none" />
+              </>
+            )}
+          </>
+        ) : (
+          <>
+            <path d="M 27 40 Q 28 18 50 17 Q 72 18 73 40 Q 65 27 50 25 Q 35 27 27 40" fill={p.pupil} />
+            <path d="M 28 46 Q 25 34 27 26 Q 29 19 50 17" fill={p.pupil} opacity="0.75" />
+            <path d="M 72 46 Q 75 34 73 26 Q 71 19 50 17" fill={p.pupil} opacity="0.75" />
+            {/* Gold hairpin for Hanfu */}
+            {avatarStyle === "female_hanfu" && (
+              <>
+                <line x1="57" y1="20" x2="68" y2="14" stroke="#D2A053" strokeWidth="1.6" strokeLinecap="round" />
+                <circle cx="68" cy="14" r="2.2" fill="#D2A053" />
+                <circle cx="65" cy="18" r="1.4" fill="#E8C96A" />
+                <circle cx="62" cy="21" r="0.9" fill="#D2A053" opacity="0.7" />
+              </>
+            )}
+            {/* Custom female hats/details */}
+            {avatarStyle === "female_student" && (
+              <>
+                <path d="M 28 35 Q 50 12 72 35" fill="none" stroke="#F48FB1" strokeWidth="3" />
+                <path d="M 32 30 L 26 24 L 28 32 Z" fill="#F48FB1" />
+                <path d="M 32 30 L 38 24 L 36 32 Z" fill="#F48FB1" />
+                <circle cx="32" cy="30" r="2" fill="#E91E63" />
+              </>
+            )}
+            {avatarStyle === "female_anchor" && (
+              <>
+                <path d="M 25 50 Q 50 5 75 50" fill="none" stroke="#BA68C8" strokeWidth="3.5" />
+                <rect x="23" y="46" width="5" height="15" rx="2.5" fill="#8E44AD" />
+                <rect x="72" y="46" width="5" height="15" rx="2.5" fill="#8E44AD" />
+              </>
+            )}
+            {avatarStyle === "female_princess" && (
+              <>
+                <path d="M 40 22 L 44 14 L 50 20 L 56 14 L 60 22 Z" fill="#FFD700" stroke="#DAA520" strokeWidth="1" />
+                <circle cx="44" cy="14" r="1.5" fill="#E74C3C" />
+                <circle cx="50" cy="20" r="1.5" fill="#E74C3C" />
+                <circle cx="56" cy="14" r="1.5" fill="#E74C3C" />
+              </>
+            )}
+          </>
+        )}
 
-      {/* Ears */}
-      <ellipse cx="27.5" cy="54" rx="3.2" ry="4.5" fill={`url(#${skinGradientId})`} />
-      <ellipse cx="72.5" cy="54" rx="3.2" ry="4.5" fill={`url(#${skinGradientId})`} />
+        {/* Ears */}
+        <ellipse cx="27.5" cy="54" rx="3.2" ry="4.5" fill={`url(#${skinGradientId})`} />
+        <ellipse cx="72.5" cy="54" rx="3.2" ry="4.5" fill={`url(#${skinGradientId})`} />
 
-      {/* Eyebrows */}
-      <motion.path d={eb?.L || "M 36 43 Q 42 40 44 42"} fill="none" stroke={p?.pupil || "#2B3530"} strokeWidth="1.8" strokeLinecap="round"
-        animate={{ d: eb?.L || "M 36 43 Q 42 40 44 42" }} transition={{ duration: 0.35 }} />
-      <motion.path d={eb?.R || "M 56 42 Q 58 40 64 43"} fill="none" stroke={p?.pupil || "#2B3530"} strokeWidth="1.8" strokeLinecap="round"
-        animate={{ d: eb?.R || "M 56 42 Q 58 40 64 43" }} transition={{ duration: 0.35 }} />
+        {/* Eyebrows */}
+        <motion.path d={eb?.L || "M 36 43 Q 42 40 44 42"} fill="none" stroke={p?.pupil || "#2B3530"} strokeWidth="1.8" strokeLinecap="round"
+          animate={{ d: eb?.L || "M 36 43 Q 42 40 44 42" }} transition={{ duration: 0.35 }} />
+        <motion.path d={eb?.R || "M 56 42 Q 58 40 64 43"} fill="none" stroke={p?.pupil || "#2B3530"} strokeWidth="1.8" strokeLinecap="round"
+          animate={{ d: eb?.R || "M 56 42 Q 58 40 64 43" }} transition={{ duration: 0.35 }} />
 
-      {/* Eyes */}
-      <ellipse cx="42" cy="52" rx="5" ry={eyeH} fill="white" />
-      <ellipse cx="42.8" cy="52" rx="2.8" ry={Math.min(eyeH * 0.72, 3.8)} fill={p.pupil} />
-      <ellipse cx="44" cy="50.5" rx="1.1" ry="1.1" fill="rgba(255,255,255,0.75)" />
-      <ellipse cx="58" cy="52" rx="5" ry={eyeH} fill="white" />
-      <ellipse cx="58.8" cy="52" rx="2.8" ry={Math.min(eyeH * 0.72, 3.8)} fill={p.pupil} />
-      <ellipse cx="60" cy="50.5" rx="1.1" ry="1.1" fill="rgba(255,255,255,0.75)" />
+        {/* Eyes */}
+        <ellipse cx="42" cy="52" rx="5" ry={eyeH} fill="white" />
+        <ellipse cx="42.8" cy="52" rx="2.8" ry={Math.min(eyeH * 0.72, 3.8)} fill={p.pupil} />
+        <ellipse cx="44" cy="50.5" rx="1.1" ry="1.1" fill="rgba(255,255,255,0.75)" />
+        <ellipse cx="58" cy="52" rx="5" ry={eyeH} fill="white" />
+        <ellipse cx="58.8" cy="52" rx="2.8" ry={Math.min(eyeH * 0.72, 3.8)} fill={p.pupil} />
+        <ellipse cx="60" cy="50.5" rx="1.1" ry="1.1" fill="rgba(255,255,255,0.75)" />
 
-      {/* Sunglasses for male_cool, Glasses for business */}
-      {avatarStyle === "male_cool" ? (
-        <>
-          <polygon points="34,48 48,48 46,58 36,58" fill="#111" />
-          <polygon points="52,48 66,48 64,58 54,58" fill="#111" />
-          <path d="M 48 50 L 52 50" stroke="#111" strokeWidth="2.5" />
-          <line x1="38" y1="50" x2="42" y2="56" stroke="white" strokeWidth="1" opacity="0.6" />
-          <line x1="56" y1="50" x2="60" y2="56" stroke="white" strokeWidth="1" opacity="0.6" />
-        </>
-      ) : hasGlasses ? (
-        <>
-          <circle cx="42.5" cy="52" r="6" stroke="#D2A053" strokeWidth="1.2" fill="none" />
-          <circle cx="57.5" cy="52" r="6" stroke="#D2A053" strokeWidth="1.2" fill="none" />
-          <path d="M 48.5 52 L 51.5 52" stroke="#D2A053" strokeWidth="1.2" fill="none" />
-          <path d="M 36.5 52 Q 33 50 31.5 49" stroke="#D2A053" strokeWidth="0.9" fill="none" />
-          <path d="M 63.5 52 Q 67 50 68.5 49" stroke="#D2A053" strokeWidth="0.9" fill="none" />
-        </>
-      ) : null}
+        {/* Sunglasses for male_cool, Glasses for business */}
+        {avatarStyle === "male_cool" ? (
+          <>
+            <polygon points="34,48 48,48 46,58 36,58" fill="#111" />
+            <polygon points="52,48 66,48 64,58 54,58" fill="#111" />
+            <path d="M 48 50 L 52 50" stroke="#111" strokeWidth="2.5" />
+            <line x1="38" y1="50" x2="42" y2="56" stroke="white" strokeWidth="1" opacity="0.6" />
+            <line x1="56" y1="50" x2="60" y2="56" stroke="white" strokeWidth="1" opacity="0.6" />
+          </>
+        ) : hasGlasses ? (
+          <>
+            <circle cx="42.5" cy="52" r="6" stroke="#D2A053" strokeWidth="1.2" fill="none" />
+            <circle cx="57.5" cy="52" r="6" stroke="#D2A053" strokeWidth="1.2" fill="none" />
+            <path d="M 48.5 52 L 51.5 52" stroke="#D2A053" strokeWidth="1.2" fill="none" />
+            <path d="M 36.5 52 Q 33 50 31.5 49" stroke="#D2A053" strokeWidth="0.9" fill="none" />
+            <path d="M 63.5 52 Q 67 50 68.5 49" stroke="#D2A053" strokeWidth="0.9" fill="none" />
+          </>
+        ) : null}
 
-      {/* Nose */}
-      <path d="M 49 59 Q 47 64 49 66 Q 51 67 53 66 Q 55 64 51 59"
-        fill="none" stroke={p.shadow} strokeWidth="0.9" strokeLinecap="round" />
+        {/* Nose */}
+        <path d="M 49 59 Q 47 64 49 66 Q 51 67 53 66 Q 55 64 51 59" fill="none" stroke={p.shadow} strokeWidth="0.9" strokeLinecap="round" />
 
-      {/* Mouth */}
-      <motion.path d={mouthPathOverride ?? getMouthPath(safeState, mouthOpen) ?? "M 45 70 Q 50 74 55 70"}
-        fill={safeState === "speaking" || safeState === "happy" ? (p?.lipFill || "#C98B6A") + "88" : "none"}
-        stroke={p?.lipFill || "#C98B6A"} strokeWidth="1.5" strokeLinecap="round"
-        animate={{ d: mouthPathOverride ?? getMouthPath(safeState, mouthOpen) ?? "M 45 70 Q 50 74 55 70" }}
-        transition={{ duration: 0.1 }} />
+        {/* Mouth */}
+        <motion.path d={mouthPathOverride ?? getMouthPath(safeState, mouthOpen) ?? "M 45 70 Q 50 74 55 70"}
+          fill={safeState === "speaking" || safeState === "happy" ? (p?.lipFill || "#C98B6A") + "88" : "none"}
+          stroke={p?.lipFill || "#C98B6A"} strokeWidth="1.5" strokeLinecap="round"
+          animate={{ d: mouthPathOverride ?? getMouthPath(safeState, mouthOpen) ?? "M 45 70 Q 50 74 55 70" }}
+          transition={{ duration: 0.1 }} />
 
-      {/* Dimples */}
-      {safeState === "happy" && <>
-        <circle cx="37" cy="68" r="2.2" fill={p?.shadow || "#D4A882"} opacity="0.3" />
-        <circle cx="63" cy="68" r="2.2" fill={p?.shadow || "#D4A882"} opacity="0.3" />
-      </>}
+        {/* Dimples */}
+        {safeState === "happy" && (
+          <>
+            <circle cx="37" cy="68" r="2.2" fill={p?.shadow || "#D4A882"} opacity="0.3" />
+            <circle cx="63" cy="68" r="2.2" fill={p?.shadow || "#D4A882"} opacity="0.3" />
+          </>
+        )}
 
-      {/* Thinking bubbles */}
-      {safeState === "thinking" && [0, 1, 2].map((i) => (
-        <motion.circle key={i} cx={73 + i * 5} cy={30 - i * 6} r={1.5 + i * 0.6}
-          fill="rgba(210,160,83,0.55)"
-          animate={{ opacity: [0, 1, 0], y: [0, -5, 0] }}
-          transition={{ duration: 1.3, delay: i * 0.38, repeat: Infinity }} />
-      ))}
+        {/* Thinking bubbles */}
+        {safeState === "thinking" && [0, 1, 2].map((i) => (
+          <motion.circle key={i} cx={73 + i * 5} cy={30 - i * 6} r={1.5 + i * 0.6}
+            fill="rgba(210,160,83,0.55)"
+            animate={{ opacity: [0, 1, 0], y: [0, -5, 0] }}
+            transition={{ duration: 1.3, delay: i * 0.38, repeat: Infinity }} />
+        ))}
+      </motion.g>
     </svg>
   );
 }
@@ -404,6 +460,9 @@ export function DigitalAvatar({ state, size = "md", audioElement, avatarStyle }:
     return getMouthPath(st, open);
   };
 
+  const isUrl = !!avatarStyle && (avatarStyle.startsWith("http") || avatarStyle.startsWith("/") || avatarStyle.includes("."));
+  const isVideo = isUrl && !!avatarStyle && (avatarStyle.endsWith(".mp4") || avatarStyle.endsWith(".webm") || avatarStyle.endsWith(".mov") || avatarStyle.includes("video"));
+
   if (size === "hero" || size === "desktop-hero") {
     return (
       <div className="relative flex flex-col items-center select-none">
@@ -415,9 +474,20 @@ export function DigitalAvatar({ state, size = "md", audioElement, avatarStyle }:
           transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }} />
         {/* Avatar */}
         <motion.div style={{ width: px, height: px * 1.12 }}
+          className="relative flex items-center justify-center overflow-hidden rounded-[32px] border-2 border-white/20 shadow-2xl bg-black/40"
           animate={state === "speaking" ? { y: [0, -3, 0] } : { y: 0 }}
           transition={{ duration: 1.3, repeat: state === "speaking" ? Infinity : 0, ease: "easeInOut" }}>
-          <AvatarSVG state={state} mouthOpen={mouthOpen} mouthPathOverride={audioElement ? getDynamicMouthPath(state, mouthOpen, mouthAmplitude) : undefined} avatarStyle={avatarStyle} idSuffix={idSuffix} />
+          {isUrl ? (
+            isVideo ? (
+              <video src={avatarStyle} autoPlay loop muted playsInline className="w-full h-full object-cover rounded-[30px]" />
+            ) : (
+              <motion.img src={avatarStyle} alt="Digital Avatar" className="w-full h-full object-cover rounded-[30px]"
+                animate={state === "speaking" ? { scale: [1, 1.02, 1] } : { scale: [1, 1.006, 1] }}
+                transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }} />
+            )
+          ) : (
+            <AvatarSVG state={state} mouthOpen={mouthOpen} mouthPathOverride={audioElement ? getDynamicMouthPath(state, mouthOpen, mouthAmplitude) : undefined} avatarStyle={avatarStyle} idSuffix={idSuffix} />
+          )}
         </motion.div>
         {/* Status label + wave */}
         <div className="flex flex-col items-center gap-1 mt-2">
@@ -442,7 +512,15 @@ export function DigitalAvatar({ state, size = "md", audioElement, avatarStyle }:
         transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }} />
       <div className="relative w-full h-full rounded-full overflow-hidden"
         style={{ border: `2px solid ${p.ring}`, boxShadow: `0 0 16px ${p.aura}` }}>
-        <AvatarSVG state={state} mouthOpen={mouthOpen} mouthPathOverride={audioElement ? getDynamicMouthPath(state, mouthOpen, mouthAmplitude) : undefined} avatarStyle={avatarStyle} idSuffix={idSuffix} />
+        {isUrl ? (
+          isVideo ? (
+            <video src={avatarStyle} autoPlay loop muted playsInline className="w-full h-full object-cover" />
+          ) : (
+            <img src={avatarStyle} alt="Digital Avatar" className="w-full h-full object-cover" />
+          )
+        ) : (
+          <AvatarSVG state={state} mouthOpen={mouthOpen} mouthPathOverride={audioElement ? getDynamicMouthPath(state, mouthOpen, mouthAmplitude) : undefined} avatarStyle={avatarStyle} idSuffix={idSuffix} />
+        )}
       </div>
       {size === "lg" && (
         <motion.div className="absolute -bottom-1 -right-1 rounded-full flex items-center justify-center"

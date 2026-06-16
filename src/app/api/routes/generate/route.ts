@@ -4,6 +4,7 @@ import { db } from "@/lib/db/client";
 import { routes } from "@/lib/db/schema/routes";
 import { spots } from "@/lib/db/schema/spots";
 import { ai } from "@eazo/sdk";
+import { deepseekChat } from "@/lib/api/deepseek";
 import { eq, inArray } from "drizzle-orm";
 
 export async function POST(request: NextRequest) {
@@ -50,8 +51,8 @@ ${spotList}
 
 只返回JSON，不要其他内容。`;
 
-    const response = await ai.chat({
-      model: "deepseek.v3.1",
+    const response = await deepseekChat({
+      model: "deepseek-v4-pro",
       messages: [{ role: "user", content: prompt }],
       max_tokens: 400,
     });

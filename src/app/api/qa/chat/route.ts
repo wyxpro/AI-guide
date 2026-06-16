@@ -4,6 +4,7 @@ import { db } from "@/lib/db/client";
 import { knowledgeDocs, qaLogs } from "@/lib/db/schema/admin";
 import { chatSessions } from "@/lib/db/schema/user-data";
 import { ai } from "@eazo/sdk";
+import { deepseekChat } from "@/lib/api/deepseek";
 import { getUserPreferences } from "@/lib/db/queries/user-data";
 import { isRateLimited } from "@/lib/api/rate-limit";
 import { getEmbedding, cosineSimilarity } from "@/lib/api/embedding";
@@ -146,8 +147,8 @@ export async function POST(request: NextRequest) {
       const stream = new ReadableStream({
         async start(controller) {
           try {
-            const result = await ai.chat({
-              model: "deepseek.v3.1",
+            const result = await deepseekChat({
+              model: "deepseek-v4-pro",
               messages,
               stream: true,
               max_tokens: 400,
@@ -207,8 +208,8 @@ export async function POST(request: NextRequest) {
     }
 
     // ── Non-streaming (default) ─────────────────────────────────────────────
-    const result = await ai.chat({
-      model: "deepseek.v3.1",
+    const result = await deepseekChat({
+      model: "deepseek-v4-pro",
       messages: [
         { role: "user", content: systemPrompt },
         ...chatHistory,
@@ -253,7 +254,7 @@ export async function POST(request: NextRequest) {
 }
 
 function getSentimentFromAnswer(text: string): "positive" | "neutral" | "negative" {
-  const match = text.match(/\[情感:\s*(愉快|高兴|开心|温和|伤感|抱歉|紧张|思考)\]/);
+  const match = text.match(/\[情感[:：]\s*(愉快|高兴|开心|温和|伤感|抱歉|紧张|思考)\]/);
   if (match) {
     const emo = match[1];
     if (/愉快|高兴|开心/.test(emo)) return "positive";
