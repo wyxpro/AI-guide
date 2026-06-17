@@ -155,7 +155,7 @@ export function ProfileScreen() {
       <div className="w-full max-w-[1280px] lg:mx-0 lg:pl-12 px-0 md:px-6 py-0 md:py-8 flex flex-col lg:flex-row gap-6 items-start">
 
         {/* ── Desktop Sidebar (Hidden on Mobile) ── */}
-        <aside className="hidden lg:block w-[220px] flex-shrink-0 bg-white rounded-[24px] border border-[#E2EAE5] p-6 shadow-sm h-fit">
+        <aside className="hidden lg:block w-[220px] lg:ml-20 flex-shrink-0 bg-white rounded-[24px] border border-[#E2EAE5] p-6 shadow-sm h-fit">
           <div className="flex items-center gap-3.5 mb-8">
             <img
               src={profileAvatar}
@@ -245,25 +245,25 @@ export function ProfileScreen() {
                         alt="User Avatar"
                       />
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
+                        <div className="flex items-center gap-2">
                           <h2 className="text-lg font-black">{displayName}</h2>
                           <span className="text-[9px] font-extrabold bg-[#D2A053] text-white px-1.5 py-0.5 rounded-md flex-shrink-0">{profileLevel}</span>
-                          
-                          {/* Redesigned Experience Mode Toggle Switcher */}
-                          <div className="bg-white/10 backdrop-blur-md border border-white/20 p-0.5 rounded-xl flex items-center gap-0.5 shadow-inner ml-2 flex-shrink-0">
-                            {(["standard", "elder", "child"] as Mode[]).map(m => (
-                              <button
-                                key={m}
-                                onClick={() => changeMode(m)}
-                                className={`text-[8.5px] font-bold px-2 py-0.5 rounded-lg transition-all cursor-pointer ${mode === m
-                                    ? "bg-white text-[#4F6F52] shadow-sm scale-105"
-                                    : "text-white/80 hover:text-white hover:bg-white/5"
-                                  }`}
-                              >
-                                {m === "standard" ? "标准" : m === "elder" ? "适老" : "童趣"}
-                              </button>
-                            ))}
-                          </div>
+                        </div>
+                        
+                        {/* Redesigned Experience Mode Toggle Switcher */}
+                        <div className="mt-2.5 bg-white/15 backdrop-blur-md border border-white/20 p-1 rounded-2xl flex items-center gap-1 shadow-inner w-fit">
+                          {(["standard", "elder", "child"] as Mode[]).map(m => (
+                            <button
+                              key={m}
+                              onClick={() => changeMode(m)}
+                              className={`text-[11px] md:text-[12px] font-black px-4 py-1.5 rounded-xl transition-all cursor-pointer ${mode === m
+                                  ? "bg-white text-[#4F6F52] shadow-sm scale-105"
+                                  : "text-white/80 hover:text-white hover:bg-white/5"
+                                }`}
+                            >
+                              {m === "standard" ? "标准" : m === "elder" ? "适老" : "童趣"}
+                            </button>
+                          ))}
                         </div>
                         <p className="text-[10px] text-white/70 mt-1 flex items-center gap-1">
                           <span>⚡ 9 步电</span>

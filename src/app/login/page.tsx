@@ -132,7 +132,7 @@ export default function LoginPage() {
     <div className="min-h-svh w-full flex bg-white overflow-hidden font-sans">
       
       {/* Left Panel - Dark thematic area (hidden on mobile, visible on lg+) */}
-      <div className="hidden lg:flex lg:w-[45%] bg-[#0B1311] relative flex-col justify-between p-16 text-white overflow-hidden select-none">
+      <div className="hidden lg:flex lg:w-[45%] bg-[#0B1311] relative flex-col justify-between px-12 py-20 text-white overflow-hidden select-none">
         
         {/* Constellation animated/mesh background */}
         <svg className="absolute inset-0 w-full h-full opacity-35 pointer-events-none" xmlns="http://www.w3.org/2000/svg">
@@ -157,60 +157,65 @@ export default function LoginPage() {
           <line x1="140" y1="550" x2="120" y2="180" stroke="rgba(16, 163, 127, 0.2)" strokeWidth="1" />
         </svg>
 
-        {/* Brand Logo & Name */}
-        <div className="flex items-center gap-3.5 z-10">
-          <div className="w-10 h-10 rounded-xl bg-[#10a37f] flex items-center justify-center text-white shadow-md shadow-[#10a37f]/20">
-            <svg className="w-5.5 h-5.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-            </svg>
-          </div>
-          <div>
-            <h2 className="text-base font-extrabold tracking-wide text-white">旅行家</h2>
-            <p className="text-[10px] text-neutral-500 font-medium mt-0.5">个性化多智能体伴游系统</p>
-          </div>
-        </div>
-
-        {/* Slogans and details */}
-        <div className="space-y-8 z-10 my-auto pr-6">
-          <div className="space-y-4">
-            <h1 className="text-4xl font-extrabold leading-tight text-white tracking-tight">
-              让旅行更<span className="text-[#10a37f] px-1">聪明</span>，<br />
-              让感悟更<span className="text-[#10a37f] px-1">精准</span>
-            </h1>
-            <p className="text-sm text-neutral-400 leading-relaxed max-w-sm">
-              基于多智能体协作，提供AI数字人伴游、景区文化历史深度讲解与个性化游览路线定制。
-            </p>
+        {/* Content Wrapper - Centered & bounded */}
+        <div className="w-full max-w-md mx-auto flex flex-col justify-between h-full z-10">
+          
+          {/* Brand Logo & Name */}
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-[#10a37f] flex items-center justify-center text-white shadow-md shadow-[#10a37f]/20">
+              <svg className="w-6.5 h-6.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-xl font-black tracking-wide text-white">旅行家</h2>
+              <p className="text-xs text-neutral-400 font-semibold mt-0.5">个性化多智能体伴游系统</p>
+            </div>
           </div>
 
-          {/* Features Checkmarks */}
-          <div className="space-y-4 pt-4">
-            {[
-              "伴游数字人多模态交互",
-              "景区文化历史深度讲解",
-              "沉浸式章节音视剧情",
-              "拍照识景即时互动体验"
-            ].map((text, idx) => (
-              <div key={idx} className="flex items-center gap-3.5">
-                <div className="w-5 h-5 rounded-full bg-[#10a37f]/10 border border-[#10a37f]/30 flex items-center justify-center text-[#10a37f] flex-shrink-0">
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
+          {/* Slogans and details */}
+          <div className="space-y-10 my-auto py-8">
+            <div className="space-y-5">
+              <h1 className="text-5xl font-black leading-tight text-white tracking-tight">
+                让旅行更<span className="text-[#10a37f] px-1">聪明</span>，<br />
+                让感悟更<span className="text-[#10a37f] px-1">精准</span>
+              </h1>
+              <p className="text-base text-neutral-400 leading-relaxed">
+                基于多智能体协作，提供AI数字人伴游、景区文化历史深度讲解与个性化游览路线定制。
+              </p>
+            </div>
+
+            {/* Features Checkmarks */}
+            <div className="space-y-5">
+              {[
+                "伴游数字人多模态交互",
+                "景区文化历史深度讲解",
+                "沉浸式章节音视剧情",
+                "拍照识景即时互动体验"
+              ].map((text, idx) => (
+                <div key={idx} className="flex items-center gap-4">
+                  <div className="w-6 h-6 rounded-full bg-[#10a37f]/10 border border-[#10a37f]/30 flex items-center justify-center text-[#10a37f] flex-shrink-0">
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <span className="text-base text-neutral-300 font-semibold">{text}</span>
                 </div>
-                <span className="text-sm text-neutral-300 font-medium">{text}</span>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Bottom stats badge */}
-        <div className="z-10 flex items-center gap-3 bg-[#14221F] border border-[#1E3A33]/60 rounded-2xl px-4 py-2.5 text-xs text-neutral-300 w-fit">
-          <div className="flex gap-1">
-            <span className="px-1.5 py-0.5 bg-[#10a37f] text-white rounded text-[9px] font-bold">陈</span>
-            <span className="px-1.5 py-0.5 bg-[#D2A053] text-white rounded text-[9px] font-bold">李</span>
-            <span className="px-1.5 py-0.5 bg-blue-600 text-white rounded text-[9px] font-bold">王</span>
-            <span className="px-1.5 py-0.5 bg-purple-600 text-white rounded text-[9px] font-bold">赵</span>
+          {/* Bottom stats badge */}
+          <div className="flex items-center gap-3.5 bg-[#14221F] border border-[#1E3A33]/60 rounded-2xl px-5 py-3 text-sm text-neutral-300 w-fit">
+            <div className="flex gap-1">
+              <span className="px-2 py-0.5 bg-[#10a37f] text-white rounded text-[10px] font-bold">陈</span>
+              <span className="px-2 py-0.5 bg-[#D2A053] text-white rounded text-[10px] font-bold">李</span>
+              <span className="px-2 py-0.5 bg-blue-600 text-white rounded text-[10px] font-bold">王</span>
+              <span className="px-2 py-0.5 bg-purple-600 text-white rounded text-[10px] font-bold">赵</span>
+            </div>
+            <span className="font-semibold text-neutral-200">50,000+ 位旅客正在使用</span>
           </div>
-          <span className="font-medium">50,000+ 位旅客正在使用</span>
+
         </div>
 
       </div>
