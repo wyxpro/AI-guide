@@ -89,7 +89,25 @@ export function QAScreen() {
   const [showCamera, setShowCamera] = useState(false);
   const [subtitle, setSubtitle] = useState(initMsg(spotName).content);
   const satisfactionShownRef = useRef(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const mobileBottomRef = useRef<HTMLDivElement>(null);
+  const desktopBottomRef = useRef<HTMLDivElement>(null);
+  const mobileScrollRef = useRef<HTMLDivElement>(null);
+  const desktopScrollRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = (behavior: ScrollBehavior = "smooth") => {
+    if (mobileBottomRef.current) {
+      mobileBottomRef.current.scrollIntoView({ behavior, block: "end" });
+    }
+    if (mobileScrollRef.current) {
+      mobileScrollRef.current.scrollTop = mobileScrollRef.current.scrollHeight;
+    }
+    if (desktopBottomRef.current) {
+      desktopBottomRef.current.scrollIntoView({ behavior, block: "end" });
+    }
+    if (desktopScrollRef.current) {
+      desktopScrollRef.current.scrollTop = desktopScrollRef.current.scrollHeight;
+    }
+  };
 
   // Audio playback and recording refs
   const recognitionRef = useRef<any>(null);
@@ -289,11 +307,17 @@ export function QAScreen() {
   }, [handleMouseMove]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-    const timer = setTimeout(() => {
-      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, 120);
-    return () => clearTimeout(timer);
+    scrollToBottom("auto");
+    const t1 = setTimeout(() => scrollToBottom("smooth"), 80);
+    const t2 = setTimeout(() => scrollToBottom("smooth"), 250);
+    const t3 = setTimeout(() => scrollToBottom("smooth"), 450);
+    const t4 = setTimeout(() => scrollToBottom("smooth"), 650);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      clearTimeout(t4);
+    };
   }, [messages, chatExpanded]);
 
   useEffect(() => {
@@ -500,7 +524,10 @@ export function QAScreen() {
                 copy[copy.length - 1] = { ...copy[copy.length - 1], content: clean };
                 return copy;
               });
-              bottomRef.current?.scrollIntoView({ behavior: "auto" });
+              if (mobileBottomRef.current) mobileBottomRef.current.scrollIntoView({ behavior: "auto", block: "end" });
+              if (mobileScrollRef.current) mobileScrollRef.current.scrollTop = mobileScrollRef.current.scrollHeight;
+              if (desktopBottomRef.current) desktopBottomRef.current.scrollIntoView({ behavior: "auto", block: "end" });
+              if (desktopScrollRef.current) desktopScrollRef.current.scrollTop = desktopScrollRef.current.scrollHeight;
               setSubtitle(clean);
               // Detect sentence boundary → flush TTS
               const sentenceEnd = /[。！？.!?]/.test(delta);
@@ -559,7 +586,7 @@ export function QAScreen() {
   // AvatarSelectorModal takes care of selection dialog now
 
   /* ── Message list (shared between mobile & desktop) ── */
-  const renderMessageList = (isMobileImmersive = false) => (
+  const renderMessageList = (isMobileImmersive = false, bottomRefToUse?: React.RefObject<HTMLDivElement | null>) => (
     <div className="space-y-3">
       {messages.map((msg, i) => (
         <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
@@ -620,7 +647,7 @@ export function QAScreen() {
           </div>
         </motion.div>
       ))}
-      <div ref={bottomRef} />
+      <div ref={bottomRefToUse} />
     </div>
   );
 
@@ -788,7 +815,7 @@ export function QAScreen() {
               <Sparkles className="w-3 h-3" />当前聚焦：<strong>{spotName}</strong>
             </motion.div>
           )}
-          <DigitalAvatar state={avatarState} size="hero" audioElement={audioRef.current} avatarStyle={avatarConfig?.avatarStyle} />
+          <DigitalAvatar state={avatarState} size="hero" audioElement={audioRef.current} avatarStyle={selectedStyle} />
         </div>
 
         {/* Chat drawer — fully transparent, no background mask */}
@@ -796,17 +823,17 @@ export function QAScreen() {
           animate={{ height: chatExpanded ? "42vh" : 0 }}
           transition={{ type: "spring", stiffness: 260, damping: 30 }}
           className="overflow-hidden flex-shrink-0 mx-3 rounded-t-2xl relative">
-          <div className="h-full overflow-y-auto px-4 py-3"
+          <div ref={mobileScrollRef} className="h-full overflow-y-auto px-4 py-3"
             style={{
               maskImage: "linear-gradient(to bottom, transparent 0%, black 12%, black 86%, transparent 100%)",
               WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 12%, black 86%, transparent 100%)",
             }}>
-            {renderMessageList(true)}
+            {renderMessageList(true, mobileBottomRef)}
           </div>
         </motion.div>
 
         {/* Input zone — styled like reference image */}
-        <div className="flex-shrink-0 px-3 pb-3 pt-2">
+        <div className="flex-shrink-0 px-3 pb-8 pt-2">
           {/* Quick prompts */}
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-none mb-2.5 px-1">
             {["揽月亭历史故事", "景区门票价格", "适合老人路线", "翠玉湖怎么走"].map((p) => (
@@ -1030,13 +1057,13 @@ export function QAScreen() {
           </div>
 
           {/* Messages — same immersive bubble style as mobile */}
-          <div className="flex-1 overflow-y-auto px-6 py-4"
+          <div ref={desktopScrollRef} className="flex-1 overflow-y-auto px-6 py-4"
             style={{
               background: "#FAF8F5",
               maskImage: "linear-gradient(to bottom, transparent 0%, black 6%, black 94%, transparent 100%)",
               WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 6%, black 94%, transparent 100%)",
             }}>
-            {renderMessageList(true)}
+            {renderMessageList(true, desktopBottomRef)}
           </div>
 
           {/* Input */}

@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MapPin, Heart, Clock, Settings, MessageSquare,
-  Share2, Image as ImageIcon, ChevronRight, ChevronLeft,
+  Share2, Image as ImageIcon, ChevronRight, ChevronLeft, ChevronDown,
   History, Trophy, Bell, Sun, Zap, Baby, ArrowRight, LogOut, X,
   Shield, Eye, BookOpen, Volume2, Trash2, HelpCircle, Info, Sparkles, Map, User, Navigation
 } from "lucide-react";
@@ -238,38 +238,40 @@ export function ProfileScreen() {
                   </div>
 
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-white w-full">
-                    <div className="flex items-center gap-4 w-full">
-                      <img
-                        src={profileAvatar}
-                        className="w-16 h-16 rounded-full border-2 border-white/60 object-cover shadow-lg flex-shrink-0"
-                        alt="User Avatar"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h2 className="text-lg font-black">{displayName}</h2>
-                          <span className="text-[9px] font-extrabold bg-[#D2A053] text-white px-1.5 py-0.5 rounded-md flex-shrink-0">{profileLevel}</span>
+                    <div className="flex flex-wrap items-center justify-between gap-4 w-full">
+                      <div className="flex items-center gap-4 min-w-0">
+                        <img
+                          src={profileAvatar}
+                          className="w-16 h-16 rounded-full border-2 border-white/60 object-cover shadow-lg flex-shrink-0"
+                          alt="User Avatar"
+                        />
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <h2 className="text-lg font-black">{displayName}</h2>
+                            <span className="text-[9px] font-extrabold bg-[#D2A053] text-white px-1.5 py-0.5 rounded-md flex-shrink-0">{profileLevel}</span>
+                          </div>
+                          <p className="text-[10px] text-white/70 mt-1 flex items-center gap-1">
+                            <span>⚡ 9 步电</span>
+                            <span>|</span>
+                            <span>📍 {profileRegion}</span>
+                          </p>
                         </div>
-                        
-                        {/* Redesigned Experience Mode Toggle Switcher */}
-                        <div className="mt-2.5 bg-white/15 backdrop-blur-md border border-white/20 p-1 rounded-2xl flex items-center gap-1 shadow-inner w-fit">
-                          {(["standard", "elder", "child"] as Mode[]).map(m => (
-                            <button
-                              key={m}
-                              onClick={() => changeMode(m)}
-                              className={`text-[11px] md:text-[12px] font-black px-4 py-1.5 rounded-xl transition-all cursor-pointer ${mode === m
-                                  ? "bg-white text-[#4F6F52] shadow-sm scale-105"
-                                  : "text-white/80 hover:text-white hover:bg-white/5"
-                                }`}
-                            >
-                              {m === "standard" ? "标准" : m === "elder" ? "适老" : "童趣"}
-                            </button>
-                          ))}
-                        </div>
-                        <p className="text-[10px] text-white/70 mt-1 flex items-center gap-1">
-                          <span>⚡ 9 步电</span>
-                          <span>|</span>
-                          <span>📍 {profileRegion}</span>
-                        </p>
+                      </div>
+
+                      {/* Redesigned Experience Mode Toggle Switcher - Moved to the right */}
+                      <div className="bg-white/15 backdrop-blur-md border border-white/20 p-1 rounded-2xl flex items-center gap-1 shadow-inner flex-shrink-0">
+                        {(["standard", "elder", "child"] as Mode[]).map(m => (
+                          <button
+                            key={m}
+                            onClick={() => changeMode(m)}
+                            className={`text-[11px] md:text-[12px] font-black px-3.5 py-1.5 rounded-xl transition-all cursor-pointer ${mode === m
+                                ? "bg-white text-[#4F6F52] shadow-sm scale-105"
+                                : "text-white/80 hover:text-white hover:bg-white/5"
+                              }`}
+                          >
+                            {m === "standard" ? "标准" : m === "elder" ? "适老" : "童趣"}
+                          </button>
+                        ))}
                       </div>
                     </div>
                   </div>
@@ -985,17 +987,22 @@ export function ProfileScreen() {
                 {/* Level / Travel Title */}
                 <div className="space-y-1.5">
                   <label className="text-[11px] font-black text-[#5C6B73] block">旅行达人称号</label>
-                  <select
-                    value={editLevel}
-                    onChange={(e) => setEditLevel(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-[#E6E2D8] bg-white text-xs outline-none focus:border-[#4F6F52] transition-all"
-                  >
-                    <option value="Lv.5 问鼎江山">Lv.5 问鼎江山</option>
-                    <option value="Lv.4 独步江湖">Lv.4 独步江湖</option>
-                    <option value="Lv.3 寻幽探秘">Lv.3 寻幽探秘</option>
-                    <option value="Lv.2 浮生半闲">Lv.2 浮生半闲</option>
-                    <option value="Lv.1 初出茅庐">Lv.1 初出茅庐</option>
-                  </select>
+                  <div className="relative">
+                    <select
+                      value={editLevel}
+                      onChange={(e) => setEditLevel(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#E6E2D8] bg-white text-zinc-800 text-xs outline-none focus:border-[#4F6F52] focus:ring-1 focus:ring-[#4F6F52] appearance-none transition-all cursor-pointer"
+                    >
+                      <option value="Lv.5 问鼎江山">Lv.5 问鼎江山</option>
+                      <option value="Lv.4 独步江湖">Lv.4 独步江湖</option>
+                      <option value="Lv.3 寻幽探秘">Lv.3 寻幽探秘</option>
+                      <option value="Lv.2 浮生半闲">Lv.2 浮生半闲</option>
+                      <option value="Lv.1 初出茅庐">Lv.1 初出茅庐</option>
+                    </select>
+                    <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#8F9F8F]">
+                      <ChevronDown className="w-4 h-4" />
+                    </div>
+                  </div>
                 </div>
 
                 {/* Gender selector */}

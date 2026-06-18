@@ -87,7 +87,6 @@ export function RoutesScreen() {
 
   // Auto-play TTS switch
   const [autoplayEnabled, setAutoplayEnabled] = useState(false);
-  const [routeGenExpanded, setRouteGenExpanded] = useState(false);
 
   const dragControls = useDragControls();
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -570,56 +569,16 @@ export function RoutesScreen() {
           </div>
         </div>
 
-        {/* Draggable & Expandable Smart Route Generator Button */}
-        <motion.div
+        {/* Floating Smart Route Generator Button */}
+        <motion.button
           drag
           dragMomentum={false}
-          className="absolute z-30 touch-none"
-          style={{ right: 12, top: "370px" }}
+          onClick={() => setShowGeneratorDrawer(true)}
+          className="absolute z-30 touch-none w-12 h-12 rounded-full border-2 border-white flex items-center justify-center text-lg shadow-2xl cursor-pointer active:scale-95 transition-all duration-200"
+          style={{ right: 12, top: "370px", backgroundColor: "#1D4ED8", boxShadow: "0 8px 24px rgba(29, 78, 216, 0.45)" }}
         >
-          <motion.div
-            layout
-            className="flex flex-row-reverse items-center shadow-2xl border border-orange-500/40 backdrop-blur-md overflow-hidden bg-zinc-900/95"
-            style={{
-              borderRadius: routeGenExpanded ? "16px" : "28px",
-              padding: "8px",
-              boxShadow: "0 12px 40px rgba(249, 115, 22, 0.15)"
-            }}
-          >
-            {/* The circle button avatar on the right */}
-            <motion.button
-              layout
-              onClick={() => setRouteGenExpanded(!routeGenExpanded)}
-              className="w-12 h-12 rounded-full bg-zinc-800 border border-orange-500/60 flex items-center justify-center text-sm font-bold text-orange-400 shadow-md flex-shrink-0 cursor-pointer active:scale-95 transition-transform"
-            >
-              🧭
-            </motion.button>
-
-            {/* Expanded Content on the left */}
-            <AnimatePresence>
-              {routeGenExpanded && (
-                <motion.div
-                  initial={{ width: 0, opacity: 0 }}
-                  animate={{ width: 220, opacity: 1 }}
-                  exit={{ width: 0, opacity: 0 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  className="overflow-hidden flex items-center gap-3 pr-3"
-                >
-                  <div className="flex flex-col text-left w-32 flex-shrink-0">
-                    <h4 className="text-xs font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500" style={{ fontFamily: "var(--font-noto-serif)" }}>专属路线生成</h4>
-                    <p className="text-[9px] text-zinc-300 mt-0.5 leading-tight truncate">智能AI量身规划路径</p>
-                  </div>
-                  <button
-                    onClick={() => { setShowGeneratorDrawer(true); setRouteGenExpanded(false); }}
-                    className="px-3 py-1.5 bg-gradient-to-r from-orange-500 to-[#FF5B45] hover:from-orange-600 hover:to-[#e04f3b] text-white text-[10px] font-black rounded-lg shadow-md shadow-orange-500/20 whitespace-nowrap cursor-pointer transition-all duration-200"
-                  >
-                    去生成
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
-        </motion.div>
+          🧭
+        </motion.button>
 
         {/* GPS location target button */}
         <button

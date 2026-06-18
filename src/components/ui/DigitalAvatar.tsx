@@ -474,7 +474,7 @@ export function DigitalAvatar({ state, size = "md", audioElement, avatarStyle }:
           transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }} />
         {/* Avatar */}
         <motion.div style={{ width: px, height: px * 1.12 }}
-          className="relative flex items-center justify-center overflow-hidden rounded-[32px] border-2 border-white/20 shadow-2xl bg-black/40"
+          className="relative flex items-center justify-center overflow-hidden bg-transparent"
           animate={state === "speaking" ? { y: [0, -3, 0] } : { y: 0 }}
           transition={{ duration: 1.3, repeat: state === "speaking" ? Infinity : 0, ease: "easeInOut" }}>
           {isUrl ? (

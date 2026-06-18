@@ -3,11 +3,11 @@ import { db } from "@/lib/db/client";
 import { avatarConfigs } from "@/lib/db/schema/admin";
 import { eq, desc } from "drizzle-orm";
 
-// 5 Female & 5 Male realistic portrait presets
+// 5 Female & 5 Male cartoon-vector style avatar presets with photo previews
 const DEFAULT_PRESETS = [
   {
     name: "AI数字人",
-    avatarStyle: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&h=400&q=80",
+    avatarStyle: "female_hanfu",
     voiceStyle: "lively",
     speechRate: 100,
     pitch: 100,
@@ -18,7 +18,7 @@ const DEFAULT_PRESETS = [
   },
   {
     name: "职场专家",
-    avatarStyle: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&h=400&q=80",
+    avatarStyle: "female_business",
     voiceStyle: "professional",
     speechRate: 100,
     pitch: 100,
@@ -29,7 +29,7 @@ const DEFAULT_PRESETS = [
   },
   {
     name: "元气甜妹",
-    avatarStyle: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&h=400&q=80",
+    avatarStyle: "female_anchor",
     voiceStyle: "lively",
     speechRate: 105,
     pitch: 110,
@@ -40,7 +40,7 @@ const DEFAULT_PRESETS = [
   },
   {
     name: "古风女子",
-    avatarStyle: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=400&h=400&q=80",
+    avatarStyle: "female_hanfu",
     voiceStyle: "warm",
     speechRate: 95,
     pitch: 95,
@@ -51,7 +51,7 @@ const DEFAULT_PRESETS = [
   },
   {
     name: "韩系女神",
-    avatarStyle: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&h=400&q=80",
+    avatarStyle: "female_student",
     voiceStyle: "warm",
     speechRate: 100,
     pitch: 105,
@@ -62,7 +62,7 @@ const DEFAULT_PRESETS = [
   },
   {
     name: "元气少年",
-    avatarStyle: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=400&h=400&q=80",
+    avatarStyle: "male_student",
     voiceStyle: "lively",
     speechRate: 105,
     pitch: 100,
@@ -73,7 +73,7 @@ const DEFAULT_PRESETS = [
   },
   {
     name: "商业精英",
-    avatarStyle: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&h=400&q=80",
+    avatarStyle: "male_business",
     voiceStyle: "professional",
     speechRate: 100,
     pitch: 90,
@@ -84,7 +84,7 @@ const DEFAULT_PRESETS = [
   },
   {
     name: "潮流酷哥",
-    avatarStyle: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&h=400&q=80",
+    avatarStyle: "male_cool",
     voiceStyle: "lively",
     speechRate: 100,
     pitch: 95,
@@ -95,7 +95,7 @@ const DEFAULT_PRESETS = [
   },
   {
     name: "阳光运动男",
-    avatarStyle: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=400&h=400&q=80",
+    avatarStyle: "male_anchor",
     voiceStyle: "lively",
     speechRate: 105,
     pitch: 100,
@@ -106,7 +106,7 @@ const DEFAULT_PRESETS = [
   },
   {
     name: "儒雅书生",
-    avatarStyle: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&h=400&q=80",
+    avatarStyle: "male_scholar",
     voiceStyle: "warm",
     speechRate: 90,
     pitch: 95,
@@ -121,8 +121,8 @@ export async function GET() {
   try {
     let configs = await db.select().from(avatarConfigs).where(eq(avatarConfigs.isActive, true)).orderBy(desc(avatarConfigs.createdAt));
     
-    // Seed database if configurations are incomplete or outdated
-    if (configs.length < 10) {
+    // Seed database if configurations are incomplete, outdated, or using URL avatarStyle
+    if (configs.length < 10 || (configs[0] && configs[0].avatarStyle.startsWith("http"))) {
       await db.delete(avatarConfigs);
       for (const preset of DEFAULT_PRESETS) {
         await db.insert(avatarConfigs).values(preset);
