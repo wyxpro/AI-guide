@@ -278,7 +278,7 @@ function PCView() {
       {/* Desktop Footer */}
       <footer className="w-full bg-white border-t border-zinc-200/60 py-6 mt-16 px-6">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between text-xs text-zinc-400">
-          <span>© 2026 旅行家智能景区导游系统. All Rights Reserved.</span>
+          <span>© 2026 旅行家ProPro智能景区导游系统. All Rights Reserved.</span>
           <div className="flex gap-4 mt-2 md:mt-0">
             <a href="#" className="hover:text-zinc-600">服务条款</a>
             <a href="#" className="hover:text-zinc-600">隐私权政策</a>

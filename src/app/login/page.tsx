@@ -130,10 +130,10 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-svh w-full flex bg-white overflow-hidden font-sans">
-      
+
       {/* Left Panel - Dark thematic area (hidden on mobile, visible on lg+) */}
       <div className="hidden lg:flex lg:w-[45%] bg-[#0B1311] relative flex-col justify-between px-12 py-20 text-white overflow-hidden select-none">
-        
+
         {/* Constellation animated/mesh background */}
         <svg className="absolute inset-0 w-full h-full opacity-35 pointer-events-none" xmlns="http://www.w3.org/2000/svg">
           <defs>
@@ -159,7 +159,7 @@ export default function LoginPage() {
 
         {/* Content Wrapper - Centered & bounded */}
         <div className="w-full max-w-md mx-auto flex flex-col justify-between h-full z-10">
-          
+
           {/* Brand Logo & Name */}
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-[#10a37f] flex items-center justify-center text-white shadow-md shadow-[#10a37f]/20">
@@ -168,7 +168,7 @@ export default function LoginPage() {
               </svg>
             </div>
             <div>
-              <h2 className="text-xl font-black tracking-wide text-white">旅行家</h2>
+              <h2 className="text-xl font-black tracking-wide text-white">旅行家ProPro</h2>
               <p className="text-xs text-neutral-400 font-semibold mt-0.5">个性化多智能体伴游系统</p>
             </div>
           </div>
@@ -222,7 +222,7 @@ export default function LoginPage() {
 
       {/* Right Panel - Form panel */}
       <div className="w-full lg:w-[55%] flex items-center justify-center p-6 md:p-16 bg-white relative">
-        
+
         {/* Back Link at the top-right */}
         <button
           onClick={() => router.push("/welcome")}
@@ -233,7 +233,7 @@ export default function LoginPage() {
 
         {/* Central Card Form */}
         <div className="w-full max-w-sm flex flex-col justify-center">
-          
+
           {/* Welcome Titles */}
           <div>
             <h2 className="text-2xl font-black text-neutral-900 tracking-tight">欢迎回来 👋</h2>
@@ -245,22 +245,20 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => setTab("password")}
-              className={`py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                tab === "password"
+              className={`py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${tab === "password"
                   ? "bg-white text-neutral-900 shadow-sm"
                   : "text-neutral-500 hover:text-neutral-800"
-              }`}
+                }`}
             >
               登录
             </button>
             <button
               type="button"
               onClick={() => setTab("code")}
-              className={`py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                tab === "code"
+              className={`py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${tab === "code"
                   ? "bg-white text-neutral-900 shadow-sm"
                   : "text-neutral-500 hover:text-neutral-800"
-              }`}
+                }`}
             >
               注册
             </button>
@@ -268,7 +266,7 @@ export default function LoginPage() {
 
           {/* Form Content */}
           <form onSubmit={handleLogin} className="mt-6 space-y-4">
-            
+
             {/* Email Field */}
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-neutral-700">邮箱</label>

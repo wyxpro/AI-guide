@@ -68,7 +68,7 @@ function initMsg(spotName?: string | null): Message {
     role: "assistant",
     content: spotName
       ? `您好！我已为您准备好「${spotName}」的详细讲解，想了解历史渊源、文化典故还是游览小贴士？`
-      : "您好！我是旅行家AI导览官小玉，随时为您解答景区一切问题。可语音提问，也可文字输入。",
+      : "您好！我是旅行家ProProAI导览官小玉，随时为您解答景区一切问题。可语音提问，也可文字输入。",
     timestamp: "刚刚",
   };
 }
@@ -670,11 +670,11 @@ export function QAScreen() {
       <motion.button whileTap={{ scale: 0.84 }} onClick={toggleRecording}
         className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 relative shadow-md transition-all hover:brightness-105"
         style={{
-          background: recording 
-            ? "linear-gradient(135deg,#EF4444,#DC2626)" 
+          background: recording
+            ? "linear-gradient(135deg,#EF4444,#DC2626)"
             : "linear-gradient(135deg,#10B981,#059669)",
-          boxShadow: recording 
-            ? "0 2px 8px rgba(220, 38, 38, 0.3)" 
+          boxShadow: recording
+            ? "0 2px 8px rgba(220, 38, 38, 0.3)"
             : "0 2px 8px rgba(5, 150, 105, 0.3)",
           border: "1.5px solid rgba(255, 255, 255, 0.25)",
           color: "white",
@@ -748,7 +748,7 @@ export function QAScreen() {
             <motion.div animate={{ backgroundColor: loading ? "#D2A053" : "#34C759" }}
               className="w-2 h-2 rounded-full" />
             <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.45)" }}>
-              {loading ? "小玉思考中…" : "旅行家导览官 · 在线"}
+              {loading ? "小玉思考中…" : "旅行家ProPro导览官 · 在线"}
             </span>
           </div>
           <div className="flex gap-2 relative">
@@ -951,7 +951,7 @@ export function QAScreen() {
           {/* Desktop Left Panel Floating Controls */}
           <div className="absolute top-8 left-4 right-4 flex justify-between items-center z-20">
             <div className="text-[11px] font-medium tracking-wide text-white/50 bg-black/30 backdrop-blur px-2.5 py-1 rounded-full border border-white/5">
-              旅行家导览官 · 在线
+              旅行家ProPro导览官 · 在线
             </div>
             <div className="flex gap-2 relative">
               <motion.button whileTap={{ scale: 0.85 }} onClick={() => { setShowBgMenu(!showBgMenu); setShowPersonaMenu(false); }}

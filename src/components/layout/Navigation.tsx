@@ -136,7 +136,7 @@ export function SidebarNav({ isAdmin }: { isAdmin: boolean }) {
             <div className="min-w-0">
               <p className={`text-[18px] font-bold truncate transition-colors ${isAdmin ? "text-white/90 group-hover:text-[#D2A053]" : "text-[#1E2522] group-hover:text-[#4F6F52]"}`}
                 style={{ fontFamily: "var(--font-noto-serif)" }}>
-                旅行家
+                旅行家ProPro
               </p>
               <p className="text-[13px] truncate transition-colors group-hover:opacity-80"
                 style={{ color: isAdmin ? "rgba(255,255,255,0.35)" : "#8F9F8F" }}>

@@ -181,8 +181,8 @@ export function ProfileScreen() {
                 key={item.id}
                 onClick={() => setActiveSection(item.id as ActiveSection)}
                 className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-[13px] font-bold transition-all ${activeSection === item.id
-                    ? "bg-[#EBF3EE] text-[#4F6F52]"
-                    : "text-zinc-600 hover:bg-zinc-50"
+                  ? "bg-[#EBF3EE] text-[#4F6F52]"
+                  : "text-zinc-600 hover:bg-zinc-50"
                   }`}
               >
                 <item.icon className={`w-4 h-4 ${activeSection === item.id ? "text-[#4F6F52]" : "text-zinc-400"}`} />
@@ -265,8 +265,8 @@ export function ProfileScreen() {
                             key={m}
                             onClick={() => changeMode(m)}
                             className={`text-[11px] md:text-[12px] font-black px-3.5 py-1.5 rounded-xl transition-all cursor-pointer ${mode === m
-                                ? "bg-white text-[#4F6F52] shadow-sm scale-105"
-                                : "text-white/80 hover:text-white hover:bg-white/5"
+                              ? "bg-white text-[#4F6F52] shadow-sm scale-105"
+                              : "text-white/80 hover:text-white hover:bg-white/5"
                               }`}
                           >
                             {m === "standard" ? "标准" : m === "elder" ? "适老" : "童趣"}
@@ -549,8 +549,8 @@ export function ProfileScreen() {
                       key={tag.id}
                       onClick={() => setFavoriteTag(tag.id as any)}
                       className={`text-[10.5px] font-bold px-3.5 py-1.5 rounded-full transition-colors flex-shrink-0 cursor-pointer ${favoriteTag === tag.id
-                          ? "bg-[#4F6F52] text-white"
-                          : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+                        ? "bg-[#4F6F52] text-white"
+                        : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
                         }`}
                     >
                       {tag.label}
@@ -667,8 +667,8 @@ export function ProfileScreen() {
                           key={item.id}
                           onClick={() => toggleInterest(item.id)}
                           className={`p-3.5 rounded-2xl border transition-all flex items-center justify-between cursor-pointer ${checked
-                              ? "bg-[#EBF3EE] border-[#4F6F52]/30 text-[#4F6F52]"
-                              : "bg-white border-[#EEF2F0] text-zinc-700 hover:bg-neutral-50"
+                            ? "bg-[#EBF3EE] border-[#4F6F52]/30 text-[#4F6F52]"
+                            : "bg-white border-[#EEF2F0] text-zinc-700 hover:bg-neutral-50"
                             }`}
                         >
                           <div className="flex items-center gap-3">
@@ -882,7 +882,7 @@ export function ProfileScreen() {
 
               <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
                 {[
-                  { title: "旅行家智慧系统版本升级", time: "10分钟前", detail: "已全面更新至 1.2.0 版本。全新引入 3D 拟真对谈数字人与智能避堵路线规划系统，让每一次出游更加得心应手。", type: "update" },
+                  { title: "旅行家ProPro智慧系统版本升级", time: "10分钟前", detail: "已全面更新至 1.2.0 版本。全新引入 3D 拟真对谈数字人与智能避堵路线规划系统，让每一次出游更加得心应手。", type: "update" },
                   { title: "今日景区游览与气象指南", time: "2小时前", detail: "今日气温 22℃-28℃，微风，紫外线强度中等。部分路段正在进行防滑绿化作业，请游客朋友在溪流栈道行走时注意慢行。", type: "info" },
                   { title: "览月亭落日集章特惠活动", time: "5小时前", detail: "今天下午 16:30 至 18:30，在揽月亭与 AI 数字人成功开启对话并上传任意落日合影，即可至服务中心兑换景区定制版精美古风徽章一枚！数量有限，先到先得。", type: "promo" }
                 ].map((notif, idx) => (
@@ -1015,8 +1015,8 @@ export function ProfileScreen() {
                         key={g}
                         onClick={() => setEditGender(g)}
                         className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-all ${editGender === g
-                            ? "bg-[#4F6F52] border-[#4F6F52] text-white shadow-sm"
-                            : "bg-white border-[#E6E2D8] text-zinc-600 hover:bg-neutral-50"
+                          ? "bg-[#4F6F52] border-[#4F6F52] text-white shadow-sm"
+                          : "bg-white border-[#E6E2D8] text-zinc-600 hover:bg-neutral-50"
                           }`}
                       >
                         {g}

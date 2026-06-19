@@ -87,7 +87,7 @@ const RADAR_METRICS = [
 
 const COMP_PRODUCTS = [
   {
-    name: "旅行家",
+    name: "旅行家ProPro",
     color: "#4F6F52",
     fill: "rgba(79, 111, 82, 0.4)",
     points: "150,55 235.6,122.2 205.8,226.9 92.4,229.3 64.4,122.2", // Values: 95, 90, 95, 98, 90
@@ -296,7 +296,7 @@ export default function WelcomePage() {
             </div>
             <div>
               <h1 className="text-[17px] font-black tracking-wide" style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}>
-                旅行家
+                旅行家ProPro
               </h1>
               <p className="text-[10px] tracking-widest text-[#8F9F8F] uppercase">Next-Gen Virtual Guide</p>
             </div>
@@ -374,7 +374,7 @@ export default function WelcomePage() {
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold"
             style={{ background: "rgba(210,160,83,0.12)", color: "#D2A053", border: "1px solid rgba(210,160,83,0.25)" }}
           >
-            <Sparkles className="w-3.5 h-3.5 animate-pulse" /> 旅行家·AI智能交互导览系统
+            <Sparkles className="w-3.5 h-3.5 animate-pulse" /> 旅行家ProPro·AI智能交互导览系统
           </motion.div>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
@@ -470,7 +470,7 @@ export default function WelcomePage() {
 
               {/* Digital Human Name & Speech Bubble */}
               <div className="text-center space-y-1.5">
-                <h4 className="text-[#FAF8F5] text-sm font-bold tracking-wider" style={{ fontFamily: "var(--font-noto-serif)" }}>旅行家AI向导「小旅」</h4>
+                <h4 className="text-[#FAF8F5] text-sm font-bold tracking-wider" style={{ fontFamily: "var(--font-noto-serif)" }}>旅行家ProProAI向导「小旅」</h4>
                 <p className="text-[11px] text-[#8F9F8F] px-4 py-1.5 rounded-xl bg-white/5 border border-white/10 italic">
                   &ldquo;您好，我是您的AI导游，今天想去揽月亭还是翠玉湖呢？&rdquo;
                 </p>
@@ -498,7 +498,7 @@ export default function WelcomePage() {
       {/* Featured Capabilities (特色功能) - 3D Auto-play Carousel (Light Theme & Upload Style) */}
       <section id="feature" className="py-24 bg-[#FAF8F5] border-y border-[#E6E2D8] relative overflow-hidden text-[#1E2522]">
         {/* Subtle background glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] rounded-full filter blur-[120px] pointer-events-none opacity-10" 
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] rounded-full filter blur-[120px] pointer-events-none opacity-10"
           style={{ background: "radial-gradient(circle, #4F6F52 0%, transparent 70%)" }} />
 
         <div className="max-w-7xl mx-auto px-6 relative z-10">
@@ -599,14 +599,14 @@ export default function WelcomePage() {
                   }}
                   transition={{ type: "spring", stiffness: 150, damping: 22 }}
                   style={{
-                    background: isActive 
-                      ? "linear-gradient(180deg, #FFFFFF 0%, #FFFDF9 100%)" 
+                    background: isActive
+                      ? "linear-gradient(180deg, #FFFFFF 0%, #FFFDF9 100%)"
                       : "linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(250, 248, 245, 0.9) 100%)",
-                    border: isActive 
-                      ? `2px solid ${f.color}` 
+                    border: isActive
+                      ? `2px solid ${f.color}`
                       : `1px solid ${f.color}40`,
-                    boxShadow: isActive 
-                      ? `0 20px 45px -12px ${f.color}35` 
+                    boxShadow: isActive
+                      ? `0 20px 45px -12px ${f.color}35`
                       : `0 4px 15px -3px ${f.color}10`
                   }}
                   className={`absolute w-[260px] md:w-[350px] h-[340px] md:h-[380px] rounded-3xl p-6 md:p-8 flex flex-col justify-between cursor-pointer select-none transition-shadow duration-300 group`}
@@ -637,12 +637,12 @@ export default function WelcomePage() {
                     </div>
                   </div>
 
-                  <div 
+                  <div
                     onClick={(e) => {
                       e.stopPropagation();
                       handleStart();
                     }}
-                    className="pt-4 mt-4 border-t border-[#E6E2D8] flex items-center gap-2 text-xs font-black transition-all duration-300 hover:opacity-80 justify-start" 
+                    className="pt-4 mt-4 border-t border-[#E6E2D8] flex items-center gap-2 text-xs font-black transition-all duration-300 hover:opacity-80 justify-start"
                     style={{ color: f.color }}
                   >
                     <span>立即体验</span>
@@ -662,8 +662,8 @@ export default function WelcomePage() {
                 className="h-2 rounded-full transition-all duration-300"
                 style={{
                   width: activeFeatureIndex === idx ? "24px" : "8px",
-                  backgroundColor: activeFeatureIndex === idx 
-                    ? "#4F6F52" 
+                  backgroundColor: activeFeatureIndex === idx
+                    ? "#4F6F52"
                     : "rgba(79, 111, 82, 0.2)"
                 }}
               />
@@ -679,7 +679,7 @@ export default function WelcomePage() {
             <span className="text-xs font-bold tracking-widest text-[#D2A053] uppercase">Competitor Analysis</span>
             <h3 className="text-3xl md:text-4xl font-black" style={{ fontFamily: "var(--font-noto-serif)" }}>核心指标大PK，AI导览完胜</h3>
             <div className="w-12 h-1 rounded bg-[#D2A053] mx-auto mt-2" />
-            <p className="text-sm text-[#8F9F8F] max-w-xl mx-auto">对比传统语音指南App与昂贵的人工导游，旅行家提供高性价比、全方位的完美体验。</p>
+            <p className="text-sm text-[#8F9F8F] max-w-xl mx-auto">对比传统语音指南App与昂贵的人工导游，旅行家ProPro提供高性价比、全方位的完美体验。</p>
           </div>
 
           {/* Radar Chart & Details */}
@@ -767,7 +767,7 @@ export default function WelcomePage() {
                 <thead>
                   <tr style={{ background: "#F5F0E8" }}>
                     <th className="px-5 py-4 text-xs font-bold text-[#8F9F8F] uppercase">评测维度</th>
-                    <th className="px-5 py-4 text-xs font-bold text-[#4F6F52] uppercase">旅行家</th>
+                    <th className="px-5 py-4 text-xs font-bold text-[#4F6F52] uppercase">旅行家ProPro</th>
                     <th className="px-5 py-4 text-xs font-bold text-[#8F9F8F] uppercase">传统导览App</th>
                     <th className="px-5 py-4 text-xs font-bold text-[#D2A053] uppercase">人工金牌导游</th>
                   </tr>
@@ -813,8 +813,8 @@ export default function WelcomePage() {
                   onMouseEnter={() => setActivePersona(i)}
                   onClick={() => setActivePersona(i)}
                   className={`w-full p-5 rounded-2xl text-left border transition-all flex items-center gap-4 ${activePersona === i
-                      ? "border-l-4 bg-white shadow-md"
-                      : "border-[#E6E2D8] bg-[#FAF8F5] opacity-75 hover:opacity-100"
+                    ? "border-l-4 bg-white shadow-md"
+                    : "border-[#E6E2D8] bg-[#FAF8F5] opacity-75 hover:opacity-100"
                     }`}
                   style={{ borderLeftColor: activePersona === i ? p.themeColor : undefined }}
                 >
@@ -888,7 +888,7 @@ export default function WelcomePage() {
           <span className="text-xs font-bold tracking-widest text-[#4F6F52] uppercase">Reviews</span>
           <h3 className="text-3xl md:text-4xl font-black" style={{ fontFamily: "var(--font-noto-serif)" }}>听听他们怎么说</h3>
           <div className="w-12 h-1 rounded bg-[#4F6F52] mx-auto mt-2" />
-          <p className="text-sm text-[#8F9F8F] max-w-xl mx-auto">数万名来自全国各地的游客体验了旅行家的陪伴游，真实好评如潮。</p>
+          <p className="text-sm text-[#8F9F8F] max-w-xl mx-auto">数万名来自全国各地的游客体验了旅行家ProPro的陪伴游，真实好评如潮。</p>
         </div>
 
         {/* Custom Keyframe Styles */}
@@ -1059,7 +1059,7 @@ export default function WelcomePage() {
                 style={{ background: "linear-gradient(135deg,#D2A053,#B8843A)" }}>
                 旅
               </div>
-              <span className="text-white font-bold text-base" style={{ fontFamily: "var(--font-noto-serif)" }}>旅行家</span>
+              <span className="text-white font-bold text-base" style={{ fontFamily: "var(--font-noto-serif)" }}>旅行家ProPro</span>
             </div>
             <p className="text-xs leading-relaxed max-w-xl">
               智能AI数字导览系统。将现代AI数字人对谈与景点人文底蕴完美结合，开启沉浸导览新纪元。
@@ -1073,9 +1073,9 @@ export default function WelcomePage() {
               <a href="#feature" className="hover:text-white transition-colors">特色功能</a>
               <span className="text-white/10">•</span>
               <a href="#membership" className="hover:text-white transition-colors">尊享会员计划</a>
-              
+
               <span className="text-white/20 mx-2 hidden lg:inline">|</span>
-              
+
               <span className="text-white font-bold">关于我们：</span>
               <span>智慧文旅开发组</span>
               <span className="text-white/10">•</span>
@@ -1101,7 +1101,7 @@ export default function WelcomePage() {
         </div>
 
         <div className="max-w-7xl mx-auto px-6 mt-12 pt-6 border-t border-white/5 text-center text-[10px]">
-          <p>© {new Date().getFullYear()} 旅行家 Inc. 保留所有权利。由 Eazo Platform 强力驱动。</p>
+          <p>© {new Date().getFullYear()} 旅行家ProPro Inc. 保留所有权利。由 Eazo Platform 强力驱动。</p>
         </div>
       </footer>
     </div>
