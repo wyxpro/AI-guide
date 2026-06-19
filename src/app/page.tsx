@@ -1072,9 +1072,9 @@ export default function WelcomePage() {
           }
           .avatar-hair-front {
             width: 80px;
-            height: 50px;
+            height: 22px;
             background: #3b2a20;
-            border-radius: 40px 40px 10px 10px;
+            border-radius: 40px 40px 0 0;
             position: absolute;
             top: 35px;
             left: 30px;
@@ -1230,21 +1230,36 @@ export default function WelcomePage() {
 
               {/* Right Phone Simulator */}
               <div className="lg:col-span-5 flex justify-center">
-                <div className="w-[290px] h-[480px] bg-[#0D130E] border-[8px] border-[#1C261E] rounded-[40px] shadow-2xl overflow-hidden flex flex-col relative scale-[1.03]">
+                <div 
+                  className="w-[290px] h-[580px] border-[8px] rounded-[40px] shadow-2xl overflow-hidden flex flex-col relative scale-[1.03]"
+                  style={{ backgroundColor: "#0D130E", borderColor: "#1C261E" }}
+                >
                   {/* Notch */}
-                  <div className="w-[120px] h-[18px] bg-[#1C261E] absolute top-0 left-1/2 -translate-x-1/2 rounded-b-[15px] z-20" />
+                  <div 
+                    className="w-[120px] h-[18px] absolute top-0 left-1/2 -translate-x-1/2 rounded-b-[15px] z-20"
+                    style={{ backgroundColor: "#1C261E" }}
+                  />
 
                   {/* Screen Content */}
                   <div className="flex-1 flex flex-col p-4 pt-6 relative select-none text-left">
                     {/* Header */}
-                    <div className="flex justify-between items-center pb-2 border-b border-[#4F6F52]/20 mb-3">
+                    <div 
+                      className="flex justify-between items-center pb-2 border-b mb-3"
+                      style={{ borderBottomColor: "rgba(79, 111, 82, 0.2)" }}
+                    >
                       <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#D2A053] to-[#4F6F52] flex items-center justify-center text-[10px] font-bold text-white">
+                        <div 
+                          className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
+                          style={{ background: "linear-gradient(to top right, #D2A053, #4F6F52)" }}
+                        >
                           小
                         </div>
                         <span className="text-xs font-bold text-white">小旅 Pro</span>
                       </div>
-                      <div className="text-[9px] text-green-400 bg-green-400/10 px-2 py-0.5 rounded-full flex items-center gap-1">
+                      <div 
+                        className="text-[9px] px-2 py-0.5 rounded-full flex items-center gap-1 font-semibold"
+                        style={{ color: "#4ade80", backgroundColor: "rgba(74, 222, 128, 0.12)" }}
+                      >
                         <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" /> AI伴游中
                       </div>
                     </div>
@@ -1267,15 +1282,22 @@ export default function WelcomePage() {
                     </div>
 
                     {/* Chat Messages */}
-                    <div ref={simChatRef} className="flex-1 bg-white/5 border border-white/10 rounded-xl p-3 font-sans text-[11px] overflow-y-auto space-y-2 scrollbar-none flex flex-col">
+                    <div 
+                      ref={simChatRef} 
+                      className="flex-1 border rounded-xl p-3 font-sans text-[11px] overflow-y-auto space-y-2 scrollbar-none flex flex-col"
+                      style={{ backgroundColor: "rgba(255, 255, 255, 0.05)", borderColor: "rgba(255, 255, 255, 0.1)" }}
+                    >
                       {simMessages.map((msg, idx) => (
                         <div
                           key={idx}
                           className={`max-w-[85%] p-2 rounded-lg leading-relaxed ${
-                            msg.sender === "user"
-                              ? "bg-white/10 text-[#D2A053] self-end text-right"
-                              : "bg-[#4F6F52]/20 border-l-2 border-[#D2A053] text-[#FAF8F5] self-start text-left"
+                            msg.sender === "user" ? "self-end text-right" : "self-start text-left"
                           }`}
+                          style={
+                            msg.sender === "user"
+                              ? { backgroundColor: "rgba(210, 160, 83, 0.2)", color: "#FAF8F5", border: "1px solid rgba(210, 160, 83, 0.3)" }
+                              : { backgroundColor: "rgba(79, 111, 82, 0.35)", color: "#FAF8F5", borderLeft: "3px solid #D2A053" }
+                          }
                         >
                           {msg.text}
                         </div>
@@ -1289,9 +1311,13 @@ export default function WelcomePage() {
                         value={simInput}
                         readOnly
                         placeholder="请在左侧选择提问内容..."
-                        className="flex-1 bg-white/5 border border-white/10 rounded-full px-3 py-1.5 text-[10px] text-white outline-none"
+                        className="flex-1 border rounded-full px-3 py-1.5 text-[10px] text-white outline-none"
+                        style={{ backgroundColor: "rgba(255, 255, 255, 0.05)", borderColor: "rgba(255, 255, 255, 0.1)" }}
                       />
-                      <button className="w-7 h-7 rounded-full bg-[#4F6F52] hover:bg-[#5D8260] active:scale-95 transition-all flex items-center justify-center text-white text-xs">
+                      <button 
+                        className="w-7 h-7 rounded-full transition-all flex items-center justify-center text-white text-xs"
+                        style={{ backgroundColor: "#4F6F52" }}
+                      >
                         💬
                       </button>
                     </div>
