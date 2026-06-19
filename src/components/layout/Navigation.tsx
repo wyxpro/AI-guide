@@ -21,10 +21,9 @@ const C_TABS = [
 /* ─── B端侧栏导航 ──────────────────────────────────────────── */
 const ADMIN_ITEMS = [
   { href: "/admin", label: "数据大屏", icon: BarChart2, desc: "运营总览" },
-  { href: "/admin/knowledge", label: "知识库", icon: BookOpen, desc: "内容管理" },
   { href: "/admin/spots", label: "景点管理", icon: MapPin, desc: "增删改查" },
+  { href: "/admin/knowledge", label: "知识库", icon: BookOpen, desc: "内容管理" },
   { href: "/admin/avatar", label: "数字人", icon: Bot, desc: "形象配置" },
-  { href: "/admin/analytics", label: "数据分析", icon: TrendingUp, desc: "游客洞察" },
 ];
 
 /* ════════════════════════════════════════════════════════════
@@ -136,7 +135,7 @@ export function SidebarNav({ isAdmin }: { isAdmin: boolean }) {
             <div className="min-w-0">
               <p className={`text-[18px] font-bold truncate transition-colors ${isAdmin ? "text-white/90 group-hover:text-[#D2A053]" : "text-[#1E2522] group-hover:text-[#4F6F52]"}`}
                 style={{ fontFamily: "var(--font-noto-serif)" }}>
-                旅行家ProPro
+                旅行家Pro
               </p>
               <p className="text-[13px] truncate transition-colors group-hover:opacity-80"
                 style={{ color: isAdmin ? "rgba(255,255,255,0.35)" : "#8F9F8F" }}>

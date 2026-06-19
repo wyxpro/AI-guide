@@ -1,0 +1,1863 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>旅行家Pro - 景区AI数字人导游与智慧运营系统 | 创意展示</title>
+  <meta name="description" content="旅行家Pro (Voyager Pro) 是一款融合Live2D拟真数字人交互、多模态大语言模型、智能避堵行程规划及B端运营大屏的双端智慧文旅平台。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;900&family=Outfit:wght@300;400;600;800&family=Zhi+Mang+Xing&display=swap" rel="stylesheet">
+  
+  <style>
+    /* CSS Reset & Variables */
+    :root {
+      --primary: #4F6F52;
+      --primary-light: #739072;
+      --primary-glow: rgba(79, 111, 82, 0.4);
+      --accent: #D2E3C8;
+      --accent-gold: #E8C86C;
+      --bg-dark: #090D0A;
+      --bg-card: rgba(20, 30, 22, 0.7);
+      --bg-card-hover: rgba(30, 46, 33, 0.9);
+      --border-color: rgba(79, 111, 82, 0.35);
+      --border-glow: rgba(210, 227, 200, 0.2);
+      --text-light: #FAF8F5;
+      --text-muted: #8F9F8F;
+      --font-outfit: 'Outfit', sans-serif;
+      --font-serif: 'Noto Serif SC', serif;
+      --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(79, 111, 82, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(210, 227, 200, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(232, 200, 108, 0.03) 0%, transparent 60%);
+      background-attachment: fixed;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-dark);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--primary);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--primary-light);
+    }
+
+    /* Custom Selection */
+    ::selection {
+      background: var(--primary-light);
+      color: var(--text-light);
+    }
+
+    /* Header & Navigation */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      background: rgba(9, 13, 10, 0.7);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1.2rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .logo-icon {
+      font-size: 1.6rem;
+      animation: float-icon 3s ease-in-out infinite;
+    }
+
+    .logo-text {
+      font-family: var(--font-serif);
+      font-weight: 900;
+      font-size: 1.4rem;
+      letter-spacing: 0.1rem;
+      background: linear-gradient(135deg, var(--text-light) 30%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .logo-badge {
+      background: linear-gradient(135deg, var(--accent-gold) 0%, #D4AF37 100%);
+      color: var(--bg-dark);
+      font-family: var(--font-outfit);
+      font-weight: 800;
+      font-size: 0.75rem;
+      padding: 0.1rem 0.5rem;
+      border-radius: 4px;
+      margin-left: 0.3rem;
+      box-shadow: 0 0 10px rgba(232, 200, 108, 0.4);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+    }
+
+    .nav-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 500;
+      transition: var(--transition-smooth);
+      position: relative;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      color: var(--text-light);
+    }
+
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--accent);
+      transition: var(--transition-smooth);
+    }
+
+    .nav-link:hover::after, .nav-link.active::after {
+      width: 100%;
+    }
+
+    /* Hero Section */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 8rem 2rem 4rem;
+      position: relative;
+      text-align: center;
+    }
+
+    .hero-bg-accent {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px;
+      height: 600px;
+      background: var(--primary-glow);
+      filter: blur(150px);
+      border-radius: 50%;
+      z-index: -1;
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    .track-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(79, 111, 82, 0.2);
+      border: 1px solid var(--border-color);
+      color: var(--accent);
+      padding: 0.4rem 1.2rem;
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.1rem;
+      margin-bottom: 2rem;
+      animation: pulse-glow 2s infinite alternate;
+    }
+
+    .hero-title {
+      font-family: var(--font-serif);
+      font-size: clamp(2.5rem, 6vw, 4.2rem);
+      font-weight: 900;
+      line-height: 1.15;
+      margin-bottom: 1.5rem;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-title span {
+      background: linear-gradient(to right, var(--text-light), var(--accent), var(--accent-gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-desc {
+      max-width: 800px;
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      color: var(--text-muted);
+      margin-bottom: 3rem;
+      font-weight: 300;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 1.5rem;
+      justify-content: center;
+      margin-bottom: 4rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.9rem 2.2rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: var(--text-light);
+      border: 1px solid rgba(250, 248, 245, 0.1);
+      box-shadow: 0 4px 20px rgba(79, 111, 82, 0.4);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(79, 111, 82, 0.6);
+      filter: brightness(1.1);
+    }
+
+    .btn-secondary {
+      background: rgba(250, 248, 245, 0.03);
+      color: var(--text-light);
+      border: 1px solid var(--border-color);
+      backdrop-filter: blur(8px);
+    }
+
+    .btn-secondary:hover {
+      transform: translateY(-2px);
+      background: rgba(250, 248, 245, 0.08);
+      border-color: var(--accent);
+    }
+
+    .scroll-indicator {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      font-family: var(--font-outfit);
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .scroll-indicator:hover {
+      color: var(--text-light);
+    }
+
+    .scroll-icon {
+      font-size: 1.2rem;
+      animation: bounce 2s infinite;
+    }
+
+    /* Container & Layout */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    section {
+      padding: 8rem 0;
+      border-top: 1px solid rgba(79, 111, 82, 0.15);
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 4.5rem;
+    }
+
+    .section-tag {
+      font-family: var(--font-outfit);
+      color: var(--accent-gold);
+      font-size: 0.85rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.2rem;
+      margin-bottom: 0.75rem;
+      display: block;
+    }
+
+    .section-title {
+      font-family: var(--font-serif);
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-weight: 900;
+      color: var(--text-light);
+    }
+
+    /* Section 1: Intro Card Grid */
+    .intro-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 3rem;
+      align-items: center;
+    }
+
+    @media (max-width: 968px) {
+      .intro-grid {
+        grid-template-columns: 1fr;
+        gap: 4rem;
+      }
+    }
+
+    .intro-text-content {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .question-block {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-left: 4px solid var(--accent);
+      padding: 1.8rem;
+      border-radius: 0 12px 12px 0;
+      transition: var(--transition-smooth);
+    }
+
+    .question-block:hover {
+      transform: translateX(6px);
+      border-color: var(--accent);
+      background: var(--bg-card-hover);
+    }
+
+    .block-title {
+      font-family: var(--font-serif);
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--accent);
+      margin-bottom: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .block-content {
+      color: var(--text-muted);
+      font-size: 1rem;
+      line-height: 1.7;
+    }
+
+    .showcase-display {
+      position: relative;
+      width: 100%;
+      height: 480px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Phone Simulator for AI Assistant */
+    .phone-simulator {
+      width: 290px;
+      height: 480px;
+      background: #0d130e;
+      border: 10px solid #1c261e;
+      border-radius: 40px;
+      box-shadow: 
+        0 25px 50px -12px rgba(0, 0, 0, 0.7),
+        0 0 30px rgba(79, 111, 82, 0.3);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .phone-notch {
+      width: 120px;
+      height: 18px;
+      background: #1c261e;
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      border-radius: 0 0 15px 15px;
+      z-index: 10;
+    }
+
+    .phone-screen {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 1.5rem 1rem 1rem;
+      position: relative;
+    }
+
+    .phone-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 0.8rem;
+      border-bottom: 1px solid rgba(79, 111, 82, 0.2);
+      margin-bottom: 1rem;
+    }
+
+    .phone-user-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .phone-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--primary) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: bold;
+      color: var(--text-light);
+    }
+
+    .phone-user-name {
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .phone-status {
+      font-size: 0.65rem;
+      color: #62c462;
+      background: rgba(98, 196, 98, 0.15);
+      padding: 0.1rem 0.4rem;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .phone-status::before {
+      content: '';
+      display: inline-block;
+      width: 5px;
+      height: 5px;
+      background: #62c462;
+      border-radius: 50%;
+      animation: blink 1.5s infinite;
+    }
+
+    /* Live2D Digital Human Mock Area */
+    .digital-human-view {
+      flex: 1.4;
+      background: linear-gradient(to bottom, rgba(79, 111, 82, 0.1), rgba(13, 19, 14, 0.8));
+      border-radius: 12px;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 0.8rem;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+    }
+
+    .avatar-artwork {
+      width: 140px;
+      height: 180px;
+      position: relative;
+      z-index: 2;
+      transform-origin: bottom center;
+      animation: idle-sway 4s ease-in-out infinite alternate;
+    }
+
+    .avatar-hair-back {
+      width: 90px;
+      height: 110px;
+      background: #3b2a20;
+      border-radius: 40px;
+      position: absolute;
+      top: 15px;
+      left: 25px;
+    }
+
+    .avatar-head {
+      width: 70px;
+      height: 70px;
+      background: #ffe3d1;
+      border-radius: 50%;
+      position: absolute;
+      top: 10px;
+      left: 35px;
+      box-shadow: inset 0 -5px 10px rgba(0,0,0,0.05);
+    }
+
+    .avatar-eye {
+      width: 8px;
+      height: 8px;
+      background: #4a3728;
+      border-radius: 50%;
+      position: absolute;
+      top: 30px;
+    }
+
+    .avatar-eye.left { left: 50px; }
+    .avatar-eye.right { left: 82px; }
+
+    .avatar-blush {
+      width: 12px;
+      height: 6px;
+      background: rgba(255, 105, 120, 0.4);
+      border-radius: 50%;
+      position: absolute;
+      top: 38px;
+    }
+    .avatar-blush.left { left: 45px; }
+    .avatar-blush.right { left: 83px; }
+
+    .avatar-mouth {
+      width: 10px;
+      height: 6px;
+      background: #ff5e62;
+      border-radius: 0 0 10px 10px;
+      position: absolute;
+      top: 44px;
+      left: 65px;
+      transition: all 0.2s;
+    }
+
+    .avatar-hair-front {
+      width: 80px;
+      height: 50px;
+      background: #3b2a20;
+      border-radius: 40px 40px 10px 10px;
+      position: absolute;
+      top: 5px;
+      left: 30px;
+    }
+
+    .avatar-body {
+      width: 90px;
+      height: 100px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      border-radius: 30px 30px 0 0;
+      position: absolute;
+      top: 75px;
+      left: 25px;
+      border: 1px solid rgba(250,248,245,0.1);
+    }
+
+    .avatar-hat {
+      width: 90px;
+      height: 30px;
+      background: var(--accent-gold);
+      border-radius: 50px 50px 0 0;
+      position: absolute;
+      top: -15px;
+      left: 25px;
+      transform: rotate(-10deg);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+
+    .avatar-hat::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: -5px;
+      width: 100px;
+      height: 8px;
+      background: #cba843;
+      border-radius: 5px;
+    }
+
+    /* Dialogue box inside phone simulator */
+    .phone-chat-bubble {
+      flex: 0.9;
+      background: rgba(250, 248, 245, 0.05);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 0.75rem;
+      font-size: 0.78rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .message {
+      max-width: 85%;
+      padding: 0.5rem 0.7rem;
+      border-radius: 8px;
+      line-height: 1.4;
+      animation: fadeIn 0.4s ease forwards;
+    }
+
+    .message.system {
+      align-self: flex-start;
+      background: rgba(79, 111, 82, 0.25);
+      border-left: 2px solid var(--accent);
+      color: var(--text-light);
+    }
+
+    .message.user {
+      align-self: flex-end;
+      background: rgba(210, 227, 200, 0.1);
+      color: var(--accent);
+      text-align: right;
+    }
+
+    .phone-input-bar {
+      display: flex;
+      gap: 0.4rem;
+      margin-top: 0.6rem;
+    }
+
+    .phone-input {
+      flex: 1;
+      background: rgba(250, 248, 245, 0.03);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 0.4rem 0.8rem;
+      color: white;
+      font-size: 0.75rem;
+      outline: none;
+    }
+
+    .phone-send-btn {
+      width: 28px;
+      height: 28px;
+      background: var(--primary);
+      border: none;
+      border-radius: 50%;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      cursor: pointer;
+    }
+
+    /* Floating blobs in background */
+    .decor-blob {
+      position: absolute;
+      width: 150px;
+      height: 150px;
+      background: var(--accent-gold);
+      opacity: 0.08;
+      border-radius: 50%;
+      filter: blur(40px);
+      z-index: -1;
+    }
+    
+    .blob-1 { top: 10%; right: -20px; animation: float-around 15s infinite ease-in-out; }
+    .blob-2 { bottom: 10%; left: -40px; animation: float-around 20s infinite ease-in-out reverse; }
+
+    /* Section 2: Target Users and Pain Points */
+    .users-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+    }
+
+    @media (max-width: 768px) {
+      .users-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .user-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 2.2rem 1.8rem;
+      transition: var(--transition-smooth);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .user-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      opacity: 0;
+      transition: var(--transition-smooth);
+    }
+
+    .user-card:hover {
+      transform: translateY(-8px);
+      background: var(--bg-card-hover);
+      border-color: var(--border-glow);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .user-card:hover::before {
+      opacity: 1;
+    }
+
+    .card-header-icon {
+      font-size: 2.4rem;
+      background: rgba(79, 111, 82, 0.15);
+      width: 60px;
+      height: 60px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(79, 111, 82, 0.3);
+      color: var(--accent);
+    }
+
+    .user-card-title {
+      font-family: var(--font-serif);
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--text-light);
+    }
+
+    .user-scene {
+      background: rgba(250, 248, 245, 0.02);
+      border: 1px solid rgba(79, 111, 82, 0.15);
+      border-radius: 8px;
+      padding: 0.8rem 1rem;
+      font-size: 0.88rem;
+      color: var(--accent);
+    }
+
+    .user-scene strong {
+      color: var(--text-light);
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+
+    .pain-point-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .pain-item {
+      display: flex;
+      gap: 0.6rem;
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .pain-item::before {
+      content: '❌';
+      font-size: 0.8rem;
+      margin-top: 0.15rem;
+    }
+
+    .solution-item {
+      display: flex;
+      gap: 0.6rem;
+      font-size: 0.92rem;
+      color: var(--text-light);
+      line-height: 1.5;
+      font-weight: 500;
+    }
+
+    .solution-item::before {
+      content: '⚡';
+      font-size: 0.8rem;
+      margin-top: 0.15rem;
+    }
+
+    /* Section 3: Values & Significance */
+    .value-showcase {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+
+    @media (max-width: 968px) {
+      .value-showcase {
+        grid-template-columns: 1fr;
+        gap: 3.5rem;
+      }
+    }
+
+    .value-chart-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 2.2rem;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid rgba(79, 111, 82, 0.2);
+      padding-bottom: 1rem;
+    }
+
+    .chart-title {
+      font-family: var(--font-serif);
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--accent-gold);
+    }
+
+    .chart-legend {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .legend-color {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+    }
+
+    .legend-color.v-pro { background: var(--accent-gold); }
+    .legend-color.traditional { background: #555; }
+
+    .chart-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 1.6rem;
+    }
+
+    .chart-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .chart-row-label {
+      font-size: 0.88rem;
+      color: var(--text-light);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .chart-bar-bg {
+      height: 14px;
+      background: rgba(250, 248, 245, 0.05);
+      border-radius: 7px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .chart-bar-fill {
+      height: 100%;
+      border-radius: 7px;
+      width: 0; /* Animated on load */
+      transition: width 1.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .chart-bar-fill.gold {
+      background: linear-gradient(90deg, var(--primary) 0%, var(--accent-gold) 100%);
+      box-shadow: 0 0 10px rgba(232, 200, 108, 0.3);
+    }
+
+    .chart-bar-fill.gray {
+      background: #555;
+    }
+
+    .value-right-content {
+      display: flex;
+      flex-direction: column;
+      gap: 2.2rem;
+    }
+
+    .value-item {
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    .value-num {
+      font-family: var(--font-outfit);
+      font-size: 2.6rem;
+      font-weight: 800;
+      color: var(--accent-gold);
+      line-height: 1;
+      min-width: 60px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .value-num::after {
+      content: '';
+      width: 24px;
+      height: 2px;
+      background: var(--border-color);
+      margin-top: 0.5rem;
+    }
+
+    .value-detail-title {
+      font-family: var(--font-serif);
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--text-light);
+      margin-bottom: 0.6rem;
+    }
+
+    .value-detail-desc {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    /* Section 4: Live Sandbox Simulator */
+    .sandbox-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      padding: 3rem;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sandbox-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 3rem;
+    }
+
+    @media (max-width: 900px) {
+      .sandbox-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .sandbox-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 1.8rem;
+    }
+
+    .sandbox-title {
+      font-family: var(--font-serif);
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--text-light);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .sandbox-tabs {
+      display: flex;
+      gap: 0.6rem;
+      background: rgba(9, 13, 10, 0.6);
+      padding: 0.4rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+
+    .sandbox-tab {
+      flex: 1;
+      padding: 0.6rem 1rem;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-family: var(--font-serif);
+      font-size: 0.9rem;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      text-align: center;
+    }
+
+    .sandbox-tab.active {
+      background: var(--primary);
+      color: var(--text-light);
+      box-shadow: 0 2px 10px rgba(79, 111, 82, 0.3);
+    }
+
+    .sandbox-tab-content {
+      display: none;
+      animation: fadeIn 0.4s ease forwards;
+    }
+
+    .sandbox-tab-content.active {
+      display: block;
+    }
+
+    /* Sandbox Interactive Q&A list */
+    .sandbox-qa-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+
+    .sandbox-qa-item {
+      background: rgba(250, 248, 245, 0.02);
+      border: 1px solid var(--border-color);
+      padding: 0.9rem 1.2rem;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: var(--transition-smooth);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .sandbox-qa-item:hover {
+      background: rgba(79, 111, 82, 0.15);
+      border-color: var(--accent);
+      transform: translateX(4px);
+    }
+
+    .sandbox-qa-arrow {
+      color: var(--accent-gold);
+      font-weight: bold;
+      transition: var(--transition-smooth);
+    }
+
+    .sandbox-qa-item:hover .sandbox-qa-arrow {
+      transform: translateX(2px);
+    }
+
+    /* Sandbox Realtime Operations Admin Panel Mockup */
+    .admin-mockup {
+      background: #090c0a;
+      border: 1px solid rgba(79, 111, 82, 0.4);
+      border-radius: 12px;
+      padding: 1.2rem;
+      font-family: var(--font-outfit);
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+
+    .admin-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+
+    .admin-stat-card {
+      background: rgba(79, 111, 82, 0.1);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0.8rem 1rem;
+    }
+
+    .stat-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .stat-value {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--accent-gold);
+      margin-top: 0.2rem;
+    }
+
+    .admin-heat {
+      background: rgba(250, 248, 245, 0.02);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0.8rem;
+    }
+
+    .heat-title {
+      font-size: 0.78rem;
+      font-weight: bold;
+      color: var(--text-light);
+      margin-bottom: 0.6rem;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .heat-bar-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .heat-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .heat-fill {
+      height: 4px;
+      background: var(--primary);
+      border-radius: 2px;
+      margin-top: 0.15rem;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border-color);
+      padding: 4rem 0;
+      text-align: center;
+      background: #060907;
+    }
+
+    .footer-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .footer-logo {
+      font-family: var(--font-serif);
+      font-weight: 900;
+      font-size: 1.6rem;
+      letter-spacing: 0.1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 2rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .footer-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: var(--transition-smooth);
+    }
+
+    .footer-link:hover {
+      color: var(--text-light);
+    }
+
+    .copyright {
+      color: rgba(143, 159, 143, 0.5);
+      font-size: 0.78rem;
+      margin-top: 1.5rem;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-8px); }
+      60% { transform: translateY(-4px); }
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    @keyframes pulse-glow {
+      0% { box-shadow: 0 0 0 0 rgba(79, 111, 82, 0.3); border-color: rgba(79, 111, 82, 0.3); }
+      100% { box-shadow: 0 0 15px 3px rgba(210, 227, 200, 0.15); border-color: var(--accent); }
+    }
+
+    @keyframes float-icon {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-5px) rotate(8deg); }
+    }
+
+    @keyframes float-around {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(40px, 30px) scale(1.15); }
+    }
+
+    @keyframes idle-sway {
+      0% { transform: rotate(-1.5deg) translateY(0); }
+      100% { transform: rotate(1.5deg) translateY(-2px); }
+    }
+
+    @keyframes mouth-talk {
+      0%, 100% { height: 4px; border-radius: 50%; }
+      50% { height: 10px; border-radius: 0 0 10px 10px; }
+    }
+
+    .mouth-talking {
+      animation: mouth-talk 0.15s infinite alternate;
+    }
+
+    /* Interactive modal / popups */
+    .success-toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--bg-card);
+      border: 1px solid var(--accent);
+      border-left: 5px solid var(--accent-gold);
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      color: var(--text-light);
+      font-size: 0.88rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      transform: translateY(150%);
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 1100;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .success-toast.show {
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="nav-container">
+      <div class="logo-container">
+        <span class="logo-icon">🧭</span>
+        <span class="logo-text">旅行家</span>
+        <span class="logo-badge">Pro</span>
+      </div>
+      <nav class="nav-links">
+        <a href="#intro" class="nav-link active">创意核心</a>
+        <a href="#users" class="nav-link">目标用户</a>
+        <a href="#value" class="nav-link">商业价值</a>
+        <a href="#simulator" class="nav-link">实机交互</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <main>
+    <section class="hero">
+      <div class="hero-bg-accent"></div>
+      <div class="track-badge">🏆 社会服务赛道 · 优秀创意项目</div>
+      <h1 class="hero-title">
+        <span>旅行家Pro</span><br>景区AI数字人导游与智慧运营系统
+      </h1>
+      <p class="hero-desc">
+        融合拟真 Live2D 2D数字人形象、多模态智能语音大模型与景区智慧数据中心，<br>
+        打造有温度的个性化全天候伴游向导，重构新时代智慧文旅体验。
+      </p>
+      <div class="hero-buttons">
+        <a href="#simulator" class="btn btn-primary">⚡ 立即体验实机对话</a>
+        <a href="#intro" class="btn btn-secondary">了解创意细节</a>
+      </div>
+      <div class="scroll-indicator" onclick="document.getElementById('intro').scrollIntoView({behavior: 'smooth'})">
+        <span>向下滚动探索</span>
+        <span class="scroll-icon">↓</span>
+      </div>
+    </section>
+
+    <!-- Section 1: Creative Concept Introduction -->
+    <section id="intro">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">01 / Concept</span>
+          <h2 class="section-title">创意来源与产品介绍</h2>
+        </div>
+        
+        <div class="intro-grid">
+          <div class="intro-text-content">
+            
+            <div class="question-block">
+              <h3 class="block-title">💡 创意名称：旅行家Pro (Voyager Pro)</h3>
+              <p class="block-content">
+                本创意致力于将尖端 AI 多模态技术落地于日常景区旅游服务，通过构建景区专属的拟真数字人导游与大数据实时分析平台，为游客与景区搭建桥梁。
+              </p>
+            </div>
+
+            <div class="question-block">
+              <h3 class="block-title">❓ 想要解决什么问题</h3>
+              <p class="block-content">
+                旨在解决传统景区导览器交互死板、讲解同质化、遇突发路况无法动态指引的痛点，并解决景区运营方难以获取即时游客体验反馈、数据孤岛及高峰期人员调配困难的管理瓶颈。
+              </p>
+            </div>
+
+            <div class="question-block">
+              <h3 class="block-title">🌟 为什么会想到做这个</h3>
+              <p class="block-content">
+                我们在实地景区调研中发现，随着老龄化社会和文旅精细化体验需求的攀升，传统人工导游雇佣费用昂贵且覆盖面有限，而现有微信小程序导览功能冰冷死板。大模型与TTS/Live2D等交互技术的成熟，为低成本普及有深度、有温度的“普惠文旅”带来了革命性机会。
+              </p>
+            </div>
+
+            <div class="question-block">
+              <h3 class="block-title">📱 产品形态概括</h3>
+              <p class="block-content">
+                本产品是一款面向游客端的<strong>轻量化AI数字人对谈微信小程序 / 移动H5</strong>与面向景区管理端的<strong>智慧中心运营分析大屏及知识配置后台</strong>构成的双端闭环系统。
+              </p>
+            </div>
+
+          </div>
+
+          <!-- Phone Mockup container -->
+          <div class="showcase-display">
+            <div class="decor-blob blob-1"></div>
+            <div class="decor-blob blob-2"></div>
+            
+            <div class="phone-simulator">
+              <div class="phone-notch"></div>
+              <div class="phone-screen">
+                <div class="phone-header">
+                  <div class="phone-user-info">
+                    <div class="phone-avatar">小</div>
+                    <div class="phone-user-name">小旅 Pro</div>
+                  </div>
+                  <div class="phone-status">AI伴游中</div>
+                </div>
+
+                <!-- Digital Human Area -->
+                <div class="digital-human-view">
+                  <div class="avatar-artwork">
+                    <div class="avatar-hat"></div>
+                    <div class="avatar-hair-back"></div>
+                    <div class="avatar-body"></div>
+                    <div class="avatar-head">
+                      <div class="avatar-eye left"></div>
+                      <div class="avatar-eye right"></div>
+                      <div class="avatar-blush left"></div>
+                      <div class="avatar-blush right"></div>
+                      <div class="avatar-mouth" id="avatarMouth"></div>
+                    </div>
+                    <div class="avatar-hair-front"></div>
+                  </div>
+                </div>
+
+                <!-- Dialogue box -->
+                <div class="phone-chat-bubble" id="phoneChat">
+                  <div class="message system">
+                    您好！我是您的AI伴游小旅。今天想去探索人文历史路线，还是轻松的避堵亲子路线呢？
+                  </div>
+                </div>
+
+                <!-- Input area -->
+                <div class="phone-input-bar">
+                  <input type="text" class="phone-input" placeholder="输入你想问的问题..." id="phoneInput" disabled>
+                  <button class="phone-send-btn" disabled>💬</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: Target Users and Pain Points -->
+    <section id="users">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">02 / Target Users</span>
+          <h2 class="section-title">目标用户与痛点场景</h2>
+        </div>
+        
+        <div class="users-grid">
+          
+          <!-- User 1 -->
+          <div class="user-card">
+            <div class="card-header-icon">👨‍👩‍👧‍👦</div>
+            <h3 class="user-card-title">亲子家庭与自由行游客</h3>
+            <div class="user-scene">
+              <strong>典型场景</strong>
+              带孩子在陌生景区游览，孩子经常提问“这块石头有什么历史典故？”，家长无法解答，且容易迷路或走进人流拥堵区。
+            </div>
+            <div class="pain-point-list">
+              <div class="pain-item">传统导览设备毫无互动，孩子两分钟就失去兴趣。</div>
+              <div class="pain-item">高峰时段抢不到人工导游，只能走马观花盲目闲逛。</div>
+              <div class="solution-item">小旅Pro童趣科普模式，用故事化生动语言随时讲故事。</div>
+            </div>
+          </div>
+
+          <!-- User 2 -->
+          <div class="user-card">
+            <div class="card-header-icon">👵</div>
+            <h3 class="user-card-title">银发族及视听障群体</h3>
+            <div class="user-scene">
+              <strong>典型场景</strong>
+              老年人视力较弱，无法看清手机上的细小文字，且肢体活动相对受限，需要更平缓无台阶的无障碍游览路线。
+            </div>
+            <div class="pain-point-list">
+              <div class="pain-item">市面大部分APP界面复杂、字体繁复，难以上手。</div>
+              <div class="pain-item">路线导航默认推荐最短路线，常常包含大量台阶，不利于推车或老人行走。</div>
+              <div class="solution-item">一键极简语音模式，系统自动过滤台阶，推荐无障碍坡道。</div>
+            </div>
+          </div>
+
+          <!-- User 3 -->
+          <div class="user-card">
+            <div class="card-header-icon">🏢</div>
+            <h3 class="user-card-title">景区管理与运营团队</h3>
+            <div class="user-scene">
+              <strong>典型场景</strong>
+              在节假日高峰期，管理处对各子景点的实时拥堵状况仅能靠监控目测，且无法有效向游客广播疏导路径。
+            </div>
+            <div class="pain-point-list">
+              <div class="pain-item">无法统计游客对哪些讲解点最感兴趣（热词缺失）。</div>
+              <div class="pain-item">突发客流超载时，无法实现智能化的主动分流引流。</div>
+              <div class="solution-item">B端热力图与流向预警大屏，实时调整AI端推荐路线实现智能避堵。</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 3: Values & Significance -->
+    <section id="value">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">03 / Value</span>
+          <h2 class="section-title">核心价值与社会意义</h2>
+        </div>
+        
+        <div class="value-showcase">
+          <!-- Left Visual: Live chart bars mockup -->
+          <div class="value-chart-container" id="chartContainer">
+            <div class="chart-header">
+              <div class="chart-title">📊 关键指标提升对比 (预估)</div>
+              <div class="chart-legend">
+                <div class="legend-item">
+                  <div class="legend-color v-pro"></div>
+                  <span>旅行家Pro</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-color traditional"></div>
+                  <span>传统设备</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="chart-bars">
+              <div class="chart-row">
+                <div class="chart-row-label">
+                  <span>游客体验满意度</span>
+                  <span>96% vs 42%</span>
+                </div>
+                <div class="chart-bar-bg">
+                  <div class="chart-bar-fill gold" data-width="96%"></div>
+                </div>
+                <div class="chart-bar-bg" style="margin-top:-0.5rem">
+                  <div class="chart-bar-fill gray" data-width="42%"></div>
+                </div>
+              </div>
+
+              <div class="chart-row">
+                <div class="chart-row-label">
+                  <span>导游科普覆盖率</span>
+                  <span>100% vs 15%</span>
+                </div>
+                <div class="chart-bar-bg">
+                  <div class="chart-bar-fill gold" data-width="100%"></div>
+                </div>
+                <div class="chart-bar-bg" style="margin-top:-0.5rem">
+                  <div class="chart-bar-fill gray" data-width="15%"></div>
+                </div>
+              </div>
+
+              <div class="chart-row">
+                <div class="chart-row-label">
+                  <span>景区人工客服负荷降低</span>
+                  <span>75% vs 0%</span>
+                </div>
+                <div class="chart-bar-bg">
+                  <div class="chart-bar-fill gold" data-width="75%"></div>
+                </div>
+                <div class="chart-bar-bg" style="margin-top:-0.5rem">
+                  <div class="chart-bar-fill gray" data-width="5%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Content: Text list -->
+          <div class="value-right-content">
+            <div class="value-item">
+              <div class="value-num">01</div>
+              <div>
+                <h4 class="value-detail-title">社会服务价值：普惠文旅与无障碍关怀</h4>
+                <p class="value-detail-desc">
+                  旅行家Pro独创“大字适老模式”与“无障碍路线规划（排除楼梯台阶）”，配合超低延迟的流式 TTS 朗读，大幅降低数字鸿沟，让老年人、推婴儿车的家庭及视障人士也能充分享受文旅科普，传递科技向善的社会温度。
+                </p>
+              </div>
+            </div>
+
+            <div class="value-item">
+              <div class="value-num">02</div>
+              <div>
+                <h4 class="value-detail-title">效率提升价值：降低B端运营成本</h4>
+                <p class="value-detail-desc">
+                  系统采用多智能体协同设计，通过 AI 解决 80% 以上的常见文旅咨询，极大缓解了景区服务台、电话客服的压力。通过管理大屏的智能算法模型进行避堵路线分流，减少了景区现场安保的疏导劳动强度。
+                </p>
+              </div>
+            </div>
+
+            <div class="value-item">
+              <div class="value-num">03</div>
+              <div>
+                <h4 class="value-detail-title">商业二创模式：IP联名与变现闭环</h4>
+                <p class="value-detail-desc">
+                  数字人的音色和形象支持深度定制，可以与景区的文创吉祥物或城市代言人IP进行联动。游客在与数字人小旅互动的过程中，可触发隐藏文创彩蛋，并一键购买景区专属徽章、数字明信片或特色文创，打造新消费增长极。
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 4: Live Interactive Sandbox Simulator -->
+    <section id="simulator">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">04 / Interactive Simulator</span>
+          <h2 class="section-title">实机对谈模拟体验沙盒</h2>
+        </div>
+        
+        <div class="sandbox-container">
+          <div class="sandbox-grid">
+            <div class="sandbox-panel">
+              <h3 class="sandbox-title">💬 模拟游客发起提问</h3>
+              <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 0.5rem;">
+                点击下方预设的游客提问场景，观察右侧手机模拟器中 AI 导览官小旅的**表情联动**与**流式回复内容**：
+              </p>
+              
+              <div class="sandbox-tabs">
+                <button class="sandbox-tab active" onclick="switchCategory('history', this)">📜 历史人文讲解</button>
+                <button class="sandbox-tab" onclick="switchCategory('route', this)">🗺️ 智慧路线规划</button>
+                <button class="sandbox-tab" onclick="switchCategory('accessibility', this)">♿ 适老无障碍</button>
+              </div>
+
+              <!-- Tab Contents -->
+              <div id="history-content" class="sandbox-tab-content active">
+                <div class="sandbox-qa-list">
+                  <div class="sandbox-qa-item" onclick="triggerDialogue('这里为什么叫“飞来石”？听说它有什么神奇的传说？', '这块飞来石相传是当年八仙之首铁拐李云游至此，见此地群山环抱、钟灵毓秀，特随手抛下一块灵石镇守此山。其实在科学上，它是一块典型的第四纪冰川冰川漂砾，经过数百万年的风化侵蚀，巧妙地立于石台上。')">
+                    <span>🤔 询问景点的传说与科学历史</span>
+                    <span class="sandbox-qa-arrow">→</span>
+                  </div>
+                  <div class="sandbox-qa-item" onclick="triggerDialogue('这个古寺始建于哪一年？里面有什么珍贵的文物？', '您眼前的这座古刹始建于唐代贞观三年（公元629年），距今已有近1400年的历史了。寺内保存最完好的，是主殿大雄宝殿内的金铜药师佛像，属于国家一级保护文物，其背光上的浮雕花纹展示了盛唐时期极高超的铸造工艺。')">
+                    <span>⛩️ 了解景区的文化底蕴</span>
+                    <span class="sandbox-qa-arrow">→</span>
+                  </div>
+                </div>
+              </div>
+
+              <div id="route-content" class="sandbox-tab-content">
+                <div class="sandbox-qa-list">
+                  <div class="sandbox-qa-item" onclick="triggerDialogue('现在主景区人好像非常多，能帮我推荐一条人少的观光路线吗？', '好的，帮您调用了B端客流热力图。当前迎客松主干道客流拥挤指数已达92%。建议您选择我们推荐的“清凉避暑秘境线”：从西海瑶台出发，穿过松鼠步道至排云亭。这条路线目前人流非常少，且绿荫覆盖率高达88%！')">
+                    <span>🚦 避堵避拥智能分路</span>
+                    <span class="sandbox-qa-arrow">→</span>
+                  </div>
+                  <div class="sandbox-qa-item" onclick="triggerDialogue('我想在3小时内看完最核心的3个景点，应该怎么走最合理？', '为您量身定制3小时极速路线：西大门入园 ➡️ 乘坐云谷索道（10分钟） ➡️ 游览始信峰（40分） ➡️ 徒步至光明顶看全景（50分） ➡️ 从白鹅岭索道下山。这样不仅时间刚刚好，而且省时省力，能最大化游览核心地标。')">
+                    <span>⏱️ 限时快速游览方案</span>
+                    <span class="sandbox-qa-arrow">→</span>
+                  </div>
+                </div>
+              </div>
+
+              <div id="accessibility-content" class="sandbox-tab-content">
+                <div class="sandbox-qa-list">
+                  <div class="sandbox-qa-item" onclick="triggerDialogue('我推着婴儿车，有没有完全没有台阶、都是坡道的游览道路？', '没问题！小旅已自动帮您开启【爱心无障碍模式】。已为您重新规划了一条专门规避台阶的坡道路线。我们将从东侧的无障碍通道进，沿木栈道行进至天海景区。沿途所有洗手间均配备了无障碍设施，您可以放心前行。')">
+                    <span>♿ 规避台阶与婴儿车路线</span>
+                    <span class="sandbox-qa-arrow">→</span>
+                  </div>
+                  <div class="sandbox-qa-item" onclick="triggerDialogue('字太小了看不清，能不能大声给我读一下这个景点的背景？', '没问题！小旅已将系统界面切换为【大字护眼版】，并调大了音量。下面我为您大声播报：“黄山迎客松，立于玉屏楼左侧，破石而生，高10米，树龄已有千年，是中华民族热情好客的象征…”')">
+                    <span>🗣️ 大字大音量长辈模式</span>
+                    <span class="sandbox-qa-arrow">→</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Admin dashboard metrics display preview -->
+              <div class="admin-mockup">
+                <h4 style="font-size: 0.85rem; color: var(--accent); border-bottom: 1px solid rgba(79, 111, 82, 0.2); padding-bottom: 0.4rem;">
+                  🎛️ B端景区实时调度大屏数据预览
+                </h4>
+                <div class="admin-grid">
+                  <div class="admin-stat-card">
+                    <div class="stat-label">今日AI伴游人数</div>
+                    <div class="stat-value" id="statUsers">3,492</div>
+                  </div>
+                  <div class="admin-stat-card">
+                    <div class="stat-label">主动避堵引流次数</div>
+                    <div class="stat-value" id="statRoutes">142</div>
+                  </div>
+                </div>
+                <div class="admin-heat">
+                  <div class="heat-title">
+                    <span>🔥 游客热门问答词云统计</span>
+                    <span style="color: var(--accent-gold);">Top Topics</span>
+                  </div>
+                  <div class="heat-bar-group">
+                    <div>
+                      <div class="heat-row"><span>1. 飞来石传说讲解</span><span>42%</span></div>
+                      <div class="heat-fill" style="width: 42%;"></div>
+                    </div>
+                    <div>
+                      <div class="heat-row"><span>2. 避堵路线指引</span><span>35%</span></div>
+                      <div class="heat-fill" style="width: 35%;"></div>
+                    </div>
+                    <div>
+                      <div class="heat-row"><span>3. 无障碍坡道查询</span><span>23%</span></div>
+                      <div class="heat-fill" style="width: 23%;"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Phone Simulator display placeholder (syncs with user clicks) -->
+            <div style="display: flex; justify-content: center; align-items: center;">
+              <div class="phone-simulator" style="transform: scale(1.05); transform-origin: center;">
+                <div class="phone-notch"></div>
+                <div class="phone-screen">
+                  <div class="phone-header">
+                    <div class="phone-user-info">
+                      <div class="phone-avatar">小</div>
+                      <div class="phone-user-name">小旅 Pro</div>
+                    </div>
+                    <div class="phone-status">AI伴游中</div>
+                  </div>
+
+                  <!-- Digital Human Area -->
+                  <div class="digital-human-view">
+                    <div class="avatar-artwork">
+                      <div class="avatar-hat"></div>
+                      <div class="avatar-hair-back"></div>
+                      <div class="avatar-body"></div>
+                      <div class="avatar-head">
+                        <div class="avatar-eye left"></div>
+                        <div class="avatar-eye right"></div>
+                        <div class="avatar-blush left"></div>
+                        <div class="avatar-blush right"></div>
+                        <div class="avatar-mouth" id="sandboxMouth"></div>
+                      </div>
+                      <div class="avatar-hair-front"></div>
+                    </div>
+                  </div>
+
+                  <!-- Dialogue box -->
+                  <div class="phone-chat-bubble" id="sandboxChat">
+                    <div class="message system">
+                      您好！我是您的AI伴游小旅。今天想去探索人文历史路线，还是轻松的避堵亲子路线呢？可以点击左边的提问场景测试我哦！
+                    </div>
+                  </div>
+
+                  <!-- Input area -->
+                  <div class="phone-input-bar">
+                    <input type="text" class="phone-input" placeholder="请在左侧选择提问内容..." id="sandboxInput" readonly>
+                    <button class="phone-send-btn">💬</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Success Toast -->
+  <div class="success-toast" id="successToast">
+    <span>💡</span>
+    <span id="toastText">成功切换至：历史人文讲解 标签页</span>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-logo">
+          <span>🧭</span> 旅行家Pro
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 600px;">
+          旅行家Pro致力于构建全国智慧文旅标杆，通过融合大模型决策能力与高拟真数字人情感价值，实现文旅数字普惠，服务千万游客。
+        </p>
+        <div class="footer-links">
+          <a href="#intro" class="footer-link">创意介绍</a>
+          <a href="#users" class="footer-link">目标用户</a>
+          <a href="#value" class="footer-link">核心价值</a>
+          <a href="#simulator" class="footer-link">互动模拟</a>
+        </div>
+        <div class="copyright">
+          © 2026 旅行家Pro 开发及 AI 协作团队. 保留所有权利。
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Tab switching for Sandbox
+    function switchCategory(catId, btn) {
+      // Hide all contents
+      document.querySelectorAll('.sandbox-tab-content').forEach(el => {
+        el.classList.remove('active');
+      });
+      // Deactivate all buttons
+      document.querySelectorAll('.sandbox-tab').forEach(el => {
+        el.classList.remove('active');
+      });
+      
+      // Show chosen category
+      document.getElementById(catId + '-content').classList.add('active');
+      btn.classList.add('active');
+
+      // Trigger Toast notification
+      showToast('已切换至：' + btn.innerText + ' 相关提问');
+    }
+
+    // Toast notification function
+    function showToast(message) {
+      const toast = document.getElementById('successToast');
+      document.getElementById('toastText').innerText = message;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2500);
+    }
+
+    // Typewriter effect variables
+    let typingTimer = null;
+
+    // Trigger dialogue inside Phone Mockup
+    function triggerDialogue(question, answer) {
+      const chatBox = document.getElementById('sandboxChat');
+      const mouth = document.getElementById('sandboxMouth');
+      const input = document.getElementById('sandboxInput');
+      
+      // Clear previous timer if any
+      if (typingTimer) {
+        clearInterval(typingTimer);
+        mouth.classList.remove('mouth-talking');
+      }
+
+      // Show user question immediately
+      chatBox.innerHTML = `
+        <div class="message user">${question}</div>
+        <div class="message system" id="currentReply" style="border-left: 2px solid var(--accent-gold);">小旅思考中...</div>
+      `;
+      chatBox.scrollTop = chatBox.scrollHeight;
+      input.value = question;
+
+      // Start talking mouth animation
+      mouth.classList.add('mouth-talking');
+
+      // B-end dashboard metric update simulation
+      const randUsers = Math.floor(Math.random() * 5) + 1;
+      const currentUsers = parseInt(document.getElementById('statUsers').innerText.replace(/,/g, ''));
+      document.getElementById('statUsers').innerText = (currentUsers + randUsers).toLocaleString();
+
+      if (question.includes('路') || question.includes('走') || question.includes('堵')) {
+        const currentRoutes = parseInt(document.getElementById('statRoutes').innerText);
+        document.getElementById('statRoutes').innerText = currentRoutes + 1;
+      }
+
+      // Simulate stream output of LLM reply (typewriter effect)
+      let index = 0;
+      const speed = 40; // ms per character
+      const replyEl = document.getElementById('currentReply');
+      replyEl.innerText = ""; // Clear loader text
+
+      typingTimer = setInterval(() => {
+        if (index < answer.length) {
+          replyEl.innerText += answer.charAt(index);
+          index++;
+          chatBox.scrollTop = chatBox.scrollHeight;
+        } else {
+          // Stop typing effect
+          clearInterval(typingTimer);
+          mouth.classList.remove('mouth-talking');
+          showToast('导览官小旅语音播报完毕');
+        }
+      }, speed);
+    }
+
+    // Scroll animation for value chart bar fills
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const fills = entry.target.querySelectorAll('.chart-bar-fill');
+          fills.forEach(fill => {
+            const width = fill.getAttribute('data-width');
+            fill.style.width = width;
+          });
+        }
+      });
+    }, { threshold: 0.2 });
+
+    observer.observe(document.getElementById('chartContainer'));
+
+    // Intersection observer for updating active nav menu highlighting
+    const sections = document.querySelectorAll('section');
+    const navLinks = document.querySelectorAll('.nav-link');
+
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(section => {
+        const sectionTop = section.offsetTop;
+        const sectionHeight = section.clientHeight;
+        if (pageYOffset >= (sectionTop - 200)) {
+          current = section.getAttribute('id');
+        }
+      });
+
+      navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href').slice(1) === current) {
+          link.classList.add('active');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

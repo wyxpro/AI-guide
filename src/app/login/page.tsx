@@ -168,7 +168,7 @@ export default function LoginPage() {
               </svg>
             </div>
             <div>
-              <h2 className="text-xl font-black tracking-wide text-white">旅行家ProPro</h2>
+              <h2 className="text-xl font-black tracking-wide text-white">旅行家Pro</h2>
               <p className="text-xs text-neutral-400 font-semibold mt-0.5">个性化多智能体伴游系统</p>
             </div>
           </div>
@@ -246,8 +246,8 @@ export default function LoginPage() {
               type="button"
               onClick={() => setTab("password")}
               className={`py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${tab === "password"
-                  ? "bg-white text-neutral-900 shadow-sm"
-                  : "text-neutral-500 hover:text-neutral-800"
+                ? "bg-white text-neutral-900 shadow-sm"
+                : "text-neutral-500 hover:text-neutral-800"
                 }`}
             >
               登录
@@ -256,8 +256,8 @@ export default function LoginPage() {
               type="button"
               onClick={() => setTab("code")}
               className={`py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${tab === "code"
-                  ? "bg-white text-neutral-900 shadow-sm"
-                  : "text-neutral-500 hover:text-neutral-800"
+                ? "bg-white text-neutral-900 shadow-sm"
+                : "text-neutral-500 hover:text-neutral-800"
                 }`}
             >
               注册

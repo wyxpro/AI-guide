@@ -87,7 +87,7 @@ const RADAR_METRICS = [
 
 const COMP_PRODUCTS = [
   {
-    name: "旅行家ProPro",
+    name: "旅行家Pro",
     color: "#4F6F52",
     fill: "rgba(79, 111, 82, 0.4)",
     points: "150,55 235.6,122.2 205.8,226.9 92.4,229.3 64.4,122.2", // Values: 95, 90, 95, 98, 90
@@ -255,11 +255,124 @@ const PLANS = [
   },
 ];
 
+const SIM_QA_DATA = {
+  history: [
+    {
+      label: "🤔 询问飞来石景点的传说与科学历史",
+      q: "这里为什么叫“飞来石”？听说它有什么神奇的传说？",
+      a: "这块飞来石相传是当年八仙之首铁拐李云游至此，见此地群山环抱、钟灵毓秀，特随手抛下一块灵石镇守此山。其实在科学上，它是一块典型的第四纪冰川冰川漂砾，经过数百万年的风化侵蚀，巧妙地立于石台上。"
+    },
+    {
+      label: "⛩️ 了解景区的文化底蕴及寺庙历史",
+      q: "这个古寺始建于哪一年？里面有什么珍贵的文物？",
+      a: "您眼前的这座古刹始建于唐代贞观三年（公元629年），距今已有近1400年的历史了。寺内保存最完好的，是主殿大雄宝殿内的金铜药师佛像，属于国家一级保护文物，其背光上的浮雕花纹展示了盛唐时期极高超的铸造工艺。"
+    }
+  ],
+  route: [
+    {
+      label: "🚦 避堵避拥的智能分流线路规划",
+      q: "现在主景区人好像非常多，能帮我推荐一条人少的观光路线吗？",
+      a: "好的，帮您调用了B端客流热力图。当前迎客松主干道客流拥挤指数已达92%。建议您选择我们推荐的“清凉避暑秘境线”：从西海瑶台出发，穿过松鼠步道至排云亭。这条路线目前人流非常少，且绿荫覆盖率高达88%！"
+    },
+    {
+      label: "⏱️ 3小时时限内的核心地标游览方案",
+      q: "我想在3小时内看完最核心的3个景点，应该怎么走最合理？",
+      a: "为您量身定制3小时极速路线：西大门入园 ➡️ 乘坐云谷索道（10分钟） ➡️ 游览始信峰（40分） ➡️ 徒步至光明顶看全景（50分） ➡️ 从白鹅岭索道下山。这样不仅时间刚刚好，而且省时省力，能最大化游览核心地标。"
+    }
+  ],
+  accessibility: [
+    {
+      label: "♿ 适合推婴儿车的全无障碍路线推荐",
+      q: "我推着婴儿车，有没有完全没有台阶、都是坡道的游览道路？",
+      a: "没问题！小旅已自动帮您开启【爱心无障碍模式】。已为您重新规划了一条专门规避台阶的坡道路线。我们将从东侧的无障碍通道进，沿木栈道行进至天海景区。沿途所有洗手间均配备了无障碍设施，您可以放心前行。"
+    },
+    {
+      label: "🗣️ 大字大音量长辈伴读播报模式",
+      q: "字太小了看不清，能不能大声给我读一下这个景点的背景？",
+      a: "没问题！小旅已将系统界面切换为【大字护眼版】，并调大了音量。下面我为您大声播报：“黄山迎客松，立于玉屏楼左侧，破石而生，高10米，树龄已有千年，是中华民族热情好客的象征…”"
+    }
+  ]
+};
+
 export default function WelcomePage() {
   const [activePersona, setActivePersona] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeFeatureIndex, setActiveFeatureIndex] = useState(2); // Center initial card
   const [windowWidth, setWindowWidth] = useState(1200);
+
+  // Simulator State
+  const [simTab, setSimTab] = useState<"history" | "route" | "accessibility">("history");
+  const [simUsers, setSimUsers] = useState(3492);
+  const [simRoutes, setSimRoutes] = useState(142);
+  const [simInput, setSimInput] = useState("");
+  const [simMessages, setSimMessages] = useState<Array<{ sender: "user" | "system"; text: string }>>([
+    {
+      sender: "system",
+      text: "您好！我是您的AI伴游小旅。今天想去探索人文历史路线，还是轻松的避堵亲子路线呢？可以点击左边的提问场景测试我哦！"
+    }
+  ]);
+  const [isSimTyping, setIsSimTyping] = useState(false);
+  const [simToast, setSimToast] = useState("");
+  const [showSimToast, setShowSimToast] = useState(false);
+  const simChatRef = useRef<HTMLDivElement>(null);
+  const typingTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const triggerToast = (msg: string) => {
+    setSimToast(msg);
+    setShowSimToast(true);
+    setTimeout(() => {
+      setShowSimToast(false);
+    }, 2500);
+  };
+
+  const triggerDialogue = (question: string, answer: string) => {
+    if (typingTimerRef.current) {
+      clearInterval(typingTimerRef.current);
+    }
+    setIsSimTyping(true);
+    setSimInput(question);
+    
+    // Add user question and empty system placeholder
+    setSimMessages(prev => [
+      ...prev,
+      { sender: "user" as const, text: question },
+      { sender: "system" as const, text: "小旅思考中..." }
+    ]);
+
+    // B-end statistics update
+    const rand = Math.floor(Math.random() * 5) + 1;
+    setSimUsers(prev => prev + rand);
+
+    if (question.includes("路") || question.includes("走") || question.includes("堵")) {
+      setSimRoutes(prev => prev + 1);
+    }
+
+    let charIndex = 0;
+    typingTimerRef.current = setInterval(() => {
+      if (charIndex <= answer.length) {
+        const textTyped = answer.substring(0, charIndex);
+        setSimMessages(prev => {
+          const updated = [...prev];
+          updated[updated.length - 1] = { sender: "system" as const, text: textTyped || "..." };
+          return updated;
+        });
+        charIndex++;
+        if (simChatRef.current) {
+          simChatRef.current.scrollTop = simChatRef.current.scrollHeight;
+        }
+      } else {
+        if (typingTimerRef.current) clearInterval(typingTimerRef.current);
+        setIsSimTyping(false);
+        triggerToast("导览官小旅语音播报完毕");
+      }
+    }, 35);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (typingTimerRef.current) clearInterval(typingTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     setWindowWidth(window.innerWidth);
@@ -296,7 +409,7 @@ export default function WelcomePage() {
             </div>
             <div>
               <h1 className="text-[17px] font-black tracking-wide" style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}>
-                旅行家ProPro
+                旅行家Pro
               </h1>
               <p className="text-[10px] tracking-widest text-[#8F9F8F] uppercase">Next-Gen Virtual Guide</p>
             </div>
@@ -308,6 +421,7 @@ export default function WelcomePage() {
             <a href="#persona" className="hover:text-[#4F6F52] transition-colors">用户画像</a>
             <a href="#feature" className="hover:text-[#4F6F52] transition-colors">特色功能</a>
             <a href="#comp" className="hover:text-[#4F6F52] transition-colors">竞品分析</a>
+            <a href="#simulator" className="hover:text-[#4F6F52] transition-colors">实机对谈</a>
             <a href="#reviews" className="hover:text-[#4F6F52] transition-colors">游客评价</a>
             <a href="#membership" className="hover:text-[#4F6F52] transition-colors">会员计划</a>
           </nav>
@@ -350,6 +464,7 @@ export default function WelcomePage() {
               <a href="#persona" onClick={() => setIsMobileMenuOpen(false)} className="py-2 border-b border-[#FAF8F5] text-base font-semibold">用户画像</a>
               <a href="#feature" onClick={() => setIsMobileMenuOpen(false)} className="py-2 border-b border-[#FAF8F5] text-base font-semibold">特色功能</a>
               <a href="#comp" onClick={() => setIsMobileMenuOpen(false)} className="py-2 border-b border-[#FAF8F5] text-base font-semibold">竞品分析</a>
+              <a href="#simulator" onClick={() => setIsMobileMenuOpen(false)} className="py-2 border-b border-[#FAF8F5] text-base font-semibold">实机对谈</a>
               <a href="#reviews" onClick={() => setIsMobileMenuOpen(false)} className="py-2 border-b border-[#FAF8F5] text-base font-semibold">游客评价</a>
               <a href="#membership" onClick={() => setIsMobileMenuOpen(false)} className="py-2 border-b border-[#FAF8F5] text-base font-semibold">会员计划</a>
               <button
@@ -374,7 +489,7 @@ export default function WelcomePage() {
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold"
             style={{ background: "rgba(210,160,83,0.12)", color: "#D2A053", border: "1px solid rgba(210,160,83,0.25)" }}
           >
-            <Sparkles className="w-3.5 h-3.5 animate-pulse" /> 旅行家ProPro·AI智能交互导览系统
+            <Sparkles className="w-3.5 h-3.5 animate-pulse" /> 旅行家Pro·AI智能交互导览系统
           </motion.div>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
@@ -470,7 +585,7 @@ export default function WelcomePage() {
 
               {/* Digital Human Name & Speech Bubble */}
               <div className="text-center space-y-1.5">
-                <h4 className="text-[#FAF8F5] text-sm font-bold tracking-wider" style={{ fontFamily: "var(--font-noto-serif)" }}>旅行家ProProAI向导「小旅」</h4>
+                <h4 className="text-[#FAF8F5] text-sm font-bold tracking-wider" style={{ fontFamily: "var(--font-noto-serif)" }}>旅行家ProAI向导「小旅」</h4>
                 <p className="text-[11px] text-[#8F9F8F] px-4 py-1.5 rounded-xl bg-white/5 border border-white/10 italic">
                   &ldquo;您好，我是您的AI导游，今天想去揽月亭还是翠玉湖呢？&rdquo;
                 </p>
@@ -679,7 +794,7 @@ export default function WelcomePage() {
             <span className="text-xs font-bold tracking-widest text-[#D2A053] uppercase">Competitor Analysis</span>
             <h3 className="text-3xl md:text-4xl font-black" style={{ fontFamily: "var(--font-noto-serif)" }}>核心指标大PK，AI导览完胜</h3>
             <div className="w-12 h-1 rounded bg-[#D2A053] mx-auto mt-2" />
-            <p className="text-sm text-[#8F9F8F] max-w-xl mx-auto">对比传统语音指南App与昂贵的人工导游，旅行家ProPro提供高性价比、全方位的完美体验。</p>
+            <p className="text-sm text-[#8F9F8F] max-w-xl mx-auto">对比传统语音指南App与昂贵的人工导游，旅行家Pro提供高性价比、全方位的完美体验。</p>
           </div>
 
           {/* Radar Chart & Details */}
@@ -767,7 +882,7 @@ export default function WelcomePage() {
                 <thead>
                   <tr style={{ background: "#F5F0E8" }}>
                     <th className="px-5 py-4 text-xs font-bold text-[#8F9F8F] uppercase">评测维度</th>
-                    <th className="px-5 py-4 text-xs font-bold text-[#4F6F52] uppercase">旅行家ProPro</th>
+                    <th className="px-5 py-4 text-xs font-bold text-[#4F6F52] uppercase">旅行家Pro</th>
                     <th className="px-5 py-4 text-xs font-bold text-[#8F9F8F] uppercase">传统导览App</th>
                     <th className="px-5 py-4 text-xs font-bold text-[#D2A053] uppercase">人工金牌导游</th>
                   </tr>
@@ -882,13 +997,329 @@ export default function WelcomePage() {
         </div>
       </section>
 
+      {/* Interactive Simulator Section (实机对谈模拟体验沙盒) */}
+      <section id="simulator" className="py-20 bg-white border-y border-[#E6E2D8] relative overflow-hidden">
+        <style dangerouslySetInnerHTML={{ __html: `
+          .digital-human-view {
+            height: 220px;
+            flex-shrink: 0;
+            background: linear-gradient(to bottom, rgba(79, 111, 82, 0.1), rgba(13, 19, 14, 0.8));
+            border-radius: 24px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 0.8rem;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+          }
+          .avatar-artwork {
+            width: 140px;
+            height: 180px;
+            position: relative;
+            z-index: 2;
+            transform: scale(1.3);
+            transform-origin: bottom center;
+            animation: idle-sway 4s ease-in-out infinite alternate;
+          }
+          .avatar-hair-back {
+            width: 90px;
+            height: 110px;
+            background: #3b2a20;
+            border-radius: 40px;
+            position: absolute;
+            top: 45px;
+            left: 25px;
+          }
+          .avatar-head {
+            width: 70px;
+            height: 70px;
+            background: #ffe3d1;
+            border-radius: 50%;
+            position: absolute;
+            top: 40px;
+            left: 35px;
+            box-shadow: inset 0 -5px 10px rgba(0,0,0,0.05);
+          }
+          .avatar-eye {
+            width: 8px;
+            height: 8px;
+            background: #4a3728;
+            border-radius: 50%;
+            position: absolute;
+            top: 30px;
+          }
+          .avatar-eye.left { left: 16px; }
+          .avatar-eye.right { left: 46px; }
+          .avatar-blush {
+            width: 12px;
+            height: 6px;
+            background: rgba(255, 105, 120, 0.4);
+            border-radius: 50%;
+            position: absolute;
+            top: 38px;
+          }
+          .avatar-blush.left { left: 10px; }
+          .avatar-blush.right { left: 48px; }
+          .avatar-mouth {
+            width: 10px;
+            height: 6px;
+            background: #ff5e62;
+            border-radius: 0 0 10px 10px;
+            position: absolute;
+            top: 44px;
+            left: 30px;
+            transition: all 0.2s;
+          }
+          .avatar-hair-front {
+            width: 80px;
+            height: 50px;
+            background: #3b2a20;
+            border-radius: 40px 40px 10px 10px;
+            position: absolute;
+            top: 35px;
+            left: 30px;
+          }
+          .avatar-body {
+            width: 90px;
+            height: 100px;
+            background: linear-gradient(135deg, #4F6F52 0%, #739072 100%);
+            border-radius: 30px 30px 0 0;
+            position: absolute;
+            top: 105px;
+            left: 25px;
+            border: 1px solid rgba(250,248,245,0.1);
+          }
+          .avatar-hat {
+            width: 90px;
+            height: 30px;
+            background: #D2A053;
+            border-radius: 50px 50px 0 0;
+            position: absolute;
+            top: 15px;
+            left: 25px;
+            transform: rotate(-10deg);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+          }
+          .avatar-hat::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: -5px;
+            width: 100px;
+            height: 8px;
+            background: #cba843;
+            border-radius: 5px;
+          }
+          @keyframes idle-sway {
+            0% { transform: rotate(-1.5deg) translateY(0); }
+            100% { transform: rotate(1.5deg) translateY(-2px); }
+          }
+          @keyframes mouth-talk {
+            0%, 100% { height: 4px; border-radius: 50%; }
+            50% { height: 10px; border-radius: 0 0 10px 10px; }
+          }
+          .mouth-talking {
+            animation: mouth-talk 0.15s infinite alternate;
+          }
+        ` }} />
+
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
+          <div className="text-center space-y-3 mb-12">
+            <span className="text-xs font-bold tracking-widest text-[#4F6F52] uppercase">04 / Interactive Simulator</span>
+            <h3 className="text-3xl md:text-4xl font-black text-[#1E2522]" style={{ fontFamily: "var(--font-noto-serif)" }}>
+              实机对谈模拟体验沙盒
+            </h3>
+            <div className="w-12 h-1 rounded bg-[#4F6F52] mx-auto mt-2" />
+            <p className="text-sm text-[#8F9F8F] max-w-xl mx-auto">
+              在这里零距离体验 AI 导览官的智能对谈与自适应参数响应，变“走马观花”为“深度解读”。
+            </p>
+          </div>
+
+          {/* Simulator Container */}
+          <div className="bg-[#FAF8F5] border border-[#E6E2D8] rounded-3xl p-6 md:p-10 shadow-[0_20px_50px_rgba(79,111,82,0.05)]">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              {/* Left Selector & Admin dashboard preview */}
+              <div className="lg:col-span-7 space-y-6">
+                <div className="space-y-4">
+                  <h4 className="text-base font-bold text-[#1E2522] flex items-center gap-2">
+                    <span>💬</span> 模拟游客发起提问
+                  </h4>
+                  <p className="text-xs text-[#8F9F8F] leading-relaxed">
+                    点击下方预设的游客提问场景，观察右侧手机模拟器中 AI 导览官小旅的**表情口型联动**与**流式回复内容**：
+                  </p>
+                  
+                  {/* Category Tabs */}
+                  <div className="flex gap-2 bg-[#FAF8F5] border border-[#E6E2D8] p-1 rounded-xl shadow-sm">
+                    {[
+                      { id: "history", name: "📜 历史人文讲解" },
+                      { id: "route", name: "🗺️ 智慧路线规划" },
+                      { id: "accessibility", name: "♿ 适老无障碍" }
+                    ].map((tab) => (
+                      <button
+                        key={tab.id}
+                        onClick={() => {
+                          setSimTab(tab.id as any);
+                          triggerToast(`已切换至：${tab.name}`);
+                        }}
+                        className={`flex-1 py-2 text-xs md:text-sm font-bold rounded-lg transition-all ${
+                          simTab === tab.id
+                            ? "bg-[#4F6F52] text-white shadow-md shadow-[#4F6F52]/20"
+                            : "text-[#8F9F8F] hover:text-[#4F6F52]"
+                        }`}
+                      >
+                        {tab.name}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* QA List per Category */}
+                  <div className="space-y-2 pt-2">
+                    {SIM_QA_DATA[simTab].map((qa, index) => (
+                      <div
+                        key={index}
+                        onClick={() => triggerDialogue(qa.q, qa.a)}
+                        className="bg-white border border-[#E6E2D8] p-4 rounded-xl cursor-pointer hover:bg-[#4F6F52]/5 hover:border-[#4F6F52]/40 transition-all flex items-center justify-between group shadow-sm hover:translate-x-1"
+                      >
+                        <span className="text-xs md:text-sm font-medium text-[#1E2522]">{qa.label}</span>
+                        <span className="text-[#D2A053] font-bold group-hover:translate-x-1 transition-transform">→</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* B-end admin dashboard mockup */}
+                <div className="bg-[#121815] border border-[#D2A053]/20 rounded-2xl p-5 text-white space-y-4 shadow-lg text-left">
+                  <h5 className="text-xs font-bold text-[#D2A053] border-b border-[#D2A053]/20 pb-2 flex items-center gap-1.5">
+                    <span>🎛️</span> B端景区实时调度大屏数据预览
+                  </h5>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-white/5 border border-white/10 rounded-xl p-3">
+                      <div className="text-[10px] text-[#8F9F8F] uppercase tracking-wider">今日AI伴游人数</div>
+                      <div className="text-lg md:text-xl font-bold text-[#D2A053] mt-1">{simUsers.toLocaleString()}</div>
+                    </div>
+                    <div className="bg-white/5 border border-white/10 rounded-xl p-3">
+                      <div className="text-[10px] text-[#8F9F8F] uppercase tracking-wider">主动避堵引流次数</div>
+                      <div className="text-lg md:text-xl font-bold text-[#D2A053] mt-1">{simRoutes}</div>
+                    </div>
+                  </div>
+                  <div className="bg-white/5 border border-white/10 rounded-xl p-3 space-y-3">
+                    <div className="flex justify-between items-center text-[10px] font-bold">
+                      <span>🔥 游客热门问答词云统计</span>
+                      <span className="text-[#D2A053]">Top Topics</span>
+                    </div>
+                    <div className="space-y-2">
+                      {[
+                        { name: "1. 飞来石传说讲解", value: 42, color: "#D2A053" },
+                        { name: "2. 避堵路线指引", value: 35, color: "#4F6F52" },
+                        { name: "3. 无障碍坡道查询", value: 23, color: "#8F9F8F" }
+                      ].map((topic, i) => (
+                        <div key={i} className="space-y-1">
+                          <div className="flex justify-between text-[9px] text-[#8F9F8F]">
+                            <span>{topic.name}</span>
+                            <span>{topic.value}%</span>
+                          </div>
+                          <div className="h-1 bg-white/10 rounded-full overflow-hidden">
+                            <div className="h-full rounded-full transition-all duration-500" style={{ width: `${topic.value}%`, backgroundColor: topic.color }} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Phone Simulator */}
+              <div className="lg:col-span-5 flex justify-center">
+                <div className="w-[290px] h-[480px] bg-[#0D130E] border-[8px] border-[#1C261E] rounded-[40px] shadow-2xl overflow-hidden flex flex-col relative scale-[1.03]">
+                  {/* Notch */}
+                  <div className="w-[120px] h-[18px] bg-[#1C261E] absolute top-0 left-1/2 -translate-x-1/2 rounded-b-[15px] z-20" />
+
+                  {/* Screen Content */}
+                  <div className="flex-1 flex flex-col p-4 pt-6 relative select-none text-left">
+                    {/* Header */}
+                    <div className="flex justify-between items-center pb-2 border-b border-[#4F6F52]/20 mb-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#D2A053] to-[#4F6F52] flex items-center justify-center text-[10px] font-bold text-white">
+                          小
+                        </div>
+                        <span className="text-xs font-bold text-white">小旅 Pro</span>
+                      </div>
+                      <div className="text-[9px] text-green-400 bg-green-400/10 px-2 py-0.5 rounded-full flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" /> AI伴游中
+                      </div>
+                    </div>
+
+                    {/* Live2D Digital Human Area */}
+                    <div className="digital-human-view">
+                      <div className="avatar-artwork">
+                        <div className="avatar-hat" />
+                        <div className="avatar-hair-back" />
+                        <div className="avatar-body" />
+                        <div className="avatar-head">
+                          <div className="avatar-eye left" />
+                          <div className="avatar-eye right" />
+                          <div className="avatar-blush left" />
+                          <div className="avatar-blush right" />
+                          <div className={`avatar-mouth ${isSimTyping ? "mouth-talking" : ""}`} />
+                        </div>
+                        <div className="avatar-hair-front" />
+                      </div>
+                    </div>
+
+                    {/* Chat Messages */}
+                    <div ref={simChatRef} className="flex-1 bg-white/5 border border-white/10 rounded-xl p-3 font-sans text-[11px] overflow-y-auto space-y-2 scrollbar-none flex flex-col">
+                      {simMessages.map((msg, idx) => (
+                        <div
+                          key={idx}
+                          className={`max-w-[85%] p-2 rounded-lg leading-relaxed ${
+                            msg.sender === "user"
+                              ? "bg-white/10 text-[#D2A053] self-end text-right"
+                              : "bg-[#4F6F52]/20 border-l-2 border-[#D2A053] text-[#FAF8F5] self-start text-left"
+                          }`}
+                        >
+                          {msg.text}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Input Area */}
+                    <div className="flex gap-2 mt-3">
+                      <input
+                        type="text"
+                        value={simInput}
+                        readOnly
+                        placeholder="请在左侧选择提问内容..."
+                        className="flex-1 bg-white/5 border border-white/10 rounded-full px-3 py-1.5 text-[10px] text-white outline-none"
+                      />
+                      <button className="w-7 h-7 rounded-full bg-[#4F6F52] hover:bg-[#5D8260] active:scale-95 transition-all flex items-center justify-center text-white text-xs">
+                        💬
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Simulator Toast Notification */}
+        <div
+          className={`fixed bottom-8 right-8 z-50 bg-[#121815] border border-[#D2A053]/40 border-l-4 border-l-[#D2A053] px-5 py-3 rounded-lg shadow-xl text-xs text-white flex items-center gap-2 transition-all duration-300 transform ${
+            showSimToast ? "translate-y-0 opacity-100" : "translate-y-12 opacity-0 pointer-events-none"
+          }`}
+        >
+          <span>💡</span>
+          <span>{simToast}</span>
+        </div>
+      </section>
+
       {/* User Reviews (游客评价 - 轮播图) */}
       <section id="reviews" className="py-20 bg-white border-y border-[#E6E2D8] overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 mb-12 text-center space-y-3">
           <span className="text-xs font-bold tracking-widest text-[#4F6F52] uppercase">Reviews</span>
           <h3 className="text-3xl md:text-4xl font-black" style={{ fontFamily: "var(--font-noto-serif)" }}>听听他们怎么说</h3>
           <div className="w-12 h-1 rounded bg-[#4F6F52] mx-auto mt-2" />
-          <p className="text-sm text-[#8F9F8F] max-w-xl mx-auto">数万名来自全国各地的游客体验了旅行家ProPro的陪伴游，真实好评如潮。</p>
+          <p className="text-sm text-[#8F9F8F] max-w-xl mx-auto">数万名来自全国各地的游客体验了旅行家Pro的陪伴游，真实好评如潮。</p>
         </div>
 
         {/* Custom Keyframe Styles */}
@@ -1059,7 +1490,7 @@ export default function WelcomePage() {
                 style={{ background: "linear-gradient(135deg,#D2A053,#B8843A)" }}>
                 旅
               </div>
-              <span className="text-white font-bold text-base" style={{ fontFamily: "var(--font-noto-serif)" }}>旅行家ProPro</span>
+              <span className="text-white font-bold text-base" style={{ fontFamily: "var(--font-noto-serif)" }}>旅行家Pro</span>
             </div>
             <p className="text-xs leading-relaxed max-w-xl">
               智能AI数字导览系统。将现代AI数字人对谈与景点人文底蕴完美结合，开启沉浸导览新纪元。
@@ -1071,6 +1502,8 @@ export default function WelcomePage() {
               <a href="#intro" className="hover:text-white transition-colors">项目简介</a>
               <span className="text-white/10">•</span>
               <a href="#feature" className="hover:text-white transition-colors">特色功能</a>
+              <span className="text-white/10">•</span>
+              <a href="#simulator" className="hover:text-white transition-colors">实机体验沙盒</a>
               <span className="text-white/10">•</span>
               <a href="#membership" className="hover:text-white transition-colors">尊享会员计划</a>
 
@@ -1101,7 +1534,7 @@ export default function WelcomePage() {
         </div>
 
         <div className="max-w-7xl mx-auto px-6 mt-12 pt-6 border-t border-white/5 text-center text-[10px]">
-          <p>© {new Date().getFullYear()} 旅行家ProPro Inc. 保留所有权利。由 Eazo Platform 强力驱动。</p>
+          <p>© {new Date().getFullYear()} 旅行家Pro Inc. 保留所有权利。由 Eazo Platform 强力驱动。</p>
         </div>
       </footer>
     </div>

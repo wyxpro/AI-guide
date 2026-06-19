@@ -1,10 +1,22 @@
 "use client";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, TrendingUp, MapPin, MessageCircle, Sparkles } from "lucide-react";
+import { Users, TrendingUp, MapPin, MessageCircle, Sparkles, BookOpen, Bot } from "lucide-react";
 import { request } from "@/lib/api/request";
+import Link from "next/link";
+import { QRCodePanel } from "@/components/ui/QRCodePanel";
 
 const SPRING = { type: "spring" as const, stiffness: 280, damping: 35 };
+
+const BAR_GRADIENTS = [
+  "linear-gradient(180deg, #A8C3A0 0%, #7A9F71 100%)", // Day 1: Soft Forest Green
+  "linear-gradient(180deg, #96C2D6 0%, #6199B8 100%)", // Day 2: Lakeside Blue
+  "linear-gradient(180deg, #F3C287 0%, #D88E3E 100%)", // Day 3: Apricot Orange
+  "linear-gradient(180deg, #CBB4D4 0%, #9F7BB0 100%)", // Day 4: Blossom Lavender
+  "linear-gradient(180deg, #91D1C2 0%, #52A695 100%)", // Day 5: Mint Teal
+  "linear-gradient(180deg, #F4A6A6 0%, #D36B6B 100%)", // Day 6: Coral Pink
+  "linear-gradient(180deg, #E8C06A 0%, #D2A053 100%)", // Day 7 (Today): Golden Bronze
+];
 
 interface AnalyticsDay { date: string; totalVisitors: number; totalQuestions: number; satisfactionScore: number; sentimentPositive: number; sentimentNeutral: number; sentimentNegative: number; topQuestions: string[]; topSpotIds: number[] }
 
@@ -79,14 +91,14 @@ export function AdminAnalyticsScreen() {
     { word: "交通", count: 22 }, { word: "特色", count: 19 }, { word: "历史", count: 17 }, { word: "推荐", count: 15 },
     { word: "美食", count: 13 }, { word: "停车", count: 11 },
   ];
-  const topQs = data[0]?.topQuestions || ["景区有哪些景点？", "门票多少钱？", "揽月亭的历史？", "怎么去翠玉湖？", "有没有儿童票？"];
+  const topQs = (data[0]?.topQuestions && data[0].topQuestions.length > 0) ? data[0].topQuestions : ["景区有哪些景点？", "门票多少钱？", "揽月亭的历史？", "怎么去翠玉湖？", "有没有儿童票？"];
   const avgSat = data.length > 0 ? (data.reduce((s, d) => s + d.satisfactionScore, 0) / data.length).toFixed(1) : "--";
 
   return (
     <div className="min-h-svh" style={{ background: "#FAF8F5" }}>
       <div className="px-6 pt-6 pb-4" style={{ borderBottom: "1px solid #E6E2D8" }}>
-        <h1 className="text-xl font-bold" style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}>游客数据分析</h1>
-        <p className="text-xs mt-1" style={{ color: "#8F9F8F" }}>近7日游客行为洞察</p>
+        <h1 className="text-xl font-bold" style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}>数据大屏</h1>
+        <p className="text-xs mt-1" style={{ color: "#8F9F8F" }}>近7日运营与游客数据总览</p>
       </div>
 
       <div className="p-6 space-y-5 w-full">
@@ -159,18 +171,40 @@ export function AdminAnalyticsScreen() {
           {/* Question trend */}
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ ...SPRING, delay: 0.15 }}
             className="card-ink p-5">
-            <h3 className="text-sm font-semibold mb-4" style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}>问答量趋势</h3>
-            {loading ? <div className="skeleton h-28" /> : (
-              <div className="flex items-end gap-2 h-28">
-                {[...data].reverse().map((d, i) => (
-                  <div key={d.date} className="flex-1 flex flex-col items-center gap-1">
-                    <span className="text-[8px] font-mono" style={{ color: "#8F9F8F" }}>{d.totalQuestions}</span>
-                    <motion.div initial={{ scaleY: 0 }} animate={{ scaleY: 1 }} transition={{ ...SPRING, delay: i * 0.05 }}
-                      className="w-full rounded-t-sm origin-bottom"
-                      style={{ height: `${(d.totalQuestions / maxQ) * 100}%`, minHeight: 4, background: "linear-gradient(#E8C06A,#D2A053)" }} />
-                    <span className="text-[8px] font-mono" style={{ color: "#8F9F8F" }}>{d.date.slice(5)}</span>
-                  </div>
-                ))}
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-sm font-semibold flex items-center gap-1.5" style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}>
+                <MessageCircle className="w-4 h-4 text-[#D2A053]" />
+                问答量趋势
+              </h3>
+              <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ background: "rgba(210, 160, 83, 0.08)", color: "#D2A053" }}>
+                单位: 条
+              </span>
+            </div>
+            {loading ? <div className="skeleton h-32 rounded-lg" /> : (
+              <div className="flex items-end gap-2 h-32 pt-1">
+                {[...data].reverse().map((d, i) => {
+                  const pct = (d.totalQuestions / maxQ) * 100;
+                  const dateLabel = d.date.slice(5); // MM-DD
+                  return (
+                    <div key={d.date} className="flex-1 flex flex-col justify-end items-center h-full group cursor-pointer">
+                      <span className="text-[10px] font-semibold mb-1 transition-all duration-200 group-hover:scale-110" style={{ color: "#D2A053" }}>
+                        {d.totalQuestions}
+                      </span>
+                      <div className="w-full h-20 flex items-end justify-center relative px-0.5">
+                        <motion.div initial={{ scaleY: 0 }} animate={{ scaleY: 1 }} transition={{ ...SPRING, delay: i * 0.05 }}
+                          className="w-full rounded-t-md origin-bottom shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:brightness-105"
+                          style={{
+                            height: `${Math.max(pct, 5)}%`,
+                            background: BAR_GRADIENTS[i % BAR_GRADIENTS.length]
+                          }}
+                        />
+                      </div>
+                      <span className="text-[10px] font-mono mt-1.5 font-medium transition-colors" style={{ color: "#8F9F8F" }}>
+                        {dateLabel}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </motion.div>
@@ -292,20 +326,52 @@ export function AdminAnalyticsScreen() {
               </div>
             )}
             <div className="mt-4 space-y-2">
-              <p className="text-[11px] font-semibold" style={{ color: "#3A4D39" }}>热门问题 Top5</p>
-              {topQs.slice(0, 5).map((q, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <span className="w-4 h-4 rounded text-[10px] font-bold flex items-center justify-center flex-shrink-0 text-white"
-                    style={{ background: "#8F9F8F", fontSize: 9 }}>{i + 1}</span>
-                  <span className="text-[11px] truncate" style={{ color: "#3A4D39" }}>{q}</span>
-                </div>
-              ))}
+              <p className="text-[11.5px] font-bold" style={{ color: "#1E2522" }}>热门问题 Top5</p>
+              <div className="space-y-1.5">
+                {topQs.slice(0, 5).map((q, i) => (
+                  <div key={i} className="flex items-center gap-2 min-w-0" title={q}>
+                    <span className="w-4.5 h-4.5 rounded text-[10px] font-extrabold flex items-center justify-center flex-shrink-0 text-white shadow-xs"
+                      style={{ background: i < 3 ? "linear-gradient(135deg, #F3C65F, #D2A053)" : "linear-gradient(135deg, #B0C4B1, #8F9F8F)" }}>
+                      {i + 1}
+                    </span>
+                    <span className="text-[11.5px] font-medium truncate flex-1 min-w-0" style={{ color: "#1E2522" }}>
+                      {q}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           </motion.div>
         </div>
 
+        {/* Quick nav to admin sections */}
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ ...SPRING, delay: 0.3 }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {[
+            { href: "/admin/knowledge", icon: BookOpen, label: "知识库管理", desc: "上传与维护景区文档" },
+            { href: "/admin/spots", icon: MapPin, label: "景点管理", desc: "增删改查景点信息" },
+            { href: "/admin/avatar", icon: Bot, label: "数字人配置", desc: "外观与音色参数" },
+          ].map((item) => (
+            <Link key={item.href} href={item.href}>
+              <motion.div whileTap={{ scale: 0.96 }} whileHover={{ y: -2 }}
+                className="card-ink p-4 cursor-pointer">
+                <item.icon className="w-5 h-5 mb-2" style={{ color: "#4F6F52" }} />
+                <p className="text-[13px] font-semibold" style={{ color: "#1E2522" }}>{item.label}</p>
+                <p className="text-[11px] mt-0.5" style={{ color: "#8F9F8F" }}>{item.desc}</p>
+              </motion.div>
+            </Link>
+          ))}
+        </motion.div>
+
+        {/* QR Code Panel */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ ...SPRING, delay: 0.35 }}
+          className="card-ink p-5">
+          <QRCodePanel />
+        </motion.div>
+
         {/* AI Service Recommendations */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ ...SPRING, delay: 0.3 }}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ ...SPRING, delay: 0.4 }}
           className="card-ink p-6 space-y-4">
           <div className="flex items-center gap-2 pb-3" style={{ borderBottom: "1px solid #E6E2D8" }}>
             <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "rgba(210,160,83,0.15)", color: "#D2A053" }}>

@@ -1,4 +1,4 @@
-# 🤖 旅行家ProPro · 景区AI数字人导游与运营系统平台
+# 🤖 旅行家Pro · 景区AI数字人导游与运营系统平台
 ![Next.js](https://img.shields.io/badge/Next.js-16.2-black?style=flat-square&logo=next.js)
 ![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript)
@@ -14,7 +14,7 @@
 
 ## 📋 项目简介
 
-**旅行家ProPro** 是一款针对现代智慧景区深度定制开发的**智能导游与数字化管理系统**。项目有机融合了移动定位服务 (LBS)、大型语言模型 (LLM)、流式音频渲染 (TTS) 与视觉多模态分析技术，为游客提供极具沉浸感、定制化的一站式游览伴随服务，同时赋予景区运营方强大的数据洞察与运营调优能力。
+**旅行家Pro** 是一款针对现代智慧景区深度定制开发的**智能导游与数字化管理系统**。项目有机融合了移动定位服务 (LBS)、大型语言模型 (LLM)、流式音频渲染 (TTS) 与视觉多模态分析技术，为游客提供极具沉浸感、定制化的一站式游览伴随服务，同时赋予景区运营方强大的数据洞察与运营调优能力。
 
 *   **🙋 游客端 (C端)**：以 7×24 小时在线的 **AI 数字人**为交互核心，支持快速语音交互精讲。特色功能包括：基于大模型偏好的**智能行程一键规划**、真实重庆高精地图导航渲染、**VR拍照即拍即识文物解读**、足迹勋章打卡，以及适配老年（无障碍字号与路线）和儿童（童趣配音与故事性引导）的专属定制偏好模式。
 *   **📊 管理端 (B端)**：提供实时的**景区运行仪表盘**（今日客流量、满意度指标、提问聚合与情感倾向词云分析等），支持动态配置数字人声音音色/性别形象、RAG 向量知识库文档管理，以及景区景点属性的快速录入维护。
@@ -501,7 +501,7 @@ powershell -c "irm bun.sh/install.ps1 | iex"
 
 <div align="center">
 
-**🌿 旅行家ProPro · 让每一次旅行都留下深刻记忆**
+**🌿 旅行家Pro · 让每一次旅行都留下深刻记忆**
 
 *Built with ❤️ by Eazo AI Platform*
 

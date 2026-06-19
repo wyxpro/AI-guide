@@ -8,6 +8,16 @@ import { request } from "@/lib/api/request";
 
 const SPRING = { type: "spring" as const, stiffness: 280, damping: 35 };
 
+const BAR_GRADIENTS = [
+  "linear-gradient(180deg, #A8C3A0 0%, #7A9F71 100%)", // Day 1: Soft Forest Green
+  "linear-gradient(180deg, #96C2D6 0%, #6199B8 100%)", // Day 2: Lakeside Blue
+  "linear-gradient(180deg, #F3C287 0%, #D88E3E 100%)", // Day 3: Apricot Orange
+  "linear-gradient(180deg, #CBB4D4 0%, #9F7BB0 100%)", // Day 4: Blossom Lavender
+  "linear-gradient(180deg, #91D1C2 0%, #52A695 100%)", // Day 5: Mint Teal
+  "linear-gradient(180deg, #F4A6A6 0%, #D36B6B 100%)", // Day 6: Coral Pink
+  "linear-gradient(180deg, #E8C06A 0%, #D2A053 100%)", // Day 7 (Today): Golden Bronze
+];
+
 interface AnalyticsDay {
   date: string; totalVisitors: number; totalSessions: number; totalQuestions: number;
   satisfactionScore: number; sentimentPositive: number; sentimentNeutral: number;
@@ -49,7 +59,9 @@ export function AdminDashboard() {
     { label: "今日访客", value: loading ? "--" : (latest?.totalVisitors ?? "--").toString(), unit: "人次", icon: TrendingUp, color: "#3A4D39" },
   ];
 
-  const topQuestions = latest?.topQuestions || ["景区有什么好玩的？", "门票多少钱？", "怎么去揽月亭？", "有没有停车场？", "景区几点关门？"];
+  const topQuestions = (latest?.topQuestions && latest.topQuestions.length > 0)
+    ? latest.topQuestions
+    : ["景区有什么好玩的？", "门票多少钱？", "怎么去揽月亭？", "有没有停车场？", "景区几点关门？"];
 
   return (
     <div className="min-h-svh" style={{ background: "#FAF8F5" }}>
@@ -118,25 +130,43 @@ export function AdminDashboard() {
         {/* Visitor trend chart */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ ...SPRING, delay: 0.15 }}
           className="card-ink p-5">
-          <h3 className="text-sm font-semibold mb-4" style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}>访客趋势（近7日）</h3>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-sm font-semibold flex items-center gap-1.5" style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}>
+              <TrendingUp className="w-4 h-4 text-[#4F6F52]" />
+              访客趋势（近7日）
+            </h3>
+            <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ background: "rgba(79, 111, 82, 0.08)", color: "#4F6F52" }}>
+              单位: 人次
+            </span>
+          </div>
           {loading ? (
-            <div className="skeleton h-32 rounded-lg" />
+            <div className="skeleton h-36 rounded-lg" />
           ) : (
-            <div className="flex items-end gap-2 h-32">
+            <div className="flex items-end gap-2.5 sm:gap-3 h-36 pt-2">
               {[...data].reverse().map((d, i) => {
                 const pct = (d.totalVisitors / maxVisitors) * 100;
                 const dateLabel = d.date.slice(5); // MM-DD
+                const isToday = i === data.length - 1;
                 return (
-                  <div key={d.date} className="flex-1 flex flex-col items-center gap-1">
-                    <span className="text-[9px]" style={{ color: "#8F9F8F" }}>{d.totalVisitors}</span>
-                    <motion.div
-                      initial={{ scaleY: 0 }}
-                      animate={{ scaleY: 1 }}
-                      transition={{ ...SPRING, delay: i * 0.05 }}
-                      className="w-full rounded-t-sm origin-bottom"
-                      style={{ height: `${pct}%`, minHeight: 4, background: i === data.length - 1 ? "linear-gradient(#4F6F52,#3A5240)" : "linear-gradient(#6B8F6E,#4F6F52)" }}
-                    />
-                    <span className="text-[8px] font-mono" style={{ color: "#8F9F8F" }}>{dateLabel}</span>
+                  <div key={d.date} className="flex-1 flex flex-col justify-end items-center h-full group cursor-pointer">
+                    <span className="text-[10px] font-semibold mb-1 transition-all duration-200 group-hover:scale-110" style={{ color: isToday ? "#D2A053" : "#4F6F52" }}>
+                      {d.totalVisitors}
+                    </span>
+                    <div className="w-full h-24 flex items-end justify-center relative px-0.5 sm:px-1">
+                      <motion.div
+                        initial={{ scaleY: 0 }}
+                        animate={{ scaleY: 1 }}
+                        transition={{ ...SPRING, delay: i * 0.05 }}
+                        className="w-full rounded-t-md origin-bottom shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:brightness-105"
+                        style={{
+                          height: `${Math.max(pct, 5)}%`,
+                          background: BAR_GRADIENTS[i % BAR_GRADIENTS.length]
+                        }}
+                      />
+                    </div>
+                    <span className="text-[10px] font-mono mt-1.5 font-medium transition-colors" style={{ color: isToday ? "#D2A053" : "#8F9F8F" }}>
+                      {dateLabel}
+                    </span>
                   </div>
                 );
               })}
@@ -181,16 +211,36 @@ export function AdminDashboard() {
 
           {/* Top questions */}
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ ...SPRING, delay: 0.25 }}
-            className="card-ink p-5">
-            <h3 className="text-sm font-semibold mb-4" style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}>热门问答 Top5</h3>
-            <div className="space-y-2">
-              {topQuestions.slice(0, 5).map((q, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <span className="w-5 h-5 rounded flex items-center justify-center text-[11px] font-bold flex-shrink-0 text-white"
-                    style={{ background: i < 3 ? "#D2A053" : "#8F9F8F" }}>{i + 1}</span>
-                  <span className="text-[12px] truncate" style={{ color: "#3A4D39" }}>{q}</span>
-                </div>
-              ))}
+            className="card-ink p-5 flex flex-col justify-between">
+            <div>
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-sm font-semibold flex items-center gap-1.5" style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}>
+                  <Star className="w-4 h-4 text-[#D2A053]" />
+                  热门问答 Top5
+                </h3>
+                <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ background: "rgba(210, 160, 83, 0.08)", color: "#D2A053" }}>
+                  最受关注
+                </span>
+              </div>
+              <div className="space-y-2.5">
+                {topQuestions.slice(0, 5).map((q, i) => {
+                  const badgeBg = i === 0 ? "linear-gradient(135deg, #F3C65F, #D2A053)"
+                    : i === 1 ? "linear-gradient(135deg, #A8B2C0, #8A95A5)"
+                    : i === 2 ? "linear-gradient(135deg, #D79963, #B6743D)"
+                    : "linear-gradient(135deg, #B0C4B1, #8F9F8F)";
+                  return (
+                    <div key={i} className="flex items-center gap-3 p-1.5 rounded-lg hover:bg-neutral-50/80 transition-colors group min-w-0" title={q}>
+                      <span className="w-5 h-5 rounded-md flex items-center justify-center text-[11.5px] font-extrabold flex-shrink-0 text-white shadow-xs"
+                        style={{ background: badgeBg }}>
+                        {i + 1}
+                      </span>
+                      <span className="text-[12.5px] font-medium truncate flex-1 min-w-0" style={{ color: "#1E2522" }}>
+                        {q}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </motion.div>
         </div>

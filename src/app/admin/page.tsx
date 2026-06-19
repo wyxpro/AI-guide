@@ -1,5 +1,5 @@
-import { AdminDashboard } from "@/components/screens/AdminDashboard";
+import { AdminAnalyticsScreen } from "@/components/screens/AdminAnalyticsScreen";
 
 export default function AdminPage() {
-  return <AdminDashboard />;
+  return <AdminAnalyticsScreen />;
 }

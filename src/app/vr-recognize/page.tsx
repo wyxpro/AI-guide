@@ -202,62 +202,63 @@ export default function VRRecognizePage() {
   }, [audioInstance]);
 
   return (
-    <div className="min-h-screen bg-[#060810] text-[#D1F4FF] flex flex-col font-sans select-none overflow-x-hidden p-0 md:p-6 justify-center items-center">
+    <div className="min-h-screen bg-[#060810] text-[#E6EADF] flex flex-col font-sans select-none overflow-x-hidden p-0 md:p-6 justify-center items-center"
+      style={{ background: "radial-gradient(circle at center, #1A2520 0%, #121815 100%)" }}>
       
       <motion.div 
         initial={{ opacity: 0, scale: 0.96 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-5xl bg-[#090C15]/95 rounded-none md:rounded-3xl border-0 md:border border-[#00E5FF]/30 flex flex-col overflow-hidden shadow-[0_0_50px_rgba(0,229,255,0.2)]"
+        className="w-full max-w-6xl bg-[#121815]/95 rounded-none md:rounded-3xl border-0 md:border border-[#D2A053]/30 flex flex-col overflow-hidden shadow-[0_0_50px_rgba(210,160,83,0.15)]"
       >
         {/* ── Top Header ── */}
-        <header className="sticky top-0 z-30 bg-[#0F1322]/90 backdrop-blur-md border-b border-[#00E5FF]/20 px-4 py-3.5 flex items-center justify-between">
+        <header className="sticky top-0 z-30 bg-[#1A2520]/95 backdrop-blur-md border-b border-[#D2A053]/20 px-4 py-3.5 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button 
               onClick={() => router.push("/home")}
-              className="w-9 h-9 rounded-xl bg-[#151D35] hover:bg-[#1E294A] border border-[#00E5FF]/30 flex items-center justify-center transition-all text-[#00E5FF] active:scale-95 shadow-[0_0_8px_rgba(0,229,255,0.2)]"
+              className="w-9 h-9 rounded-xl bg-[#24332C] hover:bg-[#2C3F36] border border-[#D2A053]/30 flex items-center justify-center transition-all text-[#D2A053] active:scale-95 shadow-[0_0_8px_rgba(210,160,83,0.15)]"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
             <div>
-              <h1 className="font-extrabold text-sm tracking-widest text-[#00E5FF] drop-shadow-[0_0_4px_rgba(0,229,255,0.4)]" style={{ fontFamily: "var(--font-noto-serif)" }}>
+              <h1 className="font-extrabold text-sm tracking-widest text-[#D2A053] drop-shadow-[0_0_4px_rgba(210,160,83,0.4)]" style={{ fontFamily: "var(--font-noto-serif)" }}>
                 VR3D即拍即识导览
               </h1>
-              <p className="text-[10px] text-[#A0B8FF] font-mono tracking-wider">AI MULTIMODAL VISION RECOGNITION POD</p>
+              <p className="text-[10px] text-[#8F9F8F] font-mono tracking-wider">AI MULTIMODAL VISION RECOGNITION POD</p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
-            <span className="text-[10px] font-mono font-bold text-[#BD00FF] bg-[#1E1135] px-2.5 py-0.5 rounded border border-[#BD00FF]/40 shadow-[0_0_6px_rgba(189,0,255,0.2)]">
+            <span className="w-2 h-2 rounded-full bg-[#D2A053] animate-ping"></span>
+            <span className="text-[10px] font-mono font-bold text-[#D2A053] bg-[#24332C] px-2.5 py-0.5 rounded border border-[#D2A053]/40 shadow-[0_0_6px_rgba(210,160,83,0.15)]">
               3D SCANNER V2.0
             </span>
           </div>
         </header>
 
         {/* ── Main Layout (Responsive split panel) ── */}
-        <main className="flex-1 w-full p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch overflow-y-auto">
+        <main className="flex-1 w-full p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-2 gap-6 items-start overflow-y-auto">
           
-          {/* Left Area (Holographic viewfinder & control buttons) - 7 cols */}
-          <section className="lg:col-span-7 flex flex-col gap-4">
+          {/* Left Area (Holographic viewfinder & control buttons) */}
+          <section className="flex flex-col gap-4 w-full min-w-0">
             
             {/* Viewfinder Container */}
-            <div className="relative rounded-2xl overflow-hidden aspect-[4/3] lg:aspect-[16/11] bg-[#0A0D16] border-2 border-[#00E5FF]/30 shadow-[0_0_20px_rgba(0,229,255,0.1)] flex flex-col items-center justify-center">
+            <div className="relative w-full rounded-2xl overflow-hidden aspect-[4/3] lg:aspect-[16/11] bg-[#0B0F0D] border-2 border-[#D2A053]/30 shadow-[0_0_20px_rgba(210,160,83,0.08)] flex flex-col items-center justify-center">
               
               {/* Corner Bracket Overlays for Tech Aesthetic */}
-              <div className="absolute top-4 left-4 w-6 h-6 border-t-2 border-l-2 border-[#00E5FF] pointer-events-none" />
-              <div className="absolute top-4 right-4 w-6 h-6 border-t-2 border-r-2 border-[#00E5FF] pointer-events-none" />
-              <div className="absolute bottom-4 left-4 w-6 h-6 border-b-2 border-l-2 border-[#00E5FF] pointer-events-none" />
-              <div className="absolute bottom-4 right-4 w-6 h-6 border-b-2 border-r-2 border-[#00E5FF] pointer-events-none" />
+              <div className="absolute top-4 left-4 w-6 h-6 border-t-2 border-l-2 border-[#D2A053] pointer-events-none" />
+              <div className="absolute top-4 right-4 w-6 h-6 border-t-2 border-r-2 border-[#D2A053] pointer-events-none" />
+              <div className="absolute bottom-4 left-4 w-6 h-6 border-b-2 border-l-2 border-[#D2A053] pointer-events-none" />
+              <div className="absolute bottom-4 right-4 w-6 h-6 border-b-2 border-r-2 border-[#D2A053] pointer-events-none" />
               
               {/* Viewfinder Center Target Dot - NO circle dot frame */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-                <div className="w-2.5 h-2.5 bg-[#00E5FF]/90 rounded-full shadow-[0_0_8px_#00E5FF]" />
-                <div className="absolute w-6 h-[1.5px] bg-[#00E5FF]/40" />
-                <div className="absolute h-6 w-[1.5px] bg-[#00E5FF]/40" />
+                <div className="w-2.5 h-2.5 bg-[#D2A053]/90 rounded-full shadow-[0_0_8px_#D2A053]" />
+                <div className="absolute w-6 h-[1.5px] bg-[#D2A053]/40" />
+                <div className="absolute h-6 w-[1.5px] bg-[#D2A053]/40" />
               </div>
 
               {/* Grid Overlay */}
-              <div className="absolute inset-0 bg-[linear-gradient(rgba(0,229,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,229,255,0.03)_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
+              <div className="absolute inset-0 bg-[linear-gradient(rgba(210,160,83,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(210,160,83,0.03)_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
 
               {/* Content Switch */}
               <AnimatePresence mode="wait">
@@ -283,13 +284,13 @@ export default function VRRecognizePage() {
                           duration: 1.8, 
                           ease: "easeInOut" 
                         }}
-                        className="absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#FF007F] to-transparent shadow-[0_0_15px_#FF007F] z-10"
+                        className="absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#D2A053] to-transparent shadow-[0_0_15px_#D2A053] z-10"
                       />
                     )}
                     
                     {/* Points Mesh overlay on Scan */}
                     {scanning && (
-                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,229,255,0.15)_0,transparent_60%)] animate-pulse pointer-events-none" />
+                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(210,160,83,0.15)_0,transparent_60%)] animate-pulse pointer-events-none" />
                     )}
                   </motion.div>
                 ) : (
@@ -300,12 +301,12 @@ export default function VRRecognizePage() {
                     className="p-8 text-center flex flex-col items-center gap-4 max-w-sm relative z-10"
                   >
                     {/* Camera icon - NO circle dot frame */}
-                    <div className="text-[#00E5FF] drop-shadow-[0_0_15px_rgba(0,229,255,0.6)] animate-pulse mb-1">
+                    <div className="text-[#D2A053] drop-shadow-[0_0_15px_rgba(210,160,83,0.6)] animate-pulse mb-1">
                       <Camera className="w-12 h-12" />
                     </div>
                     <div>
                       <h3 className="text-white font-bold text-sm tracking-wide">对准展品或文物拍摄</h3>
-                      <p className="text-xs text-[#A0B8FF] mt-1.5 leading-relaxed">
+                      <p className="text-xs text-[#8F9F8F] mt-1.5 leading-relaxed">
                         上传展品照片或在下方选择“珍玩预设”，小玉即刻为您开启3D拓扑与多模态深度文化解读。
                       </p>
                     </div>
@@ -315,7 +316,7 @@ export default function VRRecognizePage() {
 
               {/* Target HUD metadata when scanning */}
               {scanning && (
-                <div className="absolute bottom-4 left-4 z-20 bg-black/80 px-3 py-2 rounded-lg border border-[#00E5FF]/40 text-[9px] font-mono text-[#00E5FF] space-y-0.5 shadow-[0_0_10px_rgba(0,229,255,0.15)]">
+                <div className="absolute bottom-4 left-4 z-20 bg-black/80 px-3 py-2 rounded-lg border border-[#D2A053]/40 text-[9px] font-mono text-[#D2A053] space-y-0.5 shadow-[0_0_10px_rgba(210,160,83,0.15)]">
                   <div>SYS STATUS: SCANNING...</div>
                   <div>LIDAR DEPTH: 1.27m</div>
                   <div>RECONSTRUCTING MESH: 84%</div>
@@ -327,9 +328,9 @@ export default function VRRecognizePage() {
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="py-3 bg-[#0F172A] hover:bg-[#1E293B] border border-[#00E5FF]/30 rounded-xl text-xs font-black flex items-center justify-center gap-2 shadow transition-all active:scale-95 text-[#00E5FF] hover:border-[#00E5FF]/60 hover:shadow-[0_0_8px_rgba(0,229,255,0.15)]"
+                className="py-3 bg-[#1A2520] hover:bg-[#24332C] border border-[#D2A053]/30 rounded-xl text-xs font-black flex items-center justify-center gap-2 shadow transition-all active:scale-95 text-[#D2A053] hover:border-[#D2A053]/60 hover:shadow-[0_0_8px_rgba(210,160,83,0.15)]"
               >
-                <Upload className="w-4 h-4 text-[#00E5FF]" />
+                <Upload className="w-4 h-4 text-[#D2A053]" />
                 <span>选择本地图片 / 拍照</span>
               </button>
               <input 
@@ -343,7 +344,7 @@ export default function VRRecognizePage() {
               <button
                 onClick={startScanning}
                 disabled={!previewUrl || scanning}
-                className="py-3 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all active:scale-95 text-white disabled:opacity-40 disabled:cursor-not-allowed shadow-[0_0_15px_rgba(138,43,226,0.3)] bg-gradient-to-r from-[#00E5FF] to-[#8A2BE2] hover:brightness-110 border border-[#00E5FF]/40"
+                className="py-3 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all active:scale-95 text-white disabled:opacity-40 disabled:cursor-not-allowed shadow-[0_0_15px_rgba(79,111,82,0.3)] bg-gradient-to-r from-[#4F6F52] to-[#D2A053] hover:brightness-110 border border-[#D2A053]/40"
               >
                 {scanning ? (
                   <>
@@ -361,8 +362,8 @@ export default function VRRecognizePage() {
 
             {/* Preset珍玩 selector grid */}
             <div className="space-y-2">
-              <div className="flex items-center gap-1.5 text-xs text-[#00E5FF] font-semibold tracking-wide">
-                <Eye className="w-3.5 h-3.5 text-[#BD00FF]" />
+              <div className="flex items-center gap-1.5 text-xs text-[#D2A053] font-semibold tracking-wide">
+                <Eye className="w-3.5 h-3.5 text-[#D2A053]" />
                 <span>珍玩预设快捷体验 (无需上传)</span>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
@@ -372,14 +373,14 @@ export default function VRRecognizePage() {
                     <div
                       key={p.id}
                       onClick={() => selectPreset(p)}
-                      className={`group cursor-pointer rounded-xl overflow-hidden border transition-all duration-300 ${active ? 'border-[#00E5FF] ring-2 ring-[#00E5FF]/40 shadow-[0_0_15px_rgba(0,229,255,0.35)]' : 'border-[#1E294A] hover:border-[#00E5FF]/40'}`}
-                      style={{ background: "#0F1322" }}
+                      className={`group cursor-pointer rounded-xl overflow-hidden border transition-all duration-300 ${active ? 'border-[#D2A053] ring-2 ring-[#D2A053]/40 shadow-[0_0_15px_rgba(210,160,83,0.35)]' : 'border-[#24332C] hover:border-[#D2A053]/40'}`}
+                      style={{ background: "#1A2520" }}
                     >
                       <div className="h-16 w-full overflow-hidden bg-neutral-900 relative">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={p.img} alt={p.name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
                         <div className="absolute inset-0 bg-black/30" />
-                        <span className="absolute top-1 left-1 bg-[#1E1135]/80 text-[#00E5FF] border border-[#00E5FF]/30 text-[7px] px-1 rounded-sm leading-none py-0.5 font-mono">
+                        <span className="absolute top-1 left-1 bg-[#121815]/80 text-[#D2A053] border border-[#D2A053]/30 text-[7px] px-1 rounded-sm leading-none py-0.5 font-mono">
                           {p.type}
                         </span>
                       </div>
@@ -393,22 +394,22 @@ export default function VRRecognizePage() {
             </div>
           </section>
 
-          {/* Right Area (AI Deep cultural narrative panel) - 5 cols */}
-          <section className="lg:col-span-5 flex flex-col">
+          {/* Right Area (AI Deep cultural narrative panel) */}
+          <section className="flex flex-col w-full min-w-0">
             
-            <div className="flex-grow bg-[#0F1322]/90 rounded-2xl border border-[#00E5FF]/20 p-5 flex flex-col justify-between shadow-lg relative overflow-hidden">
+            <div className="flex-grow bg-[#1A2520]/95 rounded-2xl border border-[#D2A053]/20 p-5 flex flex-col justify-between shadow-lg relative overflow-hidden">
               
               {/* Dynamic Glassmorphic Backdrop Decoration */}
-              <div className="absolute -top-16 -right-16 w-36 h-36 bg-[#00E5FF]/10 rounded-full blur-2xl pointer-events-none" />
+              <div className="absolute -top-16 -right-16 w-36 h-36 bg-[#D2A053]/10 rounded-full blur-2xl pointer-events-none" />
               
               {/* Top Log/Results */}
-              <div className="space-y-4 flex-1">
-                <div className="flex items-center justify-between pb-3 border-b border-[#00E5FF]/20">
+              <div className="space-y-4 flex-1 overflow-y-auto pr-1 max-h-[56vh] lg:max-h-[64vh]">
+                <div className="flex items-center justify-between pb-3 border-b border-[#D2A053]/20">
                   <div className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#00E5FF] animate-pulse" />
-                    <span className="text-[11px] font-bold tracking-widest text-[#00E5FF] font-mono">AI 视觉研判中心</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#D2A053] animate-pulse" />
+                    <span className="text-[11px] font-bold tracking-widest text-[#D2A053] font-mono">AI 视觉研判中心</span>
                   </div>
-                  <Info className="w-3.5 h-3.5 text-[#00E5FF]/50" />
+                  <Info className="w-3.5 h-3.5 text-[#D2A053]/50" />
                 </div>
 
                 {/* Conditional Rendering */}
@@ -434,13 +435,13 @@ export default function VRRecognizePage() {
                           return (
                             <div 
                               key={s.label} 
-                              className={`flex items-center justify-between p-2 rounded-lg border transition-colors ${curr ? 'bg-[#00E5FF]/10 border-[#00E5FF] text-white font-bold' : done ? 'bg-[#8A2BE2]/10 border-transparent text-[#BD00FF]' : 'border-transparent text-zinc-500'}`}
+                              className={`flex items-center justify-between p-2 rounded-lg border transition-colors ${curr ? 'bg-[#D2A053]/10 border-[#D2A053] text-white font-bold' : done ? 'bg-[#4F6F52]/10 border-transparent text-[#8F9F8F]' : 'border-transparent text-zinc-500'}`}
                             >
                               <span>{s.label}</span>
                               {curr ? (
-                                <span className="text-cyan-400 animate-pulse">进行中...</span>
+                                <span className="text-[#E8C06A] animate-pulse">进行中...</span>
                               ) : done ? (
-                                <span className="text-[#00E5FF]">✓ 完成</span>
+                                <span className="text-[#D2A053]">✓ 完成</span>
                               ) : (
                                 <span className="text-zinc-700">等待</span>
                               )}
@@ -458,7 +459,7 @@ export default function VRRecognizePage() {
                     >
                       {/* Header Details */}
                       <div>
-                        <span className="inline-block bg-[#00E5FF]/10 text-[#00E5FF] border border-[#00E5FF]/30 text-[9px] font-black px-2 py-0.5 rounded-full mb-1">
+                        <span className="inline-block bg-[#D2A053]/10 text-[#D2A053] border border-[#D2A053]/30 text-[9px] font-black px-2 py-0.5 rounded-full mb-1">
                           🏆 识别成功 · 多模态置信度 99.4%
                         </span>
                         <h2 className="text-lg font-black text-white leading-tight" style={{ fontFamily: "var(--font-noto-serif)" }}>
@@ -468,29 +469,29 @@ export default function VRRecognizePage() {
 
                       {/* Story Block */}
                       <div className="space-y-2">
-                        <span className="text-[10px] font-bold text-[#A0B8FF] block">📖 深度文化史料解读</span>
-                        <p className="text-xs leading-relaxed text-[#D1F4FF] tracking-wide bg-[#0A0D16] p-4 rounded-xl border border-[#00E5FF]/15">
+                        <span className="text-[10px] font-bold text-[#8F9F8F] block">📖 深度文化史料解读</span>
+                        <p className="text-xs leading-relaxed text-[#E6EADF] tracking-wide bg-[#121815] p-4 rounded-xl border border-[#D2A053]/15">
                           {recognizeResult.story}
                         </p>
                       </div>
 
                       {/* Tip Block */}
-                      <div className="bg-[#BD00FF]/5 border border-[#BD00FF]/25 rounded-xl p-3.5 space-y-1">
-                        <div className="flex items-center gap-1 text-[10.5px] font-black text-[#BD00FF]">
-                          <Compass className="w-3.5 h-3.5 text-[#00E5FF]" />
+                      <div className="bg-[#4F6F52]/5 border border-[#4F6F52]/25 rounded-xl p-3.5 space-y-1">
+                        <div className="flex items-center gap-1 text-[10.5px] font-black text-[#4F6F52]">
+                          <Compass className="w-3.5 h-3.5 text-[#D2A053]" />
                           <span>游览观赏建议</span>
                         </div>
-                        <p className="text-[10.5px] text-[#A0B8FF] leading-relaxed">
+                        <p className="text-[10.5px] text-[#8F9F8F] leading-relaxed">
                           {recognizeResult.tip}
                         </p>
                       </div>
 
                       {/* Audio Player and spectrogram wave */}
-                      <div className="bg-[#0A0D16] border border-[#00E5FF]/15 rounded-xl p-3 flex items-center justify-between gap-3">
+                      <div className="bg-[#121815] border border-[#D2A053]/15 rounded-xl p-3 flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2">
                           <button
                             onClick={togglePlayAudio}
-                            className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00E5FF] to-[#8A2BE2] flex items-center justify-center text-white hover:brightness-105 active:scale-95 transition-all shadow-md"
+                            className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#4F6F52] to-[#D2A053] flex items-center justify-center text-white hover:brightness-105 active:scale-95 transition-all shadow-md"
                           >
                             {isPlayingAudio ? (
                               <VolumeX className="w-4 h-4" />
@@ -500,7 +501,7 @@ export default function VRRecognizePage() {
                           </button>
                           <div>
                             <span className="text-[10.5px] font-bold text-white block">小玉语音文化精讲</span>
-                            <span className="text-[9px] text-[#A0B8FF]">点击听取沉浸式叙事声像</span>
+                            <span className="text-[9px] text-[#8F9F8F]">点击听取沉浸式叙事声像</span>
                           </div>
                         </div>
 
@@ -509,7 +510,7 @@ export default function VRRecognizePage() {
                           {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                             <span 
                               key={i} 
-                              className={`w-[2.5px] bg-[#00E5FF] rounded-full transition-all duration-300 ${isPlayingAudio ? 'animate-pulse' : ''}`}
+                              className={`w-[2.5px] bg-[#D2A053] rounded-full transition-all duration-300 ${isPlayingAudio ? 'animate-pulse' : ''}`}
                               style={{ 
                                 height: isPlayingAudio ? `${Math.floor(Math.random() * 18) + 6}px` : "4px",
                                 animationDelay: `${i * 120}ms`
@@ -518,6 +519,16 @@ export default function VRRecognizePage() {
                           ))}
                         </div>
                       </div>
+
+                      {/* CTA Button to send to conversation */}
+                      <motion.button
+                        whileTap={{ scale: 0.96 }}
+                        onClick={() => router.push(`/qa?name=${encodeURIComponent(recognizeResult.subject)}`)}
+                        className="w-full py-3 rounded-xl text-xs font-black flex items-center justify-center gap-2 text-white shadow-lg shadow-purple-900/25 transition-all active:scale-95 mt-4 bg-gradient-to-r from-[#4F6F52] to-[#D2A053] border border-[#D2A053]/40"
+                      >
+                        <Sparkles className="w-4 h-4 text-white" />
+                        <span>发送至AI导游对话框</span>
+                      </motion.button>
                     </motion.div>
                   ) : (
                     <motion.div 
@@ -526,8 +537,8 @@ export default function VRRecognizePage() {
                       animate={{ opacity: 1 }}
                       className="h-64 flex flex-col items-center justify-center text-center p-6 gap-3 text-zinc-500"
                     >
-                      <HelpCircle className="w-10 h-10 text-zinc-800" />
-                      <p className="text-[11px] leading-relaxed">
+                      <HelpCircle className="w-10 h-10 text-zinc-700" />
+                      <p className="text-[11px] leading-relaxed text-[#8F9F8F]">
                         暂无研判报告。请先在左侧拍摄/上传珍玩照片，或点击“珍玩预设”直接查看识别分析。
                       </p>
                     </motion.div>
@@ -536,14 +547,15 @@ export default function VRRecognizePage() {
               </div>
 
               {/* Bottom Footer Slogan */}
-              <div className="mt-8 pt-3 border-t border-[#00E5FF]/20 flex items-center gap-2 text-[#A0B8FF]">
-                <span className="w-5 h-5 rounded bg-[#00E5FF]/10 border border-[#00E5FF]/20 flex items-center justify-center text-[10px] text-[#00E5FF] font-bold">精</span>
+              <div className="mt-8 pt-3 border-t border-[#D2A053]/20 flex items-center gap-2 text-[#8F9F8F]">
+                <span className="w-5 h-5 rounded bg-[#D2A053]/10 border border-[#D2A053]/20 flex items-center justify-center text-[10px] text-[#D2A053] font-bold">精</span>
                 <p className="text-[9.5px] leading-normal font-mono">
                   视觉好奇转化为深度认知，变“走马观花”为“沉浸体悟”。
                 </p>
               </div>
             </div>
           </section>
+
         </main>
       </motion.div>
     </div>
