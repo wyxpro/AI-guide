@@ -34,7 +34,7 @@ export function BottomTabBar() {
   const [showSearch, setShowSearch] = useState(false);
 
   const MOBILE_TABS = [
-    { href: "/home", label: "智能导游", icon: Home },
+    { href: "/home", label: "首页", icon: Home },
     { href: "/spots", label: "热门景点", icon: MapPin },
     { href: "/qa", label: "AI数字人导游", icon: MessageCircle },
     { href: "/routes", label: "行程规划", icon: Navigation },

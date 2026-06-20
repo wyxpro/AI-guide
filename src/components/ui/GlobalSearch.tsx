@@ -87,182 +87,254 @@ export function GlobalSearch({ onClose }: { onClose?: () => void }) {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[60] flex flex-col"
-      style={{ background: "rgba(18,24,21,0.97)", backdropFilter: "blur(16px)" }}
+    <div 
+      style={{
+        position: "fixed",
+        inset: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "16px",
+        zIndex: 55,
+      }}
     >
-      {/* Search bar */}
-      <div
-        className="flex-shrink-0 flex items-center gap-3 px-4 py-3"
-        style={{ paddingTop: "calc(env(safe-area-inset-top, 44px) + 8px)", borderBottom: "1px solid rgba(255,255,255,0.07)" }}
+      {/* Backdrop */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        style={{
+          position: "absolute",
+          inset: 0,
+          backgroundColor: "rgba(18, 24, 21, 0.45)",
+          backdropFilter: "blur(4px)",
+          zIndex: 1,
+        }}
+      />
+
+      {/* Centered Modal Card */}
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0, y: 12 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.95, opacity: 0, y: 12 }}
+        transition={SPRING}
+        className="w-full flex flex-col relative z-10"
+        style={{
+          maxWidth: "500px",
+          maxHeight: "80vh",
+          backgroundColor: "#FAF8F5",
+          borderRadius: "28px",
+          border: "1px solid #E6E2D8",
+          boxShadow: "0 20px 48px rgba(18, 24, 21, 0.15)",
+          overflow: "hidden",
+        }}
       >
-        <Search className="w-4 h-4 flex-shrink-0" style={{ color: "rgba(255,255,255,0.45)" }} />
-        <input
-          ref={inputRef}
-          type="text"
-          value={query}
-          onChange={e => handleChange(e.target.value)}
-          onKeyDown={e => e.key === "Enter" && doSearch(query)}
-          placeholder="搜索景点、路线、关键词…"
-          className="flex-1 bg-transparent outline-none text-[15px]"
-          style={{ color: "white", fontSize: 16 }}
-        />
-        <div className="flex items-center gap-2">
-          {query && (
-            <motion.button whileTap={{ scale: 0.88 }} initial={{ scale: 0 }} animate={{ scale: 1 }}
-              onClick={() => { setQuery(""); setResults(null); inputRef.current?.focus(); }}>
-              <X className="w-4 h-4" style={{ color: "rgba(255,255,255,0.45)" }} />
+        {/* Search bar */}
+        <div
+          className="flex-shrink-0 flex items-center gap-3 px-4 py-3.5"
+          style={{ 
+            background: "#FFFFFF",
+            borderBottom: "1px solid #E6E2D8" 
+          }}
+        >
+          <Search className="w-4 h-4 flex-shrink-0 text-[#8F9F8F]" />
+          <input
+            ref={inputRef}
+            type="text"
+            value={query}
+            onChange={e => handleChange(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && doSearch(query)}
+            placeholder="搜索景点、路线、关键词…"
+            className="flex-1 bg-transparent outline-none text-sm font-semibold"
+            style={{ color: "#1E2522" }}
+          />
+          <div className="flex items-center gap-2">
+            {query && (
+              <motion.button 
+                whileTap={{ scale: 0.88 }} 
+                initial={{ scale: 0 }} 
+                animate={{ scale: 1 }}
+                onClick={() => { setQuery(""); setResults(null); inputRef.current?.focus(); }}
+                className="text-[#8F9F8F]"
+              >
+                <X className="w-4 h-4" />
+              </motion.button>
+            )}
+            <motion.button 
+              whileTap={{ scale: 0.88 }} 
+              onClick={toggleVoice}
+              className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+              style={{ 
+                background: recording ? "rgba(220,38,38,0.1)" : "#FAF8F5",
+                color: recording ? "#DC2626" : "#8F9F8F" 
+              }}
+            >
+              {recording ? <MicOff className="w-3.5 h-3.5 animate-pulse" /> : <Mic className="w-3.5 h-3.5" />}
             </motion.button>
-          )}
-          <motion.button whileTap={{ scale: 0.88 }} onClick={toggleVoice}
-            className="w-8 h-8 rounded-full flex items-center justify-center"
-            style={{ background: recording ? "rgba(220,38,38,0.2)" : "rgba(255,255,255,0.08)",
-              color: recording ? "#DC2626" : "rgba(255,255,255,0.5)" }}>
-            {recording ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
-          </motion.button>
-          <motion.button whileTap={{ scale: 0.9 }} onClick={onClose}
-            className="text-[12px] font-medium" style={{ color: "#D2A053" }}>
-            取消
-          </motion.button>
-        </div>
-      </div>
-
-      {/* Content area */}
-      <div className="flex-1 overflow-y-auto px-4 py-3">
-        {loading && (
-          <div className="flex items-center justify-center gap-2 py-10">
-            <Loader2 className="w-5 h-5 animate-spin" style={{ color: "#D2A053" }} />
-            <span className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>搜索中…</span>
+            <motion.button 
+              whileTap={{ scale: 0.9 }} 
+              onClick={onClose}
+              className="text-xs font-black text-[#4F6F52] hover:text-[#3A5240] px-1"
+            >
+              取消
+            </motion.button>
           </div>
-        )}
+        </div>
 
-        {!loading && !query && (
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={SPRING}>
-            {history.length > 0 && (
-              <div className="mb-5">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-1.5">
-                    <History className="w-3.5 h-3.5" style={{ color: "#8F9F8F" }} />
-                    <span className="text-[11px] font-semibold tracking-wide uppercase" style={{ color: "#8F9F8F" }}>搜索历史</span>
+        {/* Content area */}
+        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4" style={{ minHeight: "150px" }}>
+          {loading && (
+            <div className="flex flex-col items-center justify-center gap-2 py-10">
+              <Loader2 className="w-6 h-6 animate-spin text-[#4F6F52]" />
+              <span className="text-xs font-bold text-[#8F9F8F]">智能检索中…</span>
+            </div>
+          )}
+
+          {!loading && !query && (
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={SPRING} className="space-y-4">
+              {history.length > 0 && (
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-1.5 text-[#8F9F8F]">
+                      <History className="w-3.5 h-3.5" />
+                      <span className="text-[10px] font-black tracking-wider uppercase">最近搜索</span>
+                    </div>
+                    <button 
+                      onClick={() => { clearHistory(); setHistory([]); }}
+                      className="text-[10px] font-bold text-[#8F9F8F] hover:text-[#1E2522]"
+                    >
+                      清空
+                    </button>
                   </div>
-                  <motion.button whileTap={{ scale: 0.9 }}
-                    onClick={() => { clearHistory(); setHistory([]); }}
-                    className="text-[10px]" style={{ color: "#8F9F8F" }}>清空</motion.button>
+                  <div className="flex flex-wrap gap-1.5">
+                    {history.map(h => (
+                      <button 
+                        key={h} 
+                        onClick={() => handleHistoryClick(h)}
+                        className="px-3 py-1.5 rounded-full text-xs font-bold bg-white border border-[#E6E2D8] text-[#4F6F52] hover:border-[#4F6F52] hover:bg-[#EBF3EE] transition-all"
+                      >
+                        {h}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {history.map(h => (
-                    <motion.button key={h} whileTap={{ scale: 0.93 }} onClick={() => handleHistoryClick(h)}
-                      className="px-3 py-1.5 rounded-full text-[12px]"
-                      style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.65)" }}>
-                      {h}
+              )}
+              {/* Hot keywords */}
+              <div>
+                <p className="text-[10px] font-black tracking-wider uppercase text-[#8F9F8F] mb-2">热门搜索</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {["揽月亭", "翠玉湖", "亲子路线", "历史文化", "半日游", "景区门票"].map((k, i) => (
+                    <motion.button 
+                      key={k} 
+                      whileTap={{ scale: 0.92 }} 
+                      onClick={() => handleHistoryClick(k)}
+                      initial={{ opacity: 0, scale: 0.9 }} 
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ ...SPRING, delay: i * 0.04 }}
+                      className="px-3 py-1.5 rounded-full text-xs font-bold"
+                      style={{ 
+                        background: "rgba(210,160,83,0.08)", 
+                        border: "1px solid rgba(210,160,83,0.2)", 
+                        color: "#B8843A" 
+                      }}
+                    >
+                      {k}
                     </motion.button>
                   ))}
                 </div>
               </div>
-            )}
-            {/* Hot keywords */}
-            <div>
-              <p className="text-[11px] font-semibold tracking-wide uppercase mb-2" style={{ color: "#8F9F8F" }}>热门搜索</p>
-              <div className="flex flex-wrap gap-2">
-                {["揽月亭", "翠玉湖", "亲子路线", "历史文化", "半日游", "景区门票"].map((k, i) => (
-                  <motion.button key={k} whileTap={{ scale: 0.92 }} onClick={() => handleHistoryClick(k)}
-                    initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-                    transition={{ ...SPRING, delay: i * 0.04 }}
-                    className="px-3 py-1.5 rounded-full text-[12px]"
-                    style={{ background: "rgba(210,160,83,0.12)", border: "1px solid rgba(210,160,83,0.25)", color: "#D2A053" }}>
-                    {k}
-                  </motion.button>
-                ))}
-              </div>
+            </motion.div>
+          )}
+
+          {!loading && results && results.total === 0 && (
+            <div className="text-center py-10">
+              <p className="text-2xl mb-2">🔍</p>
+              <p className="text-xs font-bold text-[#1E2522]">没有找到「{query}」相关内容</p>
+              <p className="text-[10px] text-[#8F9F8F] mt-1">试试换个关键词，如“湖”或“游”</p>
             </div>
-          </motion.div>
-        )}
+          )}
 
-        {!loading && results && results.total === 0 && (
-          <div className="text-center py-12">
-            <p className="text-3xl mb-3">🔍</p>
-            <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>没有找到「{query}」相关内容</p>
-            <p className="text-[11px] mt-1" style={{ color: "rgba(255,255,255,0.25)" }}>试试换个关键词</p>
-          </div>
-        )}
+          {!loading && results && results.total > 0 && (
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={SPRING} className="space-y-4">
+              {results.spots.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-black tracking-wider uppercase text-[#8F9F8F] mb-2">
+                    相关景点 ({results.spots.length})
+                  </p>
+                  <div className="space-y-2">
+                    {results.spots.map((spot, i) => (
+                      <Link key={spot.id} href={`/spots/${spot.id}`} onClick={onClose} className="block">
+                        <motion.div 
+                          whileTap={{ scale: 0.98 }}
+                          initial={{ opacity: 0, x: -10 }} 
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ ...SPRING, delay: i * 0.05 }}
+                          className="flex items-center gap-3 p-2.5 rounded-2xl border border-[#E6E2D8] bg-white hover:border-[#4F6F52] hover:shadow-sm transition-all"
+                        >
+                          <div className="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0 bg-neutral-100 border border-[#E6E2D8]">
+                            {spot.imageUrl && (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={spot.imageUrl} alt={spot.name} className="w-full h-full object-cover" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-black text-[#1E2522] truncate" style={{ fontFamily: "var(--font-noto-serif)" }}>
+                              {spot.name}
+                            </p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="text-[8px] font-extrabold px-1.5 py-0.5 rounded-md bg-[#4F6F52]/8 text-[#4F6F52]">
+                                {CAT_LABEL[spot.category] ?? spot.category}
+                              </span>
+                              <p className="text-[9px] text-[#8F9F8F] truncate">
+                                {spot.description}
+                              </p>
+                            </div>
+                          </div>
+                          <MapPin className="w-3.5 h-3.5 text-[#8F9F8F] flex-shrink-0" />
+                        </motion.div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-        {!loading && results && results.total > 0 && (
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={SPRING}
-            className="space-y-4">
-            {results.spots.length > 0 && (
-              <div>
-                <p className="text-[11px] font-semibold tracking-wide uppercase mb-2" style={{ color: "#8F9F8F" }}>
-                  景点 ({results.spots.length})
-                </p>
-                <div className="space-y-2">
-                  {results.spots.map((spot, i) => (
-                    <Link key={spot.id} href={`/spots/${spot.id}`} onClick={onClose}>
-                      <motion.div whileTap={{ scale: 0.98 }}
-                        initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
-                        transition={{ ...SPRING, delay: i * 0.05 }}
-                        className="flex items-center gap-3 px-3.5 py-3 rounded-2xl"
-                        style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.09)" }}>
-                        <div className="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0 bg-gray-700">
-                          {spot.imageUrl && (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={spot.imageUrl} alt={spot.name} className="w-full h-full object-cover" />
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[13px] font-semibold text-white truncate"
-                            style={{ fontFamily: "var(--font-noto-serif)" }}>{spot.name}</p>
-                          <div className="flex items-center gap-2 mt-0.5">
-                            <span className="text-[9px] px-1.5 py-0.5 rounded-full"
-                              style={{ background: "rgba(79,111,82,0.2)", color: "#8FBF8A" }}>
-                              {CAT_LABEL[spot.category] ?? spot.category}
-                            </span>
-                            <p className="text-[10px] truncate" style={{ color: "rgba(255,255,255,0.4)" }}>
-                              {spot.description?.slice(0, 30)}
+              {results.routes.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-black tracking-wider uppercase text-[#8F9F8F] mb-2">
+                    推荐路线 ({results.routes.length})
+                  </p>
+                  <div className="space-y-2">
+                    {results.routes.map((route, i) => (
+                      <Link key={route.id} href={`/routes/${route.id}`} onClick={onClose} className="block">
+                        <motion.div 
+                          whileTap={{ scale: 0.98 }}
+                          initial={{ opacity: 0, x: -10 }} 
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ ...SPRING, delay: (results.spots.length + i) * 0.05 }}
+                          className="flex items-center gap-3 p-2.5 rounded-2xl border border-[#E6E2D8] bg-white hover:border-[#4F6F52] hover:shadow-sm transition-all"
+                        >
+                          <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-[#D2A053]/8 border border-[#D2A053]/15">
+                            <Navigation className="w-4.5 h-4.5 text-[#D2A053]" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-black text-[#1E2522] truncate" style={{ fontFamily: "var(--font-noto-serif)" }}>
+                              {route.name}
+                            </p>
+                            <p className="text-[9px] text-[#8F9F8F] mt-0.5 truncate">
+                              {route.description} · 建议游玩 {route.totalDuration} 分钟
                             </p>
                           </div>
-                        </div>
-                        <MapPin className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "rgba(255,255,255,0.25)" }} />
-                      </motion.div>
-                    </Link>
-                  ))}
+                        </motion.div>
+                      </Link>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
-
-            {results.routes.length > 0 && (
-              <div>
-                <p className="text-[11px] font-semibold tracking-wide uppercase mb-2" style={{ color: "#8F9F8F" }}>
-                  路线 ({results.routes.length})
-                </p>
-                <div className="space-y-2">
-                  {results.routes.map((route, i) => (
-                    <Link key={route.id} href={`/routes/${route.id}`} onClick={onClose}>
-                      <motion.div whileTap={{ scale: 0.98 }}
-                        initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
-                        transition={{ ...SPRING, delay: (results.spots.length + i) * 0.05 }}
-                        className="flex items-center gap-3 px-3.5 py-3 rounded-2xl"
-                        style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.09)" }}>
-                        <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                          style={{ background: "rgba(210,160,83,0.15)" }}>
-                          <Navigation className="w-4 h-4" style={{ color: "#D2A053" }} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[13px] font-semibold text-white truncate"
-                            style={{ fontFamily: "var(--font-noto-serif)" }}>{route.name}</p>
-                          <p className="text-[10px] mt-0.5 truncate" style={{ color: "rgba(255,255,255,0.4)" }}>
-                            {route.description?.slice(0, 30)} · {route.totalDuration}分钟
-                          </p>
-                        </div>
-                      </motion.div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-          </motion.div>
-        )}
-      </div>
-    </motion.div>
+              )}
+            </motion.div>
+          )}
+        </div>
+      </motion.div>
+    </div>
   );
 }

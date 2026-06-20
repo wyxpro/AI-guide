@@ -331,7 +331,7 @@ export default function WelcomePage() {
     }
     setIsSimTyping(true);
     setSimInput(question);
-    
+
     // Add user question and empty system placeholder
     setSimMessages(prev => [
       ...prev,
@@ -489,7 +489,7 @@ export default function WelcomePage() {
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold"
             style={{ background: "rgba(210,160,83,0.12)", color: "#D2A053", border: "1px solid rgba(210,160,83,0.25)" }}
           >
-            <Sparkles className="w-3.5 h-3.5 animate-pulse" /> 旅行家Pro·AI智能交互导览系统
+            <Sparkles className="w-3.5 h-3.5 animate-pulse" /> 旅行家Pro·AI数字人交互导游系统
           </motion.div>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
@@ -999,7 +999,8 @@ export default function WelcomePage() {
 
       {/* Interactive Simulator Section (实机对谈模拟体验沙盒) */}
       <section id="simulator" className="py-20 bg-white border-y border-[#E6E2D8] relative overflow-hidden">
-        <style dangerouslySetInnerHTML={{ __html: `
+        <style dangerouslySetInnerHTML={{
+          __html: `
           .digital-human-view {
             height: 220px;
             flex-shrink: 0;
@@ -1147,7 +1148,7 @@ export default function WelcomePage() {
                   <p className="text-xs text-[#8F9F8F] leading-relaxed">
                     点击下方预设的游客提问场景，观察右侧手机模拟器中 AI 导览官小旅的**表情口型联动**与**流式回复内容**：
                   </p>
-                  
+
                   {/* Category Tabs */}
                   <div className="flex gap-2 bg-[#FAF8F5] border border-[#E6E2D8] p-1 rounded-xl shadow-sm">
                     {[
@@ -1161,11 +1162,10 @@ export default function WelcomePage() {
                           setSimTab(tab.id as any);
                           triggerToast(`已切换至：${tab.name}`);
                         }}
-                        className={`flex-1 py-2 text-xs md:text-sm font-bold rounded-lg transition-all ${
-                          simTab === tab.id
+                        className={`flex-1 py-2 text-xs md:text-sm font-bold rounded-lg transition-all ${simTab === tab.id
                             ? "bg-[#4F6F52] text-white shadow-md shadow-[#4F6F52]/20"
                             : "text-[#8F9F8F] hover:text-[#4F6F52]"
-                        }`}
+                          }`}
                       >
                         {tab.name}
                       </button>
@@ -1230,12 +1230,12 @@ export default function WelcomePage() {
 
               {/* Right Phone Simulator */}
               <div className="lg:col-span-5 flex justify-center">
-                <div 
+                <div
                   className="w-[290px] h-[580px] border-[8px] rounded-[40px] shadow-2xl overflow-hidden flex flex-col relative scale-[1.03]"
                   style={{ backgroundColor: "#0D130E", borderColor: "#1C261E" }}
                 >
                   {/* Notch */}
-                  <div 
+                  <div
                     className="w-[120px] h-[18px] absolute top-0 left-1/2 -translate-x-1/2 rounded-b-[15px] z-20"
                     style={{ backgroundColor: "#1C261E" }}
                   />
@@ -1243,12 +1243,12 @@ export default function WelcomePage() {
                   {/* Screen Content */}
                   <div className="flex-1 flex flex-col p-4 pt-6 relative select-none text-left">
                     {/* Header */}
-                    <div 
+                    <div
                       className="flex justify-between items-center pb-2 border-b mb-3"
                       style={{ borderBottomColor: "rgba(79, 111, 82, 0.2)" }}
                     >
                       <div className="flex items-center gap-2">
-                        <div 
+                        <div
                           className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
                           style={{ background: "linear-gradient(to top right, #D2A053, #4F6F52)" }}
                         >
@@ -1256,7 +1256,7 @@ export default function WelcomePage() {
                         </div>
                         <span className="text-xs font-bold text-white">小旅 Pro</span>
                       </div>
-                      <div 
+                      <div
                         className="text-[9px] px-2 py-0.5 rounded-full flex items-center gap-1 font-semibold"
                         style={{ color: "#4ade80", backgroundColor: "rgba(74, 222, 128, 0.12)" }}
                       >
@@ -1282,17 +1282,16 @@ export default function WelcomePage() {
                     </div>
 
                     {/* Chat Messages */}
-                    <div 
-                      ref={simChatRef} 
+                    <div
+                      ref={simChatRef}
                       className="flex-1 border rounded-xl p-3 font-sans text-[11px] overflow-y-auto space-y-2 scrollbar-none flex flex-col"
                       style={{ backgroundColor: "rgba(255, 255, 255, 0.05)", borderColor: "rgba(255, 255, 255, 0.1)" }}
                     >
                       {simMessages.map((msg, idx) => (
                         <div
                           key={idx}
-                          className={`max-w-[85%] p-2 rounded-lg leading-relaxed ${
-                            msg.sender === "user" ? "self-end text-right" : "self-start text-left"
-                          }`}
+                          className={`max-w-[85%] p-2 rounded-lg leading-relaxed ${msg.sender === "user" ? "self-end text-right" : "self-start text-left"
+                            }`}
                           style={
                             msg.sender === "user"
                               ? { backgroundColor: "rgba(210, 160, 83, 0.2)", color: "#FAF8F5", border: "1px solid rgba(210, 160, 83, 0.3)" }
@@ -1314,7 +1313,7 @@ export default function WelcomePage() {
                         className="flex-1 border rounded-full px-3 py-1.5 text-[10px] text-white outline-none"
                         style={{ backgroundColor: "rgba(255, 255, 255, 0.05)", borderColor: "rgba(255, 255, 255, 0.1)" }}
                       />
-                      <button 
+                      <button
                         className="w-7 h-7 rounded-full transition-all flex items-center justify-center text-white text-xs"
                         style={{ backgroundColor: "#4F6F52" }}
                       >
@@ -1330,9 +1329,8 @@ export default function WelcomePage() {
 
         {/* Simulator Toast Notification */}
         <div
-          className={`fixed bottom-8 right-8 z-50 bg-[#121815] border border-[#D2A053]/40 border-l-4 border-l-[#D2A053] px-5 py-3 rounded-lg shadow-xl text-xs text-white flex items-center gap-2 transition-all duration-300 transform ${
-            showSimToast ? "translate-y-0 opacity-100" : "translate-y-12 opacity-0 pointer-events-none"
-          }`}
+          className={`fixed bottom-8 right-8 z-50 bg-[#121815] border border-[#D2A053]/40 border-l-4 border-l-[#D2A053] px-5 py-3 rounded-lg shadow-xl text-xs text-white flex items-center gap-2 transition-all duration-300 transform ${showSimToast ? "translate-y-0 opacity-100" : "translate-y-12 opacity-0 pointer-events-none"
+            }`}
         >
           <span>💡</span>
           <span>{simToast}</span>

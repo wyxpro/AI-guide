@@ -1,10 +1,12 @@
 "use client";
 import { usePathname } from "next/navigation";
 import { BottomTabBar, SidebarNav } from "./Navigation";
+import { TopBar } from "./TopBar";
+import { PointsInviteModal } from "@/components/ui/PointsInviteModal";
 import { auth } from "@eazo/sdk";
 import { useEazo } from "@eazo/sdk/react";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export function LayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -13,6 +15,19 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
   const user = useEazo((s: any) => s.auth.user);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const loading = useEazo((s: any) => s.auth.loading);
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalTab, setModalTab] = useState<"packages" | "invite">("packages");
+
+  useEffect(() => {
+    const handleOpen = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      setModalTab(customEvent.detail?.tab || "packages");
+      setModalOpen(true);
+    };
+    window.addEventListener("open-points-modal", handleOpen);
+    return () => window.removeEventListener("open-points-modal", handleOpen);
+  }, []);
 
   useEffect(() => {
     const syncMode = () => {
@@ -92,14 +107,26 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
         {/* Offset from sidebar on PC */}
         <style>{`
           @media (min-width: 768px) {
-            main { margin-left: 240px !important; }
+            main { 
+              margin-left: 240px !important; 
+              ${!isAdmin ? "padding-top: 70px !important;" : ""}
+            }
           }
         `}</style>
+        {!isAdmin && <TopBar />}
         {children}
       </main>
 
       {/* Mobile bottom tab — C端, not admin */}
       {!isAdmin && <BottomTabBar />}
+
+      <div style={{ position: "static" }}>
+        <PointsInviteModal 
+          isOpen={modalOpen} 
+          onClose={() => setModalOpen(false)} 
+          initialTab={modalTab}
+        />
+      </div>
     </div>
   );
 }
