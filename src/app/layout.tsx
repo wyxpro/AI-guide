@@ -15,8 +15,9 @@ export const metadata: Metadata = {
   description: "旅行家Pro智能景区导游系统，7×24小时在线个性化游览服务。支持语音问答、路线规划、景点讲解。",
   manifest: "/manifest.json",
   icons: {
-    icon: "https://eazo.ai/favicon.ico",
-    apple: "https://eazo.ai/favicon.ico",
+    icon: "/image/logo.png",
+    shortcut: "/image/logo.png",
+    apple: "/image/logo.png",
   },
   openGraph: {
     type: "website",

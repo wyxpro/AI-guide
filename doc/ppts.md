@@ -1,7 +1,37 @@
-# 🧭 旅行家Pro · 智能景区多智能体伴游系统
-## 📊 15页专业PPT全套排版与AI绘图提示词指南 (ppts.md)
+# 🧭 旅行家Pro · 智能景区多智能体伴游系统 (Kowell AI 融合版)
+## 📊 PPT 页面排版、A3 App 宣传海报与 AI 绘图提示词指南 (ppts.md)
 
-本指南针对《旅行家Pro》商业计划书与技术架构演示，量身定制了 15 页 PPT 的排版设计、核心文案、配色体系与专业 AI 绘图提示词（Midjourney/DALL-E 3），旨在为您制作极具艺术美感与商业说服力的 PPT 模版提供完备支持。
+本指南针对《旅行家Pro》/《Kowell AI》系统平台，量身定制了超高清 A3 App 宣传海报排版大纲、PPT 封面及核心插图的 AI 绘图提示词（Midjourney/DALL-E 3），并提供 15 页专业 PPT 的完整设计和文案排版指南，旨在帮助您快速制作极具商业说服力与视觉张力的宣发物料。
+
+---
+
+## 🎨 1. Kowell AI (旅行家Pro) A3 超高清 App 宣传海报大纲与排版指南
+*   **设计风格**: 现代科技旅行风格，高对比度色彩体系，创新拉眼球。
+*   **配色方案**: 山林深绿 (`#4F6F52`)、琥珀砂金 (`#D2A053`)、宣纸暖米 (`#FAF8F5`)、科技冰蓝 (`#1D4ED8`)。
+
+### 📑 海报内容排版结构
+
+| 模块 | 核心内容与文案 | 视觉指示与表情符号 |
+| :--- | :--- | :--- |
+| **1. 产品标识** | **产品名称**: Kowell AI <br>**副标题**: 基于多智能体的资源生成与个性化学习系统 (智能景区伴游与智慧运营)<br>**上线链接**: `e.playe.top` | 🧭 顶部加粗居中排版，配以发光的科技指南针图标。 |
+| **2. 核心痛点** | **💸 导游费用贵**: 旺季人工导游日服务费达 `300-500` 元/天，供需缺口超 `70%`。<br>**❌ 讲解死板幻觉多**: 导览缺乏多轮多模态互动，大模型幻觉率高达 `35%`。<br>**⚠️ 运营黑盒决策慢**: 景区客流与问答统计滞后超 `24` 小时，难以实施调优。 | 📊 数据指标使用琥珀金超大字号，背景配以暗灰色渐变警示卡片。 |
+| **3. 用户画像** | **👵 银发漫步族 (老年游客)**: 自动开启慢速大字模式，优先规划无障碍路线。<br>**👦 亲子出行组 (家庭游客)**: 开启童趣故事模式，推荐亲子乐园与低体能路线。<br>**🎒 文史探索者 (深度游客)**: 开启学术模式，精准 RAG 文献检索与最佳机位。 | 👥 画像对应卡片配备独立特征头像，右下角标明自适应模式绿点。 |
+| **4. 亮点特色** | **👤 3D真实数字人小玉**: 7x24h 伴游，唇形毫秒级口型同步，有温度的多轮交互。<br>**🗺️ 多约束行程规划**: LLM与空间算法联动，重庆高精地图折线渲染。<br>**📷 VR即拍即识**: LIDAR 3D 拓扑扫描动效，1秒智能识别文物及语音解读。<br>**⚡ 混合重排 RAG**: 余弦相似度+关键词重排，问答准确率达 `96%`。 | ✨ 配备带发光边框的圆角功能卡片，内嵌对应的三维业务示意图。 |
+| **5. 额外区域** | **💻 B端管理大屏**: 展示 PC 控制台样机，含客流走势、满意度情感饼图、词云。<br>**📱 C端移动界面**: 展示 4 个手机样机，分别展示 AI对话、VR识别、折线导航、FM广播。<br>**🔗 底部扫码区**: 预留“在线体验”与“开源文档”两个带虚线边框的二维码占位。 | 🖥️ 样机呈立体透视排列，手机呈折扇状环绕着电脑大屏。 |
+
+### 🖼️ A3 海报主视觉 AI 绘图提示词 (Midjourney Prompt)
+*   **主体特征**: 3D 真实东方女生导游人物，面带温暖微笑向镜头招手致意，不要卡通，极具真实感与质感。
+*   **AI 绘图提示词 (Prompt)**:
+    > A stunning ultra-high-definition vertical A3 app promotional poster, 3:4 aspect ratio, modern travel tech theme. The central figure is a beautiful 3D realistic Chinese girl guide with highly detailed skin and hair, smiling warmly and waving at the camera. Floating around her are one stylish laptop mockup displaying a colorful tourism admin dashboard, and four smartphone mockups showing interfaces of active map routes and chat bubbles. The background merges ancient temple red walls, green bamboo forests, and a faint glowing colossal Sanxingdui bronze tree in the mist. Glowing cybernetic wave lines, subtle gold data graphs, and two clean QR code placeholder boxes at the very bottom. Vibrant forest green (#4F6F52) and shimmering amber gold (#D2A053) color palette, travel magazine editorial style, dramatic cinematic lighting, Unreal Engine 5 render --ar 3:4 --v 6.0
+*   **提示词译文**: 一幅震撼的超高清竖版 A3 App 宣传海报，3:4 比例，现代科技旅行主题。核心人物是一位美丽的 3D 写实中国女生导游，具有高度细腻的皮肤和发丝质感，正面朝镜头温暖微笑并招手。在她周围悬浮着一部时尚的笔记本电脑样机（显示商务管理大屏）和四部智能手机样机（显示实时地图路线和聊天气泡界面）。背景融合了古庙红墙、翠绿竹林以及迷雾中隐约可见的发光巨大三星堆青铜树。空气中飘浮着发光的科技波形线条、柔和的金色数据图表，海报最下方预留两个干净的二维码占位框。配色采用活力山林绿与闪耀琥珀金，旅行杂志排版风格，戏剧性电影光效，虚幻引擎5渲染。
+
+---
+
+## 🖼️ 2. PPT 封面宣传图与主视觉 AI 绘图提示词 (Promotional Key Visuals)
+*   **主体特征**: 右侧为 3D 真实东方女生（不要卡通）面带微笑招手，左侧留出大片干净的排版底色。
+*   **AI 绘图提示词 (Prompt)**:
+    > A premium high-definition PPT cover background, 16:9 aspect ratio, travel tech style. On the right side, a beautiful 3D realistic Chinese girl avatar with fine features and lifelike skin, smiling and waving towards the left. Beside her is a sleek laptop mockup and subtle glowing golden route lines. The background features fluid abstract landscape contours representing hills and hiking paths in forest green (#4F6F52) and amber gold (#D2A053). Clean warm cream-beige (#FAF8F5) background with extensive empty copy space on the left. High contrast, minimalist layout, elegant studio lighting, photorealistic --ar 16:9 --style raw --v 6.0
+*   **提示词译文**: 高端高清晰度 PPT 封面背景，16:9 比例，科技旅行风格。右侧是一位美丽的 3D 写实中国女生，五官精致，皮肤逼真，面带微笑向左侧招手。在她身旁有一台时尚的笔记本电脑样机与微弱发光的金色路线。背景是流畅的抽象山水等高线，配色为山林绿（#4F6F52）与琥珀金（#D2A053）。干净的宣纸暖米色背景（#FAF8F5），左侧预留了宽阔的排版空间以供放置标题。高对比度，极简布局，优雅影棚光效，照片级写实。
 
 ---
 

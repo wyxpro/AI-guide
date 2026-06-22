@@ -221,23 +221,32 @@ export default function LoginPage() {
       </div>
 
       {/* Right Panel - Form panel */}
-      <div className="w-full lg:w-[55%] flex items-center justify-center p-6 md:p-16 bg-white relative">
+      <div className="w-full lg:w-[55%] flex items-center justify-center p-6 md:p-16 bg-[#FAF8F5] relative overflow-hidden">
+        
+        {/* Travel Background Image for Mobile Only */}
+        <div 
+          className="absolute inset-0 lg:hidden bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: "url('/image/login_bg.png')" }}
+        />
+        
+        {/* Soft overlay + blur to make background illustration subtle and elegant */}
+        <div className="absolute inset-0 lg:hidden bg-white/20 backdrop-blur-[5px]" />
 
         {/* Back Link at the top-right */}
         <button
           onClick={() => router.push("/welcome")}
-          className="absolute top-8 right-8 flex items-center gap-1.5 text-xs font-semibold text-neutral-400 hover:text-neutral-700 transition-colors cursor-pointer"
+          className="absolute top-8 right-8 flex items-center gap-1.5 text-xs font-semibold text-neutral-600 lg:text-neutral-400 hover:text-neutral-900 lg:hover:text-neutral-700 transition-colors cursor-pointer z-20"
         >
           <ArrowLeft className="w-3.5 h-3.5" /> 返回官网
         </button>
 
         {/* Central Card Form */}
-        <div className="w-full max-w-sm flex flex-col justify-center">
+        <div className="w-full max-w-sm flex flex-col justify-center relative z-10 bg-white/85 lg:bg-transparent p-6 md:p-8 rounded-3xl shadow-xl lg:shadow-none border border-white/50 lg:border-transparent backdrop-blur-md lg:backdrop-blur-none">
 
           {/* Welcome Titles */}
           <div>
             <h2 className="text-2xl font-black text-neutral-900 tracking-tight">欢迎回来 👋</h2>
-            <p className="text-sm text-neutral-500 mt-1">登录开启您的探索之旅</p>
+            <p className="text-sm text-neutral-600 lg:text-neutral-500 mt-1 font-medium">登录开启您的探索之旅</p>
           </div>
 
           {/* Form Tabs */}
