@@ -32,7 +32,10 @@ self.addEventListener("fetch", (event) => {
   if (url.pathname.startsWith("/_next/static") || url.pathname.match(/\.(png|jpg|jpeg|svg|ico|woff2?)$/)) {
     event.respondWith(
       caches.match(request).then((cached) => cached ?? fetch(request).then((res) => {
-        if (res.ok) caches.open(CACHE_NAME).then((c) => c.put(request, res.clone()));
+        if (res.ok) {
+          const resClone = res.clone();
+          caches.open(CACHE_NAME).then((c) => c.put(request, resClone));
+        }
         return res;
       }))
     );
@@ -45,7 +48,10 @@ self.addEventListener("fetch", (event) => {
       caches.open(CACHE_NAME).then((cache) =>
         cache.match(request).then((cached) => {
           const fetchPromise = fetch(request).then((res) => {
-            if (res.ok) cache.put(request, res.clone());
+            if (res.ok) {
+              const resClone = res.clone();
+              cache.put(request, resClone);
+            }
             return res;
           }).catch(() => cached);
           return cached ?? fetchPromise;

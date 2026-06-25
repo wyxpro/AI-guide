@@ -5,6 +5,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { UserSyncEffect } from "@/components/user-profile/user-sync-effect";
 import { LayoutShell } from "@/components/layout/LayoutShell";
 
+import Script from "next/script";
+
 const SITE_URL = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
   : undefined;
@@ -48,7 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <LayoutShell>{children}</LayoutShell>
           <Toaster position="top-center" />
         </EazoProvider>
-        <script dangerouslySetInnerHTML={{
+        <Script id="register-sw" dangerouslySetInnerHTML={{
           __html: `
             if ('serviceWorker' in navigator) {
               window.addEventListener('load', () => {

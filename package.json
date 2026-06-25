@@ -19,6 +19,7 @@
     "db:drop": "drizzle-kit drop"
   },
   "dependencies": {
+    "@amap/amap-jsapi-loader": "^1.0.1",
     "@base-ui/react": "^1.4.0",
     "@eazo/sdk": "0.19.0",
     "@modelcontextprotocol/sdk": "^1.29.0",

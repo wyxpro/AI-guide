@@ -11,6 +11,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { request } from "@/lib/api/request";
+import AMapLoader from "@amap/amap-jsapi-loader";
+
+if (typeof window !== "undefined") {
+  (window as any)._AMapSecurityConfig = {
+    securityJsCode: process.env.NEXT_PUBLIC_AMAP_SECURITY_CODE || "",
+  };
+}
 
 const SPRING = { type: "spring" as const, stiffness: 280, damping: 35 };
 
@@ -62,8 +69,9 @@ export function RoutesScreen() {
   const [activeSpot, setActiveSpot] = useState<typeof CHONGQING_SPOTS[0]>(CHONGQING_SPOTS[0]);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Map elements
-  const mapRef = useRef<HTMLDivElement>(null);
+  // Map elements — separate refs for mobile and desktop to avoid React single-ref collision
+  const mobileMapRef = useRef<HTMLDivElement>(null);
+  const desktopMapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const routePolylineRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
@@ -196,66 +204,148 @@ export function RoutesScreen() {
     });
   };
 
-  const [isMobile, setIsMobile] = useState(false);
+  // Lazy-initialize from window.innerWidth so it's correct on the FIRST render.
+  // RoutesScreen is loaded with { ssr: false } so window is always available here.
+  const [isMobile, setIsMobile] = useState<boolean>(
+    () => typeof window !== "undefined" && window.innerWidth < 768
+  );
   useEffect(() => {
-    if (typeof window === "undefined") return;
     const handleResize = () => setIsMobile(window.innerWidth < 768);
-    handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const [leafletLoaded, setLeafletLoaded] = useState(false);
+  const [amapLoaded, setAmapLoaded] = useState(false);
+  const AMapInstanceRef = useRef<any>(null);
 
-  // Load Leaflet map script and stylesheet dynamically
+  // Derive the active map container ref based on current layout
+  const activeMapRef = isMobile ? mobileMapRef : desktopMapRef;
+
+  // Initialize map instance with Amap JSAPI Loader
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    if ((window as any).L) {
-      setLeafletLoaded(true);
+    // Destroy any pre-existing map instance (guards against layout flip races)
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.destroy();
+      mapInstanceRef.current = null;
+      setAmapLoaded(false);
+    }
+
+    // 高德 Key 缺失友好提示，避免移动端静默失败
+    if (!process.env.NEXT_PUBLIC_AMAP_KEY) {
+      console.error("[高德地图] 未配置 NEXT_PUBLIC_AMAP_KEY 环境变量");
+      toast.error("地图未配置，请联系管理员添加 NEXT_PUBLIC_AMAP_KEY");
       return;
     }
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-    document.head.appendChild(link);
 
-    const script = document.createElement("script");
-    script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
-    script.onload = () => {
-      setLeafletLoaded(true);
+    // local variable — captured by BOTH initMap AND the cleanup closure so the
+    // cleanup can always reach and destroy the map even if map.on('complete')
+    // hasn't fired yet (which is when mapInstanceRef.current would still be null).
+    let map: any = null;
+    let timer: any = null;
+    let aborted = false;
+    let resizeObserver: ResizeObserver | null = null;
+
+    const initMap = () => {
+      if (aborted) return;
+      const container = activeMapRef.current;
+      if (!container) {
+        // 容器还没挂载，下一帧再试（避免移动端 hydration 时机问题）
+        timer = setTimeout(initMap, 50);
+        return;
+      }
+
+      // 容器还未完成布局 — 使用 ResizeObserver 等待，避免无限轮询
+      if (container.clientWidth === 0 || container.clientHeight === 0) {
+        if (!resizeObserver) {
+          resizeObserver = new ResizeObserver(() => {
+            if (aborted) return;
+            const c = activeMapRef.current;
+            if (c && c.clientWidth > 0 && c.clientHeight > 0) {
+              resizeObserver?.disconnect();
+              resizeObserver = null;
+              initMap();
+            }
+          });
+          resizeObserver.observe(container);
+        }
+        return;
+      }
+
+      AMapLoader.load({
+        key: process.env.NEXT_PUBLIC_AMAP_KEY || "",
+        version: "2.0",
+        plugins: ["AMap.Walking", "AMap.Driving", "AMap.Polyline"],
+      })
+        .then((AMap) => {
+          if (aborted) return;
+          if (!activeMapRef.current || container !== activeMapRef.current) return;
+
+          // Re-check size — layout could shift while the JSAPI script was loading
+          if (container.clientWidth === 0 || container.clientHeight === 0) {
+            timer = setTimeout(initMap, 50);
+            return;
+          }
+
+          AMapInstanceRef.current = AMap;
+
+          map = new AMap.Map(container, {
+            viewMode: "3D",
+            zoom: 14,
+            center: [106.578, 29.563],
+            theme: "amap://styles/whitesmoke",
+            zoomEnable: true,
+            dragEnable: true,
+            resizeEnable: true, // 启用容器尺寸变化时自动 resize
+          });
+
+          // ↓ Set immediately so cleanup can always destroy it
+          mapInstanceRef.current = map;
+
+          map.on("complete", () => {
+            if (aborted) return;
+            if (!activeMapRef.current || container !== activeMapRef.current) return;
+            setAmapLoaded(true);
+            renderAmapMarkers(AMap, map, CHONGQING_SPOTS);
+          });
+
+          // 监听容器尺寸变化(例如移动端虚拟键盘弹起/抽屉打开)，主动触发 resize
+          // 这是移动端地图最容易出现"灰屏/不显示"的根因之一
+          if (typeof ResizeObserver !== "undefined") {
+            resizeObserver = new ResizeObserver(() => {
+              if (aborted || !map) return;
+              try { map.resize?.(); } catch (_) {}
+            });
+            resizeObserver.observe(container);
+          }
+        })
+        .catch((e) => {
+          if (!aborted) {
+            console.error("高德地图加载失败:", e);
+            toast.error("地图加载失败，请检查网络或配置");
+          }
+        });
     };
-    document.body.appendChild(script);
-  }, []);
 
-  // Initialize map instance
-  useEffect(() => {
-    if (!leafletLoaded) return;
-    const L = (window as any).L;
-    if (!L || !mapRef.current) return;
-
-    if (mapInstanceRef.current) {
-      mapInstanceRef.current.remove();
-      mapInstanceRef.current = null;
-    }
-    
-    const map = L.map(mapRef.current, { zoomControl: false }).setView([29.563, 106.578], 13);
-    mapInstanceRef.current = map;
-
-    // OpenStreetMap Tiles
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: '&copy; OpenStreetMap'
-    }).addTo(map);
-
-    // Render default markers
-    renderMarkers(CHONGQING_SPOTS);
+    initMap();
 
     return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-        mapInstanceRef.current = null;
+      aborted = true;
+      if (timer) clearTimeout(timer);
+      if (resizeObserver) {
+        try { resizeObserver.disconnect(); } catch (_) {}
+        resizeObserver = null;
       }
+      // Destroy via local closure variable — reliable even if complete hasn't fired
+      if (map) {
+        try { map.destroy(); } catch (_) {}
+        map = null;
+      }
+      mapInstanceRef.current = null;
+      setAmapLoaded(false);
     };
-  }, [leafletLoaded, isMobile]);
+  // activeMapRef identity changes whenever isMobile flips (new ref object selected)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMobile]);
 
   // Audio clean up
   useEffect(() => {
@@ -266,79 +356,116 @@ export function RoutesScreen() {
     };
   }, [audioInstance]);
 
-  // Re-draw route polylines when activeRoute changes
+  // Re-draw route polylines when activeRoute changes (uses real road navigation)
   useEffect(() => {
-    const L = (window as any).L;
+    const AMap = AMapInstanceRef.current;
     const map = mapInstanceRef.current;
-    if (!L || !map || !activeRoute) return;
+    if (!AMap || !map || !activeRoute) return;
 
     // Clear old polyline
     if (routePolylineRef.current) {
-      map.removeLayer(routePolylineRef.current);
+      if (typeof routePolylineRef.current.clear === "function") {
+        routePolylineRef.current.clear();
+      } else {
+        routePolylineRef.current.setMap(null);
+      }
+      routePolylineRef.current = null;
     }
 
     // Connect generated spot coordinates
     const coordinates = activeRoute.spots.map(s => {
       const original = CHONGQING_SPOTS.find(orig => orig.id === s.id);
-      return original ? [original.lat, original.lng] : null;
+      return original ? [original.lng, original.lat] : null; // [lng, lat] for Amap
     }).filter(Boolean) as Array<[number, number]>;
 
-    if (coordinates.length > 0) {
-      routePolylineRef.current = L.polyline(coordinates, {
-        color: "#FF5B45",
-        weight: 5,
-        opacity: 0.85,
-        dashArray: "5, 10"
-      }).addTo(map);
+    if (coordinates.length < 2) return;
 
-      map.fitBounds(routePolylineRef.current.getBounds(), { padding: [60, 60] });
-    }
-  }, [activeRoute, leafletLoaded, isMobile]);
+    // Use AMap.Walking to plan the path along roads
+    const walking = new AMap.Walking({
+      map: map,
+      panel: undefined,
+      hideMarkers: true,
+      autoFitView: true,
+    });
 
-  // Render markers function
-  const renderMarkers = (spotsList: typeof CHONGQING_SPOTS) => {
-    const L = (window as any).L;
-    const map = mapInstanceRef.current;
-    if (!L || !map) return;
+    const origin = coordinates[0];
+    const destination = coordinates[coordinates.length - 1];
+    const opts = {
+      waypoints: coordinates.slice(1, -1),
+    };
 
+    walking.search(origin, destination, opts, (status: string, result: any) => {
+      if (status === "complete") {
+        routePolylineRef.current = walking;
+      } else {
+        console.warn("高德步行规划失败，降级为折线连接:", result);
+        const polyline = new AMap.Polyline({
+          path: coordinates,
+          strokeColor: "#FF5B45",
+          strokeOpacity: 0.85,
+          strokeWeight: 6,
+          strokeStyle: "dashed",
+          strokeDasharray: [10, 10],
+        });
+        polyline.setMap(map);
+        map.setFitView([polyline]);
+        routePolylineRef.current = polyline;
+      }
+    });
+
+    return () => {
+      if (routePolylineRef.current) {
+        if (typeof routePolylineRef.current.clear === "function") {
+          routePolylineRef.current.clear();
+        } else {
+          routePolylineRef.current.setMap(null);
+        }
+        routePolylineRef.current = null;
+      }
+    };
+  }, [activeRoute, amapLoaded]);
+
+  // Render markers function using Amap custom markers
+  const renderAmapMarkers = (AMap: any, map: any, spotsList: typeof CHONGQING_SPOTS) => {
     // Clear old markers
-    markersRef.current.forEach(m => map.removeLayer(m));
+    markersRef.current.forEach(m => m.setMap(null));
     markersRef.current = [];
 
-    // Create marker styles according to category
     spotsList.forEach(s => {
+      if (!s || typeof s.lng !== "number" || typeof s.lat !== "number" || isNaN(s.lng) || isNaN(s.lat)) {
+        console.warn("跳过无效坐标的景点标点:", s);
+        return;
+      }
+
+      const themeColor =
+        s.type === "地标" ? "#EF4444" : s.type === "演出" ? "#F59E0B" : s.type === "寺庙" ? "#8B5CF6" : s.type === "文化" ? "#3B82F6" : s.type === "自然" ? "#10B981" : "#FF5B45";
+
       const markerHtml = `
-        <div class="flex flex-col items-center select-none">
-          <div class="px-2 py-1 bg-white/95 border border-zinc-200 shadow-md rounded-md text-[10px] font-bold text-zinc-800 whitespace-nowrap -translate-y-1" style="border-top: 3px solid ${
-            s.type === "地标" ? "#EF4444" : s.type === "演出" ? "#F59E0B" : s.type === "寺庙" ? "#8B5CF6" : s.type === "文化" ? "#3B82F6" : s.type === "自然" ? "#10B981" : "#FF5B45"
-          };">
+        <div class="flex flex-col items-center select-none cursor-pointer">
+          <div class="px-2 py-1 bg-white/95 border border-zinc-200 shadow-md rounded-md text-[10px] font-bold text-zinc-800 whitespace-nowrap -translate-y-1" style="border-top: 3px solid ${themeColor};">
             ${s.name}
           </div>
-          <div class="w-3.5 h-3.5 rounded-full bg-white border-2 flex items-center justify-center shadow-md -translate-y-1" style="border-color: ${
-            s.type === "地标" ? "#EF4444" : s.type === "演出" ? "#F59E0B" : s.type === "寺庙" ? "#8B5CF6" : s.type === "文化" ? "#3B82F6" : s.type === "自然" ? "#10B981" : "#FF5B45"
-          };">
-            <div class="w-1.5 h-1.5 rounded-full" style="background-color: ${
-              s.type === "地标" ? "#EF4444" : s.type === "演出" ? "#F59E0B" : s.type === "寺庙" ? "#8B5CF6" : s.type === "文化" ? "#3B82F6" : s.type === "自然" ? "#10B981" : "#FF5B45"
-            };"></div>
+          <div class="w-3.5 h-3.5 rounded-full bg-white border-2 flex items-center justify-center shadow-md -translate-y-1" style="border-color: ${themeColor};">
+            <div class="w-1.5 h-1.5 rounded-full" style="background-color: ${themeColor};"></div>
           </div>
         </div>
       `;
 
-      const customIcon = L.divIcon({
-        html: markerHtml,
-        className: "custom-marker-icon",
-        iconSize: [80, 40],
-        iconAnchor: [40, 40]
+      const marker = new AMap.Marker({
+        position: [s.lng, s.lat],
+        content: markerHtml,
+        offset: new AMap.Pixel(-40, -40),
       });
 
-      const marker = L.marker([s.lat, s.lng], { icon: customIcon }).addTo(map);
       marker.on("click", () => {
         setActiveSpot(s);
-        map.setView([s.lat, s.lng], 14, { animate: true });
+        map.setZoomAndCenter(15, [s.lng, s.lat], false, 300);
         if (autoplayEnabled) {
           speakSpotNarration(s.name, s.desc);
         }
       });
+
+      marker.setMap(map);
       markersRef.current.push(marker);
     });
   };
@@ -348,7 +475,7 @@ export function RoutesScreen() {
     const found = CHONGQING_SPOTS.find(s => s.name.includes(q));
     if (found && mapInstanceRef.current) {
       setActiveSpot(found);
-      mapInstanceRef.current.setView([found.lat, found.lng], 14, { animate: true });
+      mapInstanceRef.current.setZoomAndCenter(14, [found.lng, found.lat]);
       if (autoplayEnabled) {
         speakSpotNarration(found.name, found.desc);
       }
@@ -482,10 +609,21 @@ export function RoutesScreen() {
   return (
     <div className="relative min-h-svh w-full overflow-hidden bg-neutral-100 select-none">
       {isMobile ? (
-        <div className="relative w-full h-svh flex flex-col overflow-hidden">
+        <div
+          className="relative w-full flex flex-col overflow-hidden"
+          style={{ height: "100svh", minHeight: "100dvh" }}
+        >
         
-        {/* Full Map Container */}
-        <div ref={mapRef} className="absolute inset-0 z-0 bg-neutral-200" />
+        {/* Full Map Container - 使用 inline 尺寸避免 flex/svh 在移动端初次水合时高度为 0 */}
+        <div
+          ref={mobileMapRef}
+          className="absolute inset-0 z-0 bg-neutral-200"
+          style={{
+            width: "100%",
+            height: "100%",
+            minHeight: "100dvh",
+          }}
+        />
 
         {/* 1. Status Bar Spacing & Header Row */}
         <div className="relative z-10 w-full px-4 pt-3 flex flex-col gap-2">
@@ -584,7 +722,7 @@ export function RoutesScreen() {
         <button
           onClick={() => {
             if (mapInstanceRef.current) {
-              mapInstanceRef.current.setView([29.563, 106.578], 13);
+              mapInstanceRef.current.setZoomAndCenter(13, [106.578, 29.563]);
               toast.info("已回到重庆核心区域");
             }
           }}
@@ -784,7 +922,7 @@ export function RoutesScreen() {
                         setActiveSpot(s);
                         setShowSpotsListDrawer(false);
                         if (mapInstanceRef.current) {
-                          mapInstanceRef.current.setView([s.lat, s.lng], 14, { animate: true });
+                          mapInstanceRef.current.setZoomAndCenter(14, [s.lng, s.lat]);
                           if (autoplayEnabled) {
                             speakSpotNarration(s.name, s.desc);
                           }
@@ -975,7 +1113,7 @@ export function RoutesScreen() {
                     onClick={() => {
                       setActiveSpot(s);
                       if (mapInstanceRef.current) {
-                        mapInstanceRef.current.setView([s.lat, s.lng], 14, { animate: true });
+                        mapInstanceRef.current.setZoomAndCenter(14, [s.lng, s.lat]);
                         if (autoplayEnabled) {
                           speakSpotNarration(s.name, s.desc);
                         }
@@ -993,7 +1131,7 @@ export function RoutesScreen() {
 
           {/* Column 2: Center Map component */}
           <div className="flex-1 relative bg-zinc-100 h-full">
-            <div ref={mapRef} className="w-full h-full" />
+            <div ref={desktopMapRef} className="w-full h-full" />
 
             {/* Map Top-left Category Legend */}
             <div className="absolute left-4 top-4 z-10 bg-white/95 backdrop-blur shadow-md border border-zinc-200/80 rounded-xl px-4 py-2 flex items-center gap-4 text-xs font-bold text-zinc-700">

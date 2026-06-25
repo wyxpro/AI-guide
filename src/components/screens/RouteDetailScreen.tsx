@@ -3,10 +3,18 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, MapPin, Clock, Camera, ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { useRef } from "react";
+import AMapLoader from "@amap/amap-jsapi-loader";
+
+if (typeof window !== "undefined") {
+  (window as any)._AMapSecurityConfig = {
+    securityJsCode: process.env.NEXT_PUBLIC_AMAP_SECURITY_CODE || "",
+  };
+}
 
 const SPRING = { type: "spring" as const, stiffness: 280, damping: 35 };
 
-interface Spot { id: number; name: string; duration: number; description: string; imageUrl: string; distance: string; rating: number; tags: string[] }
+interface Spot { id: number; name: string; duration: number; description: string; imageUrl: string; distance: string; rating: number; tags: string[]; location?: { lat: number; lng: number } }
 interface RouteDetail { id: number; name: string; description: string; highlights: string[]; totalDistance: string; duration: number; spots: Spot[] }
 
 export function RouteDetailScreen({ routeId }: { routeId: string }) {
@@ -19,6 +27,179 @@ export function RouteDetailScreen({ routeId }: { routeId: string }) {
       .then((data) => { setRoute(data); setLoading(false); })
       .catch(() => setLoading(false));
   }, [routeId]);
+
+  const detailMapRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<any>(null);
+  const routeLayerRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (loading || !route || !route.spots || route.spots.length === 0) return;
+
+    // 高德 Key 缺失友好提示，避免移动端静默失败
+    if (!process.env.NEXT_PUBLIC_AMAP_KEY) {
+      console.error("[高德地图] 未配置 NEXT_PUBLIC_AMAP_KEY 环境变量");
+      return;
+    }
+
+    let map: any = null;
+    let timer: any = null;
+    let resizeObserver: ResizeObserver | null = null;
+    let aborted = false;
+
+    const initDetailMap = () => {
+      if (aborted) return;
+      const container = detailMapRef.current;
+      if (!container) {
+        timer = setTimeout(initDetailMap, 50);
+        return;
+      }
+
+      // 容器还未完成布局 — 使用 ResizeObserver 等待，避免轮询失效
+      if (container.clientWidth === 0 || container.clientHeight === 0) {
+        if (!resizeObserver) {
+          resizeObserver = new ResizeObserver(() => {
+            if (aborted) return;
+            const c = detailMapRef.current;
+            if (c && c.clientWidth > 0 && c.clientHeight > 0) {
+              resizeObserver?.disconnect();
+              resizeObserver = null;
+              initDetailMap();
+            }
+          });
+          resizeObserver.observe(container);
+        }
+        return;
+      }
+
+      AMapLoader.load({
+        key: process.env.NEXT_PUBLIC_AMAP_KEY || "",
+        version: "2.0",
+        plugins: ["AMap.Walking", "AMap.Polyline"],
+      }).then((AMap) => {
+        if (aborted || !detailMapRef.current) return;
+
+        // Find coordinates of spots - explicitly parse to numbers to avoid AMap string coercion bugs
+        const coordinates = route.spots.map((spot: any) => {
+          const lat = parseFloat(spot.location?.lat);
+          const lng = parseFloat(spot.location?.lng);
+          if (isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) return null;
+          return [lng, lat]; // [lng, lat] for Amap
+        }).filter(Boolean) as Array<[number, number]>;
+
+        // Defensive coordinates validation
+        const validCoords = coordinates;
+
+        const centerCoords = validCoords.length > 0 ? validCoords[0] : [106.578, 29.563];
+
+        map = new AMap.Map(container, {
+          viewMode: "3D",
+          zoom: 14,
+          center: centerCoords,
+          theme: "amap://styles/whitesmoke",
+          zoomEnable: true,
+          dragEnable: true,
+          resizeEnable: true,
+        });
+
+        // 立即赋值，确保 cleanup 始终可销毁
+        mapInstanceRef.current = map;
+
+        // 监听容器尺寸变化(移动端横竖屏切换等)，主动触发 resize
+        if (typeof ResizeObserver !== "undefined") {
+          resizeObserver = new ResizeObserver(() => {
+            if (aborted || !map) return;
+            try { map.resize?.(); } catch (_) {}
+          });
+          resizeObserver.observe(container);
+        }
+
+        // Wait for the map to be fully loaded and layouted before rendering markers and pathfinding
+        map.on("complete", () => {
+          if (aborted || !detailMapRef.current) return;
+
+          // Draw custom markers
+          route.spots.forEach((spot: any, i: number) => {
+            const lat = parseFloat(spot.location?.lat);
+            const lng = parseFloat(spot.location?.lng);
+            if (isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) return;
+
+            const isStart = i === 0;
+            const isEnd = i === route.spots.length - 1;
+            const spotColor = isStart ? "#4F6F52" : isEnd ? "#DC2626" : "#D2A053";
+
+            const markerContent = `
+              <div class="flex flex-col items-center">
+                <div class="px-2 py-0.5 bg-white/95 border border-zinc-200 shadow-sm rounded text-[9px] font-bold text-zinc-800 whitespace-nowrap -translate-y-1">
+                  ${spot.name}
+                </div>
+                <div class="w-5 h-5 rounded-full bg-white border-2 flex items-center justify-center shadow-md -translate-y-1" 
+                     style="border-color: ${spotColor};">
+                  <span class="text-[9px] font-bold" style="color: ${spotColor};">${isStart ? "起" : isEnd ? "终" : i + 1}</span>
+                </div>
+              </div>
+            `;
+
+            const marker = new AMap.Marker({
+              position: [lng, lat],
+              content: markerContent,
+              offset: new AMap.Pixel(-30, -35),
+            });
+            marker.setMap(map);
+          });
+
+          // Route pathfinding/navigation line
+          if (validCoords.length >= 2) {
+            const walking = new AMap.Walking({
+              map: map,
+              hideMarkers: true,
+              autoFitView: true,
+            });
+
+            const origin = validCoords[0];
+            const destination = validCoords[validCoords.length - 1];
+            const opts = {
+              waypoints: validCoords.slice(1, -1),
+            };
+
+            walking.search(origin, destination, opts, (status: string, result: any) => {
+              if (status === "complete") {
+                routeLayerRef.current = walking;
+              } else {
+                console.warn("Detail map pathfinding failed, fallback to straight line:", result);
+                const polyline = new AMap.Polyline({
+                  path: validCoords,
+                  strokeColor: "#D2A053",
+                  strokeOpacity: 0.8,
+                  strokeWeight: 4,
+                  strokeStyle: "dashed",
+                });
+                polyline.setMap(map);
+                map.setFitView([polyline]);
+                routeLayerRef.current = polyline;
+              }
+            });
+          }
+        });
+      }).catch(err => {
+        console.error("加载详情地图失败：", err);
+      });
+    };
+
+    initDetailMap();
+
+    return () => {
+      aborted = true;
+      if (timer) clearTimeout(timer);
+      if (resizeObserver) {
+        try { resizeObserver.disconnect(); } catch (_) {}
+        resizeObserver = null;
+      }
+      if (mapInstanceRef.current) {
+        try { mapInstanceRef.current.destroy(); } catch (_) {}
+        mapInstanceRef.current = null;
+      }
+    };
+  }, [loading, route]);
 
   if (loading) return <RouteDetailSkeleton />;
   if (!route) return (
@@ -45,67 +226,24 @@ export function RouteDetailScreen({ routeId }: { routeId: string }) {
         </h2>
       </div>
 
-      {/* ── 精美路线地图 ── */}
-      <div className="relative overflow-hidden" style={{ height: 260, background: "linear-gradient(135deg, #E8E4DA, #DDD8CC)" }}>
-        {/* 地形纹理背景 */}
-        <svg className="absolute inset-0 w-full h-full opacity-30" viewBox="0 0 400 260" preserveAspectRatio="xMidYMid slice">
-          <defs>
-            <radialGradient id="spotGlow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#D2A053" stopOpacity="0.6" />
-              <stop offset="100%" stopColor="#D2A053" stopOpacity="0" />
-            </radialGradient>
-          </defs>
-          {/* 地形曲线 */}
-          <path d="M0,180 Q80,140 160,160 T320,140 T400,150" fill="none" stroke="#4F6F52" strokeWidth="0.6" opacity="0.4" />
-          <path d="M0,200 Q100,170 200,190 T400,175" fill="none" stroke="#4F6F52" strokeWidth="0.5" opacity="0.3" />
-          <path d="M0,220 Q120,200 240,215 T400,200" fill="none" stroke="#8F9F8F" strokeWidth="0.4" opacity="0.3" />
-          {/* 水域 */}
-          <ellipse cx="300" cy="180" rx="60" ry="28" fill="rgba(79,111,82,0.12)" stroke="rgba(79,111,82,0.25)" strokeWidth="0.8" />
-          <text x="300" y="184" textAnchor="middle" fontSize="8" fill="rgba(79,111,82,0.6)">翠玉湖</text>
-        </svg>
-
-        {/* 动画路径 + 景点 Pin */}
-        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 400 260" preserveAspectRatio="xMidYMid slice">
-          {route.spots.length > 1 && (() => {
-            const pts = route.spots.map((_, i) => ({
-              x: 40 + (i * 320) / Math.max(route.spots.length - 1, 1),
-              y: [130, 90, 155, 80, 145, 100][i % 6],
-            }));
-            const pathD = pts.map((p, i) => (i === 0 ? `M ${p.x} ${p.y}` : `Q ${(pts[i-1].x + p.x)/2} ${pts[i-1].y} ${p.x} ${p.y}`)).join(" ");
-            return (
-              <>
-                {/* 虚线底层 */}
-                <path d={pathD} fill="none" stroke="rgba(210,160,83,0.3)" strokeWidth="3" strokeDasharray="8 5" />
-                {/* 动画实线 */}
-                <motion.path d={pathD} fill="none" stroke="#D2A053" strokeWidth="2.5" strokeLinecap="round"
-                  strokeDasharray="600" strokeDashoffset={600}
-                  animate={{ strokeDashoffset: 0 }} transition={{ duration: 2.2, ease: "easeInOut", delay: 0.3 }} />
-                {/* Pin dots */}
-                {pts.map((p, i) => (
-                  <g key={i}>
-                    <motion.circle cx={p.x} cy={p.y} r="14" fill="url(#spotGlow)"
-                      initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.4 + i * 0.3, type: "spring", stiffness: 300, damping: 20 }} />
-                    <motion.circle cx={p.x} cy={p.y} r={i === 0 || i === pts.length - 1 ? 8 : 6}
-                      fill={i === 0 ? "#4F6F52" : i === pts.length - 1 ? "#DC2626" : "#D2A053"}
-                      stroke="white" strokeWidth="2"
-                      initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-                      transition={{ delay: 0.5 + i * 0.3, type: "spring", stiffness: 400, damping: 20 }} />
-                    <motion.text x={p.x} y={p.y - 14} textAnchor="middle" fontSize="9" fontWeight="600"
-                      fill="#1E2522" fontFamily="Noto Serif SC, serif"
-                      initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.7 + i * 0.3 }}>
-                      {route.spots[i].name.slice(0, 3)}
-                    </motion.text>
-                  </g>
-                ))}
-              </>
-            );
-          })()}
-        </svg>
-
+      {/* ── 真实高德路线地图 ── */}
+      <div className="relative overflow-hidden" style={{ height: 280, minHeight: 280 }}>
+        {/* 地图挂载 DOM - 明确宽高 + minHeight 兜底，避免移动端容器塌缩 */}
+        <div
+          ref={detailMapRef}
+          className="w-full h-full bg-[#E8E4DA]"
+          style={{ width: "100%", height: "100%", minHeight: 280 }}
+        />
+        
+        {/* 地图上的雅致暗色浮层，保持 UI 统一 */}
+        <div className="absolute inset-0 pointer-events-none" style={{
+          boxShadow: "inset 0 12px 24px rgba(0,0,0,0.05), inset 0 -12px 24px rgba(0,0,0,0.05)",
+          background: "linear-gradient(to bottom, rgba(232,228,218,0.1) 0%, transparent 10%, transparent 90%, rgba(232,228,218,0.1) 100%)"
+        }} />
+        
         {/* 图例 */}
-        <div className="absolute bottom-3 left-3 flex items-center gap-3 px-3 py-1.5 rounded-xl"
-          style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(6px)", border: "1px solid rgba(255,255,255,0.6)" }}>
+        <div className="absolute bottom-3 left-3 flex items-center gap-3 px-3 py-1.5 rounded-xl z-10"
+          style={{ background: "rgba(255,255,255,0.92)", backdropFilter: "blur(6px)", border: "1px solid rgba(232,228,218,0.8)" }}>
           {[{ color: "#4F6F52", label: "起点" }, { color: "#D2A053", label: "途经" }, { color: "#DC2626", label: "终点" }].map((item) => (
             <div key={item.label} className="flex items-center gap-1">
               <div className="w-2.5 h-2.5 rounded-full" style={{ background: item.color }} />
@@ -115,8 +253,8 @@ export function RouteDetailScreen({ routeId }: { routeId: string }) {
         </div>
 
         {/* 路线信息浮层 */}
-        <div className="absolute top-3 right-3 px-3 py-2 rounded-xl"
-          style={{ background: "rgba(255,255,255,0.9)", backdropFilter: "blur(6px)", border: "1px solid rgba(255,255,255,0.7)" }}>
+        <div className="absolute top-3 right-3 px-3 py-2 rounded-xl z-10"
+          style={{ background: "rgba(255,255,255,0.92)", backdropFilter: "blur(6px)", border: "1px solid rgba(232,228,218,0.8)" }}>
           <p className="text-[10px] font-bold" style={{ color: "#1E2522", fontFamily: "var(--font-noto-serif)" }}>
             {route.spots.length} 处景点
           </p>

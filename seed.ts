@@ -9,6 +9,10 @@ import { knowledgeDocs, avatarConfigs, analyticsDaily } from "./src/lib/db/schem
 async function seed() {
   console.log("Seeding database...");
 
+  // Clean old data to ensure coordinates are updated and no duplicates are created
+  await db.delete(routes);
+  await db.delete(spots);
+
   await db.insert(spots).values([
     {
       name: "揽月亭",
@@ -20,6 +24,7 @@ async function seed() {
       tags: ["历史", "观景", "明代"],
       rating: 48,
       visitCount: 3820,
+      location: { lat: 29.564, lng: 106.579 },
       sortOrder: 1,
     },
     {
@@ -32,6 +37,7 @@ async function seed() {
       tags: ["自然", "湖泊", "摄影"],
       rating: 49,
       visitCount: 5230,
+      location: { lat: 29.566, lng: 106.575 },
       sortOrder: 2,
     },
     {
@@ -44,6 +50,7 @@ async function seed() {
       tags: ["文化", "茶艺", "休憩"],
       rating: 46,
       visitCount: 2150,
+      location: { lat: 29.562, lng: 106.576 },
       sortOrder: 3,
     },
     {
@@ -56,6 +63,7 @@ async function seed() {
       tags: ["自然", "花卉", "亲子"],
       rating: 47,
       visitCount: 4100,
+      location: { lat: 29.565, lng: 106.573 },
       sortOrder: 4,
     },
     {
@@ -68,6 +76,7 @@ async function seed() {
       tags: ["历史", "文物", "宋代"],
       rating: 45,
       visitCount: 1890,
+      location: { lat: 29.560, lng: 106.570 },
       sortOrder: 5,
     },
     {
@@ -80,6 +89,7 @@ async function seed() {
       tags: ["自然", "溪流", "步道"],
       rating: 48,
       visitCount: 3560,
+      location: { lat: 29.563, lng: 106.572 },
       sortOrder: 6,
     },
   ]).onConflictDoNothing();
