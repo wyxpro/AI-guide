@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence, useDragControls } from "framer-motion";
 import {
-  Compass, ArrowRight, Loader2, MapPin, Clock, ChevronLeft,
+  Compass, ArrowRight, Loader2, MapPin, Clock, ChevronLeft, ChevronRight,
   Share2, MessageSquare, ShieldAlert, Award, Search, Send,
   Volume2, VolumeX, Eye, BookOpen, Navigation, Landmark, Sparkles,
   X, Smile, Image as ImageIcon, Film, Mic
@@ -135,6 +135,40 @@ export function RoutesScreen() {
 
   // Auto-play TTS switch
   const [autoplayEnabled, setAutoplayEnabled] = useState(false);
+
+  // Desktop City Carousel Drag Scroll
+  const cityScrollRef = useRef<HTMLDivElement>(null);
+  const [cityDragState, setCityDragState] = useState({ isDragging: false, startX: 0, scrollLeft: 0 });
+
+  const handleCityMouseDown = (e: React.MouseEvent) => {
+    if (!cityScrollRef.current) return;
+    setCityDragState({
+      isDragging: true,
+      startX: e.pageX - cityScrollRef.current.offsetLeft,
+      scrollLeft: cityScrollRef.current.scrollLeft
+    });
+  };
+
+  const handleCityMouseMove = (e: React.MouseEvent) => {
+    if (!cityDragState.isDragging || !cityScrollRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - cityScrollRef.current.offsetLeft;
+    const walk = (x - cityDragState.startX) * 1.5;
+    cityScrollRef.current.scrollLeft = cityDragState.scrollLeft - walk;
+  };
+
+  const handleCityMouseUpOrLeave = () => {
+    setCityDragState(prev => ({ ...prev, isDragging: false }));
+  };
+
+  const scrollCityCarousel = (direction: "left" | "right") => {
+    if (!cityScrollRef.current) return;
+    const scrollAmount = 180;
+    cityScrollRef.current.scrollTo({
+      left: cityScrollRef.current.scrollLeft + (direction === "left" ? -scrollAmount : scrollAmount),
+      behavior: "smooth"
+    });
+  };
 
   const dragControls = useDragControls();
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -1076,38 +1110,63 @@ export function RoutesScreen() {
             </div>
 
             {/* City Switch Carousel */}
-            <div className="flex flex-col gap-1.5 pt-0.5">
+            <div className="flex flex-col gap-1.5 pt-0.5 relative group/carousel">
               <span className="text-[9.5px] font-black text-zinc-400 uppercase tracking-wider">切换热门城市</span>
-              <div className="flex items-center gap-2 overflow-x-auto pb-1.5 scrollbar-none snap-x snap-mandatory">
-                {POPULAR_CITIES.map((c) => {
-                  const isActive = selectedCity === c.name;
-                  return (
-                    <button
-                      key={c.name}
-                      onClick={() => handleCityClick(c)}
-                      className={`flex-shrink-0 w-24 rounded-xl border p-1 text-left transition-all snap-start relative overflow-hidden flex flex-col justify-between ${
-                        isActive
-                          ? "border-[#4F6F52] bg-[#4F6F52]/5 ring-1 ring-[#4F6F52]"
-                          : "border-zinc-200 hover:border-zinc-300 bg-white"
-                      }`}
-                    >
-                      <div className="w-full h-11 rounded-lg overflow-hidden relative">
-                        <img src={c.img} alt={c.name} className="w-full h-full object-cover" />
-                        <span className="absolute bottom-1 right-1 bg-black/60 text-[7px] text-white/90 px-1 py-0.5 rounded font-black">
-                          {c.badge}
-                        </span>
-                      </div>
-                      <div className="mt-1 px-1 flex items-center justify-between">
-                        <span className={`text-[11px] font-extrabold ${isActive ? "text-[#4F6F52]" : "text-zinc-800"}`}>
-                          {c.name}
-                        </span>
-                        {isActive && (
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#4F6F52]" />
-                        )}
-                      </div>
-                    </button>
-                  );
-                })}
+              <div className="relative w-full">
+                <div
+                  ref={cityScrollRef}
+                  onMouseDown={handleCityMouseDown}
+                  onMouseMove={handleCityMouseMove}
+                  onMouseUp={handleCityMouseUpOrLeave}
+                  onMouseLeave={handleCityMouseUpOrLeave}
+                  className="flex items-center gap-2 overflow-x-auto pb-1.5 scrollbar-none snap-x snap-mandatory cursor-grab active:cursor-grabbing select-none"
+                >
+                  {POPULAR_CITIES.map((c) => {
+                    const isActive = selectedCity === c.name;
+                    return (
+                      <button
+                        key={c.name}
+                        onClick={() => handleCityClick(c)}
+                        className={`flex-shrink-0 w-24 rounded-xl border p-1 text-left transition-all snap-start relative overflow-hidden flex flex-col justify-between ${
+                          isActive
+                            ? "border-[#4F6F52] bg-[#4F6F52]/5 ring-1 ring-[#4F6F52]"
+                            : "border-zinc-200 hover:border-zinc-300 bg-white"
+                        }`}
+                      >
+                        <div className="w-full h-11 rounded-lg overflow-hidden relative pointer-events-none">
+                          <img src={c.img} alt={c.name} className="w-full h-full object-cover" />
+                          <span className="absolute bottom-1 right-1 bg-black/60 text-[7px] text-white/90 px-1 py-0.5 rounded font-black">
+                            {c.badge}
+                          </span>
+                        </div>
+                        <div className="mt-1 px-1 flex items-center justify-between pointer-events-none">
+                          <span className={`text-[11px] font-extrabold ${isActive ? "text-[#4F6F52]" : "text-zinc-800"}`}>
+                            {c.name}
+                          </span>
+                          {isActive && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#4F6F52]" />
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Left/Right scroll buttons */}
+                <button
+                  type="button"
+                  onClick={() => scrollCityCarousel("left")}
+                  className="absolute left-0 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white/90 border border-zinc-200 shadow-md flex items-center justify-center text-zinc-600 hover:bg-neutral-100 hover:text-black transition-all opacity-0 group-hover/carousel:opacity-100 focus:opacity-100 cursor-pointer z-10"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => scrollCityCarousel("right")}
+                  className="absolute right-0 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white/90 border border-zinc-200 shadow-md flex items-center justify-center text-zinc-600 hover:bg-neutral-100 hover:text-black transition-all opacity-0 group-hover/carousel:opacity-100 focus:opacity-100 cursor-pointer z-10"
+                >
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
               </div>
             </div>
 
@@ -1122,29 +1181,6 @@ export function RoutesScreen() {
                 onKeyDown={(e) => e.key === "Enter" && handleSearch(searchQuery)}
                 className="w-full bg-neutral-50 border border-zinc-200 rounded-xl pl-9 pr-4 py-2 text-xs outline-none focus:border-[#3A4D39] transition-colors"
               />
-            </div>
-
-            {/* Presets Theme Routes */}
-            <div className="space-y-2.5">
-              <h3 className="text-xs font-black text-zinc-800 flex items-center gap-1">
-                <Compass className="w-3.5 h-3.5 text-[#D2A053]" />
-                推荐游览路线
-              </h3>
-              <div className="space-y-1.5">
-                {PRESET_THEME_ROUTES.map((route, i) => (
-                  <button
-                    key={route.id}
-                    onClick={() => selectPresetThemeRoute(route.id)}
-                    className="w-full text-left p-3 rounded-xl border border-zinc-200/60 bg-neutral-50 hover:bg-neutral-100/50 transition-colors flex items-center justify-between"
-                  >
-                    <div>
-                      <div className="text-xs font-bold text-zinc-800">{route.name}</div>
-                      <div className="text-[10px] text-zinc-400 mt-0.5">建议耗时: {route.duration}</div>
-                    </div>
-                    <ArrowRight className="w-3.5 h-3.5 text-zinc-400" />
-                  </button>
-                ))}
-              </div>
             </div>
 
             {/* Accordion trigger original route generator */}
@@ -1218,7 +1254,7 @@ export function RoutesScreen() {
             {/* List of Spots */}
             <div className="space-y-2 pt-2 border-t">
               <h3 className="text-xs font-black text-zinc-800">景区全部景点 ({currentSpots.length})</h3>
-              <div className="space-y-1 max-h-[200px] overflow-y-auto pr-1">
+              <div className="space-y-1 pr-1 pb-6">
                 {currentSpots.map(s => (
                   <button
                     key={s.id}

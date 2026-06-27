@@ -36,7 +36,7 @@ const CITY_BANNERS: Record<string, string> = {
   hot: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=800&q=80",
   hangzhou: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&q=80",
   xian: "https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=800&q=80",
-  chongqing: "https://images.unsplash.com/photo-1508873696983-2df519f0397e?w=800&q=80",
+  chongqing: "https://images.unsplash.com/photo-1542359649-31e03cd4d909?w=800&q=80",
   chengdu: "https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=800&q=80",
   beijing: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=800&q=80",
   changsha: "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=800&q=80",

@@ -152,10 +152,10 @@ export function ProfileScreen() {
     <div className="min-h-svh bg-[#F4F7F5] pb-24 md:pb-12 text-[#2C3E35]">
 
       {/* ── Main Viewport Wrapper ── */}
-      <div className="w-full max-w-[1280px] lg:mx-0 lg:pl-12 px-0 md:px-6 py-0 md:py-8 flex flex-col lg:flex-row gap-6 items-start">
+      <div className="w-full max-w-[1280px] mx-auto px-4 md:px-6 py-0 md:py-8 flex flex-col lg:flex-row gap-8 items-start">
 
         {/* ── Desktop Sidebar (Hidden on Mobile) ── */}
-        <aside className="hidden lg:block w-[220px] lg:ml-20 flex-shrink-0 bg-white rounded-[24px] border border-[#E2EAE5] p-6 shadow-sm h-fit">
+        <aside className="hidden lg:block w-[240px] flex-shrink-0 bg-white rounded-[24px] border border-[#E2EAE5] p-6 shadow-sm h-fit">
           <div className="flex items-center gap-3.5 mb-8">
             <img
               src={profileAvatar}
@@ -193,7 +193,7 @@ export function ProfileScreen() {
         </aside>
 
         {/* ── Main Content Area ── */}
-        <main className="flex-1 w-full min-h-[600px]">
+        <div className="flex-1 w-full min-h-[600px]">
           <AnimatePresence mode="wait">
 
             {/* ═══════════════════════════════════════════════════════
@@ -832,7 +832,7 @@ export function ProfileScreen() {
             )}
 
           </AnimatePresence>
-        </main>
+        </div>
       </div>
 
       {/* Poster Generator Modal */}
