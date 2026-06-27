@@ -42,6 +42,43 @@ const CHONGQING_SPOTS = [
   { id: 11, name: "三峡博物馆", type: "文化", lat: 29.559, lng: 106.549, price: "免费", time: "09:00-17:00", addr: "重庆市渝中区人民路236号", distance: "距您 3.9km", rating: "国家一级博物馆", img: "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400&q=80", desc: "弘扬三峡文化、保护长江文明的标志性艺术殿堂。" }
 ];
 
+const ALL_CITIES_SPOTS: Record<string, typeof CHONGQING_SPOTS> = {
+  "重庆": CHONGQING_SPOTS,
+  "北京": [
+    { id: 101, name: "故宫博物院", type: "地标", lat: 39.916, lng: 116.397, price: "¥60", time: "08:30-17:00", addr: "北京市东城区景山前街4号", distance: "距您 2.1km", rating: "5A景区", img: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=400&q=80", desc: "明清两代的皇家宫殿，世界上现存规模最大、保存最为完整的木质结构古建筑之一。" },
+    { id: 102, name: "天坛公园", type: "文化", lat: 39.882, lng: 116.413, price: "¥15", time: "06:00-22:00", addr: "北京市东城区天坛路甲1号", distance: "距您 4.5km", rating: "5A景区", img: "https://images.unsplash.com/photo-1542224566-6e85f2e6772f?w=400&q=80", desc: "明清两代皇帝祭天、祈谷的场所，建筑设计精巧，寓意天圆地方。" },
+    { id: 103, name: "颐和园", type: "自然", lat: 39.999, lng: 116.273, price: "¥30", time: "06:00-20:00", addr: "北京市海淀区新建宫门路19号", distance: "距您 15km", rating: "5A景区", img: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=400&q=80", desc: "著名的皇家园林，保存最完整的皇家行宫御苑，被誉为“皇家园林博物馆”。" },
+    { id: 104, name: "八达岭长城", type: "地标", lat: 40.360, lng: 116.024, price: "¥40", time: "06:30-19:00", addr: "北京市延庆区G110辅道", distance: "距您 60km", rating: "5A景区", img: "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=400&q=80", desc: "万里长城的重要组成部分，气势磅礴，是长城建筑的精华。" }
+  ],
+  "上海": [
+    { id: 201, name: "外滩", type: "地标", lat: 31.240, lng: 121.490, price: "免费", time: "全天开放", addr: "上海市黄浦区中山东一路", distance: "距您 1.5km", rating: "地标街区", img: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=400&q=80", desc: "上海的风景线，矗立着数十栋风格迥异的古典复兴建筑，与陆家嘴隔江相望。" },
+    { id: 202, name: "东方明珠电视塔", type: "地标", lat: 31.239, lng: 121.499, price: "¥199起", time: "09:00-21:00", addr: "上海市浦东新区世纪大道1号", distance: "距您 2.3km", rating: "5A景区", img: "https://images.unsplash.com/photo-1542224566-6e85f2e6772f?w=400&q=80", desc: "坐落于黄浦江畔，塔高468米，是上海标志性的城市地标景观。" },
+    { id: 203, name: "豫园", type: "文化", lat: 31.227, lng: 121.492, price: "¥40", time: "09:00-16:30", addr: "上海市黄浦区安仁街279号", distance: "距您 1.8km", rating: "4A景区", img: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=400&q=80", desc: "著名的江南古典园林，设计精巧，蕴含着浓郁的传统文化氛围。" }
+  ],
+  "成都": [
+    { id: 301, name: "成都杜甫草堂博物馆", type: "文化", lat: 30.660, lng: 104.028, price: "¥50", time: "09:00-18:00", addr: "四川省成都市青羊区青华路37号", distance: "距您 3.0km", rating: "4A景区", img: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=400&q=80", desc: "唐代大诗人杜甫流寓成都时的故居，清幽古朴，是诗歌文化的圣地。" },
+    { id: 302, name: "宽窄巷子", type: "文化", lat: 30.663, lng: 104.053, price: "免费", time: "全天开放", addr: "四川省成都市青羊区长顺街", distance: "距您 1.2km", rating: "特色街区", img: "https://images.unsplash.com/photo-1542224566-6e85f2e6772f?w=400&q=80", desc: "由宽巷子、窄巷子、井巷子平行排列组成，保留了清代川西民居的院落格局。" },
+    { id: 303, name: "大熊猫繁育研究基地", type: "自然", lat: 30.733, lng: 104.143, price: "¥55", time: "07:30-18:00", addr: "四川省成都市成华区外北熊猫大道1375号", distance: "距您 12km", rating: "5A景区", img: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=400&q=80", desc: "大熊猫迁地保护的重要场所，近距离观赏国宝大熊猫的生态家园。" }
+  ],
+  "西安": [
+    { id: 401, name: "秦始皇帝陵博物院", type: "文化", lat: 34.385, lng: 109.278, price: "¥120", time: "08:30-17:00", addr: "陕西省西安市临潼区秦陵路", distance: "距您 35km", rating: "5A景区", img: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=400&q=80", desc: "被誉为“世界第八大奇迹”的兵马俑坑，展示了秦代雄壮 of 的地下军阵。" },
+    { id: 402, name: "大唐芙蓉园", type: "文化", lat: 34.218, lng: 108.969, price: "¥120", time: "09:00-22:00", addr: "陕西省西安市雁塔区芙蓉西路99号", distance: "距您 5.5km", rating: "5A景区", img: "https://images.unsplash.com/photo-1542224566-6e85f2e6772f?w=400&q=80", desc: "全方位展示盛唐风貌的大型皇家园林式文化主题公园。" }
+  ],
+  "杭州": [
+    { id: 501, name: "西湖风景名胜区", type: "自然", lat: 30.244, lng: 120.155, price: "免费", time: "全天开放", addr: "浙江省杭州市西湖区龙井路1号", distance: "距您 1.1km", rating: "5A景区", img: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=400&q=80", desc: "以秀丽的湖光山色 and 深厚的历史底蕴著称，断桥残雪、苏堤春晓美不胜收。" },
+    { id: 502, name: "灵隐寺", type: "寺庙", lat: 30.242, lng: 120.098, price: "¥30", time: "07:00-18:15", addr: "浙江省杭州市西湖区灵隐路法云弄1号", distance: "距您 6.2km", rating: "全国重点文物", img: "https://images.unsplash.com/photo-1542224566-6e85f2e6772f?w=400&q=80", desc: "江南禅宗古刹之一，环境幽雅清静，飞来峰石刻造像精美绝伦。" }
+  ]
+};
+
+const POPULAR_CITIES = [
+  { name: "重庆", center: [106.578, 29.563], img: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=200&q=80", badge: "魔幻山城" },
+  { name: "北京", center: [116.397, 39.916], img: "https://images.unsplash.com/photo-1542224566-6e85f2e6772f?w=200&q=80", badge: "历史帝都" },
+  { name: "上海", center: [121.473, 31.230], img: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=200&q=80", badge: "摩登都市" },
+  { name: "成都", center: [104.066, 30.572], img: "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=200&q=80", badge: "天府之国" },
+  { name: "西安", center: [108.940, 34.341], img: "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=200&q=80", badge: "古丝路起点" },
+  { name: "杭州", center: [120.155, 30.274], img: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=200&q=80", badge: "人间天堂" }
+];
+
 const PRESET_THEME_ROUTES = [
   { id: "route-1", name: "巴渝文化历史游", duration: "约6小时", spots: [11, 2, 8, 1, 9] },
   { id: "route-2", name: "魔幻两江风光游", duration: "约5小时", spots: [4, 10, 3, 7, 6] },
@@ -60,6 +97,9 @@ interface GeneratedRoute {
 
 export function RoutesScreen() {
   const router = useRouter();
+  const [selectedCity, setSelectedCity] = useState("重庆");
+  const currentSpots = ALL_CITIES_SPOTS[selectedCity] || CHONGQING_SPOTS;
+
   const [selectedInterests, setSelectedInterests] = useState<string[]>(["history"]);
   const [duration, setDuration] = useState(120);
   const [generating, setGenerating] = useState(false);
@@ -288,10 +328,11 @@ export function RoutesScreen() {
 
           AMapInstanceRef.current = AMap;
 
+          const activeCityCenter = POPULAR_CITIES.find(c => c.name === selectedCity)?.center || [106.578, 29.563];
           map = new AMap.Map(container, {
             viewMode: "3D",
-            zoom: 14,
-            center: [106.578, 29.563],
+            zoom: 13,
+            center: activeCityCenter,
             theme: "amap://styles/whitesmoke",
             zoomEnable: true,
             dragEnable: true,
@@ -305,7 +346,8 @@ export function RoutesScreen() {
             if (aborted) return;
             if (!activeMapRef.current || container !== activeMapRef.current) return;
             setAmapLoaded(true);
-            renderAmapMarkers(AMap, map, CHONGQING_SPOTS);
+            const currentCitySpots = ALL_CITIES_SPOTS[selectedCity] || CHONGQING_SPOTS;
+            renderAmapMarkers(AMap, map, currentCitySpots);
           });
 
           // 监听容器尺寸变化(例如移动端虚拟键盘弹起/抽屉打开)，主动触发 resize
@@ -356,6 +398,25 @@ export function RoutesScreen() {
     };
   }, [audioInstance]);
 
+  // Render markers whenever selectedCity changes or amapLoaded becomes true
+  useEffect(() => {
+    if (amapLoaded && mapInstanceRef.current && AMapInstanceRef.current) {
+      renderAmapMarkers(AMapInstanceRef.current, mapInstanceRef.current, currentSpots);
+    }
+  }, [selectedCity, amapLoaded]);
+
+  const handleCityClick = (city: typeof POPULAR_CITIES[0]) => {
+    setSelectedCity(city.name);
+    const citySpots = ALL_CITIES_SPOTS[city.name];
+    if (citySpots && citySpots.length > 0) {
+      setActiveSpot(citySpots[0]);
+    }
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.setZoomAndCenter(13, city.center);
+    }
+    toast.success(`已切换至城市：${city.name}`);
+  };
+
   // Re-draw route polylines when activeRoute changes (uses real road navigation)
   useEffect(() => {
     const AMap = AMapInstanceRef.current;
@@ -374,7 +435,14 @@ export function RoutesScreen() {
 
     // Connect generated spot coordinates
     const coordinates = activeRoute.spots.map(s => {
-      const original = CHONGQING_SPOTS.find(orig => orig.id === s.id);
+      let original: any = null;
+      for (const spots of Object.values(ALL_CITIES_SPOTS)) {
+        const found = spots.find(orig => orig.id === s.id);
+        if (found) {
+          original = found;
+          break;
+        }
+      }
       return original ? [original.lng, original.lat] : null; // [lng, lat] for Amap
     }).filter(Boolean) as Array<[number, number]>;
 
@@ -472,15 +540,31 @@ export function RoutesScreen() {
 
   const handleSearch = (q: string) => {
     setSearchQuery(q);
-    const found = CHONGQING_SPOTS.find(s => s.name.includes(q));
-    if (found && mapInstanceRef.current) {
-      setActiveSpot(found);
-      mapInstanceRef.current.setZoomAndCenter(14, [found.lng, found.lat]);
-      if (autoplayEnabled) {
-        speakSpotNarration(found.name, found.desc);
+    
+    let foundSpot: any = null;
+    let foundCity = "";
+    
+    for (const [cityName, spots] of Object.entries(ALL_CITIES_SPOTS)) {
+      const match = spots.find(s => s.name.includes(q) || s.addr.includes(q) || s.desc.includes(q));
+      if (match) {
+        foundSpot = match;
+        foundCity = cityName;
+        break;
       }
+    }
+
+    if (foundSpot) {
+      setSelectedCity(foundCity);
+      setActiveSpot(foundSpot);
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.setZoomAndCenter(14, [foundSpot.lng, foundSpot.lat]);
+        if (autoplayEnabled) {
+          speakSpotNarration(foundSpot.name, foundSpot.desc);
+        }
+      }
+      toast.success(`已找到景点「${foundSpot.name}」，已切换至 ${foundCity}`);
     } else if (q.trim()) {
-      toast.error("未找到对应景点，请换个词试试。");
+      toast.error("未在全国范围内找到对应景点，请换个词试试。");
     }
   };
 
@@ -502,7 +586,7 @@ export function RoutesScreen() {
 
   // Switch category markers
   const handleCategoryFilter = (cat: string) => {
-    toast.success(`已在重庆地图上高亮标出附近的「${cat}」设施`);
+    toast.success(`已在 ${selectedCity} 地图上高亮标出附近的「${cat}」设施`);
   };
 
   // Custom Local generator
@@ -513,7 +597,7 @@ export function RoutesScreen() {
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 1500));
 
-    const selectedSpots = CHONGQING_SPOTS.filter(s => {
+    const selectedSpots = currentSpots.filter(s => {
       if (selectedInterests.includes("history") && (s.type === "文化" || s.type === "寺庙")) return true;
       if (selectedInterests.includes("nature") && s.type === "自然") return true;
       if (selectedInterests.includes("cultural") && s.type === "地标") return true;
@@ -521,12 +605,12 @@ export function RoutesScreen() {
       return false;
     });
 
-    const routeSpots = selectedSpots.length > 0 ? selectedSpots.slice(0, 4) : CHONGQING_SPOTS.slice(0, 3);
+    const routeSpots = selectedSpots.length > 0 ? selectedSpots.slice(0, 4) : currentSpots.slice(0, 3);
     const mockRoute: GeneratedRoute = {
-      name: selectedInterests.includes("history") ? "山水巴渝 · 历史印记之旅" : "山城奇观 · 魔幻探秘游",
-      description: "融合您的游玩喜好，为您量身规划的一条避堵省力线路。串联重庆标志性景区，带给您极佳的游览体验。",
-      highlights: ["名胜打卡", "吊脚楼观赏", "两江夜航"],
-      tips: "重庆道路落差大，步行较多，请备好舒适运动鞋，防晒防暑。",
+      name: selectedInterests.includes("history") ? `${selectedCity} · 历史印记之旅` : `${selectedCity} · 都市探秘游`,
+      description: `结合您的个人喜好，为您量身规划的一条 ${selectedCity} 游览路线。`,
+      highlights: ["核心打卡", "深度慢游", "当地特色"],
+      tips: `${selectedCity}景区步行较多，请备好舒适运动鞋，防晒防暑。`,
       spots: routeSpots.map((s, idx) => ({
         id: s.id,
         name: s.name,
@@ -534,7 +618,7 @@ export function RoutesScreen() {
         description: s.desc
       })),
       totalDuration: duration,
-      totalDistance: "约 4.5 千米"
+      totalDistance: `约 ${(1.2 + routeSpots.length * 0.8).toFixed(1)} 千米`
     };
 
     setActiveRoute(mockRoute);
@@ -549,12 +633,20 @@ export function RoutesScreen() {
     if (!preset) return;
 
     const matchedSpots = preset.spots.map(id => {
-      return CHONGQING_SPOTS.find(s => s.id === id);
-    }).filter(Boolean) as typeof CHONGQING_SPOTS;
+      let foundSpot: any = null;
+      for (const spots of Object.values(ALL_CITIES_SPOTS)) {
+        const found = spots.find(s => s.id === id);
+        if (found) {
+          foundSpot = found;
+          break;
+        }
+      }
+      return foundSpot;
+    }).filter(Boolean);
 
     const mockRoute: GeneratedRoute = {
       name: preset.name,
-      description: `专为体验重庆特色而策划的主题游览路线，用时约 ${preset.duration}。`,
+      description: `专为体验当地特色而策划的主题游览路线，用时约 ${preset.duration}。`,
       highlights: ["核心景点", "深度慢游"],
       tips: "跟着官方推荐路线走，不迷路不绕弯！",
       spots: matchedSpots.map(s => ({
@@ -587,7 +679,7 @@ export function RoutesScreen() {
     setChatLoading(true);
 
     try {
-      const spotsContext = CHONGQING_SPOTS.map(s => `- ${s.name}: ${s.desc} (类型: ${s.type}, 价格: ${s.price}, 开放时间: ${s.time}, 地址: ${s.addr})`).join("\n");
+      const spotsContext = currentSpots.map(s => `- ${s.name}: ${s.desc} (类型: ${s.type}, 价格: ${s.price}, 开放时间: ${s.time}, 地址: ${s.addr})`).join("\n");
       const questionWithContext = `【景区导航地图信息】:\n${spotsContext}\n\n【用户问题】:\n${userMsg}`;
       const history = updated.slice(0, -1).map(m => ({ role: m.role, content: m.content }));
       
@@ -649,6 +741,26 @@ export function RoutesScreen() {
                 <span className="text-[7.5px] font-bold mt-0.5">反馈</span>
               </Link>
             </div>
+          </div>
+
+          {/* City Switch Carousel on Mobile */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-none pt-0.5">
+            {POPULAR_CITIES.map((c) => {
+              const isActive = selectedCity === c.name;
+              return (
+                <button
+                  key={c.name}
+                  onClick={() => handleCityClick(c)}
+                  className={`flex-shrink-0 px-3 py-1 rounded-full border text-[11px] font-bold transition-all shadow-sm ${
+                    isActive
+                      ? "bg-[#4F6F52] text-white border-[#4F6F52]"
+                      : "bg-white/95 text-zinc-700 border-zinc-200/60"
+                  }`}
+                >
+                  📍 {c.name}
+                </button>
+              );
+            })}
           </div>
 
           {/* Categories Bar */}
@@ -739,43 +851,7 @@ export function RoutesScreen() {
 
         {/* Bottom card & panel layout */}
         <div className="mt-auto relative z-10 w-full px-3 pb-[76px] flex flex-col gap-2.5">
-          {/* Spot detail card */}
-          {activeSpot && (
-            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-              className="bg-white/95 backdrop-blur-md rounded-2xl p-3 shadow-2xl border border-zinc-200/40 flex items-center gap-3.5 relative overflow-hidden">
-              {/* Thumbnail */}
-              <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-neutral-100">
-                <img src={activeSpot.img} alt={activeSpot.name} className="w-full h-full object-cover" />
-              </div>
 
-              {/* Text metadata */}
-              <div className="flex-1 min-w-0 space-y-1">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-extrabold text-[13px] text-zinc-900 truncate" style={{ fontFamily: "var(--font-noto-serif)" }}>
-                    {activeSpot.name}
-                  </span>
-                  <span className="bg-orange-500/10 text-orange-600 text-[8px] font-black px-1.5 py-0.5 rounded-md flex-shrink-0">
-                    {activeSpot.rating}
-                  </span>
-                </div>
-                <div className="text-[10px] text-zinc-500 flex items-center gap-2 truncate">
-                  <span>门票: {activeSpot.price}</span>
-                  <span>开放时间: {activeSpot.time}</span>
-                </div>
-                <div className="text-[10px] text-zinc-400 flex items-center justify-between">
-                  <span className="truncate flex-1 pr-2">{activeSpot.addr}</span>
-                  <span className="font-mono text-[9px] text-[#3A4D39] font-bold flex-shrink-0">{activeSpot.distance}</span>
-                </div>
-              </div>
-
-              {/* Navigation button */}
-              <button onClick={() => toast.success(`正在拉起导航前往 ${activeSpot.name}`)}
-                className="flex flex-col items-center justify-center bg-gradient-to-br from-orange-500 to-[#FF5B45] text-white rounded-xl px-2.5 py-2.5 shadow-md hover:brightness-105 transition-all flex-shrink-0 gap-0.5 self-stretch justify-center">
-                <Navigation className="w-3.5 h-3.5" />
-                <span className="text-[8.5px] font-black">导航</span>
-              </button>
-            </motion.div>
-          )}
 
 
 
@@ -911,11 +987,11 @@ export function RoutesScreen() {
               <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 25 }}
                 className="absolute bottom-0 left-0 right-0 z-40 bg-white rounded-t-3xl p-5 space-y-3 max-h-[75vh] overflow-y-auto">
                 <div className="flex items-center justify-between pb-2 border-b">
-                  <h3 className="font-extrabold text-sm text-zinc-900" style={{ fontFamily: "var(--font-noto-serif)" }}>景区全部景点 (11)</h3>
+                  <h3 className="font-extrabold text-sm text-zinc-900" style={{ fontFamily: "var(--font-noto-serif)" }}>景区全部景点 ({currentSpots.length})</h3>
                   <button onClick={() => setShowSpotsListDrawer(false)} className="text-zinc-400 hover:text-zinc-700 text-xs font-bold">关闭</button>
                 </div>
                 <div className="space-y-2.5 pt-1.5">
-                  {CHONGQING_SPOTS.map(s => (
+                  {currentSpots.map(s => (
                     <div
                       key={s.id}
                       onClick={() => {
@@ -997,6 +1073,42 @@ export function RoutesScreen() {
                 景区导航地图
               </h2>
               <p className="text-[10.5px] text-zinc-400 mt-0.5">点击景点查看详情和导航</p>
+            </div>
+
+            {/* City Switch Carousel */}
+            <div className="flex flex-col gap-1.5 pt-0.5">
+              <span className="text-[9.5px] font-black text-zinc-400 uppercase tracking-wider">切换热门城市</span>
+              <div className="flex items-center gap-2 overflow-x-auto pb-1.5 scrollbar-none snap-x snap-mandatory">
+                {POPULAR_CITIES.map((c) => {
+                  const isActive = selectedCity === c.name;
+                  return (
+                    <button
+                      key={c.name}
+                      onClick={() => handleCityClick(c)}
+                      className={`flex-shrink-0 w-24 rounded-xl border p-1 text-left transition-all snap-start relative overflow-hidden flex flex-col justify-between ${
+                        isActive
+                          ? "border-[#4F6F52] bg-[#4F6F52]/5 ring-1 ring-[#4F6F52]"
+                          : "border-zinc-200 hover:border-zinc-300 bg-white"
+                      }`}
+                    >
+                      <div className="w-full h-11 rounded-lg overflow-hidden relative">
+                        <img src={c.img} alt={c.name} className="w-full h-full object-cover" />
+                        <span className="absolute bottom-1 right-1 bg-black/60 text-[7px] text-white/90 px-1 py-0.5 rounded font-black">
+                          {c.badge}
+                        </span>
+                      </div>
+                      <div className="mt-1 px-1 flex items-center justify-between">
+                        <span className={`text-[11px] font-extrabold ${isActive ? "text-[#4F6F52]" : "text-zinc-800"}`}>
+                          {c.name}
+                        </span>
+                        {isActive && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#4F6F52]" />
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Local Search input */}
@@ -1103,11 +1215,11 @@ export function RoutesScreen() {
               )}
             </div>
 
-            {/* List of 11 Spots */}
+            {/* List of Spots */}
             <div className="space-y-2 pt-2 border-t">
-              <h3 className="text-xs font-black text-zinc-800">景区全部景点 (11)</h3>
+              <h3 className="text-xs font-black text-zinc-800">景区全部景点 ({currentSpots.length})</h3>
               <div className="space-y-1 max-h-[200px] overflow-y-auto pr-1">
-                {CHONGQING_SPOTS.map(s => (
+                {currentSpots.map(s => (
                   <button
                     key={s.id}
                     onClick={() => {
@@ -1156,30 +1268,7 @@ export function RoutesScreen() {
               <span>比例尺 100 米</span>
             </div>
 
-            {/* Floating details popup inside desktop map */}
-            {activeSpot && (
-              <div className="absolute left-1/2 -translate-x-1/2 bottom-6 z-10 w-[420px] bg-white rounded-2xl p-3 flex gap-3 shadow-2xl border border-zinc-200">
-                <img src={activeSpot.img} alt={activeSpot.name} className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h4 className="font-extrabold text-[13px] text-zinc-800 truncate">{activeSpot.name}</h4>
-                    <span className="bg-[#D2A053]/10 text-[#D2A053] text-[8.5px] px-1.5 py-0.5 rounded font-black">{activeSpot.rating}</span>
-                  </div>
-                  <p className="text-[10px] text-zinc-400 mt-1 truncate">{activeSpot.addr}</p>
-                  <p className="text-[10px] text-zinc-500 mt-0.5 leading-normal truncate">{activeSpot.desc}</p>
-                </div>
-                <div className="flex flex-col justify-between items-end flex-shrink-0">
-                  <button onClick={() => speakSpotNarration(activeSpot.name, activeSpot.desc)}
-                    className={`p-1.5 rounded-full ${isPlayingNarration ? "bg-[#FF5B45] text-white" : "bg-[#FFF0ED] text-[#FF5B45]"}`}>
-                    <Volume2 className="w-3.5 h-3.5" />
-                  </button>
-                  <button onClick={() => toast.success(`正在为您拉起大图导航`)}
-                    className="px-3 py-1.5 bg-[#FF5B45] text-white font-extrabold text-[9.5px] rounded-lg shadow-sm hover:brightness-105">
-                    导航
-                  </button>
-                </div>
-              </div>
-            )}
+
 
             {/* Float chat toggle button */}
             {!showFloatChat && (
@@ -1314,7 +1403,6 @@ export function RoutesScreen() {
                   {/* Input Bar */}
                   <div className="p-3.5 border-t border-[#E6E2D8]/70 bg-white flex items-center gap-2 flex-shrink-0">
                     <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
-                    <input ref={videoInputRef} type="file" accept="video/*" className="hidden" onChange={handleVideoSelect} />
 
                     <button
                       type="button"
@@ -1323,15 +1411,6 @@ export function RoutesScreen() {
                       title="上传图片"
                     >
                       <ImageIcon className="w-4.5 h-4.5" />
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => videoInputRef.current?.click()}
-                      className="w-9 h-9 rounded-full border border-[#E6E2D8] bg-white flex items-center justify-center text-zinc-500 hover:text-[#4F6F52] hover:bg-zinc-50 transition-colors shadow-sm cursor-pointer"
-                      title="上传视频"
-                    >
-                      <Film className="w-4.5 h-4.5" />
                     </button>
 
                     <button

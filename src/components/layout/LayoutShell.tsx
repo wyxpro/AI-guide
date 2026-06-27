@@ -39,7 +39,7 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("accessibility-mode-change", syncMode);
   }, []);
 
-  const isNoShell = pathname === "/" || pathname === "/welcome" || pathname === "/login";
+  const isNoShell = pathname === "/" || pathname === "/welcome" || pathname === "/login" || pathname === "/admin/login";
 
   if (isNoShell) {
     return <>{children}</>;
@@ -73,7 +73,7 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
               </p>
             </div>
             <button
-              onClick={() => window.location.href = "/login"}
+              onClick={() => window.location.href = "/admin/login"}
               className="w-full py-3 rounded-xl font-bold text-sm text-white transition-all hover:opacity-90 active:scale-98 cursor-pointer"
               style={{ background: "linear-gradient(135deg,#D2A053,#B8843A)" }}
             >
@@ -109,7 +109,6 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
           @media (min-width: 768px) {
             main { 
               margin-left: 240px !important; 
-              ${!isAdmin ? "padding-top: 70px !important;" : ""}
             }
           }
         `}</style>

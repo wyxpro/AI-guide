@@ -25,6 +25,9 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
+  // Bypass service worker in development mode to prevent HMR and reload caching issues
+  if (url.hostname === "localhost" || url.hostname === "127.0.0.1" || url.port) return;
+
   // Skip non-GET and cross-origin
   if (request.method !== "GET" || url.origin !== location.origin) return;
 

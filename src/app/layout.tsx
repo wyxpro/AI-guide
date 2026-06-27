@@ -53,9 +53,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Script id="register-sw" dangerouslySetInnerHTML={{
           __html: `
             if ('serviceWorker' in navigator) {
-              window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').catch(() => {});
-              });
+              if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.port) {
+                navigator.serviceWorker.getRegistrations().then((registrations) => {
+                  for (let registration of registrations) {
+                    registration.unregister();
+                  }
+                });
+              } else {
+                window.addEventListener('load', () => {
+                  navigator.serviceWorker.register('/sw.js').catch(() => {});
+                });
+              }
             }
           `,
         }} />

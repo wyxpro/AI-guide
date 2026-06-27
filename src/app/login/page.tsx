@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail, Lock, ShieldCheck, ArrowRight, ArrowLeft, RefreshCw, Sparkles, Eye, EyeOff } from "lucide-react";
 import { auth } from "@eazo/sdk";
@@ -162,10 +163,14 @@ export default function LoginPage() {
 
           {/* Brand Logo & Name */}
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-[#10a37f] flex items-center justify-center text-white shadow-md shadow-[#10a37f]/20">
-              <svg className="w-6.5 h-6.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-              </svg>
+            <div className="w-12 h-12 rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0 shadow-md shadow-[#10a37f]/10 relative border border-neutral-800">
+              <Image
+                src="/image/logo.png"
+                alt="Logo"
+                width={48}
+                height={48}
+                className="w-full h-full object-cover"
+              />
             </div>
             <div>
               <h2 className="text-xl font-black tracking-wide text-white">旅行家Pro</h2>
