@@ -78,6 +78,14 @@ export function QAScreen() {
   const spotName = searchParams.get("name");
 
   const [messages, setMessages] = useState<Message[]>([initMsg(spotName)]);
+  const [isDesktop, setIsDesktop] = useState(false);
+  useEffect(() => {
+    const media = window.matchMedia("(min-width: 768px)");
+    setIsDesktop(media.matches);
+    const listener = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    media.addEventListener("change", listener);
+    return () => media.removeEventListener("change", listener);
+  }, []);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [avatarState, setAvatarState] = useState<AvatarState>("idle");
@@ -115,15 +123,39 @@ export function QAScreen() {
   const audioChunksRef = useRef<Blob[]>([]);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Avatar config state
-  const [avatarConfig, setAvatarConfig] = useState<any>(null);
+  const stopAudio = () => {
+    if (audioRef.current) {
+      try {
+        audioRef.current.pause();
+      } catch (e) {}
+      audioRef.current = null;
+    }
+    try {
+      const { Live2dManager } = require("@/lib/live2d/live2dManager");
+      Live2dManager.getInstance().stopAudio();
+    } catch (e) {}
+    setAvatarState("idle");
+  };
+
+  // Avatar config state (Default to Hiyori Live2D to avoid any loading screen flicker/delay)
+  const [avatarConfig, setAvatarConfig] = useState<any>({
+    name: "Hiyori (Live2D)",
+    avatarStyle: "live2d_Hiyori",
+    voiceStyle: "warm",
+    speechRate: 100,
+    pitch: 105,
+    greeting: "你好，我是日和！很高兴在这个美好的天气里遇见你，今天想听我介绍哪个景点呢？",
+    isDefault: true,
+    isActive: true,
+    imageUrl: "/sentio/characters/free/Hiyori/Hiyori.png"
+  });
 
   // Background selection state
   const [bgImage, setBgImage] = useState<string>("https://images.unsplash.com/photo-1542224566-6e85f2e6772f?auto=format&fit=crop&w=800&q=80");
   const [showBgMenu, setShowBgMenu] = useState(false);
 
   // Persona selection state
-  const [selectedStyle, setSelectedStyle] = useState<string>("");
+  const [selectedStyle, setSelectedStyle] = useState<string>("live2d_Hiyori");
   const [showPersonaMenu, setShowPersonaMenu] = useState(false);
   const [allAvatars, setAllAvatars] = useState<any[]>([]);
   const [customAvatars, setCustomAvatars] = useState<any[]>([]);
@@ -152,7 +184,7 @@ export function QAScreen() {
         if (Array.isArray(data)) {
           setAllAvatars(data);
           const defaultAvatar = data.find((a) => a.isDefault);
-          if (defaultAvatar && !selectedStyle) {
+          if (defaultAvatar) {
             setSelectedStyle(defaultAvatar.avatarStyle);
             setAvatarConfig(defaultAvatar);
           }
@@ -299,9 +331,7 @@ export function QAScreen() {
     return () => {
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
+      stopAudio();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [handleMouseMove]);
@@ -339,10 +369,7 @@ export function QAScreen() {
   const speak = async (text: string) => {
     if (!ttsEnabled) return;
 
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
-    }
+    stopAudio();
 
     setAvatarState("speaking");
     try {
@@ -351,6 +378,7 @@ export function QAScreen() {
         voiceStyle: avatarConfig?.voiceStyle || "warm",
         speechRate: avatarConfig?.speechRate || 100,
         pitch: avatarConfig?.pitch || 100,
+        ttsConfig: avatarConfig?.settings?.tts,
       };
 
       const res = await request("/api/qa/tts", {
@@ -361,20 +389,30 @@ export function QAScreen() {
 
       if (!res.ok) throw new Error("TTS generation failed");
 
+      const isLive2D = avatarConfig?.avatarStyle?.startsWith("live2d_");
+
       const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const audio = new Audio(url);
-      audioRef.current = audio;
-      audio.onplay = () => setAvatarState("speaking");
-      audio.onended = () => {
-        setAvatarState("idle");
-        URL.revokeObjectURL(url);
-      };
-      audio.onerror = () => {
-        setAvatarState("idle");
-        URL.revokeObjectURL(url);
-      };
-      await audio.play();
+      if (isLive2D) {
+        const arrayBuffer = await blob.arrayBuffer();
+        const { Live2dManager } = require("@/lib/live2d/live2dManager");
+        Live2dManager.getInstance().onAudioStarted = () => setAvatarState("speaking");
+        Live2dManager.getInstance().onAudioEnded = () => setAvatarState("idle");
+        Live2dManager.getInstance().pushAudioQueue(arrayBuffer);
+      } else {
+        const url = URL.createObjectURL(blob);
+        const audio = new Audio(url);
+        audioRef.current = audio;
+        audio.onplay = () => setAvatarState("speaking");
+        audio.onended = () => {
+          setAvatarState("idle");
+          URL.revokeObjectURL(url);
+        };
+        audio.onerror = () => {
+          setAvatarState("idle");
+          URL.revokeObjectURL(url);
+        };
+        await audio.play();
+      }
     } catch (err) {
       console.error("TTS audio play error, falling back to Web Speech API:", err);
       if ("speechSynthesis" in window) {
@@ -406,7 +444,11 @@ export function QAScreen() {
       return;
     }
 
-    if (SR) {
+    stopAudio();
+
+    const asrEngine = avatarConfig?.settings?.asr?.engine || "browser";
+
+    if (SR && asrEngine !== "whisper") {
       const rec = new SR();
       rec.lang = "zh-CN"; rec.continuous = false; rec.interimResults = false;
       rec.onresult = (e: any) => {
@@ -443,6 +485,9 @@ export function QAScreen() {
           const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
           const formData = new FormData();
           formData.append("file", audioBlob, "audio.webm");
+          if (avatarConfig?.settings?.asr) {
+            formData.append("asrConfig", JSON.stringify(avatarConfig.settings.asr));
+          }
 
           setInput("正在识别语音...");
           try {
@@ -474,6 +519,7 @@ export function QAScreen() {
 
   const sendMessage = async (question: string) => {
     if (!question.trim() || loading) return;
+    stopAudio();
     const ts = new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
     const updated = [...messages, { role: "user" as const, content: question, timestamp: ts }];
     setMessages(updated); setInput(""); setLoading(true); setChatExpanded(true);
@@ -487,7 +533,7 @@ export function QAScreen() {
       const res = await request("/api/qa/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question, history, stream: true }),
+        body: JSON.stringify({ question, history, stream: true, agentConfig: avatarConfig?.settings?.agent }),
       });
 
       if (!res.ok || !res.body) throw new Error("Stream unavailable");
@@ -553,7 +599,11 @@ export function QAScreen() {
       // Fallback to non-streaming
       try {
         const history = updated.slice(1).map((m) => ({ role: m.role, content: m.content }));
-        const res2 = await request("/api/qa/chat", { method: "POST", body: JSON.stringify({ question, history }) });
+        const res2 = await request("/api/qa/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question, history, agentConfig: avatarConfig?.settings?.agent }),
+        });
         const data = await res2.json();
         const answerRaw = data.answer || "抱歉，暂时无法回答。";
         const answer = answerRaw.replace(/\[情感[:：]\s*[^\]]+\]/g, "").trim();
@@ -815,7 +865,7 @@ export function QAScreen() {
               <Sparkles className="w-3 h-3" />当前聚焦：<strong>{spotName}</strong>
             </motion.div>
           )}
-          <DigitalAvatar state={avatarState} size="hero" audioElement={audioRef.current} avatarStyle={selectedStyle} />
+          {!isDesktop && <DigitalAvatar state={avatarState} size="hero" audioElement={audioRef.current} avatarStyle={selectedStyle} />}
         </div>
 
         {/* Chat drawer — fully transparent, no background mask */}
@@ -1007,7 +1057,7 @@ export function QAScreen() {
           </div>
 
           <div className="relative z-10 flex flex-col items-center px-6 w-full animate-fade-in">
-            <DigitalAvatar state={avatarState} size="desktop-hero" audioElement={audioRef.current} avatarStyle={selectedStyle} />
+            {isDesktop && <DigitalAvatar state={avatarState} size="desktop-hero" audioElement={audioRef.current} avatarStyle={selectedStyle} />}
 
             {spotName && (
               <div className="mt-4 flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px]"

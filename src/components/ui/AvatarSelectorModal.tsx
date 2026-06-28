@@ -23,7 +23,7 @@ export function AvatarSelectorModal({
   onUploadClick,
 }: AvatarSelectorModalProps) {
   const [activeTab, setActiveTab] = useState<"presets" | "custom">("presets");
-  const [activeGender, setActiveGender] = useState<"all" | "female" | "male">("all");
+  const [activeGender, setActiveGender] = useState<"all" | "live2d" | "female" | "male">("all");
 
   const isMale = (avatar: any) => {
     const maleNames = ["元气少年", "商业精英", "潮流酷哥", "阳光运动男", "儒雅书生", "男生", "帅气"];
@@ -34,7 +34,15 @@ export function AvatarSelectorModal({
   };
 
   const filteredPresets = allAvatars.filter((a) => {
+    const isLive2D = a.avatarStyle?.startsWith("live2d_");
+    if (activeGender === "live2d") {
+      return isLive2D;
+    }
     if (activeGender === "all") return true;
+
+    // For female and male tabs, exclude Live2D characters
+    if (isLive2D) return false;
+
     const male = isMale(a);
     return activeGender === "male" ? male : !male;
   });
@@ -93,7 +101,7 @@ export function AvatarSelectorModal({
         {/* Gender Filters (Only show for Preset tab) */}
         {activeTab === "presets" && (
           <div className="px-6 py-2 flex gap-1.5 justify-center flex-shrink-0">
-            {["all", "female", "male"].map((tab) => (
+            {["all", "live2d", "female", "male"].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveGender(tab as any)}
@@ -103,7 +111,7 @@ export function AvatarSelectorModal({
                     : "bg-white border-neutral-200 text-neutral-500 hover:bg-neutral-50"
                 }`}
               >
-                {tab === "all" ? "全部" : tab === "female" ? "女生" : "男生"}
+                {tab === "all" ? "全部" : tab === "live2d" ? "Live2D卡通" : tab === "female" ? "女生" : "男生"}
               </button>
             ))}
           </div>
@@ -136,7 +144,11 @@ export function AvatarSelectorModal({
                       </div>
                     ) : (
                       <img
-                        src={avatar.imageUrl || avatar.avatarStyle}
+                        src={
+                          avatar.avatarStyle?.startsWith("live2d_")
+                            ? `/sentio/characters/free/${avatar.avatarStyle.replace("live2d_", "")}/${avatar.avatarStyle.replace("live2d_", "")}.png`
+                            : avatar.imageUrl || avatar.avatarStyle
+                        }
                         alt={avatar.name}
                         className="w-full h-full object-cover"
                       />

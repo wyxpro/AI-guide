@@ -10,7 +10,27 @@ const SPRING = { type: "spring" as const, stiffness: 280, damping: 35 };
 const CATEGORIES = ["全部", "general", "faq", "spot", "history", "transport"];
 const CATEGORY_LABELS: Record<string, string> = { general: "概况", faq: "常见问题", spot: "景点", history: "历史", transport: "交通" };
 
-interface Doc { id: number; title: string; category: string; content: string; status: string; vectorized: boolean; tags: string[]; fileType: string; updatedAt: string }
+const getDefaultCover = (title: string) => {
+  const t = title || "";
+  if (t.includes("餐") || t.includes("食") || t.includes("吃") || t.includes("饭") || t.includes("菜") || t.includes("饮")) {
+    return "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80"; // Dining
+  }
+  if (t.includes("亭") || t.includes("历史") || t.includes("文献") || t.includes("阁") || t.includes("楼")) {
+    return "https://images.unsplash.com/photo-1590001155093-a3c66ab0c3ff?auto=format&fit=crop&w=600&q=80"; // Pavilion/History
+  }
+  if (t.includes("交通") || t.includes("指南") || t.includes("怎么走") || t.includes("地铁") || t.includes("公交") || t.includes("路")) {
+    return "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=600&q=80"; // Bus/Guide
+  }
+  if (t.includes("票") || t.includes("时间") || t.includes("开放") || t.includes("价格") || t.includes("门票")) {
+    return "https://images.unsplash.com/photo-1435527173128-983b87201f4d?auto=format&fit=crop&w=600&q=80"; // Ticketing/Time
+  }
+  if (t.includes("翠玉") || t.includes("概况") || t.includes("介绍") || t.includes("山") || t.includes("水") || t.includes("景区")) {
+    return "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=600&q=80"; // Landscape
+  }
+  return "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=600&q=80"; // General Scenic
+};
+
+interface Doc { id: number; title: string; category: string; content: string; status: string; vectorized: boolean; tags: string[]; fileType: string; coverUrl?: string; updatedAt: string }
 
 export function AdminKnowledgeScreen() {
   const [docs, setDocs] = useState<Doc[]>([]);
@@ -20,6 +40,37 @@ export function AdminKnowledgeScreen() {
   const [editDoc, setEditDoc] = useState<Partial<Doc> | null>(null);
   const [saving, setSaving] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const coverFileRef = useRef<HTMLInputElement>(null);
+
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !editDoc) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const toastId = toast.loading("正在上传封面图...");
+    try {
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.url) {
+        setEditDoc({
+          ...editDoc,
+          coverUrl: data.url,
+        });
+        toast.success("封面上传成功！");
+      } else {
+        toast.error(data.error || "上传失败");
+      }
+    } catch {
+      toast.error("网络错误，上传失败");
+    } finally {
+      toast.dismiss(toastId);
+    }
+  };
 
   const load = () => {
     setLoading(true);
@@ -157,37 +208,66 @@ export function AdminKnowledgeScreen() {
             <p>暂无记录</p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {filtered.map((doc, i) => (
-              <motion.div key={doc.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ ...SPRING, delay: i * 0.04 }}
-                className="card-ink p-4 flex items-start gap-4">
-                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-                  style={{ background: "rgba(79,111,82,0.1)" }}>
-                  <FileText className="w-4 h-4" style={{ color: "#4F6F52" }} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h4 className="font-semibold text-[13px]" style={{ color: "#1E2522" }}>{doc.title}</h4>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full"
-                      style={{ background: "rgba(79,111,82,0.1)", color: "#4F6F52" }}>
-                      {CATEGORY_LABELS[doc.category] ?? doc.category}
-                    </span>
-                    {doc.vectorized && <span className="text-[9px] px-1.5 py-0.5 rounded-full" style={{ background: "rgba(22,163,74,0.1)", color: "#16A34A" }}>已向量化</span>}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {filtered.map((doc, i) => {
+              const coverImg = doc.coverUrl || getDefaultCover(doc.title);
+              return (
+                <motion.div key={doc.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ ...SPRING, delay: i * 0.02 }}
+                  className="card-ink overflow-hidden flex flex-col justify-between"
+                  style={{ background: "white", border: "1px solid #E6E2D8", borderRadius: "16px", boxShadow: "0 4px 20px rgba(0,0,0,0.02)" }}>
+                  
+                  {/* Card Cover Image */}
+                  <div className="relative w-full h-36 bg-gray-100 overflow-hidden flex items-center justify-center border-b" style={{ borderColor: "#F2EFE9" }}>
+                    {coverImg ? (
+                      <img src={coverImg} alt={doc.title} className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" />
+                    ) : (
+                      <div className="flex flex-col items-center gap-2 opacity-40">
+                        <FileText className="w-8 h-8 text-[#3A4D39]" />
+                        <span className="text-[10px] text-gray-500">无封面图</span>
+                      </div>
+                    )}
+                    
+                    {/* Category Tag on Cover */}
+                    <div className="absolute top-2 left-2 flex items-center gap-1.5">
+                      <span className="text-[9px] px-2 py-0.5 rounded-full font-medium shadow-sm text-white"
+                        style={{ background: "#4F6F52" }}>
+                        {CATEGORY_LABELS[doc.category] ?? doc.category}
+                      </span>
+                      {doc.vectorized && (
+                        <span className="text-[9px] px-2 py-0.5 rounded-full font-medium shadow-sm bg-green-600 text-white">
+                          已向量化
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <p className="text-[11px] mt-1 line-clamp-2" style={{ color: "#8F9F8F" }}>{doc.content?.slice(0, 100)}...</p>
-                </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <motion.button whileTap={{ scale: 0.88 }} onClick={() => setEditDoc(doc)}
-                    className="p-1.5 rounded-lg" style={{ background: "#F5F0E8", color: "#4F6F52" }}>
-                    <Pencil className="w-3.5 h-3.5" />
-                  </motion.button>
-                  <motion.button whileTap={{ scale: 0.88 }} onClick={() => deleteDoc(doc.id)}
-                    className="p-1.5 rounded-lg" style={{ background: "rgba(220,38,38,0.08)", color: "#DC2626" }}>
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </motion.button>
-                </div>
-              </motion.div>
-            ))}
+
+                  {/* Card Content */}
+                  <div className="p-4 flex-1 flex flex-col justify-between">
+                    <div>
+                      <h4 className="font-bold text-[14px] line-clamp-1 mb-1.5" style={{ color: "#1E2522" }}>{doc.title}</h4>
+                      <p className="text-[11px] line-clamp-3 leading-relaxed mb-4" style={{ color: "#8F9F8F" }}>{doc.content}</p>
+                    </div>
+                    
+                    {/* Action Buttons */}
+                    <div className="flex items-center justify-between pt-3 border-t" style={{ borderColor: "#F2EFE9" }}>
+                      <span className="text-[9px] text-gray-400">
+                        {doc.updatedAt ? new Date(doc.updatedAt).toLocaleDateString() : ""}
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <motion.button whileTap={{ scale: 0.88 }} onClick={() => setEditDoc(doc)}
+                          className="p-1.5 rounded-lg flex items-center justify-center" style={{ background: "#F5F0E8", color: "#4F6F52" }}>
+                          <Pencil className="w-3.5 h-3.5" />
+                        </motion.button>
+                        <motion.button whileTap={{ scale: 0.88 }} onClick={() => deleteDoc(doc.id)}
+                          className="p-1.5 rounded-lg flex items-center justify-center" style={{ background: "rgba(220,38,38,0.08)", color: "#DC2626" }}>
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </motion.button>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         )}
       </div>
@@ -215,6 +295,31 @@ export function AdminKnowledgeScreen() {
                 style={{ background: "#F5F0E8", border: "1px solid #E6E2D8", color: "#1E2522" }}>
                 {Object.entries(CATEGORY_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
               </select>
+
+              {/* Cover Image Upload Area */}
+              <div>
+                <label className="block text-xs font-semibold mb-1.5 text-gray-500">封面图片</label>
+                <input ref={coverFileRef} type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} />
+                <div className="flex gap-3 items-center">
+                  <div className="w-16 h-16 rounded-lg overflow-hidden border border-dashed border-gray-300 flex items-center justify-center bg-gray-50 relative group flex-shrink-0">
+                    {editDoc.coverUrl ? (
+                      <>
+                        <img src={editDoc.coverUrl} alt="Cover Preview" className="w-full h-full object-cover" />
+                        <button type="button" onClick={() => setEditDoc({ ...editDoc, coverUrl: "" })}
+                          className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white text-xs">
+                          删除
+                        </button>
+                      </>
+                    ) : (
+                      <Upload className="w-4 h-4 text-gray-400" />
+                    )}
+                  </div>
+                  <button type="button" onClick={() => coverFileRef.current?.click()}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[#F5F0E8] text-[#3A4D39] border border-[#E6E2D8] hover:bg-[#eae4d9] transition-colors">
+                    选择图片
+                  </button>
+                </div>
+              </div>
               <textarea value={editDoc.content ?? ""} onChange={(e) => setEditDoc({ ...editDoc, content: e.target.value })}
                 rows={6} placeholder="知识内容..." className="w-full px-3 py-2.5 rounded-lg text-sm outline-none resize-none"
                 style={{ background: "#F5F0E8", border: "1px solid #E6E2D8", color: "#1E2522" }} />

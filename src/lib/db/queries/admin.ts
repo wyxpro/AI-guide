@@ -10,6 +10,7 @@ export async function getAllKnowledgeDocs() {
 export async function createKnowledgeDoc(data: {
   title: string; category: string; content: string;
   fileType?: string; tags?: string[];
+  coverUrl?: string;
 }) {
   const rows = await db.insert(knowledgeDocs).values(data).returning();
   return rows[0];
@@ -17,6 +18,7 @@ export async function createKnowledgeDoc(data: {
 
 export async function updateKnowledgeDoc(id: number, data: Partial<{
   title: string; category: string; content: string; status: string; tags: string[];
+  coverUrl?: string;
 }>) {
   const rows = await db.update(knowledgeDocs).set({ ...data, updatedAt: new Date() }).where(eq(knowledgeDocs.id, id)).returning();
   return rows[0];
@@ -39,6 +41,7 @@ export async function getDefaultAvatarConfig() {
 export async function updateAvatarConfig(id: number, data: Partial<{
   name: string; avatarStyle: string; voiceStyle: string; speechRate: number;
   pitch: number; greeting: string; isDefault: boolean; imageUrl: string; isActive: boolean;
+  settings: any;
 }>) {
   if (data.isDefault) {
     await db.update(avatarConfigs).set({ isDefault: false });
@@ -51,6 +54,7 @@ export async function createAvatarConfig(data: {
   name: string; avatarStyle: string; voiceStyle: string;
   speechRate: number; pitch: number; greeting: string;
   imageUrl?: string; isDefault?: boolean; isActive?: boolean;
+  settings?: any;
 }) {
   if (data.isDefault) {
     await db.update(avatarConfigs).set({ isDefault: false });

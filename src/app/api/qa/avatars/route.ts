@@ -12,7 +12,7 @@ const DEFAULT_PRESETS = [
     speechRate: 100,
     pitch: 100,
     greeting: "您好，欢迎来到翠玉景区！我是您的AI数字人导览官小玉，很高兴为您服务。",
-    isDefault: true,
+    isDefault: false,
     isActive: true,
     imageUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&h=400&q=80"
   },
@@ -114,6 +114,138 @@ const DEFAULT_PRESETS = [
     isDefault: false,
     isActive: true,
     imageUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&h=400&q=80"
+  },
+  {
+    name: "HaruGreeter (Live2D)",
+    avatarStyle: "live2d_HaruGreeter",
+    voiceStyle: "lively",
+    speechRate: 100,
+    pitch: 100,
+    greeting: "Hello, welcome! I am HaruGreeter, your Live2D guide. How can I help you today?",
+    isDefault: false,
+    isActive: true,
+    imageUrl: "/sentio/characters/free/HaruGreeter/HaruGreeter.png"
+  },
+  {
+    name: "Haru (Live2D)",
+    avatarStyle: "live2d_Haru",
+    voiceStyle: "lively",
+    speechRate: 100,
+    pitch: 100,
+    greeting: "Hi, I am Haru! Nice to meet you. Let's start our journey!",
+    isDefault: false,
+    isActive: true,
+    imageUrl: "/sentio/characters/free/Haru/Haru.png"
+  },
+  {
+    name: "Kei (Live2D)",
+    avatarStyle: "live2d_Kei",
+    voiceStyle: "professional",
+    speechRate: 100,
+    pitch: 90,
+    greeting: "Hello, my name is Kei. I am here to assist you with a professional guide.",
+    isDefault: false,
+    isActive: true,
+    imageUrl: "/sentio/characters/free/Kei/Kei.png"
+  },
+  {
+    name: "Chitose (Live2D)",
+    avatarStyle: "live2d_Chitose",
+    voiceStyle: "warm",
+    speechRate: 100,
+    pitch: 100,
+    greeting: "Welcome! My name is Chitose. I will share the beautiful stories of this place.",
+    isDefault: false,
+    isActive: true,
+    imageUrl: "/sentio/characters/free/Chitose/Chitose.png"
+  },
+  {
+    name: "Epsilon (Live2D)",
+    avatarStyle: "live2d_Epsilon",
+    voiceStyle: "professional",
+    speechRate: 100,
+    pitch: 100,
+    greeting: "Greetings, I am Epsilon. I will guide you through our tour highlights.",
+    isDefault: false,
+    isActive: true,
+    imageUrl: "/sentio/characters/free/Epsilon/Epsilon.png"
+  },
+  {
+    name: "Hibiki (Live2D)",
+    avatarStyle: "live2d_Hibiki",
+    voiceStyle: "lively",
+    speechRate: 100,
+    pitch: 105,
+    greeting: "Hello! I am Hibiki. Let's explore all the amazing spots together!",
+    isDefault: false,
+    isActive: true,
+    imageUrl: "/sentio/characters/free/Hibiki/Hibiki.png"
+  },
+  {
+    name: "Hiyori (Live2D)",
+    avatarStyle: "live2d_Hiyori",
+    voiceStyle: "warm",
+    speechRate: 100,
+    pitch: 105,
+    greeting: "你好，我是日和！很高兴在这个美好的天气里遇见你，今天想听我介绍哪个景点呢？",
+    isDefault: true,
+    isActive: true,
+    imageUrl: "/sentio/characters/free/Hiyori/Hiyori.png"
+  },
+  {
+    name: "Izumi (Live2D)",
+    avatarStyle: "live2d_Izumi",
+    voiceStyle: "warm",
+    speechRate: 100,
+    pitch: 100,
+    greeting: "Welcome, I am Izumi. Let's make this trip a wonderful memory.",
+    isDefault: false,
+    isActive: true,
+    imageUrl: "/sentio/characters/free/Izumi/Izumi.png"
+  },
+  {
+    name: "Mao (Live2D)",
+    avatarStyle: "live2d_Mao",
+    voiceStyle: "lively",
+    speechRate: 100,
+    pitch: 95,
+    greeting: "哈罗！我是真央，欢迎来到这里！有什么好玩的尽管问我吧！",
+    isDefault: false,
+    isActive: true,
+    imageUrl: "/sentio/characters/free/Mao/Mao.png"
+  },
+  {
+    name: "Rice (Live2D)",
+    avatarStyle: "live2d_Rice",
+    voiceStyle: "lively",
+    speechRate: 100,
+    pitch: 100,
+    greeting: "Hi there! I am Rice. Hope you enjoy the guide today!",
+    isDefault: false,
+    isActive: true,
+    imageUrl: "/sentio/characters/free/Rice/Rice.png"
+  },
+  {
+    name: "Shizuku (Live2D)",
+    avatarStyle: "live2d_Shizuku",
+    voiceStyle: "warm",
+    speechRate: 95,
+    pitch: 95,
+    greeting: "Hello, I am Shizuku. I will introduce you to the details of each spot.",
+    isDefault: false,
+    isActive: true,
+    imageUrl: "/sentio/characters/free/Shizuku/Shizuku.png"
+  },
+  {
+    name: "Tsumiki (Live2D)",
+    avatarStyle: "live2d_Tsumiki",
+    voiceStyle: "lively",
+    speechRate: 100,
+    pitch: 100,
+    greeting: "Welcome! I am Tsumiki. Let's start the digital human guide journey!",
+    isDefault: false,
+    isActive: true,
+    imageUrl: "/sentio/characters/free/Tsumiki/Tsumiki.png"
   }
 ];
 
@@ -121,8 +253,10 @@ export async function GET() {
   try {
     let configs = await db.select().from(avatarConfigs).where(eq(avatarConfigs.isActive, true)).orderBy(desc(avatarConfigs.createdAt));
     
-    // Seed database if configurations are incomplete, outdated, or using URL avatarStyle
-    if (configs.length < 10 || (configs[0] && configs[0].avatarStyle.startsWith("http"))) {
+    const hasHiyoriDefault = configs.some(c => c.avatarStyle === "live2d_Hiyori" && c.isDefault);
+    
+    // Seed database if configurations are incomplete, outdated, using URL avatarStyle, or default is not Hiyori
+    if (configs.length < 22 || !hasHiyoriDefault || (configs[0] && configs[0].avatarStyle.startsWith("http"))) {
       await db.delete(avatarConfigs);
       for (const preset of DEFAULT_PRESETS) {
         await db.insert(avatarConfigs).values(preset);

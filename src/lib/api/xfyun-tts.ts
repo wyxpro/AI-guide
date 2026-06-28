@@ -6,13 +6,16 @@ interface TTSConfig {
   speed?: number;
   pitch?: number;
   volume?: number;
+  appId?: string;
+  apiKey?: string;
+  apiSecret?: string;
 }
 
 // Generates the signed WebSocket URL for iFlytek TTS
-function getAuthUrl(): string {
-  const appId = process.env.XFYUN_APP_ID || "";
-  const apiKey = process.env.XFYUN_API_KEY || "";
-  const apiSecret = process.env.XFYUN_API_SECRET || "";
+function getAuthUrl(customCreds?: { appId?: string; apiKey?: string; apiSecret?: string }): string {
+  const appId = customCreds?.appId || process.env.XFYUN_APP_ID || "";
+  const apiKey = customCreds?.apiKey || process.env.XFYUN_API_KEY || "";
+  const apiSecret = customCreds?.apiSecret || process.env.XFYUN_API_SECRET || "";
 
   if (!appId || !apiKey || !apiSecret) {
     throw new Error("XFYUN credentials missing in environment variables.");
@@ -37,9 +40,9 @@ function getAuthUrl(): string {
 export function synthesizeSpeech(config: TTSConfig): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     try {
-      const url = getAuthUrl();
+      const url = getAuthUrl({ appId: config.appId, apiKey: config.apiKey, apiSecret: config.apiSecret });
       const ws = new WebSocket(url);
-      const appId = process.env.XFYUN_APP_ID || "";
+      const appId = config.appId || process.env.XFYUN_APP_ID || "";
       const audioBuffers: Buffer[] = [];
 
       // Set timeout in case WebSocket hangs

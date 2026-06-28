@@ -30,8 +30,31 @@ function SpotFormModal({
 }) {
   const [form, setForm] = useState<Partial<Spot>>(spot ?? { category: "cultural", isActive: true, duration: 30, tags: [] });
   const [saving, setSaving] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const set = (k: keyof Spot, v: unknown) => setForm((f) => ({ ...f, [k]: v }));
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append("file", file);
+    const toastId = toast.loading("正在上传封面图...");
+    try {
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (data.url) {
+        set("imageUrl", data.url);
+        toast.success("上传成功！");
+      } else {
+        toast.error(data.error || "上传失败");
+      }
+    } catch {
+      toast.error("上传出错");
+    } finally {
+      toast.dismiss(toastId);
+    }
+  };
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -95,11 +118,31 @@ function SpotFormModal({
           </div>
 
           <div>
-            <label className="text-[11px] font-medium mb-1 block" style={{ color: "#8F9F8F" }}>封面图URL</label>
-            <input className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
-              style={{ background: "#F5F0E8", border: "1px solid #E6E2D8", color: "#1E2522", fontSize: 16 }}
-              value={form.imageUrl ?? ""} onChange={(e) => set("imageUrl", e.target.value)}
-              placeholder="https://..." />
+            <label className="text-[11px] font-medium mb-1.5 block" style={{ color: "#8F9F8F" }}>景点封面图片</label>
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleUpload} />
+            <div className="flex gap-3 items-center">
+              <div className="w-16 h-16 rounded-xl overflow-hidden border border-dashed border-gray-300 flex items-center justify-center bg-gray-50 relative group flex-shrink-0">
+                {form.imageUrl ? (
+                  <>
+                    <img src={form.imageUrl} alt="Cover Preview" className="w-full h-full object-cover" />
+                    <button type="button" onClick={() => set("imageUrl", "")}
+                      className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white text-xs">
+                      删除
+                    </button>
+                  </>
+                ) : (
+                  <Plus className="w-4 h-4 text-gray-400" />
+                )}
+              </div>
+              <button type="button" onClick={() => fileInputRef.current?.click()}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[#F5F0E8] text-[#3A4D39] border border-[#E6E2D8] hover:bg-[#eae4d9] transition-colors">
+                上传图片
+              </button>
+              <input className="flex-1 px-3 py-1.5 rounded-lg text-xs outline-none"
+                style={{ background: "#F5F0E8", border: "1px solid #E6E2D8", color: "#1E2522" }}
+                value={form.imageUrl ?? ""} onChange={(e) => set("imageUrl", e.target.value)}
+                placeholder="或输入图片URL..." />
+            </div>
           </div>
 
           <div>
@@ -377,7 +420,6 @@ export function AdminSpotsScreen() {
           </div>
         </div>
 
-        {/* Table */}
         <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid #E6E2D8", background: "white" }}>
           <div className="grid gap-0 divide-y" style={{ borderColor: "#E6E2D8" }}>
             {/* Head */}
@@ -403,68 +445,69 @@ export function AdminSpotsScreen() {
             ) : filtered.map((spot) => (
               <motion.div key={spot.id}
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                className="grid md:grid-cols-[2fr_1fr_1fr_auto] gap-4 px-5 py-4 items-center"
+                className="grid md:grid-cols-[2fr_1fr_1fr_auto] gap-4 px-5 py-4 items-center animate-fade-in"
                 style={{ opacity: spot.isActive ? 1 : 0.55 }}>
-                {/* Name + desc */}
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0"
+                {/* Name + desc with Enlarged Cover Image */}
+                <div className="flex items-center gap-4">
+                  <div className="w-28 h-18 rounded-xl overflow-hidden flex-shrink-0 border border-gray-100"
                     style={{ background: "#F5F0E8" }}>
                     {spot.imageUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={spot.imageUrl} alt={spot.name} className="w-full h-full object-cover" />
+                      <img src={spot.imageUrl} alt={spot.name} className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-2xl">🏞️</div>
+                      <div className="w-full h-full flex items-center justify-center text-2xl bg-gray-50 opacity-40">🏞️</div>
                     )}
                   </div>
-                  <div>
-                    <p className="font-semibold text-[13px]" style={{ color: "#1E2522" }}>{spot.name}</p>
-                    <p className="text-[11px] line-clamp-1 mt-0.5" style={{ color: "#8F9F8F" }}>{spot.description?.slice(0, 50)}</p>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-[13px] line-clamp-1" style={{ color: "#1E2522" }}>{spot.name}</p>
+                    <p className="text-[11px] line-clamp-2 mt-1 leading-relaxed" style={{ color: "#8F9F8F" }}>{spot.description}</p>
                   </div>
                 </div>
                 {/* Category + rating */}
                 <div>
-                  <span className="text-[11px] px-2 py-0.5 rounded-full font-medium"
+                  <span className="text-[11px] px-2.5 py-0.5 rounded-full font-medium"
                     style={{ background: `${CAT_COLORS[spot.category] ?? "#4F6F52"}15`, color: CAT_COLORS[spot.category] ?? "#4F6F52" }}>
                     {CAT_LABELS[spot.category] ?? spot.category}
                   </span>
-                  <div className="flex items-center gap-1 mt-1">
-                    <Star className="w-3 h-3" fill="#D2A053" style={{ color: "#D2A053" }} />
-                    <span className="text-[11px]" style={{ color: "#3A4D39" }}>{(spot.rating / 10).toFixed(1)}</span>
+                  <div className="flex items-center gap-1 mt-1.5">
+                    <Star className="w-3.5 h-3.5" fill="#D2A053" style={{ color: "#D2A053" }} />
+                    <span className="text-[11px] font-bold" style={{ color: "#3A4D39" }}>{(spot.rating / 10).toFixed(1)}</span>
                     <span className="text-[10px]" style={{ color: "#B8B4AC" }}>· {spot.visitCount} 次</span>
                   </div>
                 </div>
                 {/* Duration + status */}
                 <div>
-                  <p className="text-[12px]" style={{ color: "#3A4D39" }}>{spot.duration} 分钟</p>
+                  <p className="text-[12px] font-medium" style={{ color: "#3A4D39" }}>游览约 {spot.duration} 分钟</p>
                   <motion.button whileTap={{ scale: 0.93 }} onClick={() => handleToggle(spot)}
-                    className="mt-1 flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full"
+                    className="mt-1.5 flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full border"
                     style={{
-                      background: spot.isActive ? "rgba(79,111,82,0.1)" : "rgba(143,143,143,0.1)",
+                      background: spot.isActive ? "rgba(79,111,82,0.06)" : "rgba(143,143,143,0.06)",
                       color: spot.isActive ? "#4F6F52" : "#8F9F8F",
+                      borderColor: spot.isActive ? "rgba(79,111,82,0.15)" : "rgba(143,143,143,0.15)",
                     }}>
                     {spot.isActive ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-                    {spot.isActive ? "上架" : "下架"}
+                    {spot.isActive ? "已上架" : "已下架"}
                   </motion.button>
                 </div>
                 {/* Actions */}
                 <div className="flex items-center gap-1.5">
                   <motion.button whileTap={{ scale: 0.88 }}
                     onClick={() => downloadQR(spot.id, spot.name)}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center"
-                    style={{ background: "rgba(210,160,83,0.1)", color: "#D2A053", border: "1px solid rgba(210,160,83,0.2)" }}
+                    className="w-8 h-8 rounded-lg flex items-center justify-center border"
+                    style={{ background: "rgba(210,160,83,0.06)", color: "#D2A053", borderColor: "rgba(210,160,83,0.15)" }}
                     title="下载二维码">
                     <QrCode className="w-3.5 h-3.5" />
                   </motion.button>
                   <motion.button whileTap={{ scale: 0.88 }}
                     onClick={() => setEditSpot(spot)}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center"
-                    style={{ background: "rgba(79,111,82,0.08)", color: "#4F6F52", border: "1px solid rgba(79,111,82,0.2)" }}>
+                    className="w-8 h-8 rounded-lg flex items-center justify-center border"
+                    style={{ background: "rgba(79,111,82,0.06)", color: "#4F6F52", borderColor: "rgba(79,111,82,0.15)" }}>
                     <Pencil className="w-3.5 h-3.5" />
                   </motion.button>
                   <motion.button whileTap={{ scale: 0.88 }}
                     onClick={() => handleDelete(spot.id)}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center"
-                    style={{ background: "rgba(220,38,38,0.07)", color: "#DC2626", border: "1px solid rgba(220,38,38,0.15)" }}>
+                    className="w-8 h-8 rounded-lg flex items-center justify-center border"
+                    style={{ background: "rgba(220,38,38,0.05)", color: "#DC2626", borderColor: "rgba(220,38,38,0.12)" }}>
                     <Trash2 className="w-3.5 h-3.5" />
                   </motion.button>
                 </div>

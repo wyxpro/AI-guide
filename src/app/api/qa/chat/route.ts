@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     const authResult = requireAuth(request);
     const userId = authResult.ok ? authResult.user.id : null;
 
-    const { question, history = [], stream: wantStream = false } = await request.json();
+    const { question, history = [], stream: wantStream = false, agentConfig } = await request.json();
     if (!question?.trim()) {
       return NextResponse.json({ answer: "请输入您的问题，小玉随时为您解答！" });
     }
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
       console.error("RAG retrieval failed:", err);
     }
 
-    const systemPrompt = ACCESS_PROMPTS[mode] + knowledgeCtx;
+    const systemPrompt = (agentConfig?.enable && agentConfig?.prompt ? agentConfig.prompt : ACCESS_PROMPTS[mode]) + knowledgeCtx;
 
     // Multi-turn history (keep last 6 turns max, filter only user & assistant roles to save tokens)
     const chatHistory = (history as Array<{ role: string; content: string }>)
@@ -152,7 +152,7 @@ export async function POST(request: NextRequest) {
               messages,
               stream: true,
               max_tokens: 400,
-            });
+            }, agentConfig);
 
             let accumulatedAnswer = "";
             for await (const chunk of result as any) {
@@ -216,7 +216,7 @@ export async function POST(request: NextRequest) {
         { role: "user", content: question },
       ],
       max_tokens: 400,
-    });
+    }, agentConfig);
     const answer = result.choices?.[0]?.message?.content?.trim() ?? "小玉暂时无法回答，请稍后再试。";
 
     // Async: increment daily QA counter and sentiment count

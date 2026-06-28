@@ -9,6 +9,7 @@ export const knowledgeDocs = pgTable("knowledge_docs", {
   content: text("content").notNull().default(""),
   fileType: text("file_type").default("text"), // text | pdf | word
   fileUrl: text("file_url").default(""),
+  coverUrl: text("cover_url").default(""),
   fileSize: integer("file_size").default(0), // bytes
   status: text("status").notNull().default("active"), // active | inactive | processing
   vectorized: boolean("vectorized").notNull().default(false),
@@ -32,6 +33,7 @@ export const avatarConfigs = pgTable("avatar_configs", {
   isDefault: boolean("is_default").notNull().default(false),
   isActive: boolean("is_active").notNull().default(true),
   imageUrl: text("image_url").default(""),
+  settings: jsonb("settings").$type<any>().default({}),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

@@ -35,8 +35,21 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Whisper ASR Fallback
-    const apiKey = process.env.EAZO_PRIVATE_KEY;
-    const baseURL = `${process.env.EAZO_PLATFORM_API_BASE || "https://eazo.ai"}/v1`;
+    const asrConfigStr = formData.get("asrConfig") as string;
+    let asrConfig: any = null;
+    if (asrConfigStr) {
+      try {
+        asrConfig = JSON.parse(asrConfigStr);
+      } catch (e) {}
+    }
+
+    let apiKey = process.env.EAZO_PRIVATE_KEY;
+    let baseURL = `${process.env.EAZO_PLATFORM_API_BASE || "https://eazo.ai"}/v1`;
+
+    if (asrConfig && asrConfig.engine === "whisper" && asrConfig.apiKey) {
+      apiKey = asrConfig.apiKey;
+      baseURL = "https://api.openai.com/v1";
+    }
 
     if (!apiKey) {
       return NextResponse.json({ error: "API configuration missing" }, { status: 500 });

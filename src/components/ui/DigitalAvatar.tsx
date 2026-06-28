@@ -1,6 +1,9 @@
 "use client";
 import { useState, useEffect, useRef, useId } from "react";
 import { motion } from "framer-motion";
+import dynamic from "next/dynamic";
+
+const Live2DViewer = dynamic(() => import("./Live2DViewer"), { ssr: false });
 
 export type AvatarState = "idle" | "thinking" | "speaking" | "happy" | "concerned";
 
@@ -460,24 +463,38 @@ export function DigitalAvatar({ state, size = "md", audioElement, avatarStyle }:
     return getMouthPath(st, open);
   };
 
-  const isUrl = !!avatarStyle && (avatarStyle.startsWith("http") || avatarStyle.startsWith("/") || avatarStyle.includes("."));
+  const isLive2D = !!avatarStyle && avatarStyle.startsWith("live2d_");
+  const live2DPortrait = isLive2D
+    ? `/sentio/characters/free/${avatarStyle.replace("live2d_", "")}/${avatarStyle.replace("live2d_", "")}.png`
+    : "";
+
+  const isUrl = !isLive2D && !!avatarStyle && (avatarStyle.startsWith("http") || avatarStyle.startsWith("/") || avatarStyle.includes("."));
   const isVideo = isUrl && !!avatarStyle && (avatarStyle.endsWith(".mp4") || avatarStyle.endsWith(".webm") || avatarStyle.endsWith(".mov") || avatarStyle.includes("video"));
 
   if (size === "hero" || size === "desktop-hero") {
+    const avatarWidth = isLive2D
+      ? (size === "desktop-hero" ? 520 : 360)
+      : px;
+    const avatarHeight = isLive2D
+      ? (size === "desktop-hero" ? 720 : 500)
+      : px * 1.12;
+
     return (
       <div className="relative flex flex-col items-center select-none">
         {/* Outer ambient glow */}
         <motion.div className="absolute rounded-full pointer-events-none"
-          style={{ width: px + 60, height: px + 60, top: -30, left: -(30),
-            background: `radial-gradient(circle, ${p.aura} 0%, transparent 68%)` }}
+          style={{ width: avatarWidth + 60, height: avatarHeight + 60, top: -30, left: -30,
+            background: `radial-gradient(ellipse at center, ${p.aura} 0%, transparent 68%)` }}
           animate={{ scale: [1, 1.1, 1], opacity: [0.65, 1, 0.65] }}
           transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }} />
         {/* Avatar */}
-        <motion.div style={{ width: px, height: px * 1.12 }}
+        <motion.div style={{ width: avatarWidth, height: avatarHeight }}
           className="relative flex items-center justify-center overflow-hidden bg-transparent"
           animate={state === "speaking" ? { y: [0, -3, 0] } : { y: 0 }}
           transition={{ duration: 1.3, repeat: state === "speaking" ? Infinity : 0, ease: "easeInOut" }}>
-          {isUrl ? (
+          {isLive2D ? (
+            <Live2DViewer avatarStyle={avatarStyle} />
+          ) : isUrl ? (
             isVideo ? (
               <video src={avatarStyle} autoPlay loop muted playsInline className="w-full h-full object-cover rounded-[30px]" />
             ) : (
@@ -512,7 +529,9 @@ export function DigitalAvatar({ state, size = "md", audioElement, avatarStyle }:
         transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }} />
       <div className="relative w-full h-full rounded-full overflow-hidden"
         style={{ border: `2px solid ${p.ring}`, boxShadow: `0 0 16px ${p.aura}` }}>
-        {isUrl ? (
+        {isLive2D ? (
+          <img src={live2DPortrait} alt="Digital Avatar" className="w-full h-full object-cover" />
+        ) : isUrl ? (
           isVideo ? (
             <video src={avatarStyle} autoPlay loop muted playsInline className="w-full h-full object-cover" />
           ) : (

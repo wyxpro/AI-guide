@@ -3,23 +3,37 @@ import { synthesizeSpeech } from "@/lib/api/xfyun-tts";
 
 export async function POST(request: NextRequest) {
   try {
-    const { text, voiceStyle, speechRate, pitch } = await request.json();
+    const { text, voiceStyle, speechRate, pitch, ttsConfig } = await request.json();
     if (!text) {
       return NextResponse.json({ error: "Text is required" }, { status: 400 });
     }
 
     // 1. Try iFlytek TTS if variables are present
-    const xfyunAppId = process.env.XFYUN_APP_ID;
-    const xfyunApiKey = process.env.XFYUN_API_KEY;
-    const xfyunApiSecret = process.env.XFYUN_API_SECRET;
+    let xfyunAppId = process.env.XFYUN_APP_ID;
+    let xfyunApiKey = process.env.XFYUN_API_KEY;
+    let xfyunApiSecret = process.env.XFYUN_API_SECRET;
 
-    if (xfyunAppId && xfyunApiKey && xfyunApiSecret) {
+    if (ttsConfig && ttsConfig.engine === "xfyun" && ttsConfig.apiKey) {
+      const parts = ttsConfig.apiKey.split("|");
+      if (parts.length === 3) {
+        xfyunAppId = parts[0].trim();
+        xfyunApiKey = parts[1].trim();
+        xfyunApiSecret = parts[2].trim();
+      }
+    }
+
+    const useXfyun = (ttsConfig && ttsConfig.engine === "xfyun") || (!ttsConfig && xfyunAppId && xfyunApiKey && xfyunApiSecret);
+
+    if (useXfyun && xfyunAppId && xfyunApiKey && xfyunApiSecret) {
       try {
         const audioBuffer = await synthesizeSpeech({
           text,
           vcn: voiceStyle === "professional" ? "aisjinger" : "aisjiuxu",
           speed: speechRate ?? 50,
           pitch: pitch ?? 50,
+          appId: xfyunAppId,
+          apiKey: xfyunApiKey,
+          apiSecret: xfyunApiSecret,
         });
 
         return new NextResponse(audioBuffer as any, {

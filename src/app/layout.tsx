@@ -47,6 +47,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-svh" style={{ fontFamily: "var(--font-noto-sans)", background: "#FAF8F5" }}>
         <EazoProvider>
           <UserSyncEffect />
+          <Script src="/sentio/core/live2dcubismcore.min.js" strategy="beforeInteractive" />
           <LayoutShell>{children}</LayoutShell>
           <Toaster position="top-center" />
         </EazoProvider>
