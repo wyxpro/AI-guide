@@ -855,7 +855,7 @@ export function QAScreen() {
         </div>
 
         {/* Avatar zone */}
-        <div className="flex-1 flex flex-col items-center justify-center px-4 relative min-h-0">
+        <div className="flex-1 flex flex-col items-center justify-center px-4 relative min-h-0 pb-36">
           <div className="absolute inset-0 pointer-events-none"
             style={{ background: "radial-gradient(ellipse 60% 50% at 50% 40%,rgba(79,111,82,0.12) 0%,transparent 70%)" }} />
           {spotName && (
@@ -872,7 +872,7 @@ export function QAScreen() {
         <motion.div
           animate={{ height: chatExpanded ? "42vh" : 0 }}
           transition={{ type: "spring", stiffness: 260, damping: 30 }}
-          className="overflow-hidden flex-shrink-0 mx-3 rounded-t-2xl relative">
+          className="overflow-hidden absolute left-3 right-3 bottom-[128px] z-30 rounded-t-2xl pointer-events-auto">
           <div ref={mobileScrollRef} className="h-full overflow-y-auto px-4 py-3"
             style={{
               maskImage: "linear-gradient(to bottom, transparent 0%, black 12%, black 86%, transparent 100%)",
@@ -883,7 +883,7 @@ export function QAScreen() {
         </motion.div>
 
         {/* Input zone — styled like reference image */}
-        <div className="flex-shrink-0 px-3 pb-8 pt-2">
+        <div className="flex-shrink-0 px-3 pb-8 pt-2 relative z-40">
           {/* Quick prompts */}
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-none mb-2.5 px-1">
             {["揽月亭历史故事", "景区门票价格", "适合老人路线", "翠玉湖怎么走"].map((p) => (

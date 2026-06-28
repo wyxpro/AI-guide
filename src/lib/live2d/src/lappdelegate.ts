@@ -68,6 +68,10 @@ export class LAppDelegate {
       // 時間更新
       LAppPal.updateTime();
       
+      if (!this._subdelegates) {
+        return;
+      }
+
       for (let i = 0; i < this._subdelegates.getSize(); i++) {
         this._subdelegates.at(i).update();
       }
@@ -120,7 +124,9 @@ export class LAppDelegate {
   /**
    * APPに必要な物を初期化する。
    */
-  public initialize(): boolean {
+  public initialize(canvasId = 'live2dCanvas'): boolean {
+    this._canvasId = canvasId;
+
     // Cubism SDKの初期化
     this.initializeCubism();
 
@@ -180,7 +186,11 @@ export class LAppDelegate {
     for (let i = 0; i < LAppDefine.CanvasNum; i++) {
       // const canvas = document.createElement('canvas');
       // 默认只有一个 live2dCanvas 画布
-      const canvas = document.getElementById('live2dCanvas') as HTMLCanvasElement;
+      const canvas = document.getElementById(this._canvasId) as HTMLCanvasElement | null;
+      if (!canvas) {
+        CubismLogError(`Canvas ${this._canvasId} was not found.`);
+        continue;
+      }
       this._canvases.pushBack(canvas);
       // canvas.style.width = `${width}vw`;
       // canvas.style.height = `${height}vh`;
@@ -205,7 +215,7 @@ export class LAppDelegate {
   }
 
   public changeCharacter(character: ResourceModel | null) {
-    // _subdelegates中只有一个画布, 所以设置第一个即可
+    if (!this._subdelegates || this._subdelegates.getSize() === 0) return;
     this._subdelegates.at(0).changeCharacter(character);
   }
 
@@ -236,6 +246,8 @@ export class LAppDelegate {
    * Subdelegate
    */
   private _subdelegates: csmVector<LAppSubdelegate>;
+
+  private _canvasId = 'live2dCanvas';
 }
 
 function onPointerBegan(e: PointerEvent): void {

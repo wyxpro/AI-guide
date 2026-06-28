@@ -246,7 +246,7 @@ export default function LoginPage() {
         </button>
 
         {/* Central Card Form */}
-        <div className="w-full max-w-sm flex flex-col justify-center relative z-10 bg-white/85 lg:bg-transparent p-6 md:p-8 rounded-3xl shadow-xl lg:shadow-none border border-white/50 lg:border-transparent backdrop-blur-md lg:backdrop-blur-none">
+        <div className="w-full max-w-sm lg:max-w-md flex flex-col justify-center relative z-10 bg-white/85 lg:bg-transparent p-6 md:p-8 rounded-3xl shadow-xl lg:shadow-none border border-white/50 lg:border-transparent backdrop-blur-md lg:backdrop-blur-none">
 
           {/* Welcome Titles */}
           <div>

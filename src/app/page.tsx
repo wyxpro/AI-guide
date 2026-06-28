@@ -1,11 +1,14 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
+import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Sparkles, Check, ChevronRight, ChevronLeft, Star, ArrowRight,
   Users, Bot, MessageCircle, MapPin, Navigation, TrendingUp
 } from "lucide-react";
 import { auth } from "@eazo/sdk";
+
+const Live2DViewer = dynamic(() => import("@/components/ui/Live2DViewer"), { ssr: false });
 
 // Animation Spring Config
 const SPRING = { type: "spring" as const, stiffness: 100, damping: 20 };
@@ -84,6 +87,27 @@ const RADAR_METRICS = [
   { name: "动态响应速度", angle: 216 },
   { name: "文化解说深度", angle: 288 },
 ];
+
+const buildRadarPoint = (angle: number, radius: number) => {
+  const rad = (angle * Math.PI) / 180;
+  return {
+    x: Number((150 + radius * Math.sin(rad)).toFixed(3)),
+    y: Number((150 - radius * Math.cos(rad)).toFixed(3)),
+  };
+};
+
+const RADAR_GRID_POINTS = [20, 40, 60, 80, 100].map((radius) => ({
+  radius,
+  points: RADAR_METRICS.map((m) => {
+    const { x, y } = buildRadarPoint(m.angle, radius);
+    return `${x},${y}`;
+  }).join(" "),
+}));
+
+const RADAR_AXIS_LINES = RADAR_METRICS.map((m) => ({
+  name: m.name,
+  ...buildRadarPoint(m.angle, 100),
+}));
 
 const COMP_PRODUCTS = [
   {
@@ -385,45 +409,16 @@ export default function WelcomePage() {
             <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(79,111,82,0.1)_1px,transparent_1px)] bg-[size:100%_4px] pointer-events-none opacity-40" />
             <div className="absolute top-12 left-12 w-48 h-48 rounded-full bg-[#D2A053]/10 filter blur-[40px] pointer-events-none group-hover:scale-125 transition-transform duration-1000" />
 
-            {/* Top Indicator */}
-            <div className="flex justify-between items-center relative z-10">
+            <div className="flex justify-center items-center relative z-10">
               <span className="text-[11px] font-bold px-3 py-1 rounded-full text-white bg-[#4F6F52] flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-ping" /> AI.ACTIVE
+                <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-ping" /> Shizuku (Live2D)
               </span>
-              <span className="text-white/40 text-[10px] tracking-widest font-mono">SYS-v3.2</span>
             </div>
 
-            {/* Simulated Digital Human (3D SVG Layered Structure) */}
             <div className="my-auto flex flex-col items-center relative z-10 translate-z-10 group-hover:translate-z-20 transition-transform duration-500">
-              <div className="relative w-36 h-36 rounded-full flex items-center justify-center mb-6"
-                style={{ background: "radial-gradient(circle, rgba(210,160,83,0.18) 0%, transparent 70%)", border: "2px dashed rgba(210,160,83,0.4)" }}>
-
-                {/* Rotating ring */}
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-                  className="absolute inset-0 rounded-full border-t border-b border-[#D2A053]/40"
-                />
-
-                <svg width="100" height="110" viewBox="0 0 100 120" className="drop-shadow-[0_8px_16px_rgba(210,160,83,0.3)]">
-                  <circle cx="50" cy="15" r="5" fill="#D2A053" />
-                  {/* Hair */}
-                  <path d="M50,18C38,18 32,28 32,41C32,48 36,55 40,58L42,53C38,43 44,31 50,31C56,31 62,43 58,53L60,58C64,55 68,48 68,41C68,28 62,18 50,18Z" fill="#243029" />
-                  {/* Face */}
-                  <path d="M40,55C40,55 46,68 50,68C54,68 60,55 60,55C60,55 61,61 50,65C39,61 40,55 40,55Z" fill="#FCE7D6" />
-                  {/* Robe */}
-                  <path d="M26,120L74,120C74,120 74,78 58,73L50,85L42,73C26,78 26,120 26,120Z" fill="#4F6F52" />
-                  {/* Robe Collar */}
-                  <path d="M42,73L50,85L58,73" stroke="#D2A053" strokeWidth="2.5" />
-                </svg>
-              </div>
-
-              {/* Digital Human Name & Speech Bubble */}
-              <div className="text-center space-y-1.5">
-                <h4 className="text-[#FAF8F5] text-sm font-bold tracking-wider" style={{ fontFamily: "var(--font-noto-serif)" }}>旅行家ProAI向导「小旅」</h4>
-                <p className="text-[11px] text-[#8F9F8F] px-4 py-1.5 rounded-xl bg-white/5 border border-white/10 italic">
-                  &ldquo;您好，我是您的AI导游，今天想去揽月亭还是翠玉湖呢？&rdquo;
-                </p>
+              <div className="relative w-64 h-72 md:w-72 md:h-80 -my-2 rounded-[32px] overflow-hidden">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,rgba(210,160,83,0.22),transparent_64%)] pointer-events-none" />
+                <Live2DViewer avatarStyle="live2d_Shizuku" />
               </div>
             </div>
 
@@ -691,15 +686,10 @@ export default function WelcomePage() {
                 <h4 className="text-xs font-bold text-center text-[#8F9F8F] mb-4">综合能力雷达评估图</h4>
                 <svg width="300" height="300" viewBox="0 0 300 300" className="mx-auto overflow-visible">
                   {/* Concentric grid rings */}
-                  {[20, 40, 60, 80, 100].map((r) => (
+                  {RADAR_GRID_POINTS.map(({ radius, points }) => (
                     <polygon
-                      key={r}
-                      points={RADAR_METRICS.map((m) => {
-                        const rad = (m.angle * Math.PI) / 180;
-                        const x = 150 + r * Math.sin(rad);
-                        const y = 150 - r * Math.cos(rad);
-                        return `${x},${y}`;
-                      }).join(" ")}
+                      key={radius}
+                      points={points}
                       fill="none"
                       stroke="#E6E2D8"
                       strokeWidth="1"
@@ -707,12 +697,9 @@ export default function WelcomePage() {
                   ))}
 
                   {/* Axes lines */}
-                  {RADAR_METRICS.map((m) => {
-                    const rad = (m.angle * Math.PI) / 180;
-                    const x = 150 + 100 * Math.sin(rad);
-                    const y = 150 - 100 * Math.cos(rad);
-                    return <line key={m.name} x1="150" y1="150" x2={x} y2={y} stroke="#E6E2D8" strokeWidth="1" />;
-                  })}
+                  {RADAR_AXIS_LINES.map((line) => (
+                    <line key={line.name} x1="150" y1="150" x2={line.x} y2={line.y} stroke="#E6E2D8" strokeWidth="1" />
+                  ))}
 
                   {/* Polygons */}
                   {COMP_PRODUCTS.map((prod) => (

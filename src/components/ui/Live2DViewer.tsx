@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { LAppDelegate } from "@/lib/live2d/src/lappdelegate";
 import { Live2dManager } from "@/lib/live2d/live2dManager";
 import { ResourceModel, RESOURCE_TYPE } from "@/lib/protocol";
@@ -10,12 +10,14 @@ interface Live2DViewerProps {
 }
 
 export default function Live2DViewer({ avatarStyle }: Live2DViewerProps) {
+  const reactId = useId();
+  const canvasId = `live2dCanvas-${reactId.replace(/:/g, "")}`;
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
     // 1. Initialize LAppDelegate
     try {
-      if (LAppDelegate.getInstance().initialize() === false) {
+      if (LAppDelegate.getInstance().initialize(canvasId) === false) {
         console.error("Failed to initialize LAppDelegate");
         return;
       }
@@ -56,7 +58,7 @@ export default function Live2DViewer({ avatarStyle }: Live2DViewerProps) {
         console.warn("Release error:", err);
       }
     };
-  }, []);
+  }, [canvasId]);
 
   // 4. Handle character style changes
   useEffect(() => {
@@ -78,7 +80,7 @@ export default function Live2DViewer({ avatarStyle }: Live2DViewerProps) {
   return (
     <div className="w-full h-full relative flex items-center justify-center">
       <canvas
-        id="live2dCanvas"
+        id={canvasId}
         className="w-full h-full max-w-full max-h-full block bg-transparent"
         style={{ outline: "none" }}
       />

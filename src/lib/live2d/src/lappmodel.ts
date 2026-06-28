@@ -479,11 +479,14 @@ export class LAppModel extends CubismUserModel {
           }
         };
 
-        // 読み込み
-        this._subdelegate
-          .getTextureManager()
-          .createTextureFromPngFile(texturePath, usePremultiply, onLoad);
-        this.getRenderer().setIsPremultipliedAlpha(usePremultiply);
+        const textureManager = this._subdelegate?.getTextureManager();
+        const renderer = this.getRenderer();
+        if (!textureManager || !renderer) {
+          return;
+        }
+
+        textureManager.createTextureFromPngFile(texturePath, usePremultiply, onLoad);
+        renderer.setIsPremultipliedAlpha(usePremultiply);
       }
 
       this._state = LoadStep.WaitLoadTexture;
