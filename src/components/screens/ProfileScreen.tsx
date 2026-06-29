@@ -278,38 +278,7 @@ export function ProfileScreen() {
                 </div>
 
                 {/* Main Body */}
-                <div className="p-4 sm:p-6 space-y-6">
-                  {/* AI Banner top (Moved from bottom) */}
-                  <div className="bg-gradient-to-br from-[#EEF7F2] to-[#E5F1EB] rounded-3xl p-5 border border-[#D5EDE0] flex items-center justify-between relative overflow-hidden shadow-sm">
-                    <div className="space-y-2.5 relative z-10 max-w-[65%]">
-                      <span className="text-[9px] font-extrabold text-white bg-[#4F6F52] px-2 py-0.5 rounded-full inline-block shadow-sm">
-                        AI 数字人导游
-                      </span>
-                      <h4 className="text-xs font-black text-zinc-800 leading-tight">随时为您提供智能讲解与路线推荐</h4>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => router.push("/qa")}
-                          className="px-3.5 py-1.5 bg-[#4F6F52] text-white text-[10px] font-black rounded-lg shadow-sm hover:bg-[#3D5640] transition-colors cursor-pointer"
-                        >
-                          去对话
-                        </button>
-                        <button
-                          onClick={() => router.push("/qa")}
-                          className="px-3.5 py-1.5 bg-white text-[#4F6F52] border border-[#D5EDE0] text-[10px] font-black rounded-lg shadow-sm hover:bg-neutral-50 transition-colors cursor-pointer"
-                        >
-                          去问答
-                        </button>
-                      </div>
-                    </div>
-                    <img
-                      src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&auto=format&fit=crop&q=80"
-                      className="absolute right-3 bottom-0 w-24 h-24 object-cover object-top rounded-t-full mask-image border-b-0 border border-white/20"
-                      alt=""
-                    />
-                  </div>
-
-
-
+                <div className="p-4 sm:p-6 space-y-4">
                   {/* 4 Quick Entry Cards */}
                   <div className="grid grid-cols-4 gap-2 text-center">
                     {[

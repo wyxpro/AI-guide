@@ -202,25 +202,6 @@ function PCView() {
           </div>
         </section>
 
-        <section className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-          {CITY_BANNERS.map((banner, index) => (
-            <button
-              key={banner.city}
-              onClick={() => setBannerIndex(index)}
-              className="rounded-2xl overflow-hidden bg-white border border-zinc-200/70 shadow-sm text-left hover:shadow-md transition-shadow"
-            >
-              <div className="relative h-20">
-                <img src={banner.img} alt={banner.title} className="absolute inset-0 w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
-                <div className="absolute left-2.5 bottom-2.5">
-                  <div className="text-[11px] font-black text-white">{banner.city}</div>
-                  <div className="text-[10px] text-white/80 font-semibold">{banner.title}</div>
-                </div>
-              </div>
-            </button>
-          ))}
-        </section>
-
         {/* Entrance Cards Grid */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <motion.div

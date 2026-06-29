@@ -757,9 +757,6 @@ export function RoutesScreen() {
       {/* 1. Integrated Header (Mobile only) */}
       <div className="md:hidden flex items-center justify-between px-4 h-14 bg-white border-b border-zinc-200/80 shadow-sm z-40 flex-shrink-0">
         <div className="flex items-center gap-2">
-          <Link href="/home" className="w-8 h-8 rounded-lg bg-zinc-50 flex items-center justify-center text-zinc-700 hover:bg-zinc-100 active:scale-95 transition-all">
-            <ChevronLeft className="w-4.5 h-4.5" />
-          </Link>
           <button
             onClick={() => {
               setShowLeftSidebar(!showLeftSidebar);
@@ -869,9 +866,9 @@ export function RoutesScreen() {
                         isActive ? "border-[#4F6F52] bg-[#4F6F52]/5 ring-1 ring-[#4F6F52]/20" : "border-zinc-200/80 bg-white hover:border-zinc-300"
                       }`}
                     >
-                      <div className="relative h-14 w-full">
+                      <div className="relative h-20 w-full">
                         <img src={c.img} alt={c.name} className="w-full h-full object-cover" pointerEvents="none" />
-                        <span className="absolute bottom-1 right-1 bg-black/60 backdrop-blur-sm text-[8px] text-white px-1.5 py-0.5 rounded font-black">
+                        <span className="absolute bottom-1.5 right-1.5 bg-black/60 backdrop-blur-sm text-[8px] text-white px-1.5 py-0.5 rounded font-black">
                           {c.badge}
                         </span>
                       </div>
@@ -1014,20 +1011,20 @@ export function RoutesScreen() {
                       speakSpotNarration(spot.name, spot.desc);
                     }
                   }}
-                  className={`flex-shrink-0 w-[120px] rounded-xl overflow-hidden bg-white/95 backdrop-blur-md border transition-all text-left shadow-md flex flex-col snap-start ${
+                  className={`flex-shrink-0 w-[140px] rounded-xl overflow-hidden bg-white/95 backdrop-blur-md border transition-all text-left shadow-md flex flex-col snap-start ${
                     isActive ? "border-[#4F6F52] ring-2 ring-[#4F6F52]/20" : "border-zinc-200/40"
                   }`}
                 >
-                  <div className="relative h-12 w-full flex-shrink-0">
+                  <div className="relative h-14 w-full flex-shrink-0">
                     <img src={spot.img} alt={spot.name} className="w-full h-full object-cover" />
                     <div className="absolute top-1 right-1 bg-black/60 backdrop-blur-sm text-[7px] text-white px-1.5 py-0.5 rounded-full font-black">
                       ⭐ {spot.rating}
                     </div>
                   </div>
-                  <div className="p-1.5 flex flex-col justify-between flex-1 min-w-0">
-                    <div className="text-[10px] font-black text-zinc-900 truncate leading-tight">{spot.name}</div>
-                    <div className="flex items-center justify-between mt-0.5 text-[8px] text-[#4F6F52] font-bold">
-                      <span>{spot.type}</span>
+                  <div className="p-2 flex flex-col justify-between flex-1 min-w-0">
+                    <div className="text-[11px] font-black text-zinc-900 truncate leading-tight">{spot.name}</div>
+                    <div className="flex items-center justify-between mt-1 text-[9px] text-[#4F6F52] font-bold">
+                      <span>地标：{spot.type}</span>
                     </div>
                   </div>
                 </button>
@@ -1095,15 +1092,15 @@ export function RoutesScreen() {
 
           {!isMobile && showFloatChat && (
             <motion.div
-              drag="x"
+              drag
               dragControls={dragControls}
               dragListener={false}
-              dragConstraints={{ left: -800, right: 50 }}
+              dragConstraints={{ left: -800, right: 50, top: -400, bottom: 100 }}
               dragElastic={0.05}
               dragMomentum={false}
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              className="absolute bottom-4 right-4 z-30 w-[360px] h-[500px] bg-white/95 backdrop-blur-md rounded-2xl border border-zinc-200/80 shadow-2xl flex flex-col overflow-hidden"
+              className="absolute bottom-4 right-4 z-30 w-[360px] h-[420px] bg-white/95 backdrop-blur-md rounded-2xl border border-zinc-200/80 shadow-2xl flex flex-col overflow-hidden"
             >
               {/* Header acts as drag handle */}
               <div
@@ -1116,7 +1113,7 @@ export function RoutesScreen() {
                   </div>
                   <div>
                     <h3 className="font-extrabold text-xs text-zinc-800">智能向导小慧</h3>
-                    <span className="text-[8.5px] text-zinc-400 block mt-0.5">按住此处可左右拖拽</span>
+                    <span className="text-[8.5px] text-zinc-400 block mt-0.5">按住此处可上下左右拖拽</span>
                   </div>
                 </div>
                 <button
@@ -1162,24 +1159,7 @@ export function RoutesScreen() {
               )}
 
               {/* Chat Inputs */}
-              <div className="p-2 border-t border-zinc-100 bg-white flex flex-col gap-1.5 relative">
-                {showEmojiPicker && (
-                  <div className="absolute bottom-full left-2 right-2 mb-1.5 p-2 bg-white border border-zinc-200 shadow-xl rounded-xl flex flex-wrap gap-1.5 justify-center z-50">
-                    {TRAVEL_EMOJIS.map(emoji => (
-                      <button
-                        key={emoji}
-                        onClick={() => {
-                          setChatInput(prev => prev + emoji);
-                          setShowEmojiPicker(false);
-                        }}
-                        className="text-base hover:scale-125 transition-transform p-0.5 cursor-pointer"
-                      >
-                        {emoji}
-                      </button>
-                    ))}
-                  </div>
-                )}
-
+              <div className="p-2 border-t border-zinc-100 bg-white flex-shrink-0">
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => imageInputRef.current?.click()}
@@ -1187,14 +1167,6 @@ export function RoutesScreen() {
                     title="选择图片"
                   >
                     <ImageIcon className="w-3.5 h-3.5" />
-                  </button>
-
-                  <button
-                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                    className="w-7 h-7 rounded-full border border-zinc-200 text-zinc-500 hover:bg-neutral-50 flex items-center justify-center cursor-pointer transition-colors"
-                    title="表情符号"
-                  >
-                    <Smile className="w-3.5 h-3.5" />
                   </button>
 
                   <button
@@ -1213,7 +1185,7 @@ export function RoutesScreen() {
                     onChange={(e) => setChatInput(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleSendChatMessage()}
                     placeholder={recording ? "正在聆听..." : "向小慧提问..."}
-                    className="flex-1 bg-neutral-50 border border-zinc-200/80 rounded-full px-3 py-1 text-xs outline-none focus:border-[#4F6F52] focus:bg-white transition-all text-[#2C3E35]"
+                    className="flex-1 bg-neutral-50 border border-zinc-200/80 rounded-full px-3 py-2 text-xs outline-none focus:border-[#4F6F52] focus:bg-white transition-all text-[#2C3E35]"
                   />
 
                   <button
@@ -1232,7 +1204,7 @@ export function RoutesScreen() {
         {isMobile && (
           <div className={`
             bg-white border-zinc-200/80 flex flex-col overflow-hidden shadow-lg z-30 transition-all duration-300
-            absolute top-0 bottom-0 right-0 w-[300px] h-[100dvh]
+            absolute top-0 bottom-0 right-0 w-[300px]
             ${!showRightSidebar ? 'translate-x-full' : 'translate-x-0'}
           `}>
             <div className="p-4 border-b border-zinc-100 flex items-center justify-between bg-zinc-50/50 flex-shrink-0">
@@ -1280,24 +1252,7 @@ export function RoutesScreen() {
               </div>
             )}
 
-            <div className="p-3 pb-12 border-t border-zinc-100 bg-white flex flex-col gap-2 flex-shrink-0">
-              {showEmojiPicker && (
-                <div className="absolute bottom-full left-3 right-3 mb-2 p-2 bg-white border border-zinc-200 shadow-xl rounded-xl flex flex-wrap gap-2 justify-center z-50">
-                  {TRAVEL_EMOJIS.map(emoji => (
-                    <button
-                      key={emoji}
-                      onClick={() => {
-                        setChatInput(prev => prev + emoji);
-                        setShowEmojiPicker(false);
-                      }}
-                      className="text-lg hover:scale-125 transition-transform p-1 cursor-pointer"
-                    >
-                      {emoji}
-                    </button>
-                  ))}
-                </div>
-              )}
-
+            <div className="p-3 border-t border-zinc-100 bg-white flex-shrink-0">
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => imageInputRef.current?.click()}
@@ -1305,14 +1260,6 @@ export function RoutesScreen() {
                   title="选择图片"
                 >
                   <ImageIcon className="w-4 h-4" />
-                </button>
-
-                <button
-                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                  className="w-8 h-8 rounded-full border border-zinc-200 text-zinc-500 hover:bg-neutral-50 flex items-center justify-center cursor-pointer transition-colors"
-                  title="表情符号"
-                >
-                  <Smile className="w-4 h-4" />
                 </button>
 
                 <button
