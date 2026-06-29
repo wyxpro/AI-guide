@@ -99,10 +99,11 @@ export class LAppDelegate {
    * イベントリスナーを解除する。
    */
   private releaseEventListener(): void {
-    document.removeEventListener('pointerup', onPointerBegan);
+    document.removeEventListener('pointerdown', onPointerBegan);
     document.removeEventListener('pointermove', onPointerMoved);
-    document.removeEventListener('pointerdown', onPointerEnded);
-    document.removeEventListener('pointerdown', onPointerCancel);
+    document.removeEventListener('pointerup', onPointerEnded);
+    document.removeEventListener('pointercancel', onPointerCancel);
+    document.removeEventListener('pointerleave', onPointerLeave);
   }
 
   /**
@@ -251,9 +252,11 @@ export class LAppDelegate {
 }
 
 function onPointerBegan(e: PointerEvent): void {
+  const subdelegates = LAppDelegate.getInstance().getSubdelegate();
+  if (!subdelegates) return;
   for (
-    let ite = LAppDelegate.getInstance().getSubdelegate().begin();
-    ite.notEqual(LAppDelegate.getInstance().getSubdelegate().end());
+    let ite = subdelegates.begin();
+    ite.notEqual(subdelegates.end());
     ite.preIncrement()
   ) {
     ite.ptr().onPointBegan(e.pageX, e.pageY);
@@ -261,9 +264,11 @@ function onPointerBegan(e: PointerEvent): void {
 }
 
 function onPointerMoved(e: PointerEvent): void {
+  const subdelegates = LAppDelegate.getInstance().getSubdelegate();
+  if (!subdelegates) return;
   for (
-    let ite = LAppDelegate.getInstance().getSubdelegate().begin();
-    ite.notEqual(LAppDelegate.getInstance().getSubdelegate().end());
+    let ite = subdelegates.begin();
+    ite.notEqual(subdelegates.end());
     ite.preIncrement()
   ) {
     ite.ptr().onPointMoved(e.pageX, e.pageY);
@@ -271,9 +276,11 @@ function onPointerMoved(e: PointerEvent): void {
 }
 
 function onPointerEnded(e: PointerEvent): void {
+  const subdelegates = LAppDelegate.getInstance().getSubdelegate();
+  if (!subdelegates) return;
   for (
-    let ite = LAppDelegate.getInstance().getSubdelegate().begin();
-    ite.notEqual(LAppDelegate.getInstance().getSubdelegate().end());
+    let ite = subdelegates.begin();
+    ite.notEqual(subdelegates.end());
     ite.preIncrement()
   ) {
     ite.ptr().onPointEnded(e.pageX, e.pageY);
@@ -281,9 +288,11 @@ function onPointerEnded(e: PointerEvent): void {
 }
 
 function onPointerCancel(e: PointerEvent): void {
+  const subdelegates = LAppDelegate.getInstance().getSubdelegate();
+  if (!subdelegates) return;
   for (
-    let ite = LAppDelegate.getInstance().getSubdelegate().begin();
-    ite.notEqual(LAppDelegate.getInstance().getSubdelegate().end());
+    let ite = subdelegates.begin();
+    ite.notEqual(subdelegates.end());
     ite.preIncrement()
   ) {
     ite.ptr().onTouchCancel(e.pageX, e.pageY);
@@ -291,9 +300,11 @@ function onPointerCancel(e: PointerEvent): void {
 }
 
 function onPointerLeave(e: PointerEvent): void {
+  const subdelegates = LAppDelegate.getInstance().getSubdelegate();
+  if (!subdelegates) return;
   for (
-    let ite = LAppDelegate.getInstance().getSubdelegate().begin();
-    ite.notEqual(LAppDelegate.getInstance().getSubdelegate().end());
+    let ite = subdelegates.begin();
+    ite.notEqual(subdelegates.end());
     ite.preIncrement()
   ) {
     ite.ptr().onPointLeave();

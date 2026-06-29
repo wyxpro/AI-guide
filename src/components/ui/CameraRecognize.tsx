@@ -68,11 +68,15 @@ interface CameraRecognizeProps {
 
 export function CameraRecognize({ currentSpot, onClose, onRecognized }: CameraRecognizeProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   
   // Interaction states
   const [selectedPreset, setSelectedPreset] = useState<typeof PRESETS[0] | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [cameraActive, setCameraActive] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
   
   const [scanning, setScanning] = useState(false);
   const [scanStep, setScanStep] = useState(0);
@@ -120,6 +124,52 @@ export function CameraRecognize({ currentSpot, onClose, onRecognized }: CameraRe
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const stopCamera = () => {
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    streamRef.current = null;
+    setCameraActive(false);
+  };
+
+  const startCamera = async () => {
+    setCameraError(null);
+    try {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        setCameraError("当前浏览器不支持摄像头调用");
+        return;
+      }
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+      streamRef.current = stream;
+      setCameraActive(true);
+      setPreviewUrl(null);
+      setSelectedFile(null);
+      setSelectedPreset(null);
+      requestAnimationFrame(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play().catch(() => undefined);
+        }
+      });
+    } catch {
+      setCameraError("无法获取摄像头权限，请允许浏览器访问相机");
+    }
+  };
+
+  const captureFrame = async () => {
+    const video = videoRef.current;
+    if (!video || video.readyState < 2) return;
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth || 1280;
+    canvas.height = video.videoHeight || 720;
+    canvas.getContext("2d")?.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.92));
+    if (!blob) return;
+    const file = new File([blob], "camera-capture.jpg", { type: "image/jpeg" });
+    setSelectedFile(file);
+    setPreviewUrl(URL.createObjectURL(blob));
+    setRecognizeResult(null);
+    stopCamera();
   };
 
   // Perform Simulated 3D Scan & API / Mock Call
@@ -207,6 +257,7 @@ export function CameraRecognize({ currentSpot, onClose, onRecognized }: CameraRe
   useEffect(() => {
     return () => {
       if (audioInstance) audioInstance.pause();
+      stopCamera();
     };
   }, [audioInstance]);
 
@@ -288,7 +339,21 @@ export function CameraRecognize({ currentSpot, onClose, onRecognized }: CameraRe
 
               {/* Content Switch */}
               <AnimatePresence mode="wait">
-                {previewUrl ? (
+                {cameraActive ? (
+                  <motion.div
+                    key="camera"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="absolute inset-0 w-full h-full"
+                  >
+                    <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+                    <div className="absolute left-4 bottom-4 right-4 z-20 flex items-center justify-between gap-3">
+                      <span className="text-[10px] text-[#D2A053] bg-black/70 border border-[#D2A053]/40 px-3 py-2 rounded-lg">摄像头已开启，对准景物后点击取景识别</span>
+                      <button onClick={captureFrame} className="px-4 py-2 rounded-xl text-xs font-black bg-[#D2A053] text-black shadow active:scale-95">取景识别</button>
+                    </div>
+                  </motion.div>
+                ) : previewUrl ? (
                   <motion.div 
                     key="preview" 
                     initial={{ opacity: 0 }} 
@@ -351,13 +416,20 @@ export function CameraRecognize({ currentSpot, onClose, onRecognized }: CameraRe
             </div>
 
             {/* Action Trigger Buttons */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
+              <button
+                onClick={cameraActive ? stopCamera : startCamera}
+                className="py-3 bg-[#1A2520] hover:bg-[#24332C] border border-[#D2A053]/30 rounded-xl text-xs font-black flex items-center justify-center gap-2 shadow transition-all active:scale-95 text-[#D2A053] hover:border-[#D2A053]/60 hover:shadow-[0_0_8px_rgba(210,160,83,0.15)]"
+              >
+                <Camera className="w-4 h-4 text-[#D2A053]" />
+                <span>{cameraActive ? "关闭摄像头" : "打开摄像头"}</span>
+              </button>
               <button
                 onClick={() => fileInputRef.current?.click()}
                 className="py-3 bg-[#1A2520] hover:bg-[#24332C] border border-[#D2A053]/30 rounded-xl text-xs font-black flex items-center justify-center gap-2 shadow transition-all active:scale-95 text-[#D2A053] hover:border-[#D2A053]/60 hover:shadow-[0_0_8px_rgba(210,160,83,0.15)]"
               >
                 <Upload className="w-4 h-4 text-[#D2A053]" />
-                <span>选择本地图片 / 拍照</span>
+                <span>本地图片</span>
               </button>
               <input 
                 ref={fileInputRef}
@@ -385,6 +457,7 @@ export function CameraRecognize({ currentSpot, onClose, onRecognized }: CameraRe
                 )}
               </button>
             </div>
+            {cameraError && <p className="text-[11px] text-red-300 bg-red-500/10 border border-red-400/20 rounded-xl px-3 py-2">{cameraError}</p>}
 
             {/* Preset珍玩 selector grid */}
             <div className="space-y-2">

@@ -55,7 +55,8 @@ export class LAppSprite {
   public release(): void {
     this._rect = null;
 
-    const gl = this._subdelegate.getGlManager().getGl();
+    const gl = this._subdelegate?.getGlManager()?.getGl();
+    if (!gl) return;
 
     gl.deleteTexture(this._texture);
     this._texture = null;
@@ -88,7 +89,8 @@ export class LAppSprite {
       return;
     }
 
-    const gl = this._subdelegate.getGlManager().getGl();
+    const gl = this._subdelegate?.getGlManager()?.getGl();
+    if (!gl) return;
 
     // 初回描画時
     if (this._firstDraw) {

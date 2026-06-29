@@ -34,20 +34,22 @@ export class LAppSubdelegate {
    * デストラクタ相当の処理
    */
   public release(): void {
-    this._resizeObserver.unobserve(this._canvas);
-    this._resizeObserver.disconnect();
+    if (this._resizeObserver && this._canvas) {
+      this._resizeObserver.unobserve(this._canvas);
+      this._resizeObserver.disconnect();
+    }
     this._resizeObserver = null;
 
-    this._live2dManager.release();
+    this._live2dManager?.release();
     this._live2dManager = null;
 
-    this._view.release();
+    this._view?.release();
     this._view = null;
 
-    this._textureManager.release();
+    this._textureManager?.release();
     this._textureManager = null;
 
-    this._glManager.release();
+    this._glManager?.release();
     this._glManager = null;
   }
 
@@ -117,7 +119,8 @@ export class LAppSubdelegate {
    * ループ処理
    */
   public update(): void {
-    if (this._glManager.getGl().isContextLost()) {
+    const initialGl = this._glManager?.getGl();
+    if (!initialGl || initialGl.isContextLost()) {
       return;
     }
 
@@ -127,7 +130,8 @@ export class LAppSubdelegate {
       this._needResize = false;
     }
 
-    const gl = this._glManager.getGl();
+    const gl = this._glManager?.getGl();
+    if (!gl) return;
 
     // 画面的初始化.默认就是白色(rgb: 1.0, 1.0, 1.0)且不透明(alpha: 1.0)
     gl.clearColor(0.0, 0.0, 0.0, 0.0);

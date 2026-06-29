@@ -391,49 +391,16 @@ export default function WelcomePage() {
 
       {/* Hero Section */}
       <section className="relative pt-12 md:pt-24 pb-20 max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-        {/* 3D Simulation Virtual Human Block */}
+        {/* Shizuku Live2D */}
         <div className="lg:col-span-5 flex justify-center lg:order-2">
           <motion.div
             initial={{ opacity: 0, rotateY: 20 }}
             animate={{ opacity: 1, rotateY: 0 }}
             transition={{ ...SPRING, delay: 0.2 }}
-            className="relative w-80 h-96 md:w-96 md:h-[450px] rounded-[48px] p-6 shadow-2xl flex flex-col justify-between overflow-hidden group"
-            style={{
-              background: "linear-gradient(180deg, #1C2420 0%, #121815 100%)",
-              border: "4px solid #D2A053",
-              transformStyle: "preserve-3d",
-              perspective: 1000
-            }}
+            className="relative w-80 h-96 md:w-96 md:h-[450px] overflow-visible"
+            style={{ transformStyle: "preserve-3d", perspective: 1000 }}
           >
-            {/* Interactive Hologram Effect */}
-            <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(79,111,82,0.1)_1px,transparent_1px)] bg-[size:100%_4px] pointer-events-none opacity-40" />
-            <div className="absolute top-12 left-12 w-48 h-48 rounded-full bg-[#D2A053]/10 filter blur-[40px] pointer-events-none group-hover:scale-125 transition-transform duration-1000" />
-
-            <div className="flex justify-center items-center relative z-10">
-              <span className="text-[11px] font-bold px-3 py-1 rounded-full text-white bg-[#4F6F52] flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-ping" /> Shizuku (Live2D)
-              </span>
-            </div>
-
-            <div className="my-auto flex flex-col items-center relative z-10 translate-z-10 group-hover:translate-z-20 transition-transform duration-500">
-              <div className="relative w-64 h-72 md:w-72 md:h-80 -my-2 rounded-[32px] overflow-hidden">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,rgba(210,160,83,0.22),transparent_64%)] pointer-events-none" />
-                <Live2DViewer avatarStyle="live2d_Shizuku" />
-              </div>
-            </div>
-
-            {/* Voice Audio Wave */}
-            <div className="flex justify-center items-end gap-1.5 h-8 relative z-10">
-              {[3, 6, 8, 4, 9, 6, 8, 3, 5, 7, 4].map((h, i) => (
-                <motion.div
-                  key={i}
-                  animate={{ height: [h * 2, h * 3.5, h * 2] }}
-                  transition={{ duration: 0.8, delay: i * 0.08, repeat: Infinity }}
-                  className="w-1.5 rounded-full"
-                  style={{ background: i % 2 === 0 ? "#D2A053" : "#4F6F52" }}
-                />
-              ))}
-            </div>
+            <Live2DViewer avatarStyle="live2d_Shizuku" />
           </motion.div>
         </div>
 

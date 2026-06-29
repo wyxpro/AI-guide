@@ -119,6 +119,7 @@ export function QAScreen() {
 
   // Audio playback and recording refs
   const recognitionRef = useRef<any>(null);
+  const recognitionManualStopRef = useRef(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -434,6 +435,7 @@ export function QAScreen() {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
     if (recording) {
+      recognitionManualStopRef.current = true;
       if (recognitionRef.current) {
         recognitionRef.current.stop();
         setRecording(false);
@@ -450,14 +452,36 @@ export function QAScreen() {
 
     if (SR && asrEngine !== "whisper") {
       const rec = new SR();
-      rec.lang = "zh-CN"; rec.continuous = false; rec.interimResults = false;
+      recognitionManualStopRef.current = false;
+      rec.lang = "zh-CN"; rec.continuous = true; rec.interimResults = true;
       rec.onresult = (e: any) => {
-        const txt = e.results[0][0].transcript;
+        const result = e.results[e.results.length - 1];
+        const txt = result?.[0]?.transcript?.trim() || "";
+        if (!txt) return;
         setInput(txt);
-        sendMessage(txt);
+        if (result.isFinal) {
+          recognitionManualStopRef.current = true;
+          setRecording(false);
+          rec.stop();
+          sendMessage(txt);
+        }
       };
-      rec.onend = () => setRecording(false);
-      rec.onerror = () => setRecording(false);
+      rec.onend = () => {
+        if (recognitionManualStopRef.current) {
+          recognitionManualStopRef.current = false;
+          setRecording(false);
+          return;
+        }
+        try {
+          rec.start();
+        } catch {
+          setRecording(false);
+        }
+      };
+      rec.onerror = (e: any) => {
+        if (e?.error === "no-speech") return;
+        setRecording(false);
+      };
       rec.start();
       recognitionRef.current = rec;
       mediaRecorderRef.current = null;
@@ -705,7 +729,7 @@ export function QAScreen() {
   const renderInputBar = (dark = false) => (
     <div className={`flex items-center gap-2`}>
       {/* Camera */}
-      <motion.button whileTap={{ scale: 0.84 }} onClick={() => setShowCamera(true)}
+      <motion.button type="button" whileTap={{ scale: 0.84 }} onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowCamera(true); }}
         className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 shadow-md transition-all hover:brightness-105"
         style={{
           background: "linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%)",
@@ -717,7 +741,7 @@ export function QAScreen() {
       </motion.button>
 
       {/* Voice */}
-      <motion.button whileTap={{ scale: 0.84 }} onClick={toggleRecording}
+      <motion.button type="button" whileTap={{ scale: 0.84 }} onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleRecording(); }}
         className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 relative shadow-md transition-all hover:brightness-105"
         style={{
           background: recording
@@ -906,7 +930,7 @@ export function QAScreen() {
           {/* Input row: [Camera] [Mic] [Input pill] [Send/Camera] */}
           <div className="flex items-center gap-2.5">
             {/* Camera button — left of mic */}
-            <motion.button whileTap={{ scale: 0.88 }} onClick={() => setShowCamera(true)}
+            <motion.button type="button" whileTap={{ scale: 0.88 }} onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowCamera(true); }}
               className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg transition-all hover:brightness-105"
               style={{
                 background: "linear-gradient(135deg, #F59E0B 0%, #D97706 100%)",
@@ -917,7 +941,7 @@ export function QAScreen() {
             </motion.button>
 
             {/* Voice button */}
-            <motion.button whileTap={{ scale: 0.88 }} onClick={toggleRecording}
+            <motion.button type="button" whileTap={{ scale: 0.88 }} onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleRecording(); }}
               className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 relative shadow-lg transition-all hover:brightness-105"
               style={{
                 background: recording

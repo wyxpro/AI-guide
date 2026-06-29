@@ -108,6 +108,9 @@ export function RoutesScreen() {
   // Active highlighted spot
   const [activeSpot, setActiveSpot] = useState<typeof CHONGQING_SPOTS[0]>(CHONGQING_SPOTS[0]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [mapRotation, setMapRotation] = useState(0);
+  const [mobileBottomTab, setMobileBottomTab] = useState<"city" | "route" | "spots">("city");
+  const [isBottomSheetExpanded, setIsBottomSheetExpanded] = useState(false);
 
   // Map elements — separate refs for mobile and desktop to avoid React single-ref collision
   const mobileMapRef = useRef<HTMLDivElement>(null);
@@ -375,6 +378,12 @@ export function RoutesScreen() {
 
           // ↓ Set immediately so cleanup can always destroy it
           mapInstanceRef.current = map;
+
+          map.on("rotate", () => {
+            if (!aborted) {
+              setMapRotation(map.getRotation() || 0);
+            }
+          });
 
           map.on("complete", () => {
             if (aborted) return;
@@ -740,7 +749,7 @@ export function RoutesScreen() {
           style={{ height: "100svh", minHeight: "100dvh" }}
         >
         
-        {/* Full Map Container - 使用 inline 尺寸避免 flex/svh 在移动端初次水合时高度为 0 */}
+        {/* Full Map Container */}
         <div
           ref={mobileMapRef}
           className="absolute inset-0 z-0 bg-neutral-200"
@@ -751,310 +760,417 @@ export function RoutesScreen() {
           }}
         />
 
-        {/* 1. Status Bar Spacing & Header Row */}
-        <div className="relative z-10 w-full px-4 pt-3 flex flex-col gap-2">
-          {/* Header Card */}
-          <div className="bg-white/95 backdrop-blur-md shadow-lg rounded-2xl p-2.5 flex items-center justify-between border border-zinc-200/50">
-            {/* Title & Back button */}
-            <Link href="/home" className="flex items-center gap-1.5 flex-1 min-w-0">
-              <ChevronLeft className="w-5 h-5 text-zinc-700 flex-shrink-0" />
-              <span className="font-bold text-sm text-zinc-800 truncate" style={{ fontFamily: "var(--font-noto-serif)" }}>
-                {activeSpot?.name || "成都杜甫草堂博物馆"}
-              </span>
+        {/* 1. Top Section: Search Box + Popular Spot Cards */}
+        <div className="relative z-10 w-full px-4 pt-4 flex flex-col gap-2.5">
+          {/* Top Search Bar Row */}
+          <div className="flex items-center gap-2 w-full">
+            <Link href="/home" className="w-10 h-10 rounded-xl bg-white/95 backdrop-blur-md border border-zinc-200/50 shadow-lg flex items-center justify-center text-zinc-700 hover:bg-zinc-50 active:scale-95 transition-all flex-shrink-0">
+              <ChevronLeft className="w-5 h-5" />
             </Link>
             
-            {/* Share & Feedback */}
-            <div className="flex items-center gap-2">
-              <button onClick={() => toast.success("已分享当前景区地图")}
-                className="flex flex-col items-center justify-center p-1 rounded-lg text-zinc-600 hover:text-zinc-950 transition-colors">
-                <Share2 className="w-4 h-4" />
-                <span className="text-[7.5px] font-bold mt-0.5">分享</span>
+            <div className="flex-1 h-10 flex items-center bg-white/95 backdrop-blur-md rounded-xl px-3 border border-zinc-200/50 shadow-lg">
+              <Search className="w-4 h-4 text-zinc-400 mr-2 flex-shrink-0" />
+              <input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch(searchQuery)}
+                placeholder={`搜索${selectedCity}景点...`}
+                className="flex-1 bg-transparent outline-none text-xs font-semibold text-zinc-800 placeholder:text-zinc-400"
+              />
+              <button
+                onClick={() => handleSearch(searchQuery)}
+                className="text-[#3A4D39] text-xs font-bold px-2 py-1 rounded hover:bg-[#3A4D39]/10 transition-colors"
+              >
+                搜索
               </button>
-              <Link href="/profile" className="flex flex-col items-center justify-center p-1 rounded-lg text-zinc-600 hover:text-zinc-950 transition-colors">
-                <ShieldAlert className="w-4 h-4" />
-                <span className="text-[7.5px] font-bold mt-0.5">反馈</span>
-              </Link>
             </div>
+
+            {/* City indicator button that opens bottom sheet city tab */}
+            <button
+              onClick={() => {
+                setMobileBottomTab("city");
+                setIsBottomSheetExpanded(true);
+              }}
+              className="px-3 h-10 rounded-xl bg-white/95 backdrop-blur-md border border-zinc-200/50 shadow-lg flex items-center gap-1 text-xs font-bold text-[#4F6F52] hover:bg-zinc-50 active:scale-95 transition-all flex-shrink-0"
+            >
+              <MapPin className="w-3.5 h-3.5" />
+              <span>{selectedCity}</span>
+            </button>
           </div>
 
-          {/* City Switch Carousel on Mobile */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-none pt-0.5">
-            {POPULAR_CITIES.map((c) => {
-              const isActive = selectedCity === c.name;
+          {/* Popular Spot Cards (Horizontal scroll, aligned with desktop: click focuses map) */}
+          <div className="flex gap-2.5 overflow-x-auto scrollbar-none pb-1.5 snap-x">
+            {currentSpots.map((spot) => {
+              const isActive = activeSpot?.id === spot.id;
               return (
                 <button
-                  key={c.name}
-                  onClick={() => handleCityClick(c)}
-                  className={`flex-shrink-0 px-3 py-1 rounded-full border text-[11px] font-bold transition-all shadow-sm ${
-                    isActive
-                      ? "bg-[#4F6F52] text-white border-[#4F6F52]"
-                      : "bg-white/95 text-zinc-700 border-zinc-200/60"
+                  key={spot.id}
+                  onClick={() => {
+                    setActiveSpot(spot);
+                    if (mapInstanceRef.current) {
+                      mapInstanceRef.current.setZoomAndCenter(15, [spot.lng, spot.lat]);
+                    }
+                    if (autoplayEnabled) {
+                      speakSpotNarration(spot.name, spot.desc);
+                    }
+                  }}
+                  className={`flex-shrink-0 w-[140px] rounded-2xl overflow-hidden bg-white/95 backdrop-blur-md border transition-all text-left shadow-lg flex flex-col snap-start ${
+                    isActive ? "border-[#4F6F52] ring-2 ring-[#4F6F52]/20" : "border-zinc-200/40"
                   }`}
                 >
-                  📍 {c.name}
+                  <div className="relative h-16 w-full flex-shrink-0">
+                    <img src={spot.img} alt={spot.name} className="w-full h-full object-cover" />
+                    <div className="absolute top-1.5 right-1.5 bg-black/60 backdrop-blur-sm text-[8px] text-white px-1.5 py-0.5 rounded-full font-black flex items-center gap-0.5">
+                      ⭐ {spot.rating}
+                    </div>
+                  </div>
+                  <div className="p-2 flex flex-col justify-between flex-1 min-w-0">
+                    <div className="text-[11px] font-black text-zinc-900 truncate leading-snug">{spot.name}</div>
+                    <div className="flex items-center justify-between mt-1 text-[8.5px] text-[#4F6F52] font-bold">
+                      <span>{spot.type}</span>
+                      <span className="text-zinc-400 font-normal">{spot.distance || "1.5km"}</span>
+                    </div>
+                  </div>
                 </button>
               );
             })}
           </div>
-
-          {/* Categories Bar */}
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none px-0.5 py-1">
-            {[
-              { label: "景点", icon: "🔴", color: "text-red-500" },
-              { label: "卫生间", icon: "🚻", color: "text-blue-500" },
-              { label: "售票处", icon: "🎫", color: "text-orange-500" },
-              { label: "出入口", icon: "🚪", color: "text-emerald-500" },
-              { label: "停车场", icon: "🅿️", color: "text-sky-500" }
-            ].map(item => (
-              <button
-                key={item.label}
-                onClick={() => handleCategoryFilter(item.label)}
-                className="flex-shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/95 border border-zinc-200/60 shadow-sm text-[10px] font-bold text-zinc-700 hover:bg-neutral-50 transition-colors"
-              >
-                <span>{item.icon}</span>
-                <span>{item.label}</span>
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* 2. Floating action buttons on the right side */}
-        <div className="absolute right-3 top-36 z-10 flex flex-col gap-2.5">
-          {/* Overview button */}
-          <button onClick={() => setShowSpotsListDrawer(true)}
-            className="w-10 h-10 rounded-xl bg-white shadow-lg border border-zinc-200/50 flex flex-col items-center justify-center hover:bg-zinc-50 transition-all">
-            <Landmark className="w-4.5 h-4.5 text-zinc-700" />
-            <span className="text-[8px] font-bold text-zinc-800 mt-0.5">概览</span>
-          </button>
-          
-          {/* Routes Generator trigger button */}
-          <button onClick={() => setShowGeneratorDrawer(true)}
-            className="w-10 h-10 rounded-xl bg-white shadow-lg border border-zinc-200/50 flex flex-col items-center justify-center hover:bg-zinc-50 transition-all">
-            <Compass className="w-4.5 h-4.5 text-[#3A4D39]" />
-            <span className="text-[8px] font-bold text-[#3A4D39] mt-0.5">路线</span>
-          </button>
-
-          {/* Tickets button */}
-          <button onClick={() => toast.success(`已打开 ${activeSpot.name} 的门票预订`)}
-            className="w-10 h-10 rounded-xl bg-white shadow-lg border border-zinc-200/50 flex flex-col items-center justify-center hover:bg-zinc-50 transition-all">
-            <BookOpen className="w-4.5 h-4.5 text-orange-500" />
-            <span className="text-[8px] font-bold text-zinc-800 mt-0.5">门票</span>
-          </button>
-
-          {/* Auto-play toggle button */}
-          <div className="bg-white rounded-xl shadow-lg border border-zinc-200/50 p-1 flex flex-col items-center justify-center">
-            <span className="text-[7.5px] font-bold text-zinc-500 leading-none">自动播</span>
-            <input
-              type="checkbox"
-              checked={autoplayEnabled}
-              onChange={(e) => setAutoplayEnabled(e.target.checked)}
-              className="mt-1 w-6 h-3.5 bg-neutral-200 rounded-full appearance-none relative cursor-pointer outline-none transition-colors duration-200 checked:bg-[#3A4D39] before:content-[''] before:absolute before:left-0.5 before:top-0.5 before:w-2.5 before:h-2.5 before:bg-white before:rounded-full before:transition-all checked:before:translate-x-2.5"
-            />
-          </div>
-        </div>
-
-        {/* Floating Smart Route Generator Button */}
-        <motion.button
-          drag
-          dragMomentum={false}
-          onClick={() => setShowGeneratorDrawer(true)}
-          className="absolute z-30 touch-none w-12 h-12 rounded-full border-2 border-white flex items-center justify-center text-lg shadow-2xl cursor-pointer active:scale-95 transition-all duration-200"
-          style={{ right: 12, top: "370px", backgroundColor: "#1D4ED8", boxShadow: "0 8px 24px rgba(29, 78, 216, 0.45)" }}
-        >
-          🧭
-        </motion.button>
-
-        {/* GPS location target button */}
-        <button
-          onClick={() => {
-            if (mapInstanceRef.current) {
-              mapInstanceRef.current.setZoomAndCenter(13, [106.578, 29.563]);
-              toast.info("已回到重庆核心区域");
-            }
-          }}
-          className="absolute left-4 bottom-56 z-10 w-9 h-9 rounded-full bg-white shadow-lg border border-zinc-200/50 flex items-center justify-center text-zinc-700 hover:bg-zinc-50 transition-colors"
-        >
-          <Navigation className="w-4.5 h-4.5" />
-        </button>
-
-        {/* Small "关闭5s" notification */}
-        <div className="absolute right-4 bottom-52 z-10 bg-black/75 text-white/90 text-[9px] px-2 py-0.5 rounded-full backdrop-blur-sm shadow-md border border-white/10 flex items-center gap-1">
-          <span>AI自动播已启动</span>
-          <button className="font-semibold underline">关闭5s</button>
-        </div>
-
-        {/* Bottom card & panel layout */}
-        <div className="mt-auto relative z-10 w-full px-3 pb-[76px] flex flex-col gap-2.5">
-
-
-
-
-          {/* Under card control bar panel */}
-          <div className="bg-[#FAF8F5]/95 backdrop-blur-md border border-zinc-200/50 shadow-2xl rounded-2xl p-2 flex items-center justify-between">
-            {/* Speech explain audio play */}
-            <button
-              onClick={() => speakSpotNarration(activeSpot.name, activeSpot.desc)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#FFF0ED] text-[#FF5B45] hover:bg-[#FFE0DB] transition-colors shadow-sm"
+        <div className="absolute right-4 bottom-[280px] z-10 flex flex-col gap-3">
+          {/* Compass 🧭 Button - Rotates based on map bearing */}
+          <button
+            onClick={() => {
+              if (mapInstanceRef.current) {
+                mapInstanceRef.current.setPitch(0);
+                mapInstanceRef.current.setRotation(0);
+                setMapRotation(0);
+                toast.success("已重置地图方向为正北");
+              }
+            }}
+            className="w-11 h-11 rounded-full bg-white shadow-xl border border-zinc-200/50 flex items-center justify-center text-zinc-700 hover:bg-zinc-50 active:scale-95 transition-all z-10"
+            title="重置正北"
+          >
+            <div
+              className="transition-transform duration-100 ease-out"
+              style={{ transform: `rotate(${-mapRotation}deg)` }}
             >
-              <div className={`w-5 h-5 rounded-full flex items-center justify-center bg-[#FF5B45] text-white ${isPlayingNarration ? "animate-pulse" : ""}`}>
-                <Volume2 className="w-3 h-3" />
-              </div>
-              <span className="text-[10.5px] font-bold">语音讲解</span>
-            </button>
-
-            <div className="flex gap-2">
-              <button onClick={() => setShowSpotsListDrawer(true)}
-                className="px-3.5 py-1.5 bg-[#FAF6E8] border border-[#F5EED8] hover:bg-[#FAF0D0] text-[#D2A053] rounded-xl text-[10.5px] font-bold shadow-sm transition-colors">
-                景点列表
-              </button>
-              <button onClick={() => setShowArtifactsDrawer(true)}
-                className="px-3.5 py-1.5 bg-[#EEF2EE] border border-[#E0EAE0] hover:bg-[#DFEDDF] text-[#4F6F52] rounded-xl text-[10.5px] font-bold shadow-sm transition-colors">
-                文物陈列
-              </button>
+              <Compass className="w-5.5 h-5.5 text-[#FF5B45]" />
             </div>
-          </div>
+          </button>
+
+          {/* GPS Target Location Button */}
+          <button
+            onClick={() => {
+              if (mapInstanceRef.current) {
+                const center = POPULAR_CITIES.find(c => c.name === selectedCity)?.center || [106.578, 29.563];
+                mapInstanceRef.current.setZoomAndCenter(13, center);
+                toast.info(`已定位至 ${selectedCity} 核心区`);
+              }
+            }}
+            className="w-11 h-11 rounded-full bg-white shadow-xl border border-zinc-200/50 flex items-center justify-center text-zinc-700 hover:bg-zinc-50 active:scale-95 transition-all z-10"
+          >
+            <Navigation className="w-5 h-5 text-zinc-600" />
+          </button>
         </div>
 
-        {/* Sliding drawer 1: Custom Route generator */}
-        <AnimatePresence>
-          {showGeneratorDrawer && (
-            <>
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.5 }} exit={{ opacity: 0 }}
-                onClick={() => setShowGeneratorDrawer(false)}
-                className="absolute inset-0 bg-black z-30" />
-              <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 25 }}
-                className="absolute bottom-0 left-0 right-0 z-40 bg-white rounded-t-3xl p-5 space-y-4 max-h-[80vh] overflow-y-auto">
-                <div className="flex items-center justify-between pb-2 border-b">
-                  <h3 className="font-extrabold text-sm text-zinc-900" style={{ fontFamily: "var(--font-noto-serif)" }}>智能专属路线生成器</h3>
-                  <button onClick={() => setShowGeneratorDrawer(false)} className="text-zinc-400 hover:text-zinc-700 text-xs font-bold">关闭</button>
-                </div>
-
-                {/* Tags selection */}
-                <div className="space-y-1.5">
-                  <p className="text-[10.5px] font-black text-zinc-700">1. 选择您感兴趣的游玩偏好</p>
-                  <div className="grid grid-cols-4 gap-1.5">
-                    {INTERESTS.map(item => {
-                      const active = selectedInterests.includes(item.id);
-                      return (
-                        <button
-                          key={item.id}
-                          onClick={() => {
-                            setSelectedInterests(prev => prev.includes(item.id) ? prev.filter(x => x !== item.id) : [...prev, item.id]);
-                          }}
-                          className={`py-2 px-1 text-center rounded-lg border text-xs font-bold transition-all ${active ? "bg-[#3A4D39] text-white border-[#3A4D39] shadow-sm" : "bg-neutral-50 text-zinc-600 border-zinc-200"}`}
-                        >
-                          <span className="block text-sm mb-0.5">{item.emoji}</span>
-                          <span className="text-[9.5px]">{item.label}</span>
-                        </button>
-                      );
-                    })}
+        {/* 3. Bottom Sheet collapsible tray */}
+        <div className="mt-auto relative z-20 w-full px-3 pb-[80px] flex flex-col gap-2.5">
+          {/* Active spot card (Only if collapsed & has active spot) */}
+          {!isBottomSheetExpanded && activeSpot && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white/95 backdrop-blur-md border border-zinc-200/50 shadow-xl rounded-2xl p-3 flex flex-col gap-2.5"
+            >
+              <div className="flex justify-between items-start gap-2">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <h4 className="font-extrabold text-[13.5px] text-zinc-900 truncate" style={{ fontFamily: "var(--font-noto-serif)" }}>
+                      {activeSpot.name}
+                    </h4>
+                    <span className="bg-[#4F6F52]/10 text-[#4F6F52] text-[8px] font-bold px-1.5 py-0.5 rounded">
+                      {activeSpot.rating}
+                    </span>
                   </div>
+                  <p className="text-[10px] text-zinc-500 mt-1 leading-normal line-clamp-2">{activeSpot.desc}</p>
                 </div>
+                <img src={activeSpot.img} alt={activeSpot.name} className="w-16 h-16 rounded-xl object-cover flex-shrink-0 border" />
+              </div>
 
-                {/* Duration Slider */}
-                <div className="space-y-1.5 p-3 rounded-2xl bg-neutral-50 border">
-                  <div className="flex justify-between items-center text-[10.5px] font-black text-zinc-700">
-                    <span>2. 预备游玩时长</span>
-                    <span className="font-mono text-[#D2A053] font-black">{duration} 分钟</span>
-                  </div>
-                  <input
-                    type="range" min={60} max={240} step={30} value={duration}
-                    onChange={(e) => setDuration(Number(e.target.value))}
-                    className="w-full h-1.5 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-[#D2A053]"
-                  />
-                  <div className="flex justify-between text-[8.5px] text-zinc-400 font-bold">
-                    <span>小试牛刀(1h)</span>
-                    <span>深度漫游(4h)</span>
-                  </div>
-                </div>
-
-                {/* Generate Action Button */}
+              {/* Action row */}
+              <div className="flex items-center justify-between pt-1.5 border-t border-zinc-100">
                 <button
-                  onClick={handleGenerateRoute}
-                  disabled={generating}
-                  className="w-full py-3 bg-gradient-to-br from-[#4F6F52] to-[#3A5240] text-white rounded-xl text-xs font-black shadow-lg flex items-center justify-center gap-1.5 hover:brightness-105 active:scale-95 transition-all"
+                  onClick={() => speakSpotNarration(activeSpot.name, activeSpot.desc)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#FFF0ED] text-[#FF5B45] hover:bg-[#FFE0DB] active:scale-95 transition-all shadow-sm"
                 >
-                  {generating ? (
-                    <><Loader2 className="w-4 h-4 animate-spin" />正在生成专属规划...</>
-                  ) : (
-                    <><Compass className="w-4 h-4" />生成专属路线</>
-                  )}
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center bg-[#FF5B45] text-white ${isPlayingNarration ? "animate-pulse" : ""}`}>
+                    <Volume2 className="w-3 h-3" />
+                  </div>
+                  <span className="text-[10.5px] font-bold">语音讲解</span>
                 </button>
 
-                {/* Display active generated route */}
-                {activeRoute && (
-                  <div className="mt-4 p-3 rounded-2xl bg-neutral-50 border border-zinc-200/60 space-y-3">
-                    <div className="flex justify-between items-center pb-1.5 border-b border-zinc-200">
-                      <span className="text-[10px] font-bold text-[#3A4D39]">AI专属路线 · {activeRoute.name}</span>
-                      <span className="text-[9px] font-mono text-zinc-500">{activeRoute.totalDistance}</span>
-                    </div>
-                    <p className="text-[10.5px] text-zinc-600 leading-relaxed">{activeRoute.description}</p>
-                    <div className="space-y-2 relative pl-3.5">
-                      <div className="absolute left-[5px] top-2 bottom-2 w-0.5 bg-zinc-300" />
-                      {activeRoute.spots.map((spot, i) => (
-                        <div key={spot.id} className="text-[11px] relative">
-                          <span className="absolute -left-[14.5px] top-0.5 w-2.5 h-2.5 rounded-full bg-[#3A4D39] border border-white" />
-                          <span className="font-extrabold text-zinc-800">{spot.name}</span>
-                          <span className="text-[9px] text-zinc-400 block">停留约 {spot.duration} 分钟</span>
-                        </div>
-                      ))}
-                    </div>
-                    {activeRoute.tips && (
-                      <div className="p-2 bg-orange-50 border border-orange-200/50 rounded-lg text-[9.5px] text-orange-800">
-                        💡 {activeRoute.tips}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
-
-        {/* Sliding drawer 2: Spots list overview */}
-        <AnimatePresence>
-          {showSpotsListDrawer && (
-            <>
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.5 }} exit={{ opacity: 0 }}
-                onClick={() => setShowSpotsListDrawer(false)}
-                className="absolute inset-0 bg-black z-30" />
-              <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 25 }}
-                className="absolute bottom-0 left-0 right-0 z-40 bg-white rounded-t-3xl p-5 space-y-3 max-h-[75vh] overflow-y-auto">
-                <div className="flex items-center justify-between pb-2 border-b">
-                  <h3 className="font-extrabold text-sm text-zinc-900" style={{ fontFamily: "var(--font-noto-serif)" }}>景区全部景点 ({currentSpots.length})</h3>
-                  <button onClick={() => setShowSpotsListDrawer(false)} className="text-zinc-400 hover:text-zinc-700 text-xs font-bold">关闭</button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setShowArtifactsDrawer(true)}
+                    className="px-3 py-1.5 bg-[#EEF2EE] hover:bg-[#DFEDDF] text-[#4F6F52] rounded-xl text-[10.5px] font-bold shadow-sm transition-all active:scale-95"
+                  >
+                    文物陈列
+                  </button>
+                  <button
+                    onClick={() => setIsBottomSheetExpanded(true)}
+                    className="flex items-center gap-1 px-3.5 py-1.5 bg-[#FAF6E8] hover:bg-[#FAF0D0] text-[#D2A053] rounded-xl text-[10.5px] font-bold shadow-sm transition-all active:scale-95"
+                  >
+                    <span>开始规划行程</span>
+                    <ChevronRight className="w-3.5 h-3.5 rotate-90" />
+                  </button>
                 </div>
-                <div className="space-y-2.5 pt-1.5">
-                  {currentSpots.map(s => (
-                    <div
-                      key={s.id}
-                      onClick={() => {
-                        setActiveSpot(s);
-                        setShowSpotsListDrawer(false);
-                        if (mapInstanceRef.current) {
-                          mapInstanceRef.current.setZoomAndCenter(14, [s.lng, s.lat]);
-                          if (autoplayEnabled) {
-                            speakSpotNarration(s.name, s.desc);
-                          }
-                        }
-                      }}
-                      className="flex gap-3 p-2 rounded-xl hover:bg-neutral-50 cursor-pointer border border-transparent hover:border-zinc-200 transition-all"
+              </div>
+            </motion.div>
+          )}
+
+          {/* Collapsible panel container */}
+          <div className={`bg-white border border-zinc-200/60 shadow-2xl rounded-2xl overflow-hidden flex flex-col transition-all duration-300 ${
+            isBottomSheetExpanded ? "h-[65vh]" : "h-12"
+          }`}>
+            {/* Tray handle & header */}
+            <div
+              onClick={() => setIsBottomSheetExpanded(!isBottomSheetExpanded)}
+              className="py-3.5 px-4 bg-zinc-50 border-b border-zinc-100 flex items-center justify-between cursor-pointer select-none flex-shrink-0"
+            >
+              <div className="flex items-center gap-2">
+                <div className="w-5 h-5 rounded bg-[#4F6F52] text-white flex items-center justify-center text-[10px]">
+                  🧭
+                </div>
+                <span className="font-extrabold text-[12.5px] text-zinc-800">
+                  {isBottomSheetExpanded ? "行程路线规划" : `在 ${selectedCity} 规划您的行程`}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                {isBottomSheetExpanded ? (
+                  <button className="text-xs font-bold text-zinc-400 hover:text-zinc-600">收起</button>
+                ) : (
+                  <button className="text-xs font-bold text-[#4F6F52] hover:text-[#3A5240]">展开</button>
+                )}
+              </div>
+            </div>
+
+            {/* Expanded panel content */}
+            {isBottomSheetExpanded && (
+              <div className="flex-1 flex flex-col overflow-hidden bg-white">
+                {/* Tab Bar */}
+                <div className="flex border-b border-zinc-100 bg-zinc-50/50 flex-shrink-0">
+                  {[
+                    { id: "city", label: "切换城市", icon: "🗺️" },
+                    { id: "route", label: "专属路线", icon: "✨" },
+                    { id: "spots", label: "全部景点", icon: "🏰" }
+                  ].map(tab => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setMobileBottomTab(tab.id as any)}
+                      className={`flex-1 py-3 text-center text-xs font-black flex items-center justify-center gap-1 border-b-2 transition-all ${
+                        mobileBottomTab === tab.id
+                          ? "border-[#4F6F52] text-[#4F6F52] bg-white"
+                          : "border-transparent text-zinc-500 hover:text-zinc-800"
+                      }`}
                     >
-                      <img src={s.img} alt={s.name} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-bold text-[12px] text-zinc-800">{s.name}</span>
-                          <span className="bg-neutral-100 text-zinc-500 text-[8px] px-1 rounded">{s.type}</span>
-                        </div>
-                        <p className="text-[10px] text-zinc-400 truncate mt-0.5">{s.addr}</p>
-                      </div>
-                    </div>
+                      <span>{tab.icon}</span>
+                      <span>{tab.label}</span>
+                    </button>
                   ))}
                 </div>
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
+
+                {/* Tab Content Panel */}
+                <div className="flex-1 overflow-y-auto p-4 scrollbar-thin">
+                  {mobileBottomTab === "city" && (
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center pb-2 border-b">
+                        <h4 className="font-black text-xs text-zinc-700">切换热门目的地</h4>
+                        <span className="text-[10px] text-zinc-400">已选择: {selectedCity}</span>
+                      </div>
+                      
+                      {/* Grid city layout matching desktop carousel style */}
+                      <div className="grid grid-cols-2 gap-3.5 p-0.5">
+                        {POPULAR_CITIES.map((c) => {
+                          const isActive = selectedCity === c.name;
+                          return (
+                            <button
+                              key={c.name}
+                              onClick={() => {
+                                handleCityClick(c);
+                                setMobileBottomTab("route");
+                              }}
+                              className={`rounded-2xl border p-2 text-left transition-all relative overflow-hidden flex flex-col gap-2 ${
+                                isActive
+                                  ? "border-[#4F6F52] bg-[#4F6F52]/5 ring-2 ring-[#4F6F52]/20 shadow-md"
+                                  : "border-zinc-200 bg-white hover:border-zinc-300"
+                              }`}
+                            >
+                              <div className="w-full h-20 rounded-xl overflow-hidden relative">
+                                <img src={c.img} alt={c.name} className="w-full h-full object-cover" />
+                                <span className="absolute bottom-1.5 right-1.5 bg-black/75 text-[9px] text-white px-2 py-0.5 rounded-md font-bold leading-none">
+                                  {c.badge}
+                                </span>
+                              </div>
+                              <div className="px-1 flex items-center justify-between">
+                                <span className={`text-[12.5px] font-black ${isActive ? "text-[#4F6F52]" : "text-zinc-800"}`}>
+                                  {c.name}
+                                </span>
+                                {isActive && (
+                                  <span className="w-2.5 h-2.5 rounded-full bg-[#4F6F52]" />
+                                )}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {mobileBottomTab === "route" && (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-1.5 pb-2 border-b">
+                        <Sparkles className="w-4.5 h-4.5 text-[#D2A053] animate-pulse" />
+                        <h4 className="font-extrabold text-xs text-zinc-800">智能专属路线生成</h4>
+                      </div>
+
+                      {/* Interest selector */}
+                      <div className="space-y-2">
+                        <span className="text-[10px] font-bold text-zinc-500 block">选择游玩偏好:</span>
+                        <div className="grid grid-cols-2 gap-2">
+                          {INTERESTS.map(item => {
+                            const active = selectedInterests.includes(item.id);
+                            return (
+                              <button
+                                key={item.id}
+                                onClick={() => {
+                                  setSelectedInterests(prev => prev.includes(item.id) ? prev.filter(x => x !== item.id) : [...prev, item.id]);
+                                }}
+                                className={`py-2 px-3 rounded-xl border text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 ${
+                                  active
+                                    ? "bg-[#3A4D39] text-white border-[#3A4D39] shadow-md"
+                                    : "bg-neutral-50 text-zinc-600 border-zinc-200 hover:bg-neutral-100"
+                                }`}
+                              >
+                                <span>{item.emoji}</span>
+                                <span>{item.label}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Slider */}
+                      <div className="space-y-1.5 p-3 rounded-2xl bg-neutral-50 border">
+                        <div className="flex justify-between items-center text-[10px] font-bold text-zinc-600">
+                          <span>预计游玩时长:</span>
+                          <span className="font-mono text-[#D2A053] font-black">{duration} 分钟</span>
+                        </div>
+                        <input
+                          type="range" min={60} max={240} step={30} value={duration}
+                          onChange={(e) => setDuration(Number(e.target.value))}
+                          className="w-full h-1 bg-neutral-200 rounded accent-[#D2A053] cursor-pointer"
+                        />
+                        <div className="flex justify-between text-[8px] text-zinc-400 font-bold">
+                          <span>1小时(快速)</span>
+                          <span>4小时(深度)</span>
+                        </div>
+                      </div>
+
+                      {/* Action trigger button */}
+                      <button
+                        onClick={handleGenerateRoute}
+                        disabled={generating}
+                        className="w-full py-3 bg-[#3A4D39] hover:bg-[#4F6F52] text-white rounded-xl text-xs font-black shadow-lg flex items-center justify-center gap-1.5 transition-colors"
+                      >
+                        {generating ? (
+                          <><Loader2 className="w-4.5 h-4.5 animate-spin" />正在努力计算智能路线...</>
+                        ) : (
+                          <><Compass className="w-4.5 h-4.5" />生成专属路线</>
+                        )}
+                      </button>
+
+                      {/* Route results */}
+                      {activeRoute && (
+                        <div className="p-3.5 rounded-2xl bg-neutral-50 border border-zinc-200/60 space-y-3">
+                          <div className="flex justify-between items-center pb-2 border-b border-zinc-200">
+                            <span className="text-[10px] font-bold text-[#3A4D39]">AI推荐路线 · {activeRoute.name}</span>
+                            <span className="text-[9px] font-mono text-zinc-500">{activeRoute.totalDistance}</span>
+                          </div>
+                          <p className="text-[11px] text-zinc-600 leading-relaxed">{activeRoute.description}</p>
+                          
+                          <div className="space-y-3.5 relative pl-4">
+                            <div className="absolute left-[6px] top-2.5 bottom-2.5 w-0.5 bg-zinc-300" />
+                            {activeRoute.spots.map((spot, i) => (
+                              <div key={spot.id} className="text-[11.5px] relative">
+                                <span className="absolute -left-[16px] top-1 w-2.5 h-2.5 rounded-full bg-[#3A4D39] border border-white" />
+                                <span className="font-extrabold text-zinc-800">{spot.name}</span>
+                                <span className="text-[9.5px] text-zinc-400 block">停留约 {spot.duration} 分钟</span>
+                              </div>
+                            ))}
+                          </div>
+                          {activeRoute.tips && (
+                            <div className="p-2.5 bg-orange-50 border border-orange-200/50 rounded-xl text-[10px] text-orange-800">
+                              💡 {activeRoute.tips}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {mobileBottomTab === "spots" && (
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center pb-2 border-b">
+                        <h4 className="font-black text-xs text-zinc-700">景区全部景点 ({currentSpots.length})</h4>
+                        <span className="text-[9.5px] text-zinc-400">点击景点高亮定位</span>
+                      </div>
+
+                      <div className="space-y-2.5">
+                        {currentSpots.map(s => {
+                          const isActive = activeSpot?.id === s.id;
+                          return (
+                            <div
+                              key={s.id}
+                              onClick={() => {
+                                setActiveSpot(s);
+                                setIsBottomSheetExpanded(false);
+                                if (mapInstanceRef.current) {
+                                  mapInstanceRef.current.setZoomAndCenter(14, [s.lng, s.lat]);
+                                }
+                                if (autoplayEnabled) {
+                                  speakSpotNarration(s.name, s.desc);
+                                }
+                              }}
+                              className={`flex gap-3 p-2.5 rounded-2xl border cursor-pointer transition-all ${
+                                isActive
+                                  ? "bg-[#3A4D39]/5 border-[#3A4D39]/30 shadow-sm"
+                                  : "border-zinc-100 hover:bg-neutral-50 bg-white"
+                              }`}
+                            >
+                              <img src={s.img} alt={s.name} className="w-12 h-12 rounded-xl object-cover flex-shrink-0 border" />
+                              <div className="flex-1 min-w-0 flex flex-col justify-between">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="font-bold text-[12px] text-zinc-800 truncate">{s.name}</span>
+                                  <span className="bg-neutral-100 text-zinc-500 text-[8px] px-1.5 py-0.5 rounded font-medium">{s.type}</span>
+                                </div>
+                                <div className="flex justify-between text-[10px] text-zinc-400">
+                                  <span>{s.price}</span>
+                                  <span>建议游玩 {s.time}</span>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* Sliding drawer 3: Artifacts museum display */}
         <AnimatePresence>

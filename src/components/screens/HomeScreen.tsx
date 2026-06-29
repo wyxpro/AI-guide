@@ -1,12 +1,20 @@
 "use client";
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Search, MapPin, ChevronRight, Star, Clock } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 const SPRING = { type: "spring" as const, stiffness: 300, damping: 32 };
 interface Spot { id: number; name: string; imageUrl: string; rating: number; duration: number }
+
+const CITY_BANNERS = [
+  { city: "重庆", title: "洪崖洞夜色", img: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?auto=format&fit=crop&w=1400&q=90" },
+  { city: "杭州", title: "西湖烟柳", img: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1400&q=90" },
+  { city: "北京", title: "故宫红墙", img: "https://images.unsplash.com/photo-1547981609-4b6bfe67ca0b?auto=format&fit=crop&w=1400&q=90" },
+  { city: "西安", title: "古城晨光", img: "https://images.unsplash.com/photo-1528360983277-13d401cdc186?auto=format&fit=crop&w=1400&q=90" },
+  { city: "上海", title: "外滩天际", img: "https://images.unsplash.com/photo-1538428494232-9c0d8a3ab403?auto=format&fit=crop&w=1400&q=90" },
+];
 
 /* ═══════════════════════════════════════════════════════
    根组件
@@ -34,6 +42,12 @@ function PCView() {
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
   const [spots, setSpots] = useState<Spot[]>([]);
   const [loading, setLoading] = useState(false);
+  const [bannerIndex, setBannerIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => setBannerIndex((i) => (i + 1) % CITY_BANNERS.length), 4200);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -79,17 +93,24 @@ function PCView() {
           {/* Left: Banner Cover */}
           <div className="lg:col-span-8 rounded-3xl overflow-hidden relative min-h-[350px] shadow-lg flex flex-col justify-end p-8 text-white group">
             <div className="absolute inset-0 z-0 transition-transform duration-700 group-hover:scale-105">
-              <img
-                src="https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=1200&q=80"
-                alt="Banner"
-                className="w-full h-full object-cover brightness-[0.7]"
-              />
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={CITY_BANNERS[bannerIndex].city}
+                  src={CITY_BANNERS[bannerIndex].img}
+                  alt={CITY_BANNERS[bannerIndex].title}
+                  initial={{ opacity: 0, scale: 1.04 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 1.02 }}
+                  transition={{ duration: 0.75, ease: "easeOut" }}
+                  className="absolute inset-0 w-full h-full object-cover brightness-[0.72]"
+                />
+              </AnimatePresence>
               <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
             </div>
             <div className="relative z-10 space-y-4 max-w-xl">
               <div className="flex items-center gap-2">
                 <span className="bg-[#FF5B45] text-white text-[10px] font-bold px-2 py-0.5 rounded-md">热门推荐</span>
-                <span className="text-xs text-white/80 font-medium">☀️ 晴转多云 · 22°C</span>
+                <span className="text-xs text-white/80 font-medium">{CITY_BANNERS[bannerIndex].city} · {CITY_BANNERS[bannerIndex].title}</span>
               </div>
               <h1 className="text-4xl font-extrabold tracking-wide drop-shadow-md leading-tight" style={{ fontFamily: "var(--font-noto-serif)" }}>
                 十座名山大川，邀你登顶揽胜
@@ -117,6 +138,16 @@ function PCView() {
                 >
                   <Search className="w-3.5 h-3.5" />
                 </button>
+              </div>
+              <div className="flex items-center gap-2 pt-1">
+                {CITY_BANNERS.map((banner, index) => (
+                  <button
+                    key={banner.city}
+                    onClick={() => setBannerIndex(index)}
+                    className={`h-1.5 rounded-full transition-all ${index === bannerIndex ? "w-8 bg-white" : "w-2 bg-white/45 hover:bg-white/70"}`}
+                    aria-label={`切换到${banner.city}`}
+                  />
+                ))}
               </div>
             </div>
           </div>
@@ -169,6 +200,25 @@ function PCView() {
               </button>
             </div>
           </div>
+        </section>
+
+        <section className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          {CITY_BANNERS.map((banner, index) => (
+            <button
+              key={banner.city}
+              onClick={() => setBannerIndex(index)}
+              className="rounded-2xl overflow-hidden bg-white border border-zinc-200/70 shadow-sm text-left hover:shadow-md transition-shadow"
+            >
+              <div className="relative h-20">
+                <img src={banner.img} alt={banner.title} className="absolute inset-0 w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
+                <div className="absolute left-2.5 bottom-2.5">
+                  <div className="text-[11px] font-black text-white">{banner.city}</div>
+                  <div className="text-[10px] text-white/80 font-semibold">{banner.title}</div>
+                </div>
+              </div>
+            </button>
+          ))}
         </section>
 
         {/* Entrance Cards Grid */}
@@ -297,11 +347,36 @@ function MobileView() {
   return (
     <div className="flex flex-col bg-white w-full">
       <MobileHeaderAndBanner />
+      <MobileCityStrip />
       <MobileChengduPanel />
       <MobileEntranceCards />
       <MobileSpots />
       {/* Bottom spacer for bottom navigation bar */}
       <div style={{ height: 80 }} />
+    </div>
+  );
+}
+
+function MobileCityStrip() {
+  return (
+    <div className="px-4 pt-3 -mt-2">
+      <div className="flex gap-2 overflow-x-auto scrollbar-none pb-2">
+        {CITY_BANNERS.map((banner) => (
+          <div
+            key={banner.city}
+            className="flex-shrink-0 w-44 rounded-2xl overflow-hidden border border-zinc-200 shadow-sm bg-white"
+          >
+            <div className="relative h-20">
+              <img src={banner.img} alt={banner.title} className="absolute inset-0 w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-transparent" />
+              <div className="absolute left-2.5 bottom-2.5">
+                <div className="text-[11px] font-black text-white">{banner.city}</div>
+                <div className="text-[10px] text-white/80 font-semibold">{banner.title}</div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -313,6 +388,12 @@ function MobileHeaderAndBanner() {
   const router = useRouter();
   const [time, setTime] = useState("09:41");
   const [search, setSearch] = useState("");
+  const [bannerIndex, setBannerIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => setBannerIndex((i) => (i + 1) % CITY_BANNERS.length), 4200);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     const update = () => {
@@ -330,12 +411,18 @@ function MobileHeaderAndBanner() {
     <div className="relative w-full overflow-hidden bg-neutral-900 aspect-[375/300] flex flex-col justify-between pb-8">
       {/* Background Banner Image */}
       <div className="absolute inset-0 z-0">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=800&q=80"
-          alt="Banner"
-          className="w-full h-full object-cover brightness-[0.75]"
-        />
+        <AnimatePresence mode="wait">
+          <motion.img
+            key={CITY_BANNERS[bannerIndex].city}
+            src={CITY_BANNERS[bannerIndex].img}
+            alt={CITY_BANNERS[bannerIndex].title}
+            initial={{ opacity: 0, scale: 1.04 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.02 }}
+            transition={{ duration: 0.75, ease: "easeOut" }}
+            className="absolute inset-0 w-full h-full object-cover brightness-[0.75]"
+          />
+        </AnimatePresence>
         <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/60" />
       </div>
 
@@ -397,9 +484,14 @@ function MobileHeaderAndBanner() {
 
       {/* 4. Banner Carousel Indicator dots */}
       <div className="absolute bottom-11 left-1/2 -translate-x-1/2 z-10 flex gap-1.5">
-        <span className="w-3.5 h-1 bg-white rounded-full" />
-        <span className="w-1 h-1 bg-white/50 rounded-full" />
-        <span className="w-1 h-1 bg-white/50 rounded-full" />
+        {CITY_BANNERS.map((banner, index) => (
+          <button
+            key={banner.city}
+            onClick={() => setBannerIndex(index)}
+            className={index === bannerIndex ? "w-3.5 h-1 bg-white rounded-full" : "w-1 h-1 bg-white/50 rounded-full"}
+            aria-label={`切换到${banner.city}`}
+          />
+        ))}
       </div>
     </div>
   );

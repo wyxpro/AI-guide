@@ -436,7 +436,11 @@ export class LAppModel extends CubismUserModel {
 
         this.createRenderer();
         this.setupTextures();
-        this.getRenderer().startUp(this._subdelegate.getGlManager().getGl());
+        const renderer = this.getRenderer();
+        const gl = this._subdelegate?.getGlManager()?.getGl();
+        if (renderer && gl) {
+          renderer.startUp(gl);
+        }
       }
     };
   }
@@ -855,9 +859,11 @@ export class LAppModel extends CubismUserModel {
 
               this.createRenderer();
               this.setupTextures();
-              this.getRenderer().startUp(
-                this._subdelegate.getGlManager().getGl()
-              );
+              const renderer = this.getRenderer();
+              const gl = this._subdelegate?.getGlManager()?.getGl();
+              if (renderer && gl) {
+                renderer.startUp(gl);
+              }
             }
           } else {
             // loadMotionできなかった場合はモーションの総数がずれるので1つ減らす

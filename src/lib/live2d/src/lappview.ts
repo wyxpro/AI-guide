@@ -91,7 +91,10 @@ export class LAppView {
     // this._back.release();
     // this._back = null;
 
-    this._subdelegate.getGlManager().getGl().deleteProgram(this._programId);
+    const gl = this._subdelegate?.getGlManager()?.getGl();
+    if (gl) {
+      gl.deleteProgram(this._programId);
+    }
     this._programId = null;
   }
 
@@ -99,7 +102,9 @@ export class LAppView {
    * 描画する。
    */
   public render(): void {
-    this._subdelegate.getGlManager().getGl().useProgram(this._programId);
+    const gl = this._subdelegate?.getGlManager()?.getGl();
+    if (!gl) return;
+    gl.useProgram(this._programId);
 
     // if (this._back) {
     //   this._back.render(this._programId);
@@ -108,7 +113,7 @@ export class LAppView {
     //   this._gear.render(this._programId);
     // }
 
-    this._subdelegate.getGlManager().getGl().flush();
+    gl.flush();
 
     const lapplive2dmanager = this._subdelegate.getLive2DManager();
     if (lapplive2dmanager != null) {
