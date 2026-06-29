@@ -5,7 +5,7 @@ import {
   Compass, ArrowRight, Loader2, MapPin, Clock, ChevronLeft, ChevronRight,
   Share2, MessageSquare, ShieldAlert, Award, Search, Send,
   Volume2, VolumeX, Eye, BookOpen, Navigation, Landmark, Sparkles,
-  X, Smile, Image as ImageIcon, Film, Mic
+  X, Smile, Image as ImageIcon, Film, Mic, Menu
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -27,6 +27,8 @@ const INTERESTS = [
   { id: "family", label: "亲子游览", emoji: "👨‍👩‍👧" },
   { id: "cultural", label: "东方人文", emoji: "🏛️" },
 ];
+
+const TRAVEL_EMOJIS = ["😊", "👍", "🗺️", "🌟", "📸", "🏛️", "🍜", "❤️", "✨", "🙌", "🚗", "🌸"];
 
 const CHONGQING_SPOTS = [
   { id: 1, name: "洪崖洞民俗风貌区", type: "地标", lat: 29.563, lng: 106.578, price: "免费", time: "全天开放", addr: "重庆市渝中区嘉陵江滨江路88号", distance: "距您 1.2km", rating: "5A景区", img: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=400&q=80", desc: "以巴渝传统建筑特色的“吊脚楼”风貌为主体，依山就势，沿江而建。" },
@@ -61,7 +63,7 @@ const ALL_CITIES_SPOTS: Record<string, typeof CHONGQING_SPOTS> = {
     { id: 303, name: "大熊猫繁育研究基地", type: "自然", lat: 30.733, lng: 104.143, price: "¥55", time: "07:30-18:00", addr: "四川省成都市成华区外北熊猫大道1375号", distance: "距您 12km", rating: "5A景区", img: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=400&q=80", desc: "大熊猫迁地保护的重要场所，近距离观赏国宝大熊猫的生态家园。" }
   ],
   "西安": [
-    { id: 401, name: "秦始皇帝陵博物院", type: "文化", lat: 34.385, lng: 109.278, price: "¥120", time: "08:30-17:00", addr: "陕西省西安市临潼区秦陵路", distance: "距您 35km", rating: "5A景区", img: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=400&q=80", desc: "被誉为“世界第八大奇迹”的兵马俑坑，展示了秦代雄壮 of 的地下军阵。" },
+    { id: 401, name: "秦始皇帝陵博物院", type: "文化", lat: 34.385, lng: 109.278, price: "¥120", time: "08:30-17:00", addr: "陕西省西安市临潼区秦陵路", distance: "距您 35km", rating: "5A景区", img: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=400&q=80", desc: "被誉为“世界第八大奇迹”的兵马俑坑，展示了秦代雄壮的地下军阵。" },
     { id: 402, name: "大唐芙蓉园", type: "文化", lat: 34.218, lng: 108.969, price: "¥120", time: "09:00-22:00", addr: "陕西省西安市雁塔区芙蓉西路99号", distance: "距您 5.5km", rating: "5A景区", img: "https://images.unsplash.com/photo-1542224566-6e85f2e6772f?w=400&q=80", desc: "全方位展示盛唐风貌的大型皇家园林式文化主题公园。" }
   ],
   "杭州": [
@@ -109,32 +111,19 @@ export function RoutesScreen() {
   const [activeSpot, setActiveSpot] = useState<typeof CHONGQING_SPOTS[0]>(CHONGQING_SPOTS[0]);
   const [searchQuery, setSearchQuery] = useState("");
   const [mapRotation, setMapRotation] = useState(0);
-  const [mobileBottomTab, setMobileBottomTab] = useState<"city" | "route" | "spots">("city");
-  const [isBottomSheetExpanded, setIsBottomSheetExpanded] = useState(false);
 
-  // Map elements — separate refs for mobile and desktop to avoid React single-ref collision
-  const mobileMapRef = useRef<HTMLDivElement>(null);
-  const desktopMapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<any>(null);
-  const routePolylineRef = useRef<any>(null);
-  const markersRef = useRef<any[]>([]);
-
-  // Mobile Drawers
-  const [showGeneratorDrawer, setShowGeneratorDrawer] = useState(false);
-  const [showSpotsListDrawer, setShowSpotsListDrawer] = useState(false);
+  // Mobile drawers & responsive sidebar toggle states
+  const [showLeftSidebar, setShowLeftSidebar] = useState(false);
+  const [showRightSidebar, setShowRightSidebar] = useState(false);
   const [showArtifactsDrawer, setShowArtifactsDrawer] = useState(false);
 
-  // Audio Playback
-  const [isPlayingNarration, setIsPlayingNarration] = useState(false);
-  const [audioInstance, setAudioInstance] = useState<HTMLAudioElement | null>(null);
-
-  // AI Chat Panel (Desktop)
+  // AI Chat Panel
   const [chatMessages, setChatMessages] = useState<Array<{ role: "user" | "assistant"; content: string }>>([
     { role: "assistant", content: "您好！我是您的智能导览助手小慧。已为您定位至重庆核心景区。想了解哪些景点的门票、历史和特色，或者让我为您定制路线？" }
   ]);
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
-  const [showFloatChat, setShowFloatChat] = useState(true);
+  const [attachedMedia, setAttachedMedia] = useState<Array<{type: 'image' | 'video', url: string, name: string}>>([]);
 
   // Auto-play TTS switch
   const [autoplayEnabled, setAutoplayEnabled] = useState(false);
@@ -142,6 +131,36 @@ export function RoutesScreen() {
   // Desktop City Carousel Drag Scroll
   const cityScrollRef = useRef<HTMLDivElement>(null);
   const [cityDragState, setCityDragState] = useState({ isDragging: false, startX: 0, scrollLeft: 0 });
+
+  // Responsive state
+  const [isMobile, setIsMobile] = useState<boolean>(
+    () => typeof window !== "undefined" && window.innerWidth < 768
+  );
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Map elements
+  const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<any>(null);
+  const routePolylineRef = useRef<any>(null);
+  const markersRef = useRef<any[]>([]);
+  const AMapInstanceRef = useRef<any>(null);
+  const infoWindowRef = useRef<any>(null);
+  const [amapLoaded, setAmapLoaded] = useState(false);
+
+  // Chat popups
+  const [showFloatChat, setShowFloatChat] = useState(true);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
+  // Drag controls for Q&A panel
+  const dragControls = useDragControls();
+
+  // Audio Playback
+  const [isPlayingNarration, setIsPlayingNarration] = useState(false);
+  const [audioInstance, setAudioInstance] = useState<HTMLAudioElement | null>(null);
 
   const handleCityMouseDown = (e: React.MouseEvent) => {
     if (!cityScrollRef.current) return;
@@ -164,19 +183,8 @@ export function RoutesScreen() {
     setCityDragState(prev => ({ ...prev, isDragging: false }));
   };
 
-  const scrollCityCarousel = (direction: "left" | "right") => {
-    if (!cityScrollRef.current) return;
-    const scrollAmount = 180;
-    cityScrollRef.current.scrollTo({
-      left: cityScrollRef.current.scrollLeft + (direction === "left" ? -scrollAmount : scrollAmount),
-      behavior: "smooth"
-    });
-  };
-
-  const dragControls = useDragControls();
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
-  const [attachedMedia, setAttachedMedia] = useState<Array<{type: 'image' | 'video', url: string, name: string}>>([]);
 
   // Voice recording states & refs
   const [recording, setRecording] = useState(false);
@@ -184,7 +192,7 @@ export function RoutesScreen() {
   const audioChunksRef = useRef<Blob[]>([]);
   const recognitionRef = useRef<any>(null);
 
-  const toggleRecording = async () => {
+  const handleSpeechInputToggle = async () => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
     if (recording) {
@@ -195,69 +203,68 @@ export function RoutesScreen() {
         mediaRecorderRef.current.stop();
         setRecording(false);
       }
-      return;
-    }
-
-    if (SR) {
-      const rec = new SR();
-      rec.lang = "zh-CN"; rec.continuous = false; rec.interimResults = false;
-      rec.onresult = (e: any) => {
-        const txt = e.results[0][0].transcript;
-        setChatInput(txt);
-      };
-      rec.onend = () => setRecording(false);
-      rec.onerror = () => setRecording(false);
-      rec.start();
-      recognitionRef.current = rec;
-      mediaRecorderRef.current = null;
-      setRecording(true);
     } else {
-      try {
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-          setChatInput("（浏览器不支持录音）");
-          return;
-        }
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const mediaRecorder = new MediaRecorder(stream);
-        mediaRecorderRef.current = mediaRecorder;
-        recognitionRef.current = null;
-        audioChunksRef.current = [];
-
-        mediaRecorder.ondataavailable = (event) => {
-          if (event.data.size > 0) {
-            audioChunksRef.current.push(event.data);
-          }
+      if (SR) {
+        const rec = new SR();
+        rec.lang = "zh-CN"; rec.continuous = false; rec.interimResults = false;
+        rec.onresult = (e: any) => {
+          const txt = e.results[0][0].transcript;
+          setChatInput(txt);
         };
-
-        mediaRecorder.onstop = async () => {
-          stream.getTracks().forEach((track) => track.stop());
-          const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
-          const formData = new FormData();
-          formData.append("file", audioBlob, "audio.webm");
-
-          setChatInput("正在识别语音...");
-          try {
-            const res = await request("/api/qa/stt", {
-              method: "POST",
-              body: formData,
-            });
-            const data = await res.json();
-            if (data.text) {
-              setChatInput(data.text);
-            } else {
-              setChatInput("");
-            }
-          } catch (err) {
-            console.error("Whisper STT fallback error:", err);
-            setChatInput("（语音识别失败）");
-          }
-        };
-
-        mediaRecorder.start();
+        rec.onend = () => setRecording(false);
+        rec.onerror = () => setRecording(false);
+        rec.start();
+        recognitionRef.current = rec;
+        mediaRecorderRef.current = null;
         setRecording(true);
-      } catch (err) {
-        console.error("Mic access denied or error:", err);
-        setChatInput("（无法获取麦克风权限）");
+      } else {
+        try {
+          if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            setChatInput("（浏览器不支持录音）");
+            return;
+          }
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          const mediaRecorder = new MediaRecorder(stream);
+          mediaRecorderRef.current = mediaRecorder;
+          recognitionRef.current = null;
+          audioChunksRef.current = [];
+
+          mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+              audioChunksRef.current.push(event.data);
+            }
+          };
+
+          mediaRecorder.onstop = async () => {
+            stream.getTracks().forEach((track) => track.stop());
+            const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+            const formData = new FormData();
+            formData.append("file", audioBlob, "audio.webm");
+
+            setChatInput("正在识别语音...");
+            try {
+              const res = await request("/api/qa/stt", {
+                method: "POST",
+                body: formData,
+              });
+              const data = await res.json();
+              if (data.text) {
+                setChatInput(data.text);
+              } else {
+                setChatInput("");
+              }
+            } catch (err) {
+              console.error("Whisper STT error:", err);
+              setChatInput("（语音识别失败）");
+            }
+          };
+
+          mediaRecorder.start();
+          setRecording(true);
+        } catch (err) {
+          console.error("Mic access denied:", err);
+          setChatInput("（无法获取麦克风权限）");
+        }
       }
     }
   };
@@ -281,42 +288,80 @@ export function RoutesScreen() {
     });
   };
 
-  // Lazy-initialize from window.innerWidth so it's correct on the FIRST render.
-  // RoutesScreen is loaded with { ssr: false } so window is always available here.
-  const [isMobile, setIsMobile] = useState<boolean>(
-    () => typeof window !== "undefined" && window.innerWidth < 768
-  );
+  // Helper: Open custom AMap InfoWindow directly on map for a spot
+  const showAmapInfoWindow = (spot: any) => {
+    if (!mapInstanceRef.current || !AMapInstanceRef.current) return;
+    
+    if (infoWindowRef.current) {
+      infoWindowRef.current.close();
+    }
+
+    const contentHtml = `
+      <div style="font-family: system-ui, -apple-system, sans-serif; padding: 12px; width: 285px; background: white; border-radius: 14px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1); border: 1px solid #e4e4e7; position: relative;">
+        <button id="infowin-close-btn" style="position: absolute; right: 10px; top: 10px; border: none; background: transparent; color: #a1a1aa; font-size: 18px; font-weight: bold; cursor: pointer; padding: 0 4px; line-height: 1; outline: none;">×</button>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-right: 15px;">
+          <div style="flex: 1; min-width: 0;">
+            <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+              <h4 style="margin: 0; font-size: 13px; font-weight: 800; color: #18181b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${spot.name}</h4>
+              <span style="background: rgba(79, 111, 82, 0.1); color: #4F6F52; font-size: 8px; font-weight: 700; padding: 2px 6px; border-radius: 4px; flex-shrink: 0;">⭐ ${spot.rating}</span>
+            </div>
+            <p style="margin: 6px 0 0 0; font-size: 9.5px; color: #71717a; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">${spot.desc}</p>
+          </div>
+          <img src="${spot.img}" alt="${spot.name}" style="width: 54px; height: 54px; border-radius: 8px; object-fit: cover; border: 1px solid #e4e4e7; flex-shrink: 0;" />
+        </div>
+        
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px; padding-top: 8px; border-top: 1px solid #f4f4f5;">
+          <button id="infowin-speech-btn" style="display: flex; align-items: center; gap: 4px; padding: 5px 10px; border-radius: 8px; border: none; background: #FFF0ED; color: #FF5B45; font-size: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s;">
+            <span>🔊</span> 语音讲解
+          </button>
+          <button id="infowin-artifacts-btn" style="padding: 5px 10px; border-radius: 8px; border: none; background: #EEF2EE; color: #4F6F52; font-size: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s;">
+            文物陈列
+          </button>
+        </div>
+      </div>
+    `;
+
+    const infoWindow = new AMapInstanceRef.current.InfoWindow({
+      isCustom: true,
+      content: contentHtml,
+      offset: new AMapInstanceRef.current.Pixel(0, -35),
+    });
+
+    infoWindow.open(mapInstanceRef.current, [spot.lng, spot.lat]);
+    infoWindowRef.current = infoWindow;
+
+    // Bind click events inside InfoWindow
+    setTimeout(() => {
+      const speechBtn = document.getElementById("infowin-speech-btn");
+      const artBtn = document.getElementById("infowin-artifacts-btn");
+      const closeBtn = document.getElementById("infowin-close-btn");
+      
+      if (speechBtn) {
+        speechBtn.onclick = () => speakSpotNarration(spot.name, spot.desc);
+      }
+      if (artBtn) {
+        artBtn.onclick = () => setShowArtifactsDrawer(true);
+      }
+      if (closeBtn) {
+        closeBtn.onclick = () => infoWindow.close();
+      }
+    }, 150);
+  };
+
+  // Map initialization
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  const [amapLoaded, setAmapLoaded] = useState(false);
-  const AMapInstanceRef = useRef<any>(null);
-
-  // Derive the active map container ref based on current layout
-  const activeMapRef = isMobile ? mobileMapRef : desktopMapRef;
-
-  // Initialize map instance with Amap JSAPI Loader
-  useEffect(() => {
-    // Destroy any pre-existing map instance (guards against layout flip races)
     if (mapInstanceRef.current) {
       mapInstanceRef.current.destroy();
       mapInstanceRef.current = null;
       setAmapLoaded(false);
     }
 
-    // 高德 Key 缺失友好提示，避免移动端静默失败
     if (!process.env.NEXT_PUBLIC_AMAP_KEY) {
       console.error("[高德地图] 未配置 NEXT_PUBLIC_AMAP_KEY 环境变量");
       toast.error("地图未配置，请联系管理员添加 NEXT_PUBLIC_AMAP_KEY");
       return;
     }
 
-    // local variable — captured by BOTH initMap AND the cleanup closure so the
-    // cleanup can always reach and destroy the map even if map.on('complete')
-    // hasn't fired yet (which is when mapInstanceRef.current would still be null).
     let map: any = null;
     let timer: any = null;
     let aborted = false;
@@ -324,19 +369,17 @@ export function RoutesScreen() {
 
     const initMap = () => {
       if (aborted) return;
-      const container = activeMapRef.current;
+      const container = mapRef.current;
       if (!container) {
-        // 容器还没挂载，下一帧再试（避免移动端 hydration 时机问题）
         timer = setTimeout(initMap, 50);
         return;
       }
 
-      // 容器还未完成布局 — 使用 ResizeObserver 等待，避免无限轮询
       if (container.clientWidth === 0 || container.clientHeight === 0) {
         if (!resizeObserver) {
           resizeObserver = new ResizeObserver(() => {
             if (aborted) return;
-            const c = activeMapRef.current;
+            const c = mapRef.current;
             if (c && c.clientWidth > 0 && c.clientHeight > 0) {
               resizeObserver?.disconnect();
               resizeObserver = null;
@@ -355,13 +398,7 @@ export function RoutesScreen() {
       })
         .then((AMap) => {
           if (aborted) return;
-          if (!activeMapRef.current || container !== activeMapRef.current) return;
-
-          // Re-check size — layout could shift while the JSAPI script was loading
-          if (container.clientWidth === 0 || container.clientHeight === 0) {
-            timer = setTimeout(initMap, 50);
-            return;
-          }
+          if (!mapRef.current || container !== mapRef.current) return;
 
           AMapInstanceRef.current = AMap;
 
@@ -373,10 +410,9 @@ export function RoutesScreen() {
             theme: "amap://styles/whitesmoke",
             zoomEnable: true,
             dragEnable: true,
-            resizeEnable: true, // 启用容器尺寸变化时自动 resize
+            resizeEnable: true,
           });
 
-          // ↓ Set immediately so cleanup can always destroy it
           mapInstanceRef.current = map;
 
           map.on("rotate", () => {
@@ -387,14 +423,11 @@ export function RoutesScreen() {
 
           map.on("complete", () => {
             if (aborted) return;
-            if (!activeMapRef.current || container !== activeMapRef.current) return;
             setAmapLoaded(true);
             const currentCitySpots = ALL_CITIES_SPOTS[selectedCity] || CHONGQING_SPOTS;
             renderAmapMarkers(AMap, map, currentCitySpots);
           });
 
-          // 监听容器尺寸变化(例如移动端虚拟键盘弹起/抽屉打开)，主动触发 resize
-          // 这是移动端地图最容易出现"灰屏/不显示"的根因之一
           if (typeof ResizeObserver !== "undefined") {
             resizeObserver = new ResizeObserver(() => {
               if (aborted || !map) return;
@@ -420,7 +453,6 @@ export function RoutesScreen() {
         try { resizeObserver.disconnect(); } catch (_) {}
         resizeObserver = null;
       }
-      // Destroy via local closure variable — reliable even if complete hasn't fired
       if (map) {
         try { map.destroy(); } catch (_) {}
         map = null;
@@ -428,15 +460,16 @@ export function RoutesScreen() {
       mapInstanceRef.current = null;
       setAmapLoaded(false);
     };
-  // activeMapRef identity changes whenever isMobile flips (new ref object selected)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMobile]);
+  }, []);
 
-  // Audio clean up
+  // Cleanup audio & infoWindow on unmount
   useEffect(() => {
     return () => {
       if (audioInstance) {
         audioInstance.pause();
+      }
+      if (infoWindowRef.current) {
+        infoWindowRef.current.close();
       }
     };
   }, [audioInstance]);
@@ -448,6 +481,13 @@ export function RoutesScreen() {
     }
   }, [selectedCity, amapLoaded]);
 
+  // Close infoWindow when city changes
+  useEffect(() => {
+    if (infoWindowRef.current) {
+      infoWindowRef.current.close();
+    }
+  }, [selectedCity]);
+
   const handleCityClick = (city: typeof POPULAR_CITIES[0]) => {
     setSelectedCity(city.name);
     const citySpots = ALL_CITIES_SPOTS[city.name];
@@ -455,18 +495,17 @@ export function RoutesScreen() {
       setActiveSpot(citySpots[0]);
     }
     if (mapInstanceRef.current) {
-      mapInstanceRef.current.setZoomAndCenter(13, city.center);
+      mapInstanceRef.current.setZoomAndCenter(13, city.center, false, 300);
     }
     toast.success(`已切换至城市：${city.name}`);
   };
 
-  // Re-draw route polylines when activeRoute changes (uses real road navigation)
+  // Re-draw route polylines when activeRoute changes
   useEffect(() => {
     const AMap = AMapInstanceRef.current;
     const map = mapInstanceRef.current;
     if (!AMap || !map || !activeRoute) return;
 
-    // Clear old polyline
     if (routePolylineRef.current) {
       if (typeof routePolylineRef.current.clear === "function") {
         routePolylineRef.current.clear();
@@ -476,7 +515,6 @@ export function RoutesScreen() {
       routePolylineRef.current = null;
     }
 
-    // Connect generated spot coordinates
     const coordinates = activeRoute.spots.map(s => {
       let original: any = null;
       for (const spots of Object.values(ALL_CITIES_SPOTS)) {
@@ -486,12 +524,11 @@ export function RoutesScreen() {
           break;
         }
       }
-      return original ? [original.lng, original.lat] : null; // [lng, lat] for Amap
+      return original ? [original.lng, original.lat] : null;
     }).filter(Boolean) as Array<[number, number]>;
 
     if (coordinates.length < 2) return;
 
-    // Use AMap.Walking to plan the path along roads
     const walking = new AMap.Walking({
       map: map,
       panel: undefined,
@@ -499,24 +536,26 @@ export function RoutesScreen() {
       autoFitView: true,
     });
 
-    const origin = coordinates[0];
-    const destination = coordinates[coordinates.length - 1];
-    const opts = {
-      waypoints: coordinates.slice(1, -1),
-    };
+    walking.search(coordinates[0], coordinates[coordinates.length - 1], {
+      waypoints: coordinates.slice(1, -1)
+    }, (status: string, result: any) => {
+      if (status === "complete" && result.routes && result.routes[0]) {
+        const path: Array<[number, number]> = [];
+        result.routes[0].steps.forEach((step: any) => {
+          step.path.forEach((p: any) => {
+            path.push([p.lng, p.lat]);
+          });
+        });
 
-    walking.search(origin, destination, opts, (status: string, result: any) => {
-      if (status === "complete") {
-        routePolylineRef.current = walking;
-      } else {
-        console.warn("高德步行规划失败，降级为折线连接:", result);
         const polyline = new AMap.Polyline({
-          path: coordinates,
-          strokeColor: "#FF5B45",
-          strokeOpacity: 0.85,
+          path: path,
+          strokeColor: "#4F6F52",
           strokeWeight: 6,
-          strokeStyle: "dashed",
-          strokeDasharray: [10, 10],
+          strokeOpacity: 0.9,
+          strokeStyle: "solid",
+          lineJoin: "round",
+          lineCap: "round",
+          showDir: true,
         });
         polyline.setMap(map);
         map.setFitView([polyline]);
@@ -536,15 +575,12 @@ export function RoutesScreen() {
     };
   }, [activeRoute, amapLoaded]);
 
-  // Render markers function using Amap custom markers
   const renderAmapMarkers = (AMap: any, map: any, spotsList: typeof CHONGQING_SPOTS) => {
-    // Clear old markers
     markersRef.current.forEach(m => m.setMap(null));
     markersRef.current = [];
 
     spotsList.forEach(s => {
       if (!s || typeof s.lng !== "number" || typeof s.lat !== "number" || isNaN(s.lng) || isNaN(s.lat)) {
-        console.warn("跳过无效坐标的景点标点:", s);
         return;
       }
 
@@ -571,6 +607,7 @@ export function RoutesScreen() {
       marker.on("click", () => {
         setActiveSpot(s);
         map.setZoomAndCenter(15, [s.lng, s.lat], false, 300);
+        showAmapInfoWindow(s);
         if (autoplayEnabled) {
           speakSpotNarration(s.name, s.desc);
         }
@@ -600,7 +637,8 @@ export function RoutesScreen() {
       setSelectedCity(foundCity);
       setActiveSpot(foundSpot);
       if (mapInstanceRef.current) {
-        mapInstanceRef.current.setZoomAndCenter(14, [foundSpot.lng, foundSpot.lat]);
+        mapInstanceRef.current.setZoomAndCenter(14, [foundSpot.lng, foundSpot.lat], false, 300);
+        showAmapInfoWindow(foundSpot);
         if (autoplayEnabled) {
           speakSpotNarration(foundSpot.name, foundSpot.desc);
         }
@@ -611,7 +649,6 @@ export function RoutesScreen() {
     }
   };
 
-  // Play narration TTS
   const speakSpotNarration = (name: string, desc: string) => {
     if (isPlayingNarration) {
       audioInstance?.pause();
@@ -627,17 +664,10 @@ export function RoutesScreen() {
     setIsPlayingNarration(true);
   };
 
-  // Switch category markers
-  const handleCategoryFilter = (cat: string) => {
-    toast.success(`已在 ${selectedCity} 地图上高亮标出附近的「${cat}」设施`);
-  };
-
-  // Custom Local generator
   const handleGenerateRoute = async () => {
     setGenerating(true);
     setActiveRoute(null);
 
-    // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 1500));
 
     const selectedSpots = currentSpots.filter(s => {
@@ -666,47 +696,9 @@ export function RoutesScreen() {
 
     setActiveRoute(mockRoute);
     setGenerating(false);
-    setShowGeneratorDrawer(false);
     toast.success("专属路线生成成功！已为您在地图上绘制路径。");
   };
 
-  // Trigger Preset Routes
-  const selectPresetThemeRoute = (presetId: string) => {
-    const preset = PRESET_THEME_ROUTES.find(r => r.id === presetId);
-    if (!preset) return;
-
-    const matchedSpots = preset.spots.map(id => {
-      let foundSpot: any = null;
-      for (const spots of Object.values(ALL_CITIES_SPOTS)) {
-        const found = spots.find(s => s.id === id);
-        if (found) {
-          foundSpot = found;
-          break;
-        }
-      }
-      return foundSpot;
-    }).filter(Boolean);
-
-    const mockRoute: GeneratedRoute = {
-      name: preset.name,
-      description: `专为体验当地特色而策划的主题游览路线，用时约 ${preset.duration}。`,
-      highlights: ["核心景点", "深度慢游"],
-      tips: "跟着官方推荐路线走，不迷路不绕弯！",
-      spots: matchedSpots.map(s => ({
-        id: s.id,
-        name: s.name,
-        duration: 45,
-        description: s.desc
-      })),
-      totalDuration: 180,
-      totalDistance: "约 3.8 千米"
-    };
-
-    setActiveRoute(mockRoute);
-    toast.success(`已锁定「${preset.name}」，请在地图上查看。`);
-  };
-
-  // AI Chat responder using backend Q&A RAG chat
   const handleSendChatMessage = async () => {
     if (!chatInput.trim() && attachedMedia.length === 0) return;
     let content = chatInput.trim();
@@ -742,572 +734,170 @@ export function RoutesScreen() {
   };
 
   return (
-    <div className="relative min-h-svh w-full overflow-hidden bg-neutral-100 select-none">
-      {isMobile ? (
-        <div
-          className="relative w-full flex flex-col overflow-hidden"
-          style={{ height: "100svh", minHeight: "100dvh" }}
-        >
-        
-        {/* Full Map Container */}
-        <div
-          ref={mobileMapRef}
-          className="absolute inset-0 z-0 bg-neutral-200"
-          style={{
-            width: "100%",
-            height: "100%",
-            minHeight: "100dvh",
-          }}
-        />
+    <div className="relative w-full h-[100dvh] flex flex-col overflow-hidden bg-[#F7F6F3] select-none text-zinc-800">
+      
+      {/* Hidden File Inputs for AI chat attachments */}
+      <input
+        type="file"
+        accept="image/*"
+        multiple
+        ref={imageInputRef}
+        onChange={handleImageSelect}
+        className="hidden"
+      />
+      <input
+        type="file"
+        accept="video/*"
+        multiple
+        ref={videoInputRef}
+        onChange={handleVideoSelect}
+        className="hidden"
+      />
 
-        {/* 1. Top Section: Search Box + Popular Spot Cards */}
-        <div className="relative z-10 w-full px-4 pt-4 flex flex-col gap-2.5">
-          {/* Top Search Bar Row */}
-          <div className="flex items-center gap-2 w-full">
-            <Link href="/home" className="w-10 h-10 rounded-xl bg-white/95 backdrop-blur-md border border-zinc-200/50 shadow-lg flex items-center justify-center text-zinc-700 hover:bg-zinc-50 active:scale-95 transition-all flex-shrink-0">
-              <ChevronLeft className="w-5 h-5" />
-            </Link>
-            
-            <div className="flex-1 h-10 flex items-center bg-white/95 backdrop-blur-md rounded-xl px-3 border border-zinc-200/50 shadow-lg">
-              <Search className="w-4 h-4 text-zinc-400 mr-2 flex-shrink-0" />
-              <input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSearch(searchQuery)}
-                placeholder={`搜索${selectedCity}景点...`}
-                className="flex-1 bg-transparent outline-none text-xs font-semibold text-zinc-800 placeholder:text-zinc-400"
-              />
-              <button
-                onClick={() => handleSearch(searchQuery)}
-                className="text-[#3A4D39] text-xs font-bold px-2 py-1 rounded hover:bg-[#3A4D39]/10 transition-colors"
-              >
-                搜索
-              </button>
-            </div>
-
-            {/* City indicator button that opens bottom sheet city tab */}
-            <button
-              onClick={() => {
-                setMobileBottomTab("city");
-                setIsBottomSheetExpanded(true);
-              }}
-              className="px-3 h-10 rounded-xl bg-white/95 backdrop-blur-md border border-zinc-200/50 shadow-lg flex items-center gap-1 text-xs font-bold text-[#4F6F52] hover:bg-zinc-50 active:scale-95 transition-all flex-shrink-0"
-            >
-              <MapPin className="w-3.5 h-3.5" />
-              <span>{selectedCity}</span>
-            </button>
-          </div>
-
-          {/* Popular Spot Cards (Horizontal scroll, aligned with desktop: click focuses map) */}
-          <div className="flex gap-2.5 overflow-x-auto scrollbar-none pb-1.5 snap-x">
-            {currentSpots.map((spot) => {
-              const isActive = activeSpot?.id === spot.id;
-              return (
-                <button
-                  key={spot.id}
-                  onClick={() => {
-                    setActiveSpot(spot);
-                    if (mapInstanceRef.current) {
-                      mapInstanceRef.current.setZoomAndCenter(15, [spot.lng, spot.lat]);
-                    }
-                    if (autoplayEnabled) {
-                      speakSpotNarration(spot.name, spot.desc);
-                    }
-                  }}
-                  className={`flex-shrink-0 w-[140px] rounded-2xl overflow-hidden bg-white/95 backdrop-blur-md border transition-all text-left shadow-lg flex flex-col snap-start ${
-                    isActive ? "border-[#4F6F52] ring-2 ring-[#4F6F52]/20" : "border-zinc-200/40"
-                  }`}
-                >
-                  <div className="relative h-16 w-full flex-shrink-0">
-                    <img src={spot.img} alt={spot.name} className="w-full h-full object-cover" />
-                    <div className="absolute top-1.5 right-1.5 bg-black/60 backdrop-blur-sm text-[8px] text-white px-1.5 py-0.5 rounded-full font-black flex items-center gap-0.5">
-                      ⭐ {spot.rating}
-                    </div>
-                  </div>
-                  <div className="p-2 flex flex-col justify-between flex-1 min-w-0">
-                    <div className="text-[11px] font-black text-zinc-900 truncate leading-snug">{spot.name}</div>
-                    <div className="flex items-center justify-between mt-1 text-[8.5px] text-[#4F6F52] font-bold">
-                      <span>{spot.type}</span>
-                      <span className="text-zinc-400 font-normal">{spot.distance || "1.5km"}</span>
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* 2. Floating action buttons on the right side */}
-        <div className="absolute right-4 bottom-[280px] z-10 flex flex-col gap-3">
-          {/* Compass 🧭 Button - Rotates based on map bearing */}
+      {/* 1. Integrated Header (Mobile only) */}
+      <div className="md:hidden flex items-center justify-between px-4 h-14 bg-white border-b border-zinc-200/80 shadow-sm z-40 flex-shrink-0">
+        <div className="flex items-center gap-2">
+          <Link href="/home" className="w-8 h-8 rounded-lg bg-zinc-50 flex items-center justify-center text-zinc-700 hover:bg-zinc-100 active:scale-95 transition-all">
+            <ChevronLeft className="w-4.5 h-4.5" />
+          </Link>
           <button
             onClick={() => {
-              if (mapInstanceRef.current) {
-                mapInstanceRef.current.setPitch(0);
-                mapInstanceRef.current.setRotation(0);
-                setMapRotation(0);
-                toast.success("已重置地图方向为正北");
-              }
+              setShowLeftSidebar(!showLeftSidebar);
+              setShowRightSidebar(false);
             }}
-            className="w-11 h-11 rounded-full bg-white shadow-xl border border-zinc-200/50 flex items-center justify-center text-zinc-700 hover:bg-zinc-50 active:scale-95 transition-all z-10"
-            title="重置正北"
+            className="w-8 h-8 rounded-lg bg-[#4F6F52]/10 flex items-center justify-center text-[#4F6F52] hover:bg-[#4F6F52]/20 active:scale-95 transition-all"
+            title="查看选项"
           >
-            <div
-              className="transition-transform duration-100 ease-out"
-              style={{ transform: `rotate(${-mapRotation}deg)` }}
-            >
-              <Compass className="w-5.5 h-5.5 text-[#FF5B45]" />
-            </div>
-          </button>
-
-          {/* GPS Target Location Button */}
-          <button
-            onClick={() => {
-              if (mapInstanceRef.current) {
-                const center = POPULAR_CITIES.find(c => c.name === selectedCity)?.center || [106.578, 29.563];
-                mapInstanceRef.current.setZoomAndCenter(13, center);
-                toast.info(`已定位至 ${selectedCity} 核心区`);
-              }
-            }}
-            className="w-11 h-11 rounded-full bg-white shadow-xl border border-zinc-200/50 flex items-center justify-center text-zinc-700 hover:bg-zinc-50 active:scale-95 transition-all z-10"
-          >
-            <Navigation className="w-5 h-5 text-zinc-600" />
+            <Menu className="w-4 h-4" />
           </button>
         </div>
 
-        {/* 3. Bottom Sheet collapsible tray */}
-        <div className="mt-auto relative z-20 w-full px-3 pb-[80px] flex flex-col gap-2.5">
-          {/* Active spot card (Only if collapsed & has active spot) */}
-          {!isBottomSheetExpanded && activeSpot && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-white/95 backdrop-blur-md border border-zinc-200/50 shadow-xl rounded-2xl p-3 flex flex-col gap-2.5"
-            >
-              <div className="flex justify-between items-start gap-2">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <h4 className="font-extrabold text-[13.5px] text-zinc-900 truncate" style={{ fontFamily: "var(--font-noto-serif)" }}>
-                      {activeSpot.name}
-                    </h4>
-                    <span className="bg-[#4F6F52]/10 text-[#4F6F52] text-[8px] font-bold px-1.5 py-0.5 rounded">
-                      {activeSpot.rating}
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-zinc-500 mt-1 leading-normal line-clamp-2">{activeSpot.desc}</p>
-                </div>
-                <img src={activeSpot.img} alt={activeSpot.name} className="w-16 h-16 rounded-xl object-cover flex-shrink-0 border" />
-              </div>
-
-              {/* Action row */}
-              <div className="flex items-center justify-between pt-1.5 border-t border-zinc-100">
-                <button
-                  onClick={() => speakSpotNarration(activeSpot.name, activeSpot.desc)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#FFF0ED] text-[#FF5B45] hover:bg-[#FFE0DB] active:scale-95 transition-all shadow-sm"
-                >
-                  <div className={`w-5 h-5 rounded-full flex items-center justify-center bg-[#FF5B45] text-white ${isPlayingNarration ? "animate-pulse" : ""}`}>
-                    <Volume2 className="w-3 h-3" />
-                  </div>
-                  <span className="text-[10.5px] font-bold">语音讲解</span>
-                </button>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setShowArtifactsDrawer(true)}
-                    className="px-3 py-1.5 bg-[#EEF2EE] hover:bg-[#DFEDDF] text-[#4F6F52] rounded-xl text-[10.5px] font-bold shadow-sm transition-all active:scale-95"
-                  >
-                    文物陈列
-                  </button>
-                  <button
-                    onClick={() => setIsBottomSheetExpanded(true)}
-                    className="flex items-center gap-1 px-3.5 py-1.5 bg-[#FAF6E8] hover:bg-[#FAF0D0] text-[#D2A053] rounded-xl text-[10.5px] font-bold shadow-sm transition-all active:scale-95"
-                  >
-                    <span>开始规划行程</span>
-                    <ChevronRight className="w-3.5 h-3.5 rotate-90" />
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Collapsible panel container */}
-          <div className={`bg-white border border-zinc-200/60 shadow-2xl rounded-2xl overflow-hidden flex flex-col transition-all duration-300 ${
-            isBottomSheetExpanded ? "h-[65vh]" : "h-12"
-          }`}>
-            {/* Tray handle & header */}
-            <div
-              onClick={() => setIsBottomSheetExpanded(!isBottomSheetExpanded)}
-              className="py-3.5 px-4 bg-zinc-50 border-b border-zinc-100 flex items-center justify-between cursor-pointer select-none flex-shrink-0"
-            >
-              <div className="flex items-center gap-2">
-                <div className="w-5 h-5 rounded bg-[#4F6F52] text-white flex items-center justify-center text-[10px]">
-                  🧭
-                </div>
-                <span className="font-extrabold text-[12.5px] text-zinc-800">
-                  {isBottomSheetExpanded ? "行程路线规划" : `在 ${selectedCity} 规划您的行程`}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                {isBottomSheetExpanded ? (
-                  <button className="text-xs font-bold text-zinc-400 hover:text-zinc-600">收起</button>
-                ) : (
-                  <button className="text-xs font-bold text-[#4F6F52] hover:text-[#3A5240]">展开</button>
-                )}
-              </div>
-            </div>
-
-            {/* Expanded panel content */}
-            {isBottomSheetExpanded && (
-              <div className="flex-1 flex flex-col overflow-hidden bg-white">
-                {/* Tab Bar */}
-                <div className="flex border-b border-zinc-100 bg-zinc-50/50 flex-shrink-0">
-                  {[
-                    { id: "city", label: "切换城市", icon: "🗺️" },
-                    { id: "route", label: "专属路线", icon: "✨" },
-                    { id: "spots", label: "全部景点", icon: "🏰" }
-                  ].map(tab => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setMobileBottomTab(tab.id as any)}
-                      className={`flex-1 py-3 text-center text-xs font-black flex items-center justify-center gap-1 border-b-2 transition-all ${
-                        mobileBottomTab === tab.id
-                          ? "border-[#4F6F52] text-[#4F6F52] bg-white"
-                          : "border-transparent text-zinc-500 hover:text-zinc-800"
-                      }`}
-                    >
-                      <span>{tab.icon}</span>
-                      <span>{tab.label}</span>
-                    </button>
-                  ))}
-                </div>
-
-                {/* Tab Content Panel */}
-                <div className="flex-1 overflow-y-auto p-4 scrollbar-thin">
-                  {mobileBottomTab === "city" && (
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center pb-2 border-b">
-                        <h4 className="font-black text-xs text-zinc-700">切换热门目的地</h4>
-                        <span className="text-[10px] text-zinc-400">已选择: {selectedCity}</span>
-                      </div>
-                      
-                      {/* Grid city layout matching desktop carousel style */}
-                      <div className="grid grid-cols-2 gap-3.5 p-0.5">
-                        {POPULAR_CITIES.map((c) => {
-                          const isActive = selectedCity === c.name;
-                          return (
-                            <button
-                              key={c.name}
-                              onClick={() => {
-                                handleCityClick(c);
-                                setMobileBottomTab("route");
-                              }}
-                              className={`rounded-2xl border p-2 text-left transition-all relative overflow-hidden flex flex-col gap-2 ${
-                                isActive
-                                  ? "border-[#4F6F52] bg-[#4F6F52]/5 ring-2 ring-[#4F6F52]/20 shadow-md"
-                                  : "border-zinc-200 bg-white hover:border-zinc-300"
-                              }`}
-                            >
-                              <div className="w-full h-20 rounded-xl overflow-hidden relative">
-                                <img src={c.img} alt={c.name} className="w-full h-full object-cover" />
-                                <span className="absolute bottom-1.5 right-1.5 bg-black/75 text-[9px] text-white px-2 py-0.5 rounded-md font-bold leading-none">
-                                  {c.badge}
-                                </span>
-                              </div>
-                              <div className="px-1 flex items-center justify-between">
-                                <span className={`text-[12.5px] font-black ${isActive ? "text-[#4F6F52]" : "text-zinc-800"}`}>
-                                  {c.name}
-                                </span>
-                                {isActive && (
-                                  <span className="w-2.5 h-2.5 rounded-full bg-[#4F6F52]" />
-                                )}
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  {mobileBottomTab === "route" && (
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-1.5 pb-2 border-b">
-                        <Sparkles className="w-4.5 h-4.5 text-[#D2A053] animate-pulse" />
-                        <h4 className="font-extrabold text-xs text-zinc-800">智能专属路线生成</h4>
-                      </div>
-
-                      {/* Interest selector */}
-                      <div className="space-y-2">
-                        <span className="text-[10px] font-bold text-zinc-500 block">选择游玩偏好:</span>
-                        <div className="grid grid-cols-2 gap-2">
-                          {INTERESTS.map(item => {
-                            const active = selectedInterests.includes(item.id);
-                            return (
-                              <button
-                                key={item.id}
-                                onClick={() => {
-                                  setSelectedInterests(prev => prev.includes(item.id) ? prev.filter(x => x !== item.id) : [...prev, item.id]);
-                                }}
-                                className={`py-2 px-3 rounded-xl border text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 ${
-                                  active
-                                    ? "bg-[#3A4D39] text-white border-[#3A4D39] shadow-md"
-                                    : "bg-neutral-50 text-zinc-600 border-zinc-200 hover:bg-neutral-100"
-                                }`}
-                              >
-                                <span>{item.emoji}</span>
-                                <span>{item.label}</span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      {/* Slider */}
-                      <div className="space-y-1.5 p-3 rounded-2xl bg-neutral-50 border">
-                        <div className="flex justify-between items-center text-[10px] font-bold text-zinc-600">
-                          <span>预计游玩时长:</span>
-                          <span className="font-mono text-[#D2A053] font-black">{duration} 分钟</span>
-                        </div>
-                        <input
-                          type="range" min={60} max={240} step={30} value={duration}
-                          onChange={(e) => setDuration(Number(e.target.value))}
-                          className="w-full h-1 bg-neutral-200 rounded accent-[#D2A053] cursor-pointer"
-                        />
-                        <div className="flex justify-between text-[8px] text-zinc-400 font-bold">
-                          <span>1小时(快速)</span>
-                          <span>4小时(深度)</span>
-                        </div>
-                      </div>
-
-                      {/* Action trigger button */}
-                      <button
-                        onClick={handleGenerateRoute}
-                        disabled={generating}
-                        className="w-full py-3 bg-[#3A4D39] hover:bg-[#4F6F52] text-white rounded-xl text-xs font-black shadow-lg flex items-center justify-center gap-1.5 transition-colors"
-                      >
-                        {generating ? (
-                          <><Loader2 className="w-4.5 h-4.5 animate-spin" />正在努力计算智能路线...</>
-                        ) : (
-                          <><Compass className="w-4.5 h-4.5" />生成专属路线</>
-                        )}
-                      </button>
-
-                      {/* Route results */}
-                      {activeRoute && (
-                        <div className="p-3.5 rounded-2xl bg-neutral-50 border border-zinc-200/60 space-y-3">
-                          <div className="flex justify-between items-center pb-2 border-b border-zinc-200">
-                            <span className="text-[10px] font-bold text-[#3A4D39]">AI推荐路线 · {activeRoute.name}</span>
-                            <span className="text-[9px] font-mono text-zinc-500">{activeRoute.totalDistance}</span>
-                          </div>
-                          <p className="text-[11px] text-zinc-600 leading-relaxed">{activeRoute.description}</p>
-                          
-                          <div className="space-y-3.5 relative pl-4">
-                            <div className="absolute left-[6px] top-2.5 bottom-2.5 w-0.5 bg-zinc-300" />
-                            {activeRoute.spots.map((spot, i) => (
-                              <div key={spot.id} className="text-[11.5px] relative">
-                                <span className="absolute -left-[16px] top-1 w-2.5 h-2.5 rounded-full bg-[#3A4D39] border border-white" />
-                                <span className="font-extrabold text-zinc-800">{spot.name}</span>
-                                <span className="text-[9.5px] text-zinc-400 block">停留约 {spot.duration} 分钟</span>
-                              </div>
-                            ))}
-                          </div>
-                          {activeRoute.tips && (
-                            <div className="p-2.5 bg-orange-50 border border-orange-200/50 rounded-xl text-[10px] text-orange-800">
-                              💡 {activeRoute.tips}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {mobileBottomTab === "spots" && (
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center pb-2 border-b">
-                        <h4 className="font-black text-xs text-zinc-700">景区全部景点 ({currentSpots.length})</h4>
-                        <span className="text-[9.5px] text-zinc-400">点击景点高亮定位</span>
-                      </div>
-
-                      <div className="space-y-2.5">
-                        {currentSpots.map(s => {
-                          const isActive = activeSpot?.id === s.id;
-                          return (
-                            <div
-                              key={s.id}
-                              onClick={() => {
-                                setActiveSpot(s);
-                                setIsBottomSheetExpanded(false);
-                                if (mapInstanceRef.current) {
-                                  mapInstanceRef.current.setZoomAndCenter(14, [s.lng, s.lat]);
-                                }
-                                if (autoplayEnabled) {
-                                  speakSpotNarration(s.name, s.desc);
-                                }
-                              }}
-                              className={`flex gap-3 p-2.5 rounded-2xl border cursor-pointer transition-all ${
-                                isActive
-                                  ? "bg-[#3A4D39]/5 border-[#3A4D39]/30 shadow-sm"
-                                  : "border-zinc-100 hover:bg-neutral-50 bg-white"
-                              }`}
-                            >
-                              <img src={s.img} alt={s.name} className="w-12 h-12 rounded-xl object-cover flex-shrink-0 border" />
-                              <div className="flex-1 min-w-0 flex flex-col justify-between">
-                                <div className="flex items-center gap-1.5">
-                                  <span className="font-bold text-[12px] text-zinc-800 truncate">{s.name}</span>
-                                  <span className="bg-neutral-100 text-zinc-500 text-[8px] px-1.5 py-0.5 rounded font-medium">{s.type}</span>
-                                </div>
-                                <div className="flex justify-between text-[10px] text-zinc-400">
-                                  <span>{s.price}</span>
-                                  <span>建议游玩 {s.time}</span>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
+        {/* Integrated Top Search in mobile header */}
+        <div className="flex-1 max-w-[180px] h-8.5 mx-2 flex items-center bg-zinc-100/90 rounded-full px-2.5 border border-zinc-200/40">
+          <Search className="w-3.5 h-3.5 text-zinc-400 mr-1.5 flex-shrink-0" />
+          <input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch(searchQuery)}
+            placeholder={`搜索${selectedCity}...`}
+            className="w-full bg-transparent outline-none text-[10.5px] font-semibold text-zinc-800 placeholder:text-zinc-400"
+          />
         </div>
 
-        {/* Sliding drawer 3: Artifacts museum display */}
-        <AnimatePresence>
-          {showArtifactsDrawer && (
-            <>
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.5 }} exit={{ opacity: 0 }}
-                onClick={() => setShowArtifactsDrawer(false)}
-                className="absolute inset-0 bg-black z-30" />
-              <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 25 }}
-                className="absolute bottom-0 left-0 right-0 z-40 bg-white rounded-t-3xl p-5 space-y-3 max-h-[70vh] overflow-y-auto">
-                <div className="flex items-center justify-between pb-2 border-b">
-                  <h3 className="font-extrabold text-sm text-zinc-900" style={{ fontFamily: "var(--font-noto-serif)" }}>巴蜀文博陈列</h3>
-                  <button onClick={() => setShowArtifactsDrawer(false)} className="text-zinc-400 hover:text-zinc-700 text-xs font-bold">关闭</button>
-                </div>
-                <div className="grid grid-cols-2 gap-3 pt-1">
-                  {[
-                    { name: "巴国青铜剑", period: "战国时期", emoji: "🗡️", desc: "柳叶形扁茎无格，表面带有精致暗斑文饰，巴人标志性兵器。" },
-                    { name: "汉代宴乐陶俑", period: "东汉", emoji: "🏺", desc: "陶俑神态逼真，生动体现了东汉时期川蜀地区的乐舞生活面貌。" },
-                    { name: "三峡夔门石刻拓片", period: "明清", emoji: "📜", desc: "镌刻着历代文人墨客描绘瞿塘峡天险的雄浑墨宝。" },
-                    { name: "巴渝木雕隔扇", period: "清代", emoji: "🪵", desc: "镂空透雕的吉祥花鸟鸟兽图案，极其精细的镂空技法。" }
-                  ].map(a => (
-                    <div key={a.name} className="p-3 bg-[#FAF8F5] border border-zinc-200/50 rounded-xl space-y-1.5 flex flex-col justify-between">
-                      <div className="flex items-center justify-between">
-                        <span className="text-2xl">{a.emoji}</span>
-                        <span className="text-[8px] bg-zinc-200 px-1 py-0.5 rounded text-zinc-500 font-bold">{a.period}</span>
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-[11.5px] text-zinc-900">{a.name}</h4>
-                        <p className="text-[9.5px] text-zinc-500 leading-normal mt-0.5">{a.desc}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              setShowLeftSidebar(true);
+              setShowRightSidebar(false);
+            }}
+            className="px-2.5 h-8.5 rounded-full bg-[#4F6F52] text-white flex items-center gap-0.5 text-[10.5px] font-extrabold active:scale-95 transition-all"
+          >
+            <MapPin className="w-3 h-3" />
+            <span>{selectedCity}</span>
+          </button>
 
+          <button
+            onClick={() => {
+              setShowRightSidebar(!showRightSidebar);
+              setShowLeftSidebar(false);
+            }}
+            className="w-8 h-8 rounded-lg bg-[#3A4D39] text-white flex items-center justify-center hover:bg-[#4F6F52] active:scale-95 transition-all"
+            title="AI咨询"
+          >
+            <MessageSquare className="w-4.5 h-4.5" />
+          </button>
+        </div>
       </div>
-      ) : (
-        <div className="flex flex-col w-full h-screen overflow-hidden bg-[#F7F6F3]">
-          {/* Main Panel Content split into 3 columns */}
-          <div className="flex-1 flex w-full overflow-hidden">
-          
-          {/* Column 1: Left Navigation panel */}
-          <div className="w-[320px] bg-white border-r border-zinc-200/80 flex flex-col overflow-y-auto p-4 space-y-5 flex-shrink-0 shadow-sm">
-            <div className="pb-1 border-b border-zinc-100">
+
+      {/* 2. Main Workspace */}
+      <div className="flex-1 flex w-full overflow-hidden relative">
+        
+        {/* Mobile Backdrop Overlay */}
+        {isMobile && (showLeftSidebar || showRightSidebar) && (
+          <div
+            onClick={() => {
+              setShowLeftSidebar(false);
+              setShowRightSidebar(false);
+            }}
+            className="absolute inset-0 bg-black/40 z-20 backdrop-blur-sm transition-opacity duration-300"
+          />
+        )}
+
+        {/* COLUMN 1: LEFT SIDEBAR (City switch, routes, spots list) */}
+        <div className={`
+          bg-white border-zinc-200/80 flex flex-col p-4 space-y-5 flex-shrink-0 shadow-lg z-30 transition-all duration-300
+          ${isMobile ? 'absolute top-0 bottom-0 left-0 w-[290px] h-full' : 'w-[320px] border-r'}
+          ${isMobile && !showLeftSidebar ? '-translate-x-full' : 'translate-x-0'}
+        `}>
+          <div className="pb-1 border-b border-zinc-100 flex items-center justify-between">
+            <div>
               <h2 className="font-extrabold text-base text-zinc-900 flex items-center gap-1.5" style={{ fontFamily: "var(--font-noto-serif)" }}>
                 <Landmark className="w-[18px] h-[18px] text-[#3A4D39]" />
                 景区导航地图
               </h2>
               <p className="text-[10.5px] text-zinc-400 mt-0.5">点击景点查看详情和导航</p>
             </div>
+            {isMobile && (
+              <button onClick={() => setShowLeftSidebar(false)} className="text-zinc-400 hover:text-zinc-600 text-xs font-bold">关闭</button>
+            )}
+          </div>
 
-            {/* City Switch Carousel */}
-            <div className="flex flex-col gap-1.5 pt-0.5 relative group/carousel">
-              <span className="text-[9.5px] font-black text-zinc-400 uppercase tracking-wider">切换热门城市</span>
-              <div className="relative w-full">
-                <div
-                  ref={cityScrollRef}
-                  onMouseDown={handleCityMouseDown}
-                  onMouseMove={handleCityMouseMove}
-                  onMouseUp={handleCityMouseUpOrLeave}
-                  onMouseLeave={handleCityMouseUpOrLeave}
-                  className="flex items-center gap-2 overflow-x-auto pb-1.5 scrollbar-none snap-x snap-mandatory cursor-grab active:cursor-grabbing select-none"
-                >
-                  {POPULAR_CITIES.map((c) => {
-                    const isActive = selectedCity === c.name;
-                    return (
-                      <button
-                        key={c.name}
-                        onClick={() => handleCityClick(c)}
-                        className={`flex-shrink-0 w-24 rounded-xl border p-1 text-left transition-all snap-start relative overflow-hidden flex flex-col justify-between ${
-                          isActive
-                            ? "border-[#4F6F52] bg-[#4F6F52]/5 ring-1 ring-[#4F6F52]"
-                            : "border-zinc-200 hover:border-zinc-300 bg-white"
-                        }`}
-                      >
-                        <div className="w-full h-11 rounded-lg overflow-hidden relative pointer-events-none">
-                          <img src={c.img} alt={c.name} className="w-full h-full object-cover" />
-                          <span className="absolute bottom-1 right-1 bg-black/60 text-[7px] text-white/90 px-1 py-0.5 rounded font-black">
-                            {c.badge}
-                          </span>
-                        </div>
-                        <div className="mt-1 px-1 flex items-center justify-between pointer-events-none">
-                          <span className={`text-[11px] font-extrabold ${isActive ? "text-[#4F6F52]" : "text-zinc-800"}`}>
-                            {c.name}
-                          </span>
-                          {isActive && (
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#4F6F52]" />
-                          )}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Left/Right scroll buttons */}
-                <button
-                  type="button"
-                  onClick={() => scrollCityCarousel("left")}
-                  className="absolute left-0 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white/90 border border-zinc-200 shadow-md flex items-center justify-center text-zinc-600 hover:bg-neutral-100 hover:text-black transition-all opacity-0 group-hover/carousel:opacity-100 focus:opacity-100 cursor-pointer z-10"
-                >
-                  <ChevronLeft className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => scrollCityCarousel("right")}
-                  className="absolute right-0 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white/90 border border-zinc-200 shadow-md flex items-center justify-center text-zinc-600 hover:bg-neutral-100 hover:text-black transition-all opacity-0 group-hover/carousel:opacity-100 focus:opacity-100 cursor-pointer z-10"
-                >
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </button>
+          {/* City switcher carousel */}
+          <div className="flex flex-col gap-1.5 pt-0.5 relative group/carousel">
+            <span className="text-[9.5px] font-black text-zinc-400 uppercase tracking-wider">切换热门城市</span>
+            <div className="relative w-full">
+              <div
+                ref={cityScrollRef}
+                onMouseDown={handleCityMouseDown}
+                onMouseMove={handleCityMouseMove}
+                onMouseUp={handleCityMouseUpOrLeave}
+                onMouseLeave={handleCityMouseUpOrLeave}
+                className="flex items-center gap-2 overflow-x-auto pb-1.5 scrollbar-none snap-x snap-mandatory cursor-grab active:cursor-grabbing select-none"
+              >
+                {POPULAR_CITIES.map((c) => {
+                  const isActive = selectedCity === c.name;
+                  return (
+                    <button
+                      key={c.name}
+                      onClick={() => {
+                        handleCityClick(c);
+                        if (isMobile) {
+                          setShowLeftSidebar(false);
+                        }
+                      }}
+                      className={`flex-shrink-0 w-28 rounded-xl overflow-hidden border text-left transition-all snap-start select-none ${
+                        isActive ? "border-[#4F6F52] bg-[#4F6F52]/5 ring-1 ring-[#4F6F52]/20" : "border-zinc-200/80 bg-white hover:border-zinc-300"
+                      }`}
+                    >
+                      <div className="relative h-14 w-full">
+                        <img src={c.img} alt={c.name} className="w-full h-full object-cover" pointerEvents="none" />
+                        <span className="absolute bottom-1 right-1 bg-black/60 backdrop-blur-sm text-[8px] text-white px-1.5 py-0.5 rounded font-black">
+                          {c.badge}
+                        </span>
+                      </div>
+                      <div className="p-1.5 flex items-center justify-between">
+                        <span className={`text-[11.5px] font-black ${isActive ? "text-[#4F6F52]" : "text-zinc-700"}`}>{c.name}</span>
+                        {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#4F6F52]" />}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
+          </div>
 
-            {/* Local Search input */}
-            <div className="relative">
-              <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-400" />
-              <input
-                type="text"
-                placeholder="搜索地点... (如: 洪崖洞)"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSearch(searchQuery)}
-                className="w-full bg-neutral-50 border border-zinc-200 rounded-xl pl-9 pr-4 py-2 text-xs outline-none focus:border-[#3A4D39] transition-colors"
-              />
+          {/* Route Generator preferences */}
+          <div className="space-y-3.5 pt-1.5 border-t">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-black text-zinc-800 flex items-center gap-1">
+                <Sparkles className="w-3.5 h-3.5 text-[#D2A053] animate-pulse" />
+                智能专属路线生成
+              </h3>
             </div>
-
-            {/* Accordion trigger original route generator */}
-            <div className="p-3 bg-[#FAF8F5] rounded-2xl border border-zinc-200/60 space-y-3.5">
-              <div className="flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-[#D2A053] animate-pulse" />
-                <span className="text-xs font-black text-[#3A4D39]">智能专属路线生成</span>
-              </div>
-              
-              <div className="space-y-2">
-                <span className="text-[10px] font-bold text-zinc-500 block">选择兴趣偏好:</span>
+            
+            <div className="space-y-2 bg-[#FAF8F5] border border-zinc-200/50 p-2.5 rounded-xl">
+              <div className="space-y-1">
+                <span className="text-[9.5px] font-bold text-zinc-500 block">游玩偏好:</span>
                 <div className="grid grid-cols-2 gap-1.5">
                   {INTERESTS.map(item => {
                     const active = selectedInterests.includes(item.id);
@@ -1339,7 +929,12 @@ export function RoutesScreen() {
               </div>
 
               <button
-                onClick={handleGenerateRoute}
+                onClick={() => {
+                  handleGenerateRoute();
+                  if (isMobile) {
+                    setShowLeftSidebar(false);
+                  }
+                }}
                 disabled={generating}
                 className="w-full py-2 bg-[#3A4D39] hover:bg-[#4F6F52] text-white rounded-xl text-[11px] font-extrabold shadow flex items-center justify-center gap-1.5 transition-colors"
               >
@@ -1351,7 +946,7 @@ export function RoutesScreen() {
               </button>
 
               {activeRoute && (
-                <div className="p-2.5 rounded-xl bg-white border border-zinc-200 text-[10px] space-y-2">
+                <div className="p-2.5 rounded-xl bg-white border border-zinc-200 text-[10px] space-y-2 max-h-[140px] overflow-y-auto">
                   <div className="font-bold text-[#3A4D39] border-b pb-1 flex justify-between">
                     <span>{activeRoute.name}</span>
                     <span className="font-mono">{activeRoute.totalDistance}</span>
@@ -1366,253 +961,429 @@ export function RoutesScreen() {
                 </div>
               )}
             </div>
+          </div>
 
-            {/* List of Spots */}
-            <div className="space-y-2 pt-2 border-t">
-              <h3 className="text-xs font-black text-zinc-800">景区全部景点 ({currentSpots.length})</h3>
-              <div className="space-y-1 pr-1 pb-6">
-                {currentSpots.map(s => (
-                  <button
-                    key={s.id}
-                    onClick={() => {
-                      setActiveSpot(s);
-                      if (mapInstanceRef.current) {
-                        mapInstanceRef.current.setZoomAndCenter(14, [s.lng, s.lat]);
-                        if (autoplayEnabled) {
-                          speakSpotNarration(s.name, s.desc);
-                        }
+          {/* List of Scenic Spots */}
+          <div className="space-y-2 pt-2 border-t flex-1 flex flex-col overflow-hidden">
+            <h3 className="text-xs font-black text-zinc-800">景区全部景点 ({currentSpots.length})</h3>
+            <div className="space-y-1 pr-1 pb-6 overflow-y-auto flex-1 scrollbar-thin">
+              {currentSpots.map(s => (
+                <button
+                  key={s.id}
+                  onClick={() => {
+                    setActiveSpot(s);
+                    if (isMobile) {
+                      setShowLeftSidebar(false);
+                    }
+                    if (mapInstanceRef.current) {
+                      mapInstanceRef.current.setZoomAndCenter(14, [s.lng, s.lat], false, 300);
+                      showAmapInfoWindow(s);
+                      if (autoplayEnabled) {
+                        speakSpotNarration(s.name, s.desc);
                       }
-                    }}
-                    className={`w-full text-left p-2 rounded-xl text-xs flex items-center justify-between border transition-all ${activeSpot?.id === s.id ? "bg-[#3A4D39]/5 border-[#3A4D39]/30 font-bold" : "border-transparent hover:bg-neutral-50"}`}
-                  >
-                    <span className="truncate text-zinc-800 pr-2">{s.name}</span>
-                    <span className="bg-neutral-100 text-zinc-500 text-[8.5px] px-1.5 py-0.5 rounded flex-shrink-0">{s.type}</span>
-                  </button>
+                    }
+                  }}
+                  className={`w-full text-left p-2 rounded-xl text-xs flex items-center justify-between border transition-all ${activeSpot?.id === s.id ? "bg-[#3A4D39]/5 border-[#3A4D39]/30 font-bold" : "border-transparent hover:bg-neutral-50"}`}
+                >
+                  <span className="truncate text-zinc-800 pr-2">{s.name}</span>
+                  <span className="bg-neutral-100 text-zinc-500 text-[8.5px] px-1.5 py-0.5 rounded flex-shrink-0">{s.type}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* COLUMN 2: CENTER MAP COMPONENT */}
+        <div className="flex-1 relative bg-zinc-100 h-full overflow-hidden z-10">
+          <div ref={mapRef} className="w-full h-full" />
+
+          {/* Map Top horizontal Popular Spots Cards overlay (Aligned to left, avoiding top-right controls) */}
+          <div className="absolute top-4 left-4 z-25 flex gap-2 overflow-x-auto scrollbar-none pb-1.5 snap-x w-[calc(100%-65px)] md:max-w-[calc(100%-180px)]">
+            {currentSpots.slice(0, 6).map((spot) => {
+              const isActive = activeSpot?.id === spot.id;
+              return (
+                <button
+                  key={spot.id}
+                  onClick={() => {
+                    setActiveSpot(spot);
+                    if (mapInstanceRef.current) {
+                      mapInstanceRef.current.setZoomAndCenter(15, [spot.lng, spot.lat], false, 300);
+                      showAmapInfoWindow(spot);
+                    }
+                    if (autoplayEnabled) {
+                      speakSpotNarration(spot.name, spot.desc);
+                    }
+                  }}
+                  className={`flex-shrink-0 w-[120px] rounded-xl overflow-hidden bg-white/95 backdrop-blur-md border transition-all text-left shadow-md flex flex-col snap-start ${
+                    isActive ? "border-[#4F6F52] ring-2 ring-[#4F6F52]/20" : "border-zinc-200/40"
+                  }`}
+                >
+                  <div className="relative h-12 w-full flex-shrink-0">
+                    <img src={spot.img} alt={spot.name} className="w-full h-full object-cover" />
+                    <div className="absolute top-1 right-1 bg-black/60 backdrop-blur-sm text-[7px] text-white px-1.5 py-0.5 rounded-full font-black">
+                      ⭐ {spot.rating}
+                    </div>
+                  </div>
+                  <div className="p-1.5 flex flex-col justify-between flex-1 min-w-0">
+                    <div className="text-[10px] font-black text-zinc-900 truncate leading-tight">{spot.name}</div>
+                    <div className="flex items-center justify-between mt-0.5 text-[8px] text-[#4F6F52] font-bold">
+                      <span>{spot.type}</span>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Category filters legends */}
+          <div className="hidden md:flex absolute left-4 bottom-4 z-10 bg-white/95 backdrop-blur shadow-md border border-zinc-200/80 rounded-xl px-4 py-2 items-center gap-4 text-xs font-bold text-zinc-700">
+            <div className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-red-500" /> 地标</div>
+            <div className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-orange-500" /> 演出</div>
+            <div className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-purple-500" /> 寺庙</div>
+            <div className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-blue-500" /> 文化</div>
+            <div className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-pink-500" /> 祈福</div>
+            <div className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> 自然</div>
+          </div>
+
+          {/* Floating Compass and Zoom controls stacked in the top-right corner (Pushed lower on mobile) */}
+          <div className="absolute right-4 top-36 md:top-4 z-30 flex flex-col gap-2">
+            <button
+              onClick={() => {
+                if (mapInstanceRef.current) {
+                  mapInstanceRef.current.setPitch(0);
+                  mapInstanceRef.current.setRotation(0);
+                  setMapRotation(0);
+                  toast.success("已重置地图方向为正北");
+                }
+              }}
+              className="w-10 h-10 rounded-xl bg-white/95 backdrop-blur-md shadow-lg border border-zinc-200/50 flex items-center justify-center text-zinc-700 hover:bg-zinc-50 active:scale-95 transition-all"
+              title="重置正北"
+            >
+              <div style={{ transform: `rotate(${-mapRotation}deg)` }} className="transition-transform duration-100 ease-out">
+                <Compass className="w-5 h-5 text-[#FF5B45]" />
+              </div>
+            </button>
+
+            <button
+              onClick={() => {
+                if (mapInstanceRef.current) {
+                  const center = POPULAR_CITIES.find(c => c.name === selectedCity)?.center || [106.578, 29.563];
+                  mapInstanceRef.current.setZoomAndCenter(13, center, false, 300);
+                  toast.info(`已定位至 ${selectedCity} 核心区`);
+                }
+              }}
+              className="w-10 h-10 rounded-xl bg-white/95 backdrop-blur-md shadow-lg border border-zinc-200/50 flex items-center justify-center text-zinc-700 hover:bg-zinc-50 active:scale-95 transition-all"
+              title="定位核心"
+            >
+              <Navigation className="w-4.5 h-4.5 text-zinc-600" />
+            </button>
+
+            <button onClick={() => mapInstanceRef.current?.zoomIn()} className="w-10 h-10 rounded-xl bg-white/95 backdrop-blur-md border shadow-lg flex items-center justify-center font-bold text-zinc-700 hover:bg-neutral-50 active:scale-95">+</button>
+            <button onClick={() => mapInstanceRef.current?.zoomOut()} className="w-10 h-10 rounded-xl bg-white/95 backdrop-blur-md border shadow-lg flex items-center justify-center font-bold text-zinc-700 hover:bg-neutral-50 active:scale-95">-</button>
+          </div>
+
+          {/* Desktop Draggable Float AI Assistant Panel (Wider and shorter: w-360px h-500px) */}
+          {!isMobile && !showFloatChat && (
+            <button
+              onClick={() => setShowFloatChat(true)}
+              className="absolute bottom-4 right-4 z-30 w-14 h-14 rounded-full bg-[#4F6F52] text-white shadow-2xl flex flex-col items-center justify-center hover:bg-[#3A5240] active:scale-95 transition-all group"
+            >
+              <MessageSquare className="w-6 h-6 animate-pulse" />
+              <span className="text-[9px] font-black mt-0.5 scale-90">智能向导</span>
+            </button>
+          )}
+
+          {!isMobile && showFloatChat && (
+            <motion.div
+              drag="x"
+              dragControls={dragControls}
+              dragListener={false}
+              dragConstraints={{ left: -800, right: 50 }}
+              dragElastic={0.05}
+              dragMomentum={false}
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              className="absolute bottom-4 right-4 z-30 w-[360px] h-[500px] bg-white/95 backdrop-blur-md rounded-2xl border border-zinc-200/80 shadow-2xl flex flex-col overflow-hidden"
+            >
+              {/* Header acts as drag handle */}
+              <div
+                onPointerDown={(e) => dragControls.start(e)}
+                className="p-3 bg-zinc-50/50 border-b border-zinc-100 flex items-center justify-between cursor-grab active:cursor-grabbing select-none"
+              >
+                <div className="flex items-center gap-2 pointer-events-none">
+                  <div className="w-7 h-7 rounded-full bg-[#4F6F52]/10 flex items-center justify-center text-[#4F6F52]">
+                    <MessageSquare className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="font-extrabold text-xs text-zinc-800">智能向导小慧</h3>
+                    <span className="text-[8.5px] text-zinc-400 block mt-0.5">按住此处可左右拖拽</span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowFloatChat(false)}
+                  className="w-6 h-6 rounded-full hover:bg-zinc-200 flex items-center justify-center text-zinc-400 hover:text-zinc-600 transition-colors cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              {/* Chat Messages */}
+              <div className="flex-1 overflow-y-auto p-3 space-y-3.5 bg-zinc-50/40">
+                {chatMessages.map((msg, idx) => (
+                  <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                    <div className={`max-w-[85%] rounded-2xl px-3 py-2 text-xs leading-relaxed shadow-sm ${
+                      msg.role === "user" ? "bg-[#3A4D39] text-white" : "bg-white text-zinc-800 border"
+                    }`}>
+                      {msg.content}
+                    </div>
+                  </div>
                 ))}
+                {chatLoading && (
+                  <div className="flex justify-start">
+                    <div className="bg-white border text-zinc-500 rounded-2xl px-3 py-1.5 text-xs flex items-center gap-1.5 shadow-sm">
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      <span>思考中...</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Attachments view */}
+              {attachedMedia.length > 0 && (
+                <div className="px-3 py-1.5 bg-neutral-100 border-t flex flex-wrap gap-2">
+                  {attachedMedia.map((m, idx) => (
+                    <div key={idx} className="bg-white rounded-lg border px-2 py-0.5 text-[8.5px] font-bold text-zinc-600 flex items-center gap-1">
+                      <span>{m.type === 'image' ? '🖼️' : '🎬'}</span>
+                      <span className="truncate max-w-[80px]">{m.name}</span>
+                      <button onClick={() => setAttachedMedia(prev => prev.filter((_, i) => i !== idx))} className="text-red-500 font-extrabold text-[10px]">×</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Chat Inputs */}
+              <div className="p-2 border-t border-zinc-100 bg-white flex flex-col gap-1.5 relative">
+                {showEmojiPicker && (
+                  <div className="absolute bottom-full left-2 right-2 mb-1.5 p-2 bg-white border border-zinc-200 shadow-xl rounded-xl flex flex-wrap gap-1.5 justify-center z-50">
+                    {TRAVEL_EMOJIS.map(emoji => (
+                      <button
+                        key={emoji}
+                        onClick={() => {
+                          setChatInput(prev => prev + emoji);
+                          setShowEmojiPicker(false);
+                        }}
+                        className="text-base hover:scale-125 transition-transform p-0.5 cursor-pointer"
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => imageInputRef.current?.click()}
+                    className="w-7 h-7 rounded-full border border-zinc-200 text-zinc-500 hover:bg-neutral-50 flex items-center justify-center cursor-pointer transition-colors"
+                    title="选择图片"
+                  >
+                    <ImageIcon className="w-3.5 h-3.5" />
+                  </button>
+
+                  <button
+                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                    className="w-7 h-7 rounded-full border border-zinc-200 text-zinc-500 hover:bg-neutral-50 flex items-center justify-center cursor-pointer transition-colors"
+                    title="表情符号"
+                  >
+                    <Smile className="w-3.5 h-3.5" />
+                  </button>
+
+                  <button
+                    onClick={handleSpeechInputToggle}
+                    className={`w-7 h-7 rounded-full flex items-center justify-center border transition-all ${
+                      recording ? "border-amber-500 bg-amber-50 text-amber-600 shadow" : "border-zinc-200 text-zinc-500 hover:bg-neutral-50"
+                    }`}
+                    title="语音提问"
+                  >
+                    {recording ? <Mic className="w-3.5 h-3.5 animate-bounce" /> : <Mic className="w-3.5 h-3.5" />}
+                  </button>
+
+                  <input
+                    type="text"
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSendChatMessage()}
+                    placeholder={recording ? "正在聆听..." : "向小慧提问..."}
+                    className="flex-1 bg-neutral-50 border border-zinc-200/80 rounded-full px-3 py-1 text-xs outline-none focus:border-[#4F6F52] focus:bg-white transition-all text-[#2C3E35]"
+                  />
+
+                  <button
+                    onClick={handleSendChatMessage}
+                    className="w-7 h-7 rounded-full bg-[#4F6F52] text-white flex items-center justify-center hover:bg-[#3A5240] transition-colors shadow-md flex-shrink-0 active:scale-95"
+                  >
+                    <Send className="w-3 h-3 text-white" />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </div>
+
+        {/* COLUMN 3: RIGHT SIDEBAR (AI Q&A Guide Chat Panel - Mobile Drawer version only) */}
+        {isMobile && (
+          <div className={`
+            bg-white border-zinc-200/80 flex flex-col overflow-hidden shadow-lg z-30 transition-all duration-300
+            absolute top-0 bottom-0 right-0 w-[300px] h-[100dvh]
+            ${!showRightSidebar ? 'translate-x-full' : 'translate-x-0'}
+          `}>
+            <div className="p-4 border-b border-zinc-100 flex items-center justify-between bg-zinc-50/50 flex-shrink-0">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-[#4F6F52]/10 flex items-center justify-center text-[#4F6F52]">
+                  <MessageSquare className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-xs text-zinc-800">智能向导小慧</h3>
+                  <span className="text-[8.5px] text-zinc-400 block mt-0.5">支持语音提问与多媒体识别</span>
+                </div>
+              </div>
+              <button onClick={() => setShowRightSidebar(false)} className="text-zinc-400 hover:text-zinc-600 text-xs font-bold">关闭</button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-zinc-50/40">
+              {chatMessages.map((msg, idx) => (
+                <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                  <div className={`max-w-[85%] rounded-2xl px-3 py-2 text-xs leading-relaxed shadow-sm ${
+                    msg.role === "user" ? "bg-[#3A4D39] text-white" : "bg-white text-zinc-800 border"
+                  }`}>
+                    {msg.content}
+                  </div>
+                </div>
+              ))}
+              {chatLoading && (
+                <div className="flex justify-start">
+                  <div className="bg-white border text-zinc-500 rounded-2xl px-3.5 py-2 text-xs flex items-center gap-1.5 shadow-sm">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>思考中...</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {attachedMedia.length > 0 && (
+              <div className="px-4 py-2 bg-neutral-100 border-t flex flex-wrap gap-2 flex-shrink-0">
+                {attachedMedia.map((m, idx) => (
+                  <div key={idx} className="bg-white rounded-lg border px-2 py-1 text-[9px] font-bold text-zinc-600 flex items-center gap-1">
+                    <span>{m.type === 'image' ? '🖼️' : '🎬'}</span>
+                    <span className="truncate max-w-[80px]">{m.name}</span>
+                    <button onClick={() => setAttachedMedia(prev => prev.filter((_, i) => i !== idx))} className="text-red-500 font-extrabold text-[10px]">×</button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="p-3 pb-12 border-t border-zinc-100 bg-white flex flex-col gap-2 flex-shrink-0">
+              {showEmojiPicker && (
+                <div className="absolute bottom-full left-3 right-3 mb-2 p-2 bg-white border border-zinc-200 shadow-xl rounded-xl flex flex-wrap gap-2 justify-center z-50">
+                  {TRAVEL_EMOJIS.map(emoji => (
+                    <button
+                      key={emoji}
+                      onClick={() => {
+                        setChatInput(prev => prev + emoji);
+                        setShowEmojiPicker(false);
+                      }}
+                      className="text-lg hover:scale-125 transition-transform p-1 cursor-pointer"
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => imageInputRef.current?.click()}
+                  className="w-8 h-8 rounded-full border border-zinc-200 text-zinc-500 hover:bg-neutral-50 flex items-center justify-center cursor-pointer transition-colors"
+                  title="选择图片"
+                >
+                  <ImageIcon className="w-4 h-4" />
+                </button>
+
+                <button
+                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                  className="w-8 h-8 rounded-full border border-zinc-200 text-zinc-500 hover:bg-neutral-50 flex items-center justify-center cursor-pointer transition-colors"
+                  title="表情符号"
+                >
+                  <Smile className="w-4 h-4" />
+                </button>
+
+                <button
+                  onClick={handleSpeechInputToggle}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all ${
+                    recording ? "border-amber-500 bg-amber-50 text-amber-600 shadow" : "border-zinc-200 text-zinc-500 hover:bg-neutral-50"
+                  }`}
+                  title="语音提问"
+                >
+                  {recording ? <Mic className="w-4 h-4 animate-bounce" /> : <Mic className="w-4 h-4" />}
+                </button>
+
+                <input
+                  type="text"
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSendChatMessage()}
+                  placeholder={recording ? "正在聆听..." : "向小慧提问..."}
+                  className="flex-1 bg-neutral-50 border border-zinc-200/80 rounded-full px-4 py-2.5 text-xs outline-none focus:border-[#4F6F52] focus:bg-white transition-all text-[#2C3E35]"
+                />
+
+                <button
+                  onClick={handleSendChatMessage}
+                  className="w-8 h-8 rounded-full bg-[#4F6F52] text-white flex items-center justify-center hover:bg-[#3A5240] transition-colors shadow-md flex-shrink-0 active:scale-95"
+                >
+                  <Send className="w-4 h-4 text-white" />
+                </button>
               </div>
             </div>
           </div>
+        )}
 
-          {/* Column 2: Center Map component */}
-          <div className="flex-1 relative bg-zinc-100 h-full">
-            <div ref={desktopMapRef} className="w-full h-full" />
-
-            {/* Map Top-left Category Legend */}
-            <div className="absolute left-4 top-4 z-10 bg-white/95 backdrop-blur shadow-md border border-zinc-200/80 rounded-xl px-4 py-2 flex items-center gap-4 text-xs font-bold text-zinc-700">
-              <div className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-red-500" /> 地标</div>
-              <div className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-orange-500" /> 演出</div>
-              <div className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-purple-500" /> 寺庙</div>
-              <div className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-blue-500" /> 文化</div>
-              <div className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-pink-500" /> 祈福</div>
-              <div className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> 自然</div>
-            </div>
-
-            {/* Map Top-right Zoom control mock */}
-            <div className="absolute right-4 top-4 z-10 flex flex-col gap-1.5">
-              <button onClick={() => mapInstanceRef.current?.zoomIn()}
-                className="w-8 h-8 rounded-lg bg-white border shadow-md flex items-center justify-center font-bold text-zinc-700 hover:bg-neutral-50">+</button>
-              <button onClick={() => mapInstanceRef.current?.zoomOut()}
-                className="w-8 h-8 rounded-lg bg-white border shadow-md flex items-center justify-center font-bold text-zinc-700 hover:bg-neutral-50">-</button>
-            </div>
-
-            {/* Map Bottom-left scale indicator bar */}
-            <div className="absolute left-4 bottom-4 z-10 bg-white/90 border rounded px-2.5 py-1 text-[10px] font-mono text-zinc-500">
-              <span>比例尺 100 米</span>
-            </div>
-
-
-
-            {/* Float chat toggle button */}
-            {!showFloatChat && (
-              <button
-                onClick={() => setShowFloatChat(true)}
-                className="absolute right-6 bottom-6 z-[1010] w-14 h-14 rounded-full bg-gradient-to-br from-[#4F6F52] to-[#3A5240] text-white shadow-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all border border-[#4F6F52]/30 cursor-pointer"
-                title="打开AI导游"
-              >
-                <MessageSquare className="w-6 h-6 text-white" />
-              </button>
-            )}
-
-            {/* Floating AI Guide Widget (Image 1 Style) */}
-            <AnimatePresence>
-              {showFloatChat && (
-                <motion.div
-                  drag
-                  dragControls={dragControls}
-                  dragListener={false}
-                  dragMomentum={false}
-                  initial={{ opacity: 0, y: 50, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 50, scale: 0.95 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  className="absolute right-6 bottom-6 z-[1010] w-[360px] h-[520px] bg-white border border-[#E6E2D8] rounded-[24px] shadow-2xl flex flex-col overflow-hidden touch-none"
-                >
-                  {/* Header */}
-                  <div
-                    onPointerDown={(e) => dragControls.start(e)}
-                    className="cursor-move select-none px-4 py-3.5 flex items-center justify-between bg-[#FAF6EE] border-b border-[#E6E2D8]/70 flex-shrink-0"
-                  >
-                    <div className="flex items-center gap-2.5 pointer-events-none">
-                      {/* Avatar */}
-                      <div className="w-10 h-10 rounded-full overflow-hidden border border-[#D2A053]/30 bg-neutral-100 flex-shrink-0">
-                        <img
-                          src="https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=100&q=80"
-                          alt="AI导游小慧"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="text-left">
-                        <h3 className="font-extrabold text-sm text-[#2C3E35]">AI导游小慧</h3>
-                        <span className="text-[10px] text-[#4F6F52] font-semibold flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
-                          灵山胜境 • 在线服务中
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => setShowFloatChat(false)}
-                        className="text-zinc-500 hover:text-zinc-800 p-1.5 rounded-lg hover:bg-black/5 transition-colors cursor-pointer"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Chat Dialog Messages */}
-                  <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#FDFBF7] scrollbar-thin">
-                    {chatMessages.map((msg, i) => {
-                      const isUser = msg.role === "user";
-                      return (
-                        <div key={i} className={`flex gap-2.5 ${isUser ? "flex-row-reverse" : ""}`}>
-                          <div className={`w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-bold ${isUser ? "bg-neutral-200 text-zinc-700" : "bg-[#3A4D39] text-white"}`}>
-                            {isUser ? "我" : "慧"}
-                          </div>
-                          <div className="flex flex-col space-y-1 max-w-[75%]">
-                            <div className={`p-3 rounded-2xl text-[11px] leading-relaxed shadow-sm text-left ${isUser ? "bg-[#4F6F52] text-white rounded-tr-none" : "bg-white border border-[#E6E2D8] text-[#2C3E35] rounded-tl-none"}`}>
-                              {/* Attached image renderer */}
-                              {msg.content.includes('![图片](') && (
-                                <div className="mb-1.5 space-y-1">
-                                  {msg.content.match(/!\[图片\]\(([^)]+)\)/g)?.map((match, idx) => {
-                                    const url = match.match(/!\[图片\]\(([^)]+)\)/)?.[1];
-                                    return url ? <img key={idx} src={url} alt="上传的图片" className="max-w-full max-h-[120px] rounded-lg object-contain border border-white/20 shadow" /> : null;
-                                  })}
-                                </div>
-                              )}
-                              {/* Attached video renderer */}
-                              {msg.content.includes('🎬 [视频:') && (
-                                <div className="mb-1.5 flex items-center gap-1.5 text-[9px] text-[#2C3E35] bg-neutral-100 p-1.5 rounded-lg border border-[#E6E2D8]">
-                                  <span>🎬</span>
-                                  <span className="truncate flex-1 font-mono">{msg.content.match(/🎬 \[视频: ([^\]]+)\]/)?.[1] || "视频文件"}</span>
-                                </div>
-                              )}
-                              <div>{msg.content.replace(/!\[图片\]\([^)]+\)\n?/g, '').replace(/🎬 \[视频: [^\]]+\]\n?/g, '')}</div>
-                            </div>
-                            <span className={`text-[8.5px] text-zinc-400 font-mono px-1 ${isUser ? "text-right" : "text-left"}`}>
-                              {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                    {chatLoading && (
-                      <div className="flex gap-2.5">
-                        <div className="w-6 h-6 rounded-full bg-[#3A4D39] text-white flex items-center justify-center text-[10px] font-bold">慧</div>
-                        <div className="p-3 rounded-2xl bg-white border border-[#E6E2D8] flex items-center gap-1">
-                          <div className="w-1 h-1 bg-[#3A4D39] rounded-full animate-bounce" />
-                          <div className="w-1 h-1 bg-[#3A4D39] rounded-full animate-bounce [animation-delay:0.1s]" />
-                          <div className="w-1 h-1 bg-[#3A4D39] rounded-full animate-bounce [animation-delay:0.2s]" />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Attached Media Previews */}
-                  {attachedMedia.length > 0 && (
-                    <div className="flex gap-2 flex-wrap px-4 py-2 border-t border-[#E6E2D8]/50 bg-[#FDFBF7] flex-shrink-0">
-                      {attachedMedia.map((m, idx) => (
-                        <div key={idx} className="relative">
-                          {m.type === 'image' ? (
-                            <img src={m.url} alt={m.name} className="w-12 h-12 rounded-lg object-cover border border-[#E6E2D8]" />
-                          ) : (
-                            <div className="w-12 h-12 rounded-lg bg-neutral-100 flex flex-col items-center justify-center border border-[#E6E2D8] text-[10px]">
-                              <span className="text-base">🎬</span>
-                              <span className="text-[8px] text-zinc-500 scale-90 truncate max-w-full">视频</span>
-                            </div>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => setAttachedMedia(prev => prev.filter((_, i) => i !== idx))}
-                            className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-white flex items-center justify-center text-[8px] shadow hover:bg-red-600 cursor-pointer"
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Input Bar */}
-                  <div className="p-3.5 border-t border-[#E6E2D8]/70 bg-white flex items-center gap-2 flex-shrink-0">
-                    <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
-
-                    <button
-                      type="button"
-                      onClick={() => imageInputRef.current?.click()}
-                      className="w-9 h-9 rounded-full border border-[#E6E2D8] bg-white flex items-center justify-center text-zinc-500 hover:text-[#4F6F52] hover:bg-zinc-50 transition-colors shadow-sm cursor-pointer"
-                      title="上传图片"
-                    >
-                      <ImageIcon className="w-4.5 h-4.5" />
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={toggleRecording}
-                      className="w-9 h-9 rounded-full border border-[#E6E2D8] flex items-center justify-center transition-colors shadow-sm cursor-pointer relative"
-                      style={{
-                        background: recording ? "rgba(79,111,82,0.15)" : "white",
-                        borderColor: recording ? "rgba(79,111,82,0.5)" : "#E6E2D8",
-                        color: recording ? "#D2A053" : "#71717a"
-                      }}
-                      title="语音输入"
-                    >
-                      {recording && (
-                        <motion.div animate={{ scale: [1, 1.8, 1], opacity: [0.5, 0, 0.5] }}
-                          transition={{ duration: 0.9, repeat: Infinity }}
-                          className="absolute inset-0 rounded-full"
-                          style={{ background: "rgba(210,160,83,0.15)" }} />
-                      )}
-                      {recording ? (
-                        <Mic className="w-4.5 h-4.5 animate-bounce text-[#D2A053]" />
-                      ) : (
-                        <Mic className="w-4.5 h-4.5" />
-                      )}
-                    </button>
-                    
-                    <input
-                      type="text"
-                      value={chatInput}
-                      onChange={(e) => setChatInput(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && handleSendChatMessage()}
-                      placeholder={recording ? "正在聆听..." : "向小慧提问...（Enter发送）"}
-                      className="flex-1 bg-neutral-50 border border-zinc-200/80 rounded-full px-4 py-2 text-xs outline-none focus:border-[#4F6F52] focus:bg-white transition-all text-[#2C3E35]"
-                    />
-                    
-                    <button
-                      onClick={handleSendChatMessage}
-                      className="w-9 h-9 rounded-full bg-[#4F6F52] text-white flex items-center justify-center hover:bg-[#3A5240] transition-colors shadow-md flex-shrink-0 active:scale-95 cursor-pointer"
-                    >
-                      <Send className="w-4 h-4 text-white" />
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-        </div>
       </div>
-      )}
+
+      {/* Artifacts drawer modal */}
+      <AnimatePresence>
+        {showArtifactsDrawer && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.5 }} exit={{ opacity: 0 }}
+              onClick={() => setShowArtifactsDrawer(false)}
+              className="absolute inset-0 bg-black z-45" />
+            <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 25 }}
+              className="absolute bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl p-5 space-y-3 max-h-[70vh] overflow-y-auto md:max-w-[460px] md:mx-auto md:rounded-3xl md:bottom-[10%] md:top-[10%] md:h-[600px]">
+              <div className="flex items-center justify-between pb-2 border-b">
+                <h3 className="font-extrabold text-sm text-zinc-900" style={{ fontFamily: "var(--font-noto-serif)" }}>巴蜀文博陈列</h3>
+                <button onClick={() => setShowArtifactsDrawer(false)} className="text-zinc-400 hover:text-zinc-750 text-xs font-bold">关闭</button>
+              </div>
+              <div className="grid grid-cols-2 gap-3 pt-1">
+                {[
+                  { name: "巴国青铜剑", period: "战国时期", emoji: "🗡️", desc: "柳叶形扁茎无格，表面带有精致暗斑文饰，巴人标志性兵器。" },
+                  { name: "汉代宴乐陶俑", period: "东汉", emoji: "🏺", desc: "陶俑神态逼真，生动体现了东汉时期川蜀地区的乐舞生活面貌。" },
+                  { name: "三峡夔门石刻拓片", period: "明清", emoji: "📜", desc: "镌刻着历代文人墨客描绘瞿塘峡天险的雄浑墨宝。" },
+                  { name: "巴渝木雕隔扇", period: "清代", emoji: "🪵", desc: "镂空透雕的吉祥花鸟鸟兽图案，极其精细的镂空技法。" }
+                ].map(a => (
+                  <div key={a.name} className="p-3 bg-[#FAF8F5] border border-zinc-200/50 rounded-xl space-y-1.5 flex flex-col justify-between">
+                    <div className="flex items-center justify-between">
+                      <span className="text-2xl">{a.emoji}</span>
+                      <span className="text-[8px] bg-zinc-200 px-1 py-0.5 rounded text-zinc-500 font-bold">{a.period}</span>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-[11.5px] text-zinc-900">{a.name}</h4>
+                      <p className="text-[9.5px] text-zinc-500 leading-normal mt-0.5">{a.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }

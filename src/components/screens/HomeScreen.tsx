@@ -347,7 +347,6 @@ function MobileView() {
   return (
     <div className="flex flex-col bg-white w-full">
       <MobileHeaderAndBanner />
-      <MobileCityStrip />
       <MobileChengduPanel />
       <MobileEntranceCards />
       <MobileSpots />
@@ -411,7 +410,7 @@ function MobileHeaderAndBanner() {
     <div className="relative w-full overflow-hidden bg-neutral-900 aspect-[375/300] flex flex-col justify-between pb-8">
       {/* Background Banner Image */}
       <div className="absolute inset-0 z-0">
-        <AnimatePresence mode="wait">
+        <AnimatePresence>
           <motion.img
             key={CITY_BANNERS[bannerIndex].city}
             src={CITY_BANNERS[bannerIndex].img}

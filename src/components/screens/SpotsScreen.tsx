@@ -16,6 +16,7 @@ const SIDEBAR_ITEMS = [
   { id: "beijing", label: "北京市", city: "北京" },
   { id: "hangzhou", label: "杭州市", city: "杭州" },
   { id: "wuhan", label: "武汉市", city: "武汉" },
+  { id: "shanghai", label: "上海市", city: "上海" },
 ];
 
 // Hot spots order from screenshot: 布达拉宫, 九寨沟, 西湖, 故宫, 泰山, 黄山
@@ -42,6 +43,7 @@ const CITY_BANNERS: Record<string, string> = {
   changsha: "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=800&q=80",
   wuhan: "https://images.unsplash.com/photo-1542224566-6e85f2e6772f?w=800&q=80",
   guilin: "https://images.unsplash.com/photo-1523731407965-2430cd12f5e4?w=800&q=80",
+  shanghai: "https://images.unsplash.com/photo-1538428494232-9c0d8a3ab403?w=800&q=80",
 };
 
 export function SpotsScreen() {
@@ -106,6 +108,42 @@ export function SpotsScreen() {
               <X className="w-3.5 h-3.5" />
             </button>
           )}
+        </div>
+      </div>
+
+      {/* City Cards Strip (from home screen) */}
+      <div className="px-4 pt-2 pb-1.5 bg-white flex-shrink-0 border-b border-[#EEF2F0]">
+        <div className="flex gap-2.5 overflow-x-auto scrollbar-none pb-0.5">
+          {[
+            { city: "重庆", tab: "chongqing", title: "洪崖洞夜色", img: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?auto=format&fit=crop&w=300&q=90" },
+            { city: "北京", tab: "beijing", title: "故宫红墙", img: "https://images.unsplash.com/photo-1547981609-4b6bfe67ca0b?auto=format&fit=crop&w=300&q=90" },
+            { city: "杭州", tab: "hangzhou", title: "西湖烟柳", img: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=300&q=90" },
+            { city: "西安", tab: "xian", title: "古城晨光", img: "https://images.unsplash.com/photo-1528360983277-13d401cdc186?auto=format&fit=crop&w=300&q=90" },
+            { city: "上海", tab: "shanghai", title: "外滩天际", img: "https://images.unsplash.com/photo-1538428494232-9c0d8a3ab403?auto=format&fit=crop&w=300&q=90" },
+          ].map((banner) => {
+            const isActive = activeTab === banner.tab;
+            return (
+              <div
+                key={banner.city}
+                onClick={() => {
+                  setActiveTab(banner.tab);
+                  setSearch("");
+                }}
+                className={`flex-shrink-0 w-[116px] rounded-xl overflow-hidden border shadow-sm bg-white cursor-pointer transition-all active:scale-95 ${
+                  isActive ? "border-[#FF5B45] ring-2 ring-[#FF5B45]/15" : "border-zinc-200 hover:border-zinc-300"
+                }`}
+              >
+                <div className="relative h-14">
+                  <img src={banner.img} alt={banner.title} className="absolute inset-0 w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+                  <div className="absolute left-2.5 bottom-1.5 z-10">
+                    <div className="text-[10px] font-black text-white leading-tight">{banner.city}</div>
+                    <div className="text-[8px] text-white/80 font-medium truncate max-w-[85px] leading-tight mt-0.5">{banner.title}</div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
