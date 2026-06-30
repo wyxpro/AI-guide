@@ -17,6 +17,11 @@ const SIDEBAR_ITEMS = [
   { id: "hangzhou", label: "杭州市", city: "杭州" },
   { id: "wuhan", label: "武汉市", city: "武汉" },
   { id: "shanghai", label: "上海市", city: "上海" },
+  { id: "nanjing", label: "南京市", city: "南京" },
+  { id: "suzhou", label: "苏州市", city: "苏州" },
+  { id: "guangzhou", label: "广州市", city: "广州" },
+  { id: "qingdao", label: "青岛市", city: "青岛" },
+  { id: "xiamen", label: "厦门市", city: "厦门" },
 ];
 
 // Hot spots order from screenshot: 布达拉宫, 九寨沟, 西湖, 故宫, 泰山, 黄山
@@ -120,6 +125,13 @@ export function SpotsScreen() {
             { city: "杭州", tab: "hangzhou", title: "西湖烟柳", img: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=300&q=90" },
             { city: "西安", tab: "xian", title: "古城晨光", img: "https://images.unsplash.com/photo-1528360983277-13d401cdc186?auto=format&fit=crop&w=300&q=90" },
             { city: "上海", tab: "shanghai", title: "外滩天际", img: "https://images.unsplash.com/photo-1538428494232-9c0d8a3ab403?auto=format&fit=crop&w=300&q=90" },
+            { city: "成都", tab: "chengdu", title: "大熊猫基地", img: "https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=300&q=90" },
+            { city: "南京", tab: "nanjing", title: "金陵夜色", img: "https://images.unsplash.com/photo-1542359649-31e03cd4d909?auto=format&fit=crop&w=300&q=90" },
+            { city: "武汉", tab: "wuhan", title: "江城樱花", img: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?auto=format&fit=crop&w=300&q=90" },
+            { city: "苏州", tab: "suzhou", title: "江南园林", img: "https://images.unsplash.com/photo-1547981609-4b6bfe67ca0b?auto=format&fit=crop&w=300&q=90" },
+            { city: "广州", tab: "guangzhou", title: "珠江夜韵", img: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=300&q=90" },
+            { city: "青岛", tab: "qingdao", title: "红瓦绿树", img: "https://images.unsplash.com/photo-1528360983277-13d401cdc186?auto=format&fit=crop&w=300&q=90" },
+            { city: "厦门", tab: "xiamen", title: "鹭岛海风", img: "https://images.unsplash.com/photo-1538428494232-9c0d8a3ab403?auto=format&fit=crop&w=300&q=90" },
           ].map((banner) => {
             const isActive = activeTab === banner.tab;
             return (
@@ -133,12 +145,12 @@ export function SpotsScreen() {
                   isActive ? "border-[#FF5B45] ring-2 ring-[#FF5B45]/15" : "border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <div className="relative h-14">
+                <div className="relative h-20">
                   <img src={banner.img} alt={banner.title} className="absolute inset-0 w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-                  <div className="absolute left-2.5 bottom-1.5 z-10">
-                    <div className="text-[10px] font-black text-white leading-tight">{banner.city}</div>
-                    <div className="text-[8px] text-white/80 font-medium truncate max-w-[85px] leading-tight mt-0.5">{banner.title}</div>
+                  <div className="absolute left-2.5 bottom-2 z-10">
+                    <div className="text-[11px] font-black text-white leading-tight">{banner.city}</div>
+                    <div className="text-[9px] text-white/80 font-medium truncate max-w-[95px] leading-tight mt-0.5">{banner.title}</div>
                   </div>
                 </div>
               </div>

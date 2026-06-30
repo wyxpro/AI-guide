@@ -5,12 +5,13 @@ import {
   Compass, ArrowRight, Loader2, MapPin, Clock, ChevronLeft, ChevronRight,
   Share2, MessageSquare, ShieldAlert, Award, Search, Send,
   Volume2, VolumeX, Eye, BookOpen, Navigation, Landmark, Sparkles,
-  X, Smile, Image as ImageIcon, Film, Mic, Menu
+  X, Smile, Image as ImageIcon, Film, Mic, Menu, Bot, User
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { request } from "@/lib/api/request";
+import { useEazo } from "@eazo/sdk/react";
 import AMapLoader from "@amap/amap-jsapi-loader";
 
 if (typeof window !== "undefined") {
@@ -78,7 +79,11 @@ const POPULAR_CITIES = [
   { name: "上海", center: [121.473, 31.230], img: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=200&q=80", badge: "摩登都市" },
   { name: "成都", center: [104.066, 30.572], img: "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=200&q=80", badge: "天府之国" },
   { name: "西安", center: [108.940, 34.341], img: "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=200&q=80", badge: "古丝路起点" },
-  { name: "杭州", center: [120.155, 30.274], img: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=200&q=80", badge: "人间天堂" }
+  { name: "杭州", center: [120.155, 30.274], img: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=200&q=80", badge: "人间天堂" },
+  { name: "南京", center: [118.796, 32.060], img: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=200&q=80", badge: "六朝古都" },
+  { name: "武汉", center: [114.305, 30.593], img: "https://images.unsplash.com/photo-1542224566-6e85f2e6772f?w=200&q=80", badge: "江城武汉" },
+  { name: "苏州", center: [120.585, 31.299], img: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=200&q=80", badge: "园林之城" },
+  { name: "广州", center: [113.264, 23.129], img: "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=200&q=80", badge: "花城" }
 ];
 
 const PRESET_THEME_ROUTES = [
@@ -99,6 +104,7 @@ interface GeneratedRoute {
 
 export function RoutesScreen() {
   const router = useRouter();
+  const user = useEazo((s: any) => s.auth.user) as { name?: string | null; avatar?: string | null } | null;
   const [selectedCity, setSelectedCity] = useState("重庆");
   const currentSpots = ALL_CITIES_SPOTS[selectedCity] || CHONGQING_SPOTS;
 
@@ -181,6 +187,15 @@ export function RoutesScreen() {
 
   const handleCityMouseUpOrLeave = () => {
     setCityDragState(prev => ({ ...prev, isDragging: false }));
+  };
+
+  const scrollCities = (direction: "left" | "right") => {
+    if (!cityScrollRef.current) return;
+    const scrollAmount = 140;
+    cityScrollRef.current.scrollBy({
+      left: direction === "left" ? -scrollAmount : scrollAmount,
+      behavior: "smooth",
+    });
   };
 
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -787,7 +802,7 @@ export function RoutesScreen() {
               setShowLeftSidebar(true);
               setShowRightSidebar(false);
             }}
-            className="px-2.5 h-8.5 rounded-full bg-[#4F6F52] text-white flex items-center gap-0.5 text-[10.5px] font-extrabold active:scale-95 transition-all"
+            className="px-2.5 h-8.5 rounded-full bg-[#D2A053] text-white flex items-center gap-0.5 text-[10.5px] font-extrabold active:scale-95 transition-all"
           >
             <MapPin className="w-3 h-3" />
             <span>{selectedCity}</span>
@@ -798,7 +813,7 @@ export function RoutesScreen() {
               setShowRightSidebar(!showRightSidebar);
               setShowLeftSidebar(false);
             }}
-            className="w-8 h-8 rounded-lg bg-[#3A4D39] text-white flex items-center justify-center hover:bg-[#4F6F52] active:scale-95 transition-all"
+            className="w-8 h-8 rounded-lg bg-[#4D96FF] text-white flex items-center justify-center hover:bg-[#3D85EF] active:scale-95 transition-all"
             title="AI咨询"
           >
             <MessageSquare className="w-4.5 h-4.5" />
@@ -867,7 +882,7 @@ export function RoutesScreen() {
                       }`}
                     >
                       <div className="relative h-20 w-full">
-                        <img src={c.img} alt={c.name} className="w-full h-full object-cover" pointerEvents="none" />
+                        <img src={c.img} alt={c.name} className="w-full h-full object-cover" />
                         <span className="absolute bottom-1.5 right-1.5 bg-black/60 backdrop-blur-sm text-[8px] text-white px-1.5 py-0.5 rounded font-black">
                           {c.badge}
                         </span>
@@ -880,6 +895,21 @@ export function RoutesScreen() {
                   );
                 })}
               </div>
+              {/* Left / Right nav buttons */}
+              <button
+                type="button"
+                onClick={() => scrollCities("left")}
+                className="hidden md:flex absolute left-1 top-1/2 -translate-y-1/2 w-7 h-7 items-center justify-center rounded-full bg-white/90 border border-zinc-200 text-zinc-600 hover:bg-white hover:text-[#4F6F52] shadow-sm cursor-pointer active:scale-95 transition-all"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => scrollCities("right")}
+                className="hidden md:flex absolute right-1 top-1/2 -translate-y-1/2 w-7 h-7 items-center justify-center rounded-full bg-white/90 border border-zinc-200 text-zinc-600 hover:bg-white hover:text-[#4F6F52] shadow-sm cursor-pointer active:scale-95 transition-all"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
             </div>
           </div>
 
@@ -995,7 +1025,7 @@ export function RoutesScreen() {
           <div ref={mapRef} className="w-full h-full" />
 
           {/* Map Top horizontal Popular Spots Cards overlay (Aligned to left, avoiding top-right controls) */}
-          <div className="absolute top-4 left-4 z-25 flex gap-2 overflow-x-auto scrollbar-none pb-1.5 snap-x w-[calc(100%-65px)] md:max-w-[calc(100%-180px)]">
+          <div className="absolute top-4 left-4 z-25 flex gap-1.5 sm:gap-2 overflow-x-auto scrollbar-none pb-1.5 snap-x w-[calc(100%-40px)] sm:w-[calc(100%-65px)] md:max-w-[calc(100%-180px)]">
             {currentSpots.slice(0, 6).map((spot) => {
               const isActive = activeSpot?.id === spot.id;
               return (
@@ -1011,20 +1041,20 @@ export function RoutesScreen() {
                       speakSpotNarration(spot.name, spot.desc);
                     }
                   }}
-                  className={`flex-shrink-0 w-[140px] rounded-xl overflow-hidden bg-white/95 backdrop-blur-md border transition-all text-left shadow-md flex flex-col snap-start ${
+                  className={`flex-shrink-0 w-[100px] sm:w-[140px] rounded-xl overflow-hidden bg-white/95 backdrop-blur-md border transition-all text-left shadow-md flex flex-col snap-start ${
                     isActive ? "border-[#4F6F52] ring-2 ring-[#4F6F52]/20" : "border-zinc-200/40"
                   }`}
                 >
-                  <div className="relative h-14 w-full flex-shrink-0">
+                  <div className="relative h-10 sm:h-14 w-full flex-shrink-0">
                     <img src={spot.img} alt={spot.name} className="w-full h-full object-cover" />
                     <div className="absolute top-1 right-1 bg-black/60 backdrop-blur-sm text-[7px] text-white px-1.5 py-0.5 rounded-full font-black">
                       ⭐ {spot.rating}
                     </div>
                   </div>
-                  <div className="p-2 flex flex-col justify-between flex-1 min-w-0">
-                    <div className="text-[11px] font-black text-zinc-900 truncate leading-tight">{spot.name}</div>
-                    <div className="flex items-center justify-between mt-1 text-[9px] text-[#4F6F52] font-bold">
-                      <span>地标：{spot.type}</span>
+                  <div className="p-1.5 sm:p-2 flex flex-col justify-between flex-1 min-w-0">
+                    <div className="text-[10px] sm:text-[11px] font-black text-zinc-900 truncate leading-tight">{spot.name}</div>
+                    <div className="flex items-center justify-between mt-1 text-[8px] sm:text-[9px] text-[#4F6F52] font-bold">
+                      <span className="truncate">{spot.type}</span>
                     </div>
                   </div>
                 </button>
@@ -1032,15 +1062,7 @@ export function RoutesScreen() {
             })}
           </div>
 
-          {/* Category filters legends */}
-          <div className="hidden md:flex absolute left-4 bottom-4 z-10 bg-white/95 backdrop-blur shadow-md border border-zinc-200/80 rounded-xl px-4 py-2 items-center gap-4 text-xs font-bold text-zinc-700">
-            <div className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-red-500" /> 地标</div>
-            <div className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-orange-500" /> 演出</div>
-            <div className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-purple-500" /> 寺庙</div>
-            <div className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-blue-500" /> 文化</div>
-            <div className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-pink-500" /> 祈福</div>
-            <div className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> 自然</div>
-          </div>
+
 
           {/* Floating Compass and Zoom controls stacked in the top-right corner (Pushed lower on mobile) */}
           <div className="absolute right-4 top-36 md:top-4 z-30 flex flex-col gap-2">
@@ -1100,7 +1122,7 @@ export function RoutesScreen() {
               dragMomentum={false}
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              className="absolute bottom-4 right-4 z-30 w-[360px] h-[420px] bg-white/95 backdrop-blur-md rounded-2xl border border-zinc-200/80 shadow-2xl flex flex-col overflow-hidden"
+              className="absolute bottom-4 right-4 z-30 w-[300px] h-[420px] bg-white/95 backdrop-blur-md rounded-2xl border border-zinc-200/80 shadow-2xl flex flex-col overflow-hidden"
             >
               {/* Header acts as drag handle */}
               <div
@@ -1126,18 +1148,30 @@ export function RoutesScreen() {
 
               {/* Chat Messages */}
               <div className="flex-1 overflow-y-auto p-3 space-y-3.5 bg-zinc-50/40">
-                {chatMessages.map((msg, idx) => (
-                  <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-[85%] rounded-2xl px-3 py-2 text-xs leading-relaxed shadow-sm ${
-                      msg.role === "user" ? "bg-[#3A4D39] text-white" : "bg-white text-zinc-800 border"
-                    }`}>
-                      {msg.content}
+                {chatMessages.map((msg, idx) => {
+                  const isUser = msg.role === "user";
+                  const avatarSrc = isUser
+                    ? (user?.avatar || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80")
+                    : "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=120&q=80";
+                  return (
+                    <div key={idx} className={`flex gap-2 ${isUser ? "flex-row-reverse" : "flex-row"}`}>
+                      <div className="flex-shrink-0 w-7 h-7 rounded-full overflow-hidden border border-zinc-200 bg-white">
+                        <img src={avatarSrc} alt={isUser ? "我" : "小慧"} className="w-full h-full object-cover" />
+                      </div>
+                      <div className={`max-w-[85%] rounded-2xl px-3 py-2 text-xs leading-relaxed shadow-sm ${
+                        isUser ? "bg-[#4D96FF] text-white rounded-br-sm" : "bg-white text-zinc-800 border rounded-bl-sm"
+                      }`}>
+                        {msg.content}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
                 {chatLoading && (
-                  <div className="flex justify-start">
-                    <div className="bg-white border text-zinc-500 rounded-2xl px-3 py-1.5 text-xs flex items-center gap-1.5 shadow-sm">
+                  <div className="flex gap-2">
+                    <div className="flex-shrink-0 w-7 h-7 rounded-full overflow-hidden border border-zinc-200 bg-white">
+                      <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=120&q=80" alt="小慧" className="w-full h-full object-cover" />
+                    </div>
+                    <div className="bg-white border text-zinc-500 rounded-2xl rounded-bl-sm px-3 py-1.5 text-xs flex items-center gap-1.5 shadow-sm">
                       <Loader2 className="w-3 h-3 animate-spin" />
                       <span>思考中...</span>
                     </div>
@@ -1159,7 +1193,7 @@ export function RoutesScreen() {
               )}
 
               {/* Chat Inputs */}
-              <div className="p-2 border-t border-zinc-100 bg-white flex-shrink-0">
+              <div className="p-1.5 border-t border-zinc-100 bg-white flex-shrink-0">
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => imageInputRef.current?.click()}
@@ -1252,7 +1286,7 @@ export function RoutesScreen() {
               </div>
             )}
 
-            <div className="p-3 border-t border-zinc-100 bg-white flex-shrink-0">
+            <div className="p-2 border-t border-zinc-100 bg-white flex-shrink-0">
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => imageInputRef.current?.click()}

@@ -149,10 +149,10 @@ export function ProfileScreen() {
   };
 
   return (
-    <div className="min-h-svh bg-[#F4F7F5] pb-24 md:pb-12 text-[#2C3E35]">
+    <div className="min-h-svh bg-[#F4F7F5] pb-10 md:pb-12 text-[#2C3E35] selection:bg-[#4F6F52]/20 selection:text-[#4F6F52]">
 
       {/* ── Main Viewport Wrapper ── */}
-      <div className="w-full max-w-[1280px] mx-auto px-4 md:px-6 py-0 md:py-8 flex flex-col lg:flex-row gap-8 items-start">
+      <div className="w-full max-w-[1280px] mx-auto px-0 sm:px-4 md:px-6 py-0 md:py-8 flex flex-col lg:flex-row gap-8 items-start">
 
         {/* ── Desktop Sidebar (Hidden on Mobile) ── */}
         <aside className="hidden lg:block w-[240px] flex-shrink-0 bg-white rounded-[24px] border border-[#E2EAE5] p-6 shadow-sm h-fit">
@@ -193,8 +193,103 @@ export function ProfileScreen() {
         </aside>
 
         {/* ── Main Content Area ── */}
-        <div className="flex-1 w-full min-h-[600px]">
-          <AnimatePresence mode="wait">
+        <div className="flex-1 w-full min-h-[600px] flex flex-col">
+          {/* Mobile Profile Card (Hidden on Desktop) */}
+          <div className="lg:hidden w-full bg-[#FAFBFB] border-b border-[#E8EDE9] px-4 pt-7 pb-5">
+            {/* Header row with Title and Icons */}
+            <div className="flex items-center justify-between mb-5">
+              <h1 className="text-[22px] font-extrabold text-[#2C3E35] tracking-tight">个人中心</h1>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowNotifications(true)}
+                  className="w-10 h-10 rounded-full bg-white border border-[#E2EAE5] flex items-center justify-center text-zinc-600 active:scale-95 transition-transform cursor-pointer relative shadow-sm"
+                >
+                  <Bell className="w-4 h-4" />
+                  <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 rounded-full bg-red-500" />
+                </button>
+                <button
+                  onClick={() => setActiveSection("settings")}
+                  className="w-10 h-10 rounded-full bg-white border border-[#E2EAE5] flex items-center justify-center text-zinc-600 active:scale-95 transition-transform cursor-pointer shadow-sm"
+                >
+                  <Settings className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Profile Info */}
+            <div className="flex items-center gap-4 mb-5">
+              <img
+                src={profileAvatar}
+                className="w-16 h-16 rounded-2xl border border-white shadow-md object-cover flex-shrink-0"
+                alt="Avatar"
+              />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h2 className="text-lg font-black text-[#1E2522] truncate max-w-[120px]">{displayName}</h2>
+                  <span className="px-2 py-0.5 rounded-full bg-[#EBF3EE] border border-[#D5E5DC] text-[#4F6F52] text-[9.5px] font-black flex items-center gap-0.5 flex-shrink-0">
+                    <Trophy className="w-2.5 h-2.5" /> {profileLevel}
+                  </span>
+                </div>
+                <p className="text-[11.5px] text-[#8F9F8F] mt-1.5 leading-snug">{profileBio}</p>
+              </div>
+              <button
+                onClick={() => {
+                  setEditName(profileName);
+                  setEditLevel(profileLevel);
+                  setEditAvatar(profileAvatar);
+                  setEditBio(profileBio);
+                  setEditGender(profileGender);
+                  setEditRegion(profileRegion);
+                  setShowEditProfile(true);
+                }}
+                className="text-[10px] font-extrabold text-white px-3.5 py-2.5 rounded-xl shadow-md active:scale-95 transition-transform cursor-pointer flex-shrink-0"
+                style={{ background: "linear-gradient(135deg, #5A8F65, #4F6F52)" }}
+              >
+                编辑资料
+              </button>
+            </div>
+
+            {/* Micro Stats Segment */}
+            <div className="grid grid-cols-3 gap-2.5 bg-white border border-[#E8EDE9] rounded-2xl p-3.5 shadow-sm">
+              <div className="text-center relative after:absolute after:right-0 after:top-1/4 after:h-1/2 after:w-[1px] after:bg-[#E2EAE5]">
+                <span className="block text-base font-black text-[#2C3E35]">{spotCount}</span>
+                <span className="text-[10px] font-bold text-[#8F9F8F]">足迹景区</span>
+              </div>
+              <div className="text-center relative after:absolute after:right-0 after:top-1/4 after:h-1/2 after:w-[1px] after:bg-[#E2EAE5]">
+                <span className="block text-base font-black text-[#2C3E35]">{favCount}</span>
+                <span className="text-[10px] font-bold text-[#8F9F8F]">我的收藏</span>
+              </div>
+              <div className="text-center">
+                <span className="block text-base font-black text-[#2C3E35]">{totalVisits}</span>
+                <span className="text-[10px] font-bold text-[#8F9F8F]">足迹打卡</span>
+              </div>
+            </div>
+
+            {/* iOS Segment Control */}
+            <div className="flex bg-[#E8EDE9] p-0.75 rounded-2xl border border-[#DEEAE3] mt-5">
+              {[
+                { id: "home", label: "首页", icon: User },
+                { id: "routes", label: "行程", icon: Map },
+                { id: "favorites", label: "收藏", icon: Heart },
+                { id: "interests", label: "兴趣", icon: Sparkles },
+              ].map(item => (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveSection(item.id as ActiveSection)}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-center text-[11px] font-extrabold rounded-xl transition-all cursor-pointer ${activeSection === item.id
+                    ? "bg-white text-[#4F6F52] shadow-sm"
+                    : "text-[#8F9F8F] hover:text-[#4F6F52]"
+                    }`}
+                >
+                  <item.icon className="w-3.5 h-3.5" />
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="p-4 sm:p-0 flex-1">
+            <AnimatePresence mode="wait">
 
             {/* ═══════════════════════════════════════════════════════
                01. 我的首页 (My Homepage)
@@ -206,11 +301,11 @@ export function ProfileScreen() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -12 }}
                 transition={SPRING}
-                className="bg-white lg:rounded-[24px] lg:border lg:border-[#E2EAE5] lg:shadow-sm overflow-hidden"
+                className="bg-white lg:rounded-[24px] lg:border lg:border-[#E2EAE5] lg:shadow-sm rounded-3xl border border-[#E2EAE5] shadow-sm overflow-hidden"
               >
-                {/* Banner & User profile header */}
+                {/* Banner & User profile header (Desktop styled, hidden on mobile to avoid duplication) */}
                 <div
-                  className="relative h-[230px] p-6 flex flex-col justify-between"
+                  className="hidden lg:flex relative h-[230px] p-6 flex-col justify-between"
                   style={{
                     backgroundImage: `linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1542224566-6e85f2e6772f?w=1200&q=80')`,
                     backgroundSize: 'cover',
@@ -258,7 +353,7 @@ export function ProfileScreen() {
                         </div>
                       </div>
 
-                      {/* Redesigned Experience Mode Toggle Switcher - Moved to the right */}
+                      {/* Experience Mode Toggle Switcher */}
                       <div className="bg-white/15 backdrop-blur-md border border-white/20 p-1 rounded-2xl flex items-center gap-1 shadow-inner flex-shrink-0">
                         {(["standard", "elder", "child"] as Mode[]).map(m => (
                           <button
@@ -277,10 +372,32 @@ export function ProfileScreen() {
                   </div>
                 </div>
 
+                {/* Mobile header info section (Compact experience mode selection) */}
+                <div className="lg:hidden p-4.5 bg-[#FAFBFB] border-b border-[#E8EDE9] flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10.5px] font-extrabold text-[#4F6F52]">界面辅助适配</span>
+                    <span className="text-[9px] text-zinc-400">选择适合您阅读与互动的交互模式</span>
+                  </div>
+                  <div className="bg-[#E8EDE9] p-0.75 rounded-2xl flex items-center gap-1 shadow-inner">
+                    {(["standard", "elder", "child"] as Mode[]).map(m => (
+                      <button
+                        key={m}
+                        onClick={() => changeMode(m)}
+                        className={`flex-1 text-[11px] font-black py-2 rounded-xl transition-all cursor-pointer ${mode === m
+                          ? "bg-white text-[#4F6F52] shadow-sm"
+                          : "text-[#8F9F8F] hover:text-[#4F6F52]"
+                          }`}
+                      >
+                        {m === "standard" ? "标准" : m === "elder" ? "适老" : "童趣"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Main Body */}
-                <div className="p-4 sm:p-6 space-y-4">
-                  {/* 4 Quick Entry Cards */}
-                  <div className="grid grid-cols-4 gap-2 text-center">
+                <div className="p-4 sm:p-6 space-y-5">
+                  {/* Desktop Quick Entry Cards (Hidden on Mobile) */}
+                  <div className="hidden lg:grid grid-cols-4 gap-2 text-center">
                     {[
                       { label: "我的行程", color: "bg-[#EBF3EE] text-[#4F6F52]", icon: Map, action: () => setActiveSection("routes") },
                       { label: "我的收藏", color: "bg-[#FFF0ED] text-[#FF5B45]", icon: Heart, action: () => setActiveSection("favorites") },
@@ -753,23 +870,23 @@ export function ProfileScreen() {
                   </div>
 
                   {/* AI banner small */}
-                  <div className="bg-gradient-to-r from-[#F0F5FF] to-[#E5EDFF] rounded-3xl p-4 border border-[#D0DFFA] flex items-center justify-between">
+                  <div className="bg-[#EEF7F2] rounded-3xl p-4 border border-[#D5E5DC] flex items-center justify-between shadow-sm">
                     <div className="flex items-center gap-3.5">
                       <img
                         src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&auto=format&fit=crop&q=80"
-                        className="w-10 h-10 rounded-full object-cover object-top border-2 border-white"
+                        className="w-10 h-10 rounded-full object-cover object-top border-2 border-white shadow-sm flex-shrink-0"
                         alt=""
                       />
                       <div>
                         <h4 className="text-xs font-extrabold text-zinc-800">AI数字人导游</h4>
-                        <p className="text-[9.5px] text-zinc-400 mt-0.5">有问题随时问欣欣~</p>
+                        <p className="text-[9.5px] text-zinc-400 mt-0.5">有任何景区文化史料问题，随时问欣欣~</p>
                       </div>
                     </div>
                     <button
                       onClick={() => router.push("/qa")}
-                      className="px-3.5 py-1.5 bg-[#4D96FF] text-white text-[10px] font-black rounded-lg shadow-sm hover:bg-[#3D85EF] transition-colors cursor-pointer"
+                      className="px-4 py-2 bg-[#4F6F52] text-white text-[10px] font-black rounded-xl shadow-md hover:bg-[#3D5640] transition-all cursor-pointer flex-shrink-0"
                     >
-                      开始对话
+                      对话小玉
                     </button>
                   </div>
 
@@ -793,7 +910,7 @@ export function ProfileScreen() {
                         color: "#DC2626"
                       }}
                     >
-                      <LogOut className="w-3.5 h-3.5" /> 退出当前登录
+                      <LogOut className="w-3.5 h-3.5" /> 退出当前账号登录
                     </motion.button>
                   )}
                 </div>
@@ -803,6 +920,7 @@ export function ProfileScreen() {
           </AnimatePresence>
         </div>
       </div>
+    </div>
 
       {/* Poster Generator Modal */}
       <AnimatePresence>
@@ -1056,31 +1174,6 @@ export function ProfileScreen() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* ── Mobile Tab Navigation (Fixed bottom) ── */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-[#E2EAE5] py-2 px-4 flex items-center justify-around z-30 shadow-[0_-2px_10px_rgba(0,0,0,0.03)]">
-        {[
-          { id: "home", label: "我的首页", icon: User },
-          { id: "routes", label: "我的行程", icon: Map },
-          { id: "favorites", label: "我的收藏", icon: Heart },
-          { id: "interests", label: "我的兴趣", icon: Sparkles },
-          { id: "settings", label: "设置与帮助", icon: Settings },
-        ].map(item => (
-          <button
-            key={item.id}
-            onClick={() => setActiveSection(item.id as ActiveSection)}
-            className="flex flex-col items-center gap-1 text-center"
-          >
-            <div className={`p-1.5 rounded-xl transition-colors ${activeSection === item.id ? "bg-[#EBF3EE] text-[#4F6F52]" : "text-zinc-400"
-              }`}>
-              <item.icon className="w-4.5 h-4.5" />
-            </div>
-            <span className={`text-[9px] font-bold ${activeSection === item.id ? "text-[#4F6F52]" : "text-zinc-400"
-              }`}>{item.label.slice(3)}</span>
-          </button>
-        ))}
-      </div>
-
     </div>
   );
 }
