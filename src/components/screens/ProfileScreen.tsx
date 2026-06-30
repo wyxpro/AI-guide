@@ -25,6 +25,30 @@ type Mode = "standard" | "elder" | "child";
 // Sub-views tabs
 type ActiveSection = "home" | "routes" | "favorites" | "interests" | "settings";
 
+const FEMALE_PRESET_AVATARS = [
+  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=150&auto=format&fit=crop&q=80"
+];
+
+const MALE_PRESET_AVATARS = [
+  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=150&auto=format&fit=crop&q=80"
+];
+
+const BG_PRESET_COVERS = [
+  "https://images.unsplash.com/photo-1542224566-6e85f2e6772f?w=800&auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800&auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1501854140801-50d01698950b?w=800&auto=format&fit=crop&q=80"
+];
+
 export function ProfileScreen() {
   const router = useRouter();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -37,6 +61,9 @@ export function ProfileScreen() {
   const [mode, setMode] = useState<Mode>("standard");
   const [showPoster, setShowPoster] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showVisitedSpots, setShowVisitedSpots] = useState(false);
+  const [showCheckinHistory, setShowCheckinHistory] = useState(false);
+  const [allSpots, setAllSpots] = useState<any[]>([]);
 
   // States for sub-views
   const [routeTab, setRouteTab] = useState<"ongoing" | "completed" | "cancelled">("ongoing");
@@ -51,6 +78,7 @@ export function ProfileScreen() {
   const [profileBio, setProfileBio] = useState("用双脚丈量世界，用声音感受历史。");
   const [profileGender, setProfileGender] = useState("女");
   const [profileRegion, setProfileRegion] = useState("四川 成都");
+  const [profileBg, setProfileBg] = useState("https://images.unsplash.com/photo-1542224566-6e85f2e6772f?w=1200&q=80");
 
   // Edit states for form fields
   const [showEditProfile, setShowEditProfile] = useState(false);
@@ -60,6 +88,37 @@ export function ProfileScreen() {
   const [editBio, setEditBio] = useState("");
   const [editGender, setEditGender] = useState("");
   const [editRegion, setEditRegion] = useState("");
+  const [editBg, setEditBg] = useState("");
+
+  // Settings sub-view state
+  const [settingsSubView, setSettingsSubView] = useState<string | null>(null);
+
+  // Settings sub-view states
+  const [privacyShareFootprint, setPrivacyShareFootprint] = useState(true);
+  const [privacyShareFav, setPrivacyShareFav] = useState(false);
+  const [privacyAIActive, setPrivacyAIActive] = useState(true);
+
+  const [notiSystem, setNotiSystem] = useState(true);
+  const [notiGuide, setNotiGuide] = useState(true);
+  const [notiDaily, setNotiDaily] = useState(false);
+
+  const [voiceSpeaker, setVoiceSpeaker] = useState("xinxin");
+  const [voiceSpeed, setVoiceSpeed] = useState(1.0);
+  const [voiceBgmVolume, setVoiceBgmVolume] = useState(30);
+
+  const [pwdOld, setPwdOld] = useState("");
+  const [pwdNew, setPwdNew] = useState("");
+  const [pwdConfirm, setPwdConfirm] = useState("");
+
+  const [feedbackCategory, setFeedbackCategory] = useState("suggest");
+  const [feedbackText, setFeedbackText] = useState("");
+  const [feedbackContact, setFeedbackContact] = useState("");
+
+  const [maps, setMaps] = useState([
+    { id: 1, name: "岳阳楼景区离线地图", size: "12.8MB", status: "downloaded" },
+    { id: 2, name: "君山岛景区离线地图", size: "24.5MB", status: "none" },
+    { id: 3, name: "岳阳市区离线大图", size: "56.0MB", status: "downloading", progress: 32 }
+  ]);
 
   const displayName = profileName;
   const initial = displayName.slice(0, 1);
@@ -73,6 +132,7 @@ export function ProfileScreen() {
       const storedBio = localStorage.getItem("profile_bio") || "用双脚丈量世界，用声音感受历史。";
       const storedGender = localStorage.getItem("profile_gender") || "女";
       const storedRegion = localStorage.getItem("profile_region") || "四川 成都";
+      const storedBg = localStorage.getItem("profile_bg") || "https://images.unsplash.com/photo-1542224566-6e85f2e6772f?w=1200&q=80";
 
       setProfileName(storedName);
       setProfileLevel(storedLevel);
@@ -80,6 +140,7 @@ export function ProfileScreen() {
       setProfileBio(storedBio);
       setProfileGender(storedGender);
       setProfileRegion(storedRegion);
+      setProfileBg(storedBg);
     }
   }, [user]);
 
@@ -103,6 +164,15 @@ export function ProfileScreen() {
       setLoadingData(false);
     }).catch(() => setLoadingData(false));
   }, [user]);
+
+  useEffect(() => {
+    request("/api/spots")
+      .then(r => r.json())
+      .then(data => {
+        setAllSpots(Array.isArray(data) ? data : []);
+      })
+      .catch(() => {});
+  }, []);
 
   const changeMode = async (newMode: Mode) => {
     setMode(newMode);
@@ -195,97 +265,130 @@ export function ProfileScreen() {
         {/* ── Main Content Area ── */}
         <div className="flex-1 w-full min-h-[600px] flex flex-col">
           {/* Mobile Profile Card (Hidden on Desktop) */}
-          <div className="lg:hidden w-full bg-[#FAFBFB] border-b border-[#E8EDE9] px-4 pt-7 pb-5">
-            {/* Header row with Title and Icons */}
-            <div className="flex items-center justify-between mb-5">
-              <h1 className="text-[22px] font-extrabold text-[#2C3E35] tracking-tight">个人中心</h1>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setShowNotifications(true)}
-                  className="w-10 h-10 rounded-full bg-white border border-[#E2EAE5] flex items-center justify-center text-zinc-600 active:scale-95 transition-transform cursor-pointer relative shadow-sm"
-                >
-                  <Bell className="w-4 h-4" />
-                  <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 rounded-full bg-red-500" />
-                </button>
-                <button
-                  onClick={() => setActiveSection("settings")}
-                  className="w-10 h-10 rounded-full bg-white border border-[#E2EAE5] flex items-center justify-center text-zinc-600 active:scale-95 transition-transform cursor-pointer shadow-sm"
-                >
-                  <Settings className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
-            {/* Profile Info */}
-            <div className="flex items-center gap-4 mb-5">
-              <img
-                src={profileAvatar}
-                className="w-16 h-16 rounded-2xl border border-white shadow-md object-cover flex-shrink-0"
-                alt="Avatar"
+          {/* Mobile Profile Card (Hidden on Desktop) */}
+          <div className="lg:hidden w-full relative">
+            {/* Background Cover Overlay wrapper - spans over header, user info, and bio description */}
+            <div className="relative overflow-hidden px-4 pt-6 pb-5">
+              {/* Background Cover Overlay */}
+              <div 
+                className="absolute inset-0 z-0 bg-cover bg-center transition-all duration-500 filter brightness-[0.72] contrast-[0.95]"
+                style={{ backgroundImage: `url(${profileBg})` }}
               />
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h2 className="text-lg font-black text-[#1E2522] truncate max-w-[120px]">{displayName}</h2>
-                  <span className="px-2 py-0.5 rounded-full bg-[#EBF3EE] border border-[#D5E5DC] text-[#4F6F52] text-[9.5px] font-black flex items-center gap-0.5 flex-shrink-0">
-                    <Trophy className="w-2.5 h-2.5" /> {profileLevel}
-                  </span>
+              <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/15 to-black/45 z-0" />
+
+              {/* Content on top of background */}
+              <div className="relative z-10">
+                {/* Header row with Title and Icons */}
+                <div className="flex items-center justify-between mb-5">
+                  <h1 className="text-[20px] font-extrabold text-white tracking-tight drop-shadow-sm">个人中心</h1>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setShowNotifications(true)}
+                      className="w-9 h-9 rounded-full bg-white/15 backdrop-blur-md border border-white/20 flex items-center justify-center text-white active:scale-95 transition-transform cursor-pointer relative shadow-sm hover:bg-white/25"
+                    >
+                      <Bell className="w-3.5 h-3.5" />
+                      <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 rounded-full bg-red-500" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSettingsSubView(null);
+                        setActiveSection("settings");
+                      }}
+                      className="w-9 h-9 rounded-full bg-white/15 backdrop-blur-md border border-white/20 flex items-center justify-center text-white active:scale-95 transition-transform cursor-pointer shadow-sm hover:bg-white/25"
+                    >
+                      <Settings className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
-                <p className="text-[11.5px] text-[#8F9F8F] mt-1.5 leading-snug">{profileBio}</p>
+
+                {/* Profile Info */}
+                <div className="flex items-end gap-3.5 mb-4">
+                  <img
+                    src={profileAvatar}
+                    className="w-16 h-16 rounded-2xl border-2 border-white/80 shadow-md object-cover flex-shrink-0"
+                    alt="Avatar"
+                  />
+                  <div className="min-w-0 flex-1 pb-0.5">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h2 className="text-base font-black text-white truncate max-w-[140px] drop-shadow-sm">{displayName}</h2>
+                      <span className="px-1.5 py-0.5 rounded-full bg-white/20 border border-white/10 text-white text-[8.5px] font-black flex items-center gap-0.5 flex-shrink-0 backdrop-blur-xs shadow-xs">
+                        <Trophy className="w-2.5 h-2.5 text-yellow-300" /> {profileLevel}
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-white/80 font-bold mt-0.5 drop-shadow-xs">{profileGender} | {profileRegion}</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setEditName(profileName);
+                      setEditLevel(profileLevel);
+                      setEditAvatar(profileAvatar);
+                      setEditBio(profileBio);
+                      setEditGender(profileGender);
+                      setEditRegion(profileRegion);
+                      setEditBg(profileBg);
+                      setShowEditProfile(true);
+                    }}
+                    className="text-[9.5px] font-extrabold text-white px-3.5 py-2 rounded-xl border border-white/30 bg-white/10 backdrop-blur-md shadow-md active:scale-95 transition-transform cursor-pointer flex-shrink-0 hover:bg-white/20"
+                  >
+                    编辑资料
+                  </button>
+                </div>
+
+                {/* Bio text */}
+                <p className="text-xs font-medium text-white/95 leading-relaxed bg-black/20 border border-white/10 p-3 rounded-2xl backdrop-blur-xs shadow-xs">
+                  {profileBio}
+                </p>
               </div>
-              <button
-                onClick={() => {
-                  setEditName(profileName);
-                  setEditLevel(profileLevel);
-                  setEditAvatar(profileAvatar);
-                  setEditBio(profileBio);
-                  setEditGender(profileGender);
-                  setEditRegion(profileRegion);
-                  setShowEditProfile(true);
-                }}
-                className="text-[10px] font-extrabold text-white px-3.5 py-2.5 rounded-xl shadow-md active:scale-95 transition-transform cursor-pointer flex-shrink-0"
-                style={{ background: "linear-gradient(135deg, #5A8F65, #4F6F52)" }}
-              >
-                编辑资料
-              </button>
             </div>
 
-            {/* Micro Stats Segment */}
-            <div className="grid grid-cols-3 gap-2.5 bg-white border border-[#E8EDE9] rounded-2xl p-3.5 shadow-sm">
-              <div className="text-center relative after:absolute after:right-0 after:top-1/4 after:h-1/2 after:w-[1px] after:bg-[#E2EAE5]">
-                <span className="block text-base font-black text-[#2C3E35]">{spotCount}</span>
-                <span className="text-[10px] font-bold text-[#8F9F8F]">足迹景区</span>
-              </div>
-              <div className="text-center relative after:absolute after:right-0 after:top-1/4 after:h-1/2 after:w-[1px] after:bg-[#E2EAE5]">
-                <span className="block text-base font-black text-[#2C3E35]">{favCount}</span>
-                <span className="text-[10px] font-bold text-[#8F9F8F]">我的收藏</span>
-              </div>
-              <div className="text-center">
-                <span className="block text-base font-black text-[#2C3E35]">{totalVisits}</span>
-                <span className="text-[10px] font-bold text-[#8F9F8F]">足迹打卡</span>
-              </div>
-            </div>
-
-            {/* iOS Segment Control */}
-            <div className="flex bg-[#E8EDE9] p-0.75 rounded-2xl border border-[#DEEAE3] mt-5">
-              {[
-                { id: "home", label: "首页", icon: User },
-                { id: "routes", label: "行程", icon: Map },
-                { id: "favorites", label: "收藏", icon: Heart },
-                { id: "interests", label: "兴趣", icon: Sparkles },
-              ].map(item => (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveSection(item.id as ActiveSection)}
-                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-center text-[11px] font-extrabold rounded-xl transition-all cursor-pointer ${activeSection === item.id
-                    ? "bg-white text-[#4F6F52] shadow-sm"
-                    : "text-[#8F9F8F] hover:text-[#4F6F52]"
-                    }`}
+            {/* Stats Card sitting below the background banner, on the solid page background */}
+            <div className="px-4 py-4">
+              <div className="grid grid-cols-3 gap-2.5 bg-white border border-[#E8EDE9] rounded-2xl p-3.5 shadow-sm">
+                <div 
+                  onClick={() => setShowVisitedSpots(true)}
+                  className="text-center relative after:absolute after:right-0 after:top-1/4 after:h-1/2 after:w-[1px] after:bg-[#E2EAE5] cursor-pointer active:opacity-75 transition-opacity"
                 >
-                  <item.icon className="w-3.5 h-3.5" />
-                  {item.label}
-                </button>
-              ))}
+                  <span className="block text-base font-black text-[#2C3E35]">{spotCount}</span>
+                  <span className="text-[10px] font-bold text-[#8F9F8F]">足迹景区</span>
+                </div>
+                <div 
+                  onClick={() => setActiveSection("favorites")}
+                  className="text-center relative after:absolute after:right-0 after:top-1/4 after:h-1/2 after:w-[1px] after:bg-[#E2EAE5] cursor-pointer active:opacity-75 transition-opacity"
+                >
+                  <span className="block text-base font-black text-[#2C3E35]">{favCount}</span>
+                  <span className="text-[10px] font-bold text-[#8F9F8F]">我的收藏</span>
+                </div>
+                <div 
+                  onClick={() => setShowCheckinHistory(true)}
+                  className="text-center cursor-pointer active:opacity-75 transition-opacity"
+                >
+                  <span className="block text-base font-black text-[#2C3E35]">{totalVisits}</span>
+                  <span className="text-[10px] font-bold text-[#8F9F8F]">足迹打卡</span>
+                </div>
+              </div>
             </div>
+          </div>
+
+          {/* iOS Segment Control */}
+          <div className="lg:hidden mx-4 flex bg-[#E8EDE9] p-0.75 rounded-2xl border border-[#DEEAE3] mt-2.5 mb-1.5">
+            {[
+              { id: "home", label: "首页", icon: User },
+              { id: "routes", label: "行程", icon: Map },
+              { id: "favorites", label: "收藏", icon: Heart },
+              { id: "interests", label: "兴趣", icon: Sparkles },
+            ].map(item => (
+              <button
+                key={item.id}
+                onClick={() => setActiveSection(item.id as ActiveSection)}
+                className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-center text-[11px] font-extrabold rounded-xl transition-all cursor-pointer ${activeSection === item.id
+                  ? "bg-white text-[#4F6F52] shadow-sm"
+                  : "text-[#8F9F8F] hover:text-[#4F6F52]"
+                  }`}
+              >
+                <item.icon className="w-3.5 h-3.5" />
+                {item.label}
+              </button>
+            ))}
           </div>
 
           <div className="p-4 sm:p-0 flex-1">
@@ -307,7 +410,7 @@ export function ProfileScreen() {
                 <div
                   className="hidden lg:flex relative h-[230px] p-6 flex-col justify-between"
                   style={{
-                    backgroundImage: `linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1542224566-6e85f2e6772f?w=1200&q=80')`,
+                    backgroundImage: `linear-gradient(rgba(0,0,0,0.15), rgba(0,0,0,0.45)), url('${profileBg}')`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                   }}
@@ -324,6 +427,7 @@ export function ProfileScreen() {
                         setEditBio(profileBio);
                         setEditGender(profileGender);
                         setEditRegion(profileRegion);
+                        setEditBg(profileBg);
                         setShowEditProfile(true);
                       }}
                       className="text-[10px] font-black text-[#4F6F52] bg-white px-3 py-1 rounded-full shadow-md cursor-pointer hover:bg-neutral-50 transition-colors"
@@ -824,94 +928,617 @@ export function ProfileScreen() {
                 {/* Header */}
                 <div className="px-6 py-5 border-b border-[#EEF2F0] flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
-                    <button
-                      onClick={() => setActiveSection("home")}
-                      className="lg:hidden p-1.5 hover:bg-neutral-50 rounded-lg"
-                    >
-                      <ChevronLeft className="w-5 h-5 text-zinc-600" />
-                    </button>
+                    {settingsSubView ? (
+                      <button
+                        onClick={() => setSettingsSubView(null)}
+                        className="flex items-center gap-1.5 text-xs font-bold text-[#4F6F52] hover:bg-neutral-50 px-2.5 py-1.5 rounded-xl border border-[#D5E5DC] transition-all cursor-pointer"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                        返回列表
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => setActiveSection("home")}
+                        className="lg:hidden p-1.5 hover:bg-neutral-50 rounded-lg"
+                      >
+                        <ChevronLeft className="w-5 h-5 text-zinc-600" />
+                      </button>
+                    )}
                     <h2 className="text-sm font-black flex items-center gap-1.5">
                       <Settings className="w-4.5 h-4.5 text-zinc-600" />
-                      设置与帮助
+                      {settingsSubView ? (
+                        <span>
+                          {settingsSubView === "account" && "账号与安全"}
+                          {settingsSubView === "privacy" && "隐私设置"}
+                          {settingsSubView === "notifications" && "消息通知"}
+                          {settingsSubView === "voice" && "语音设置"}
+                          {settingsSubView === "cache" && "清除缓存"}
+                          {settingsSubView === "maps" && "离线地图管理"}
+                          {settingsSubView === "feedback" && "意见反馈"}
+                          {settingsSubView === "about" && "关于我们"}
+                          {settingsSubView === "help" && "帮助中心"}
+                        </span>
+                      ) : (
+                        "设置与帮助"
+                      )}
                     </h2>
                   </div>
                   <span className="text-[10px] text-zinc-400 font-mono">V1.2.0</span>
                 </div>
 
                 <div className="p-4 sm:p-6 space-y-6">
-                  {/* Options List */}
-                  <div className="rounded-3xl border border-[#EEF2F0] overflow-hidden divide-y divide-[#EEF2F0] bg-white">
-                    {[
-                      { label: "账号与安全", icon: Shield },
-                      { label: "隐私设置", icon: Eye },
-                      { label: "消息通知", icon: Bell, action: () => setShowNotifications(true) },
-                      { label: "语音设置", icon: Volume2, action: () => router.push("/ai-settings") },
-                      { label: "清除缓存", icon: Trash2, sub: cacheSize, action: handleClearCache },
-                      { label: "离线地图管理", icon: MapPin },
-                      { label: "意见反馈", icon: MessageSquare },
-                      { label: "关于我们", icon: Info },
-                      { label: "帮助中心", icon: HelpCircle },
-                    ].map((opt, idx) => (
-                      <div
-                        key={idx}
-                        onClick={opt.action || (() => toast.info(`${opt.label}模块开发中`))}
-                        className="flex items-center justify-between px-4 py-3.5 hover:bg-zinc-50/50 transition-colors cursor-pointer"
-                      >
-                        <div className="flex items-center gap-3">
-                          <opt.icon className="w-4 h-4 text-zinc-400" />
-                          <span className="text-xs font-semibold text-zinc-700">{opt.label}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 text-zinc-400">
-                          {opt.sub && <span className="text-[10.5px] font-mono font-bold text-zinc-300">{opt.sub}</span>}
-                          <ChevronRight className="w-4 h-4 text-zinc-300" />
-                        </div>
+                  {settingsSubView === null ? (
+                    <>
+                      {/* Options List */}
+                      <div className="rounded-3xl border border-[#EEF2F0] overflow-hidden divide-y divide-[#EEF2F0] bg-white">
+                        {[
+                          { label: "账号与安全", icon: Shield, action: () => setSettingsSubView("account") },
+                          { label: "隐私设置", icon: Eye, action: () => setSettingsSubView("privacy") },
+                          { label: "消息通知", icon: Bell, action: () => setSettingsSubView("notifications") },
+                          { label: "语音设置", icon: Volume2, action: () => setSettingsSubView("voice") },
+                          { label: "清除缓存", icon: Trash2, sub: cacheSize, action: () => setSettingsSubView("cache") },
+                          { label: "离线地图管理", icon: MapPin, action: () => setSettingsSubView("maps") },
+                          { label: "意见反馈", icon: MessageSquare, action: () => setSettingsSubView("feedback") },
+                          { label: "关于我们", icon: Info, action: () => setSettingsSubView("about") },
+                          { label: "帮助中心", icon: HelpCircle, action: () => setSettingsSubView("help") },
+                        ].map((opt, idx) => (
+                          <div
+                            key={idx}
+                            onClick={opt.action}
+                            className="flex items-center justify-between px-4 py-3.5 hover:bg-zinc-50/50 transition-colors cursor-pointer"
+                          >
+                            <div className="flex items-center gap-3">
+                              <opt.icon className="w-4 h-4 text-zinc-400" />
+                              <span className="text-xs font-semibold text-zinc-700">{opt.label}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 text-zinc-400">
+                              {opt.sub && <span className="text-[10.5px] font-mono font-bold text-[#8F9F8F]">{opt.sub}</span>}
+                              <ChevronRight className="w-4 h-4 text-zinc-300" />
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
 
-                  {/* AI banner small */}
-                  <div className="bg-[#EEF7F2] rounded-3xl p-4 border border-[#D5E5DC] flex items-center justify-between shadow-sm">
-                    <div className="flex items-center gap-3.5">
-                      <img
-                        src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&auto=format&fit=crop&q=80"
-                        className="w-10 h-10 rounded-full object-cover object-top border-2 border-white shadow-sm flex-shrink-0"
-                        alt=""
-                      />
-                      <div>
-                        <h4 className="text-xs font-extrabold text-zinc-800">AI数字人导游</h4>
-                        <p className="text-[9.5px] text-zinc-400 mt-0.5">有任何景区文化史料问题，随时问欣欣~</p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => router.push("/qa")}
-                      className="px-4 py-2 bg-[#4F6F52] text-white text-[10px] font-black rounded-xl shadow-md hover:bg-[#3D5640] transition-all cursor-pointer flex-shrink-0"
-                    >
-                      对话小玉
-                    </button>
-                  </div>
 
-                  {/* Logout Button */}
-                  {user && (
-                    <motion.button
-                      whileTap={{ scale: 0.98 }}
-                      onClick={async () => {
-                        try {
-                          await auth.logout();
-                          toast.success("已成功退出登录");
-                          window.location.href = "/welcome";
-                        } catch (err: any) {
-                          toast.error(err?.message || "退出登录失败");
-                        }
-                      }}
-                      className="w-full py-3.5 rounded-2xl text-xs font-bold text-center transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer"
-                      style={{
-                        background: "rgba(220,38,38,0.06)",
-                        border: "1px solid rgba(220,38,38,0.18)",
-                        color: "#DC2626"
-                      }}
+                      {/* Logout Button */}
+                      {user && (
+                        <motion.button
+                          whileTap={{ scale: 0.98 }}
+                          onClick={async () => {
+                            try {
+                              await auth.logout();
+                              toast.success("已成功退出登录");
+                              window.location.href = "/welcome";
+                            } catch (err: any) {
+                              toast.error(err?.message || "退出登录失败");
+                            }
+                          }}
+                          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-red-100 text-red-500 text-xs font-bold bg-red-50/30 hover:bg-red-50 transition-colors cursor-pointer"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          退出当前账号
+                        </motion.button>
+                      )}
+                    </>
+                  ) : (
+                    <motion.div
+                      initial={{ opacity: 0, x: 8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className="space-y-6"
                     >
-                      <LogOut className="w-3.5 h-3.5" /> 退出当前账号登录
-                    </motion.button>
+                      {/* 1. Account & Security */}
+                      {settingsSubView === "account" && (
+                        <div className="space-y-5">
+                          <div className="rounded-3xl border border-[#EEF2F0] bg-white divide-y divide-[#EEF2F0] overflow-hidden">
+                            <div className="flex items-center justify-between px-4 py-3.5">
+                              <div>
+                                <p className="text-xs font-extrabold text-zinc-800">绑定手机</p>
+                                <p className="text-[10px] text-zinc-400 mt-0.5">已绑定：138****8888</p>
+                              </div>
+                              <span className="text-[10px] font-bold text-zinc-400 bg-zinc-100 px-2 py-1 rounded-lg">修改绑定</span>
+                            </div>
+                            <div className="flex items-center justify-between px-4 py-3.5">
+                              <div>
+                                <p className="text-xs font-extrabold text-zinc-800">微信账号</p>
+                                <p className="text-[10px] text-zinc-400 mt-0.5">绑定后可使用微信一键快速登录</p>
+                              </div>
+                              <button 
+                                onClick={() => toast.success("微信绑定授权已发起")}
+                                className="text-[10px] font-black text-white bg-[#4F6F52] px-3 py-1.5 rounded-lg shadow-sm cursor-pointer"
+                              >
+                                立即绑定
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="rounded-3xl border border-[#EEF2F0] p-4 bg-white space-y-4">
+                            <h4 className="text-xs font-black text-zinc-800">修改登录密码</h4>
+                            <div className="space-y-3">
+                              <input
+                                type="password"
+                                placeholder="请输入原密码"
+                                value={pwdOld}
+                                onChange={(e) => setPwdOld(e.target.value)}
+                                className="w-full px-4 py-2.5 rounded-xl border border-[#E6E2D8] bg-white text-xs outline-none focus:border-[#4F6F52] transition-all"
+                              />
+                              <input
+                                type="password"
+                                placeholder="请输入新密码"
+                                value={pwdNew}
+                                onChange={(e) => setPwdNew(e.target.value)}
+                                className="w-full px-4 py-2.5 rounded-xl border border-[#E6E2D8] bg-white text-xs outline-none focus:border-[#4F6F52] transition-all"
+                              />
+                              <input
+                                type="password"
+                                placeholder="请再次确认新密码"
+                                value={pwdConfirm}
+                                onChange={(e) => setPwdConfirm(e.target.value)}
+                                className="w-full px-4 py-2.5 rounded-xl border border-[#E6E2D8] bg-white text-xs outline-none focus:border-[#4F6F52] transition-all"
+                              />
+                              <button
+                                onClick={() => {
+                                  if (!pwdOld || !pwdNew || !pwdConfirm) {
+                                    toast.error("所有密码框均不能为空");
+                                    return;
+                                  }
+                                  if (pwdNew !== pwdConfirm) {
+                                    toast.error("两次输入的新密码不一致");
+                                    return;
+                                  }
+                                  toast.success("密码修改成功，下次请使用新密码登录");
+                                  setPwdOld("");
+                                  setPwdNew("");
+                                  setPwdConfirm("");
+                                }}
+                                className="w-full py-2.5 bg-[#4F6F52] text-white text-xs font-black rounded-xl shadow-md hover:bg-[#3D5640] transition-colors cursor-pointer"
+                              >
+                                确认修改密码
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="pt-2">
+                            <button
+                              onClick={() => {
+                                const confirmDel = confirm("注销账号是不可逆的操作，您的全部行程及打卡足迹将被清空。确认注销吗？");
+                                if (confirmDel) {
+                                  toast.error("账户注销申请已提交，系统将在3个工作日内受理注销。");
+                                }
+                              }}
+                              className="w-full py-2.5 border border-red-200 text-red-500 text-xs font-bold rounded-xl bg-red-50/20 hover:bg-red-50 transition-colors cursor-pointer"
+                            >
+                              注销此账户
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 2. Privacy Settings */}
+                      {settingsSubView === "privacy" && (
+                        <div className="rounded-3xl border border-[#EEF2F0] bg-white divide-y divide-[#EEF2F0] overflow-hidden">
+                          <div className="flex items-center justify-between px-4 py-3.5">
+                            <div>
+                              <p className="text-xs font-extrabold text-zinc-800">公开我的足迹与轨迹</p>
+                              <p className="text-[10px] text-zinc-400 mt-0.5">开启后，其他游客可在探索地图中看见您的推荐行程</p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setPrivacyShareFootprint(!privacyShareFootprint)}
+                              className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer ${privacyShareFootprint ? "bg-[#4F6F52]" : "bg-zinc-200"}`}
+                            >
+                              <span className={`absolute top-0.5 left-0.5 bg-white w-5 h-5 rounded-full shadow-sm transition-transform ${privacyShareFootprint ? "translate-x-5" : "translate-x-0"}`} />
+                            </button>
+                          </div>
+                          <div className="flex items-center justify-between px-4 py-3.5">
+                            <div>
+                              <p className="text-xs font-extrabold text-zinc-800">公开我的收藏夹</p>
+                              <p className="text-[10px] text-zinc-400 mt-0.5">公开您珍藏的景点、文物与路线列表</p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setPrivacyShareFav(!privacyShareFav)}
+                              className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer ${privacyShareFav ? "bg-[#4F6F52]" : "bg-zinc-200"}`}
+                            >
+                              <span className={`absolute top-0.5 left-0.5 bg-white w-5 h-5 rounded-full shadow-sm transition-transform ${privacyShareFav ? "translate-x-5" : "translate-x-0"}`} />
+                            </button>
+                          </div>
+                          <div className="flex items-center justify-between px-4 py-3.5">
+                            <div>
+                              <p className="text-xs font-extrabold text-zinc-800">允许数字人主动打招呼</p>
+                              <p className="text-[10px] text-zinc-400 mt-0.5">当您行进至特定景点时，AI助手小玉将自动探头向您发出问候</p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setPrivacyAIActive(!privacyAIActive)}
+                              className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer ${privacyAIActive ? "bg-[#4F6F52]" : "bg-zinc-200"}`}
+                            >
+                              <span className={`absolute top-0.5 left-0.5 bg-white w-5 h-5 rounded-full shadow-sm transition-transform ${privacyAIActive ? "translate-x-5" : "translate-x-0"}`} />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 3. Message Notification */}
+                      {settingsSubView === "notifications" && (
+                        <div className="space-y-4">
+                          <div className="rounded-3xl border border-[#EEF2F0] bg-white divide-y divide-[#EEF2F0] overflow-hidden">
+                            <div className="flex items-center justify-between px-4 py-3.5">
+                              <div>
+                                <p className="text-xs font-extrabold text-zinc-800">系统公告与活动通知</p>
+                                <p className="text-[10px] text-zinc-400 mt-0.5">接收新功能上线、景区动态等最新推送</p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => setNotiSystem(!notiSystem)}
+                                className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer ${notiSystem ? "bg-[#4F6F52]" : "bg-zinc-200"}`}
+                              >
+                                <span className={`absolute top-0.5 left-0.5 bg-white w-5 h-5 rounded-full shadow-sm transition-transform ${notiSystem ? "translate-x-5" : "translate-x-0"}`} />
+                              </button>
+                            </div>
+                            <div className="flex items-center justify-between px-4 py-3.5">
+                              <div>
+                                <p className="text-xs font-extrabold text-zinc-800">智能导览提醒</p>
+                                <p className="text-[10px] text-zinc-400 mt-0.5">到达打卡地后自动触发通知播报</p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => setNotiGuide(!notiGuide)}
+                                className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer ${notiGuide ? "bg-[#4F6F52]" : "bg-zinc-200"}`}
+                              >
+                                <span className={`absolute top-0.5 left-0.5 bg-white w-5 h-5 rounded-full shadow-sm transition-transform ${notiGuide ? "translate-x-5" : "translate-x-0"}`} />
+                              </button>
+                            </div>
+                            <div className="flex items-center justify-between px-4 py-3.5">
+                              <div>
+                                <p className="text-xs font-extrabold text-zinc-800">每日出行简报推送</p>
+                                <p className="text-[10px] text-zinc-400 mt-0.5">获取次日天气、人流指数与穿衣出行建议</p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => setNotiDaily(!notiDaily)}
+                                className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer ${notiDaily ? "bg-[#4F6F52]" : "bg-zinc-200"}`}
+                              >
+                                <span className={`absolute top-0.5 left-0.5 bg-white w-5 h-5 rounded-full shadow-sm transition-transform ${notiDaily ? "translate-x-5" : "translate-x-0"}`} />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 4. Voice Settings */}
+                      {settingsSubView === "voice" && (
+                        <div className="space-y-5">
+                          {/* Speaker selector */}
+                          <div className="rounded-3xl border border-[#EEF2F0] p-4 bg-white space-y-3">
+                            <h4 className="text-xs font-black text-zinc-800">选择讲解员音色</h4>
+                            <div className="grid grid-cols-4 gap-2">
+                              {[
+                                { id: "xinxin", name: "欣欣", label: "甜美女生", img: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&q=80" },
+                                { id: "xiaoyu", name: "小玉", label: "江南古韵", img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80" },
+                                { id: "dazhuang", name: "大壮", label: "磁性男中音", img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80" },
+                                { id: "star", name: "智多星", label: "说书泰斗", img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&q=80" }
+                              ].map((sp) => (
+                                <button
+                                  key={sp.id}
+                                  type="button"
+                                  onClick={() => {
+                                    setVoiceSpeaker(sp.id);
+                                    toast.success(`配音员已成功切换为：${sp.name}`);
+                                  }}
+                                  className={`p-2 rounded-2xl border text-center transition-all cursor-pointer ${voiceSpeaker === sp.id
+                                    ? "bg-[#EBF3EE] border-[#4F6F52] text-[#4F6F52]"
+                                    : "bg-white border-zinc-100 text-zinc-600 hover:bg-zinc-50"
+                                  }`}
+                                >
+                                  <img src={sp.img} className="w-10 h-10 rounded-full mx-auto object-cover mb-1.5" alt="" />
+                                  <p className="text-[10px] font-black leading-none">{sp.name}</p>
+                                  <p className="text-[7.5px] text-zinc-400 mt-1 leading-none truncate">{sp.label}</p>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Speech Speed */}
+                          <div className="rounded-3xl border border-[#EEF2F0] p-4 bg-white space-y-3">
+                            <div className="flex items-center justify-between">
+                              <h4 className="text-xs font-black text-zinc-800">语速调节</h4>
+                              <span className="text-[10px] font-bold text-[#4F6F52] bg-[#EBF3EE] px-2 py-0.5 rounded-full">{voiceSpeed.toFixed(2)}x</span>
+                            </div>
+                            <div className="flex gap-2">
+                              {[0.75, 1.0, 1.25, 1.5].map((speed) => (
+                                <button
+                                  key={speed}
+                                  type="button"
+                                  onClick={() => setVoiceSpeed(speed)}
+                                  className={`flex-1 py-1.5 rounded-xl text-[10px] font-black border transition-all cursor-pointer ${voiceSpeed === speed
+                                    ? "bg-[#4F6F52] border-[#4F6F52] text-white shadow-sm"
+                                    : "bg-white border-[#E6E2D8] text-zinc-600"
+                                  }`}
+                                >
+                                  {speed === 1.0 ? "常速 1.0" : `${speed}x`}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* BGM Volume */}
+                          <div className="rounded-3xl border border-[#EEF2F0] p-4 bg-white space-y-3">
+                            <div className="flex items-center justify-between">
+                              <h4 className="text-xs font-black text-zinc-800">背景配乐音量</h4>
+                              <span className="text-[10px] font-mono font-bold text-zinc-500">{voiceBgmVolume}%</span>
+                            </div>
+                            <input
+                              type="range"
+                              min="0"
+                              max="100"
+                              value={voiceBgmVolume}
+                              onChange={(e) => setVoiceBgmVolume(parseInt(e.target.value))}
+                              className="w-full accent-[#4F6F52] h-1.5 bg-neutral-100 rounded-lg cursor-pointer"
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 5. Clear Cache */}
+                      {settingsSubView === "cache" && (
+                        <div className="space-y-5">
+                          <div className="rounded-3xl border border-[#EEF2F0] p-5 bg-white space-y-4">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <h4 className="text-xs font-black text-zinc-800">当前占用空间</h4>
+                                <p className="text-[9.5px] text-zinc-400 mt-0.5">缓存包含离线语音文件、地图切片与临时数据</p>
+                              </div>
+                              <span className="text-sm font-black text-[#4F6F52]">{cacheSize}</span>
+                            </div>
+
+                            <div className="space-y-3 pt-2">
+                              <div className="flex items-center justify-between text-[10.5px]">
+                                <span className="text-zinc-500">离线语音包缓存</span>
+                                <span className="font-bold text-zinc-700">{cacheSize !== "0.0MB" ? "12.5 MB" : "0.0 MB"}</span>
+                              </div>
+                              <div className="w-full bg-zinc-100 h-1.5 rounded-full overflow-hidden">
+                                <div className="bg-[#4F6F52] h-full transition-all duration-500" style={{ width: cacheSize !== "0.0MB" ? "53%" : "0%" }} />
+                              </div>
+
+                              <div className="flex items-center justify-between text-[10.5px] pt-1">
+                                <span className="text-zinc-500">离线瓦片地图缓存</span>
+                                <span className="font-bold text-zinc-700">{cacheSize !== "0.0MB" ? "10.2 MB" : "0.0 MB"}</span>
+                              </div>
+                              <div className="w-full bg-zinc-100 h-1.5 rounded-full overflow-hidden">
+                                <div className="bg-[#D2A053] h-full transition-all duration-500" style={{ width: cacheSize !== "0.0MB" ? "43%" : "0%" }} />
+                              </div>
+
+                              <div className="flex items-center justify-between text-[10.5px] pt-1">
+                                <span className="text-zinc-500">搜索轨迹与其它数据</span>
+                                <span className="font-bold text-zinc-700">{cacheSize !== "0.0MB" ? "0.9 MB" : "0.0 MB"}</span>
+                              </div>
+                              <div className="w-full bg-zinc-100 h-1.5 rounded-full overflow-hidden">
+                                <div className="bg-zinc-400 h-full transition-all duration-500" style={{ width: cacheSize !== "0.0MB" ? "4%" : "0%" }} />
+                              </div>
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={() => {
+                              if (cacheSize === "0.0MB") {
+                                toast.info("当前缓存空间已是最低，无需清理");
+                                return;
+                              }
+                              setCacheSize("0.0MB");
+                              toast.success("缓存清理成功，已释放23.6MB空间！");
+                            }}
+                            className="w-full py-2.5 bg-red-500 text-white text-xs font-black rounded-xl shadow-md hover:bg-red-600 transition-colors cursor-pointer"
+                          >
+                            立即清理本地缓存
+                          </button>
+                        </div>
+                      )}
+
+                      {/* 6. Offline Map Management */}
+                      {settingsSubView === "maps" && (
+                        <div className="space-y-4">
+                          <div className="rounded-3xl border border-[#EEF2F0] p-4 bg-white flex justify-between items-center">
+                            <div>
+                              <p className="text-[10px] text-zinc-400">存储位置：默认内部存储</p>
+                              <p className="text-xs font-extrabold text-zinc-800 mt-1">剩余可用空间：12.4 GB</p>
+                            </div>
+                            <button
+                              onClick={() => toast.success("所有离线地图包已是最新版本")}
+                              className="text-[9.5px] font-bold text-[#4F6F52] border border-[#D5E5DC] bg-[#EBF3EE] px-3 py-1.5 rounded-xl cursor-pointer"
+                            >
+                              检测新版本
+                            </button>
+                          </div>
+
+                          <div className="rounded-3xl border border-[#EEF2F0] bg-white divide-y divide-[#EEF2F0] overflow-hidden">
+                            {maps.map((map) => (
+                              <div key={map.id} className="p-4 flex items-center justify-between">
+                                <div className="flex-1 min-w-0 pr-4">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs font-black text-zinc-800 truncate">{map.name}</span>
+                                    <span className="text-[8.5px] font-mono text-zinc-400 font-bold bg-neutral-100 px-1.5 py-0.5 rounded leading-none">{map.size}</span>
+                                  </div>
+                                  
+                                  {map.status === "downloading" && (
+                                    <div className="mt-2.5 space-y-1">
+                                      <div className="w-full bg-zinc-100 h-1 rounded-full overflow-hidden">
+                                        <div className="bg-[#4F6F52] h-full transition-all duration-300 animate-pulse" style={{ width: `${map.progress}%` }} />
+                                      </div>
+                                      <p className="text-[8.5px] text-zinc-400 font-mono">正在下载：{map.progress}% (剩余约12秒)</p>
+                                    </div>
+                                  )}
+                                </div>
+
+                                <div>
+                                  {map.status === "downloaded" && (
+                                    <button
+                                      onClick={() => {
+                                        setMaps(prev => prev.map(m => m.id === map.id ? { ...m, status: "none" } : m));
+                                        toast.success("已成功删除离线包");
+                                      }}
+                                      className="px-3 py-1 bg-red-50 text-red-500 border border-red-100 hover:bg-red-100 text-[10px] font-bold rounded-lg cursor-pointer transition-colors"
+                                    >
+                                      删除
+                                    </button>
+                                  )}
+                                  {map.status === "none" && (
+                                    <button
+                                      onClick={() => {
+                                        setMaps(prev => prev.map(m => m.id === map.id ? { ...m, status: "downloading", progress: 5 } : m));
+                                        // Simulate progress
+                                        let prog = 5;
+                                        const timer = setInterval(() => {
+                                          prog += 15;
+                                          if (prog >= 100) {
+                                            clearInterval(timer);
+                                            setMaps(prev => prev.map(m => m.id === map.id ? { ...m, status: "downloaded" } : m));
+                                            toast.success(`${map.name} 下载完成！`);
+                                          } else {
+                                            setMaps(prev => prev.map(m => m.id === map.id ? { ...m, progress: prog } : m));
+                                          }
+                                        }, 400);
+                                      }}
+                                      className="px-3 py-1 bg-[#4F6F52] text-white text-[10px] font-black rounded-lg shadow-sm hover:bg-[#3D5640] cursor-pointer transition-colors"
+                                    >
+                                      下载离线包
+                                    </button>
+                                  )}
+                                  {map.status === "downloading" && (
+                                    <span className="text-[10px] font-bold text-zinc-400 px-2">暂停</span>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 7. Feedback */}
+                      {settingsSubView === "feedback" && (
+                        <div className="rounded-3xl border border-[#EEF2F0] p-4 sm:p-5 bg-white space-y-4">
+                          <div className="space-y-1.5">
+                            <label className="text-[11px] font-black text-zinc-700 block">反馈类型</label>
+                            <div className="relative">
+                              <select
+                                value={feedbackCategory}
+                                onChange={(e) => setFeedbackCategory(e.target.value)}
+                                className="w-full px-4 py-2.5 rounded-xl border border-[#E6E2D8] bg-white text-zinc-800 text-xs outline-none focus:border-[#4F6F52] cursor-pointer appearance-none"
+                              >
+                                <option value="suggest">功能建议与体验设计</option>
+                                <option value="spot_error">景区景点数据与讲解勘误</option>
+                                <option value="audio_issue">语音播放卡顿与翻译故障</option>
+                                <option value="bug">系统错误或意外崩溃</option>
+                                <option value="other">其它业务合作咨询</option>
+                              </select>
+                              <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-400">
+                                <ChevronDown className="w-4 h-4" />
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="space-y-1.5">
+                            <label className="text-[11px] font-black text-zinc-700 block">详细描述您的建议/问题</label>
+                            <textarea
+                              rows={4}
+                              placeholder="请写下至少10个字的描述，以便我们技术团队定位排查..."
+                              value={feedbackText}
+                              onChange={(e) => setFeedbackText(e.target.value)}
+                              className="w-full px-4 py-2.5 rounded-xl border border-[#E6E2D8] bg-white text-xs outline-none focus:border-[#4F6F52] transition-all resize-none"
+                            />
+                            <p className="text-[9px] text-zinc-400 text-right">{feedbackText.length}/200</p>
+                          </div>
+
+                          <div className="space-y-1.5">
+                            <label className="text-[11px] font-black text-zinc-700 block">联系方式</label>
+                            <input
+                              type="text"
+                              placeholder="手机号 / 微信 / 邮箱 (选填)"
+                              value={feedbackContact}
+                              onChange={(e) => setFeedbackContact(e.target.value)}
+                              className="w-full px-4 py-2.5 rounded-xl border border-[#E6E2D8] bg-white text-xs outline-none focus:border-[#4F6F52] transition-all"
+                            />
+                          </div>
+
+                          <button
+                            onClick={() => {
+                              if (feedbackText.trim().length < 10) {
+                                toast.error("反馈描述请不要少于10个字哦");
+                                return;
+                              }
+                              toast.success("意见提交成功！感谢您的宝贵建议！");
+                              setFeedbackText("");
+                              setFeedbackContact("");
+                            }}
+                            className="w-full py-2.5 bg-[#4F6F52] text-white text-xs font-black rounded-xl shadow-md hover:bg-[#3D5640] transition-colors cursor-pointer"
+                          >
+                            提交意见反馈
+                          </button>
+                        </div>
+                      )}
+
+                      {/* 8. About Us */}
+                      {settingsSubView === "about" && (
+                        <div className="space-y-5 text-center p-4">
+                          <div className="w-20 h-20 rounded-3xl bg-[#EBF3EE] border border-[#D5E5DC] flex items-center justify-center mx-auto shadow-sm relative overflow-hidden group">
+                            <div className="absolute inset-0 bg-gradient-to-tr from-[#5A8F65]/10 to-[#4F6F52]/10" />
+                            <Navigation className="w-10 h-10 text-[#4F6F52] transform group-hover:rotate-12 transition-transform" />
+                          </div>
+
+                          <div className="space-y-1">
+                            <h3 className="text-sm font-black text-zinc-800">旅行家Pro</h3>
+                            <p className="text-[10px] text-zinc-400 font-mono">智能景区导游 V1.2.0 (Build 260630)</p>
+                          </div>
+
+                          <p className="text-xs text-zinc-500 leading-relaxed max-w-sm mx-auto text-justify">
+                            本产品致力于为您打造全沉浸式、交互式智能游览体验。将前沿数字人技术、实时空间算法与历史人文深度融合，做您最贴心的数字口袋导游。
+                          </p>
+
+                          <div className="rounded-3xl border border-[#EEF2F0] bg-white divide-y divide-[#EEF2F0] overflow-hidden text-left max-w-xs mx-auto">
+                            <div className="px-4 py-2.5 flex justify-between items-center text-[10.5px]" onClick={() => toast.info("已加载用户协议文档")}>
+                              <span className="text-zinc-600 font-bold cursor-pointer">用户协议</span>
+                              <ChevronRight className="w-3.5 h-3.5 text-zinc-300" />
+                            </div>
+                            <div className="px-4 py-2.5 flex justify-between items-center text-[10.5px]" onClick={() => toast.info("已加载隐私条款文档")}>
+                              <span className="text-zinc-600 font-bold cursor-pointer">隐私条款说明</span>
+                              <ChevronRight className="w-3.5 h-3.5 text-zinc-300" />
+                            </div>
+                          </div>
+
+                          <p className="text-[8.5px] text-zinc-300 font-medium">© 2026 旅行家Pro 团队 版权所有</p>
+                        </div>
+                      )}
+
+                      {/* 9. Help Center */}
+                      {settingsSubView === "help" && (
+                        <div className="space-y-4">
+                          <div className="rounded-3xl border border-[#EEF2F0] p-4 bg-zinc-50/50">
+                            <p className="text-xs font-extrabold text-zinc-800">常见问题解答 (FAQ)</p>
+                          </div>
+
+                          <div className="space-y-2.5">
+                            {[
+                              {
+                                q: "Q: GPS定位偏移，导致导览音频不触发怎么办？",
+                                a: "A: 请确保手机系统的定位服务已开启，并在手机隐私设置中授予应用最高精度的定位授权。此外，处于厚墙或地下室内可能会减弱信号，建议您可以在地图上直接手动点击播放。"
+                              },
+                              {
+                                q: "Q: 离线地图包下载后可以在断网环境用吗？",
+                                a: "A: 完全可以。离线地图包包含了景区的完整手绘地图、导游点坐标以及离线语音包。下载完成后，无需网络连接也可以使用全部智能语音讲解功能。"
+                              },
+                              {
+                                q: "Q: 积分与步数有什么用？如何兑换福利？",
+                                a: "A: 您行走的步数会自动同步积累步数，并在积分页面中兑换定制周边、合作景区门票优惠，或者换取数字人语音讲解特权及小玉深度对话服务包。"
+                              }
+                            ].map((faq, idx) => (
+                              <div key={idx} className="rounded-2xl border border-[#EEF2F0] p-4 bg-white space-y-2">
+                                <h4 className="text-xs font-black text-zinc-800 leading-snug">{faq.q}</h4>
+                                <p className="text-[10.5px] text-zinc-500 leading-relaxed">{faq.a}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </motion.div>
                   )}
                 </div>
               </motion.div>
@@ -1036,26 +1663,151 @@ export function ProfileScreen() {
               </div>
 
               <div className="p-6 space-y-5 max-h-[60vh] overflow-y-auto scrollbar-none">
+                {/* Current Profile Preview */}
+                <div className="relative rounded-2xl overflow-hidden h-28 flex items-end p-4 border border-[#E6E2D8] mb-1">
+                  <div 
+                    className="absolute inset-0 bg-cover bg-center transition-all duration-300 filter brightness-[0.75]"
+                    style={{ backgroundImage: `url(${editBg || profileBg})` }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-black/40" />
+                  <div className="relative z-10 flex items-center gap-3 w-full">
+                    <img 
+                      src={editAvatar || profileAvatar} 
+                      className="w-12 h-12 rounded-full border-2 border-white object-cover" 
+                      alt="Preview" 
+                    />
+                    <div className="min-w-0 flex-1 text-white">
+                      <p className="text-xs font-bold leading-tight truncate">{editName || displayName}</p>
+                      <p className="text-[9px] text-white/80 leading-none mt-1">{editLevel || profileLevel}</p>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Avatar Selection */}
-                <div className="space-y-2">
-                  <label className="text-[11px] font-black text-[#5C6B73] block">选择头像</label>
-                  <div className="flex justify-around items-center gap-3 py-2">
-                    {[
-                      { url: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80", name: "探索者" },
-                      { url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&auto=format&fit=crop&q=80", name: "行者" },
-                      { url: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&auto=format&fit=crop&q=80", name: "摄影师" },
-                      { url: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&auto=format&fit=crop&q=80", name: "冒险家" }
-                    ].map((av) => (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-black text-[#5C6B73] block">选择头像</label>
+                    <div className="flex items-center gap-2">
+                      <input 
+                        type="file" 
+                        id="avatar-upload" 
+                        accept="image/*" 
+                        className="hidden" 
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            if (file.size > 2 * 1024 * 1024) {
+                              toast.error("头像文件大小不能超过 2MB");
+                              return;
+                            }
+                            const reader = new FileReader();
+                            reader.onload = (event) => {
+                              if (event.target?.result) {
+                                setEditAvatar(event.target.result as string);
+                                toast.success("已成功加载本地头像");
+                              }
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                      />
                       <button
-                        key={av.url}
                         type="button"
-                        onClick={() => setEditAvatar(av.url)}
-                        className={`relative rounded-full p-1 transition-all duration-300 ${editAvatar === av.url ? "ring-4 ring-[#4F6F52]" : "ring-2 ring-transparent opacity-75 hover:opacity-100"
-                          }`}
+                        onClick={() => document.getElementById('avatar-upload')?.click()}
+                        className="flex items-center gap-1 px-2.5 py-1.5 border border-[#D5E5DC] text-[#4F6F52] hover:bg-[#EBF3EE] text-[9.5px] font-black rounded-lg transition-all cursor-pointer"
                       >
-                        <img src={av.url} className="w-12 h-12 rounded-full object-cover" alt={av.name} />
+                        <ImageIcon className="w-3 h-3" /> 自定义上传
                       </button>
-                    ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div>
+                      <p className="text-[9px] text-zinc-400 font-bold">女生预设头像</p>
+                      <div className="flex gap-2 py-1 overflow-x-auto scrollbar-none">
+                        {FEMALE_PRESET_AVATARS.map((avUrl, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => setEditAvatar(avUrl)}
+                            className={`relative rounded-full p-0.5 flex-shrink-0 transition-all duration-200 ${editAvatar === avUrl ? "ring-2 ring-[#4F6F52]" : "opacity-80 hover:opacity-100"}`}
+                          >
+                            <img src={avUrl} className="w-9 h-9 rounded-full object-cover" alt="" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <p className="text-[9px] text-zinc-400 font-bold">男生预设头像</p>
+                      <div className="flex gap-2 py-1 overflow-x-auto scrollbar-none">
+                        {MALE_PRESET_AVATARS.map((avUrl, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => setEditAvatar(avUrl)}
+                            className={`relative rounded-full p-0.5 flex-shrink-0 transition-all duration-200 ${editAvatar === avUrl ? "ring-2 ring-[#4F6F52]" : "opacity-80 hover:opacity-100"}`}
+                          >
+                            <img src={avUrl} className="w-9 h-9 rounded-full object-cover" alt="" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Profile Cover Background Selection */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-black text-[#5C6B73] block">选择背景主图</label>
+                    <div className="flex items-center gap-2">
+                      <input 
+                        type="file" 
+                        id="bg-upload" 
+                        accept="image/*" 
+                        className="hidden" 
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            if (file.size > 4 * 1024 * 1024) {
+                              toast.error("背景图片大小不能超过 4MB");
+                              return;
+                            }
+                            const reader = new FileReader();
+                            reader.onload = (event) => {
+                              if (event.target?.result) {
+                                setEditBg(event.target.result as string);
+                                toast.success("已成功加载本地背景图");
+                              }
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => document.getElementById('bg-upload')?.click()}
+                        className="flex items-center gap-1 px-2.5 py-1.5 border border-[#D5E5DC] text-[#4F6F52] hover:bg-[#EBF3EE] text-[9.5px] font-black rounded-lg transition-all cursor-pointer"
+                      >
+                        <ImageIcon className="w-3 h-3" /> 自定义上传
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-[9px] text-zinc-400 font-bold">风景预设背景</p>
+                    <div className="grid grid-cols-5 gap-2 py-1.5">
+                      {BG_PRESET_COVERS.map((bgUrl, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => setEditBg(bgUrl)}
+                          className={`relative rounded-xl overflow-hidden h-10 border transition-all duration-200 ${editBg === bgUrl ? "border-2 border-[#4F6F52] scale-105" : "border-[#E6E2D8] opacity-80 hover:opacity-100"}`}
+                        >
+                          <img src={bgUrl} className="w-full h-full object-cover" alt="" />
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
@@ -1155,12 +1907,14 @@ export function ProfileScreen() {
                     setProfileBio(editBio);
                     setProfileGender(editGender);
                     setProfileRegion(editRegion);
+                    setProfileBg(editBg);
                     localStorage.setItem("profile_name", editName);
                     localStorage.setItem("profile_level", editLevel);
                     localStorage.setItem("profile_avatar", editAvatar);
                     localStorage.setItem("profile_bio", editBio);
                     localStorage.setItem("profile_gender", editGender);
                     localStorage.setItem("profile_region", editRegion);
+                    localStorage.setItem("profile_bg", editBg);
                     setShowEditProfile(false);
                     toast.success("个人资料保存成功！");
                   }}
@@ -1172,6 +1926,166 @@ export function ProfileScreen() {
               </div>
             </motion.div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Visited Spots Modal ("足迹景区") */}
+      <AnimatePresence>
+        {showVisitedSpots && (
+          <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/60 backdrop-blur-xs" onClick={() => setShowVisitedSpots(false)}>
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={SPRING}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-t-[28px] max-h-[82vh] flex flex-col overflow-hidden shadow-2xl"
+            >
+              {/* Header */}
+              <div className="px-5 py-4 border-b border-[#EEF2F0] flex items-center justify-between flex-shrink-0">
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-5 h-5 text-[#4F6F52]" />
+                  <div>
+                    <h3 className="font-black text-sm text-zinc-800">已到访景区</h3>
+                    <p className="text-[9.5px] text-zinc-400 mt-0.5">您用双脚丈量过的历史名胜</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowVisitedSpots(false)}
+                  className="w-7 h-7 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-500 hover:bg-zinc-200 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Spots List */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                {visits.filter(v => v.type === "spot" && v.spotId).length === 0 ? (
+                  <div className="text-center py-16 text-zinc-400">
+                    <MapPin className="w-10 h-10 mx-auto text-zinc-300 mb-2" />
+                    <p className="text-xs font-bold">暂无景区足迹记录</p>
+                    <p className="text-[10px] mt-1">快去探索打卡您喜爱的景区吧！</p>
+                  </div>
+                ) : (
+                  Array.from(new Set(visits.filter(v => v.type === "spot" && v.spotId).map(v => v.spotId))).map(spotId => {
+                    const spot = allSpots.find(s => s.id === spotId);
+                    if (!spot) return null;
+                    return (
+                      <div
+                        key={spotId}
+                        onClick={() => {
+                          setShowVisitedSpots(false);
+                          router.push(`/spots/${spotId}`);
+                        }}
+                        className="flex gap-3.5 p-3 rounded-2xl border border-[#EEF2F0] bg-white hover:bg-neutral-50 active:scale-[0.99] transition-all cursor-pointer shadow-xs"
+                      >
+                        <img
+                          src={spot.imageUrl || "https://images.unsplash.com/photo-1542224566-6e85f2e6772f?w=300&q=80"}
+                          className="w-16 h-16 rounded-xl object-cover shadow-xs flex-shrink-0"
+                          alt={spot.name}
+                        />
+                        <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+                          <div>
+                            <div className="flex items-center justify-between">
+                              <h4 className="font-extrabold text-[13px] text-zinc-800 truncate">{spot.name}</h4>
+                              <span className="text-[9px] font-bold text-[#D2A053] bg-[#FCF8EE] px-1.5 py-0.5 rounded-sm">
+                                ★ {spot.rating || "5.0"}
+                              </span>
+                            </div>
+                            <p className="text-[10px] text-zinc-400 truncate mt-1">{spot.description || "景区底蕴深厚，文化璀璨"}</p>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-[9px] text-[#4F6F52] font-black">
+                            <span>查看景区详情</span>
+                            <ArrowRight className="w-2.5 h-2.5" />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Checkin History Modal ("足迹打卡") */}
+      <AnimatePresence>
+        {showCheckinHistory && (
+          <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/60 backdrop-blur-xs" onClick={() => setShowCheckinHistory(false)}>
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={SPRING}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-t-[28px] max-h-[82vh] flex flex-col overflow-hidden shadow-2xl"
+            >
+              {/* Header */}
+              <div className="px-5 py-4 border-b border-[#EEF2F0] flex items-center justify-between flex-shrink-0">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-[#4F6F52]" />
+                  <div>
+                    <h3 className="font-black text-sm text-zinc-800">足迹打卡历史</h3>
+                    <p className="text-[9.5px] text-zinc-400 mt-0.5">记录您走过的每一次心动瞬间</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowCheckinHistory(false)}
+                  className="w-7 h-7 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-500 hover:bg-zinc-200 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* History Timeline List */}
+              <div className="flex-1 overflow-y-auto p-5 space-y-4">
+                {visits.length === 0 ? (
+                  <div className="text-center py-16 text-zinc-400">
+                    <Clock className="w-10 h-10 mx-auto text-zinc-300 mb-2" />
+                    <p className="text-xs font-bold">暂无打卡记录</p>
+                    <p className="text-[10px] mt-1">走遍山水，打卡记录您的旅程</p>
+                  </div>
+                ) : (
+                  <div className="relative border-l border-[#E2EAE5] ml-3 pl-5.5 space-y-5.5 py-1">
+                    {visits.map((record, index) => {
+                      const spot = allSpots.find(s => s.id === record.spotId);
+                      const displayTitle = record.type === "spot" && spot ? spot.name : "打卡路线行程";
+                      const dateStr = new Date(record.visitedAt).toLocaleDateString("zh-CN", {
+                        month: "long",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit"
+                      });
+
+                      return (
+                        <div key={record.id} className="relative group">
+                          {/* Timeline dot */}
+                          <span className="absolute -left-[30px] top-1.5 w-3 h-3 rounded-full border-2 border-white bg-[#4F6F52] shadow-sm group-hover:scale-110 transition-transform" />
+                          
+                          <div className="bg-[#FAFBFB] border border-[#EEF2F0] rounded-2xl p-3.5 shadow-xs">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[9px] font-mono text-zinc-400">{dateStr}</span>
+                              <span className="text-[8.5px] font-extrabold text-[#4F6F52] bg-[#EBF3EE] px-1.5 py-0.5 rounded-sm">
+                                {record.type === "spot" ? "景区打卡" : "行程打卡"}
+                              </span>
+                            </div>
+                            <h4 className="font-extrabold text-xs text-zinc-800 mt-1.5">{displayTitle}</h4>
+                            
+                            {record.type === "spot" && spot && (
+                              <p className="text-[10px] text-zinc-400 mt-1.5 line-clamp-1">
+                                {spot.description || "游览翠玉胜地，尽享文化底蕴"}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>

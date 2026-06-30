@@ -264,33 +264,246 @@ nextjs-portal, #nextjs-portal, [data-nextjs-toast], [data-nextjs-dialog-overlay]
   display: none !important;
 }
 
-/* === Elder Accessibility Mode Scaling & Text Overrides === */
+/* === Elder Accessibility Mode Theme (温润长青 - 高对比/大字号/易触控) === */
+/* === Elder Accessibility Mode Theme (温润长青 - 高对比/大字号/无明显边框边界) === */
 html[data-accessibility-mode="elder"] {
-  font-size: 19px !important;
+  --background: #FAF7F0;
+  --foreground: #111111;
+  --card: #FFFFFF;
+  --card-foreground: #111111;
+  --popover: #FFFFFF;
+  --popover-foreground: #111111;
+  --primary: #225C34; /* 深翠绿色，高可读性 */
+  --primary-foreground: #FFFFFF;
+  --secondary: #F0EBE0;
+  --secondary-foreground: #1A3821;
+  --muted: #ECE6D9;
+  --muted-foreground: #4D4D4D;
+  --accent: #E8E0CE;
+  --accent-foreground: #111111;
+  --border: #E8E2D5; /* 软色边框，不突出物理分界线，保持干净柔和 */
+  --input: #E8E2D5;
+  --ring: #225C34;
+  --radius: 0.75rem;
+
+  font-size: 20px !important;
 }
 
 html[data-accessibility-mode="elder"] body {
-  line-height: 1.75 !important;
+  line-height: 1.8 !important;
+  letter-spacing: 0.02em !important;
+  font-weight: 500 !important;
 }
 
-html[data-accessibility-mode="elder"] .text-\[13px\] {
-  font-size: 16px !important;
+/* 适老模式全局组件级字重与尺寸重写 */
+html[data-accessibility-mode="elder"] p,
+html[data-accessibility-mode="elder"] span,
+html[data-accessibility-mode="elder"] li,
+html[data-accessibility-mode="elder"] a,
+html[data-accessibility-mode="elder"] input,
+html[data-accessibility-mode="elder"] select,
+html[data-accessibility-mode="elder"] textarea {
+  font-weight: 500 !important;
 }
 
-html[data-accessibility-mode="elder"] .text-\[12\.5px\] {
-  font-size: 15.5px !important;
+/* 字号全局映射增强 */
+html[data-accessibility-mode="elder"] .text-\[13px\] { font-size: 16px !important; }
+html[data-accessibility-mode="elder"] .text-\[12\.5px\] { font-size: 15.5px !important; }
+html[data-accessibility-mode="elder"] .text-\[11px\] { font-size: 15px !important; font-weight: 700 !important; }
+html[data-accessibility-mode="elder"] .text-\[10px\] { font-size: 14.5px !important; font-weight: 700 !important; }
+html[data-accessibility-mode="elder"] .text-\[9\.5px\] { font-size: 14px !important; font-weight: 700 !important; }
+html[data-accessibility-mode="elder"] .text-\[9px\] { font-size: 13.5px !important; font-weight: 700 !important; }
+html[data-accessibility-mode="elder"] .text-xs { font-size: 15px !important; }
+html[data-accessibility-mode="elder"] .text-sm { font-size: 17px !important; }
+html[data-accessibility-mode="elder"] .text-base { font-size: 19px !important; }
+html[data-accessibility-mode="elder"] .text-lg { font-size: 21px !important; }
+html[data-accessibility-mode="elder"] .text-xl { font-size: 24px !important; }
+
+/* 保持默认的纤细轻量边界，不作边界加粗 */
+html[data-accessibility-mode="elder"] border,
+html[data-accessibility-mode="elder"] .border,
+html[data-accessibility-mode="elder"] .border-t,
+html[data-accessibility-mode="elder"] .border-b,
+html[data-accessibility-mode="elder"] .border-l,
+html[data-accessibility-mode="elder"] .border-r {
+  border-width: 1px !important;
+  border-color: var(--border) !important;
 }
 
-html[data-accessibility-mode="elder"] .text-\[11px\] {
-  font-size: 14px !important;
+/* 按钮及输入框立体触控强化，但去除粗黑描边 */
+html[data-accessibility-mode="elder"] button,
+html[data-accessibility-mode="elder"] [role="button"],
+html[data-accessibility-mode="elder"] input,
+html[data-accessibility-mode="elder"] select,
+html[data-accessibility-mode="elder"] textarea {
+  min-height: 48px !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important;
 }
 
-html[data-accessibility-mode="elder"] .text-\[10px\] {
-  font-size: 13px !important;
+html[data-accessibility-mode="elder"] button:active,
+html[data-accessibility-mode="elder"] [role="button"]:active {
+  transform: scale(0.97);
+  background-color: var(--secondary) !important;
 }
 
-html[data-accessibility-mode="elder"] .text-\[9px\] {
-  font-size: 12px !important;
+html[data-accessibility-mode="elder"] svg {
+  stroke-width: 2px !important;
+}
+
+
+/* === Child Accessibility Mode Theme (糖果缤纷 - 圆润/趣味/多色彩/弹性动效) === */
+html[data-accessibility-mode="child"] {
+  --background: #FFFDF5; /* 燕麦奶黄底色 */
+  --foreground: #4A3E31; /* 柔和可可褐字色 */
+  --card: #FFFFFF;
+  --card-foreground: #4A3E31;
+  --popover: #FFFFFF;
+  --popover-foreground: #4A3E31;
+  --primary: #FF7B93; /* 草莓糖果粉 */
+  --primary-foreground: #FFFFFF;
+  --secondary: #FFF0F3; /* 草莓奶昔 */
+  --secondary-foreground: #FF7B93;
+  --muted: #FFF4E5; /* 蜜桃甜奶油 */
+  --muted-foreground: #D4A373;
+  --accent: #FFE5EA;
+  --accent-foreground: #FF7B93;
+  --border: #FAD3C3; /* 柔粉蜜桃边框 */
+  --input: #FAD3C3;
+  --ring: #FF7B93;
+  --radius: 1.75rem; /* 胖嘟嘟超圆润角 */
+}
+
+/* 多彩缤纷糖果色背景 */
+html[data-accessibility-mode="child"] body {
+  background-image: 
+    radial-gradient(circle at 10% 15%, rgba(255, 123, 147, 0.07) 0%, transparent 40%),
+    radial-gradient(circle at 90% 15%, rgba(255, 193, 7, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 50% 85%, rgba(56, 189, 248, 0.07) 0%, transparent 50%),
+    radial-gradient(circle at 15% 75%, rgba(16, 185, 129, 0.05) 0%, transparent 40%);
+}
+
+/* 玩具卡片：边缘双色描边 + 玩具感浮雕投影 */
+html[data-accessibility-mode="child"] .bg-white,
+html[data-accessibility-mode="child"] .card-ink,
+html[data-accessibility-mode="child"] [class*="rounded-3xl"] {
+  border: 2px solid var(--border) !important;
+  box-shadow: 0 6px 0 var(--border) !important;
+  transform: translateY(-2px);
+  transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+
+html[data-accessibility-mode="child"] .bg-white:hover,
+html[data-accessibility-mode="child"] .card-ink:hover {
+  transform: translateY(-5px) rotate(-0.5deg);
+  box-shadow: 0 9px 0 var(--border) !important;
+}
+
+/* 软糯弹性动效按钮 */
+html[data-accessibility-mode="child"] button,
+html[data-accessibility-mode="child"] [role="button"] {
+  border-radius: 1.5rem !important;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+
+html[data-accessibility-mode="child"] button:hover,
+html[data-accessibility-mode="child"] [role="button"]:hover {
+  transform: scale(1.06) translateY(-2px);
+  filter: brightness(1.02);
+}
+
+html[data-accessibility-mode="child"] button:active,
+html[data-accessibility-mode="child"] [role="button"]:active {
+  transform: scale(0.93) translateY(1px);
+}
+
+/* iOS分段器/切换器激活按钮：草莓粉渐变 */
+html[data-accessibility-mode="child"] button.bg-white.text-\[\#4F6F52\] {
+  background: linear-gradient(135deg, #FF7B93, #FF9EB5) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 10px rgba(255, 123, 147, 0.22) !important;
+  border: none !important;
+}
+html[data-accessibility-mode="child"] button.text-\[\#8F9F8F\] {
+  color: #B59E8C !important;
+}
+html[data-accessibility-mode="child"] button.text-\[\#8F9F8F\]:hover {
+  color: #FF7B93 !important;
+}
+
+/* 编辑资料按钮：甜橙渐变 */
+html[data-accessibility-mode="child"] .lg\:hidden button.text-\[10px\] {
+  background: linear-gradient(135deg, #FF9233, #FFB356) !important;
+  box-shadow: 0 4px 12px rgba(255, 146, 51, 0.28) !important;
+  border: none !important;
+}
+
+/* 顶部消息/设置按钮：柔粉贴纸 */
+html[data-accessibility-mode="child"] .lg\:hidden .flex.items-center.gap-2 button {
+  background-color: #FFF0F6 !important;
+  border-color: #FFD8E4 !important;
+  box-shadow: 0 4px 0 #FFD8E4 !important;
+}
+html[data-accessibility-mode="child"] .lg\:hidden .flex.items-center.gap-2 button svg {
+  color: #FF5E84 !important;
+}
+
+/* 用户等级气泡：蜜瓜黄贴纸 */
+html[data-accessibility-mode="child"] .lg\:hidden span.bg-\[\#EBF3EE\] {
+  background-color: #FEF9C3 !important;
+  color: #CA8A04 !important;
+  border: 1px solid #FEF08A !important;
+}
+
+/* 快捷入口卡片：糖果色彩缤纷化 */
+html[data-accessibility-mode="child"] .grid-cols-4 > *:nth-child(1) {
+  background-color: #E8FBF0 !important; /* 薄荷绿 */
+  border-color: #A7F3D0 !important;
+  box-shadow: 0 6px 0 #A7F3D0 !important;
+}
+html[data-accessibility-mode="child"] .grid-cols-4 > *:nth-child(1) * { color: #047857 !important; }
+
+html[data-accessibility-mode="child"] .grid-cols-4 > *:nth-child(2) {
+  background-color: #FFF0F2 !important; /* 草莓粉 */
+  border-color: #FECDD3 !important;
+  box-shadow: 0 6px 0 #FECDD3 !important;
+}
+html[data-accessibility-mode="child"] .grid-cols-4 > *:nth-child(2) * { color: #DB2777 !important; }
+
+html[data-accessibility-mode="child"] .grid-cols-4 > *:nth-child(3) {
+  background-color: #FEF9C3 !important; /* 蜂蜜黄 */
+  border-color: #FEF08A !important;
+  box-shadow: 0 6px 0 #FEF08A !important;
+}
+html[data-accessibility-mode="child"] .grid-cols-4 > *:nth-child(3) * { color: #D97706 !important; }
+
+html[data-accessibility-mode="child"] .grid-cols-4 > *:nth-child(4) {
+  background-color: #EFF6FF !important; /* 晴空蓝 */
+  border-color: #BFDBFE !important;
+  box-shadow: 0 6px 0 #BFDBFE !important;
+}
+html[data-accessibility-mode="child"] .grid-cols-4 > *:nth-child(4) * { color: #1D4ED8 !important; }
+
+/* 个人数据小看板：梦幻薰衣草紫色调 */
+html[data-accessibility-mode="child"] .grid-cols-3 {
+  background-color: #FAF5FF !important;
+  border-color: #E9D5FF !important;
+  box-shadow: 0 6px 0 #E9D5FF !important;
+}
+html[data-accessibility-mode="child"] .grid-cols-3 * {
+  color: #7E22CE !important;
+}
+
+/* 趣味性元素浮动动画 */
+@keyframes childFloat {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+  100% { transform: translateY(0px); }
+}
+
+html[data-accessibility-mode="child"] img,
+html[data-accessibility-mode="child"] .avatar-glow {
+  animation: childFloat 3.5s ease-in-out infinite;
 }
 
 /* Hide scrollbar for Chrome, Safari, Opera and Firefox */
