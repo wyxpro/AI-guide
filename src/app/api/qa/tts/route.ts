@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { synthesizeSpeech } from "@/lib/api/xfyun-tts";
+import { synthesizeSpeechWithStepFun } from "../../../../lib/stepfun-audio/tts";
 
 export async function POST(request: NextRequest) {
   try {
@@ -8,7 +9,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Text is required" }, { status: 400 });
     }
 
-    // 1. Try iFlytek TTS if variables are present
+    // 1. Try StepFun stepaudio-2.5-tts if API key is present
+    if (process.env.STEP_API_KEY) {
+      try {
+        const audioBuffer = await synthesizeSpeechWithStepFun(text, voiceStyle);
+        return new NextResponse(audioBuffer, {
+          headers: {
+            "Content-Type": "audio/mpeg",
+          },
+        });
+      } catch (err) {
+        console.error("[TTS Route] StepFun TTS synthesis failed, falling back:", err);
+      }
+    }
+
+    // 2. Try iFlytek TTS if variables are present
     let xfyunAppId = process.env.XFYUN_APP_ID;
     let xfyunApiKey = process.env.XFYUN_API_KEY;
     let xfyunApiSecret = process.env.XFYUN_API_SECRET;

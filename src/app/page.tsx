@@ -421,8 +421,8 @@ export default function WelcomePage() {
             className="text-4xl md:text-6xl font-black leading-tight"
             style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}
           >
-            让每一块玉石，<br />
-            都为你<span className="text-transparent bg-clip-text" style={{ backgroundImage: "linear-gradient(135deg,#4F6F52,#D2A053)" }}>娓娓道来</span>
+            多模态AI数字人导游<br />
+            与<span className="text-transparent bg-clip-text" style={{ backgroundImage: "linear-gradient(135deg,#4F6F52,#D2A053)" }}>智慧运营系统</span>
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -487,6 +487,7 @@ export default function WelcomePage() {
                 title: "虚拟人3D拟真交互",
                 desc: "提供仕女古风、童趣卡通、现代精英数字人形象，具备自然表情流露与拟真口型算法。",
                 color: "#8B5CF6", // Purple
+                bgImage: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=600&q=80",
               },
               {
                 icon: MessageCircle,
@@ -494,6 +495,7 @@ export default function WelcomePage() {
                 title: "全天候双工语音对谈",
                 desc: "极速的语音语义流式处理，打破呆板的按键指引，就像与一位温婉知性的文史专家面对面交谈。",
                 color: "#10B981", // Emerald
+                bgImage: "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?auto=format&fit=crop&w=600&q=80",
               },
               {
                 icon: MapPin,
@@ -501,6 +503,7 @@ export default function WelcomePage() {
                 title: "自适应智能专属路径",
                 desc: "支持输入您当前的兴趣偏好，如“历史文化优先、走平坦道”，AI自动动态避堵并规划最优旅游足迹。",
                 color: "#D2A053", // Gold/Amber
+                bgImage: "https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=600&q=80",
               },
               {
                 icon: Sparkles,
@@ -508,6 +511,7 @@ export default function WelcomePage() {
                 title: "AR/VR实景研判识别",
                 desc: "对准展品文物拍摄即可开展多模态文物识别，提取背后的深度文化故事，变走马观花为沉浸感悟。",
                 color: "#06B6D4", // Cyan
+                bgImage: "https://images.unsplash.com/photo-1626379616459-b2ce1d9decbc?auto=format&fit=crop&w=600&q=80",
               },
               {
                 icon: Users,
@@ -515,6 +519,7 @@ export default function WelcomePage() {
                 title: "适老/童趣多模态适配",
                 desc: "首创三大体验模式，老年大字伴读、儿童故事科普、标准沉浸研读，贴心照顾全家出游偏好。",
                 color: "#EC4899", // Rose/Pink
+                bgImage: "https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=600&q=80",
               },
               {
                 icon: TrendingUp,
@@ -522,6 +527,7 @@ export default function WelcomePage() {
                 title: "景区大屏与情感雷达",
                 desc: "景区管理后台支持游客情感指数雷达监测、高频热搜词云实时流计算及今日客流量科学预测。",
                 color: "#3B82F6", // Blue
+                bgImage: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=600&q=80",
               }
             ].map((f, i) => {
               // Calculate relative offset wrap-around correctly in range [-3, 2]
@@ -562,9 +568,11 @@ export default function WelcomePage() {
                   }}
                   transition={{ type: "spring", stiffness: 150, damping: 22 }}
                   style={{
-                    background: isActive
-                      ? "linear-gradient(180deg, #FFFFFF 0%, #FFFDF9 100%)"
-                      : "linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(250, 248, 245, 0.9) 100%)",
+                    backgroundImage: isActive
+                      ? `linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 254, 250, 0.88) 100%), url(${f.bgImage})`
+                      : `linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(250, 248, 245, 0.96) 100%), url(${f.bgImage})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
                     border: isActive
                       ? `2px solid ${f.color}`
                       : `1px solid ${f.color}40`,

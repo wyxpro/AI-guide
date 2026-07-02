@@ -1,9 +1,5 @@
-/**
- * DeepSeek-V4-Pro API Connector
- * Provider: 九章云极
- * With transparent fallback to Eazo SDK default model
- */
 import { ai } from "@eazo/sdk";
+import { deepseekV4ProChat } from "../deepseek-v4-pro/chat";
 
 interface DeepSeekMessage {
   role: "system" | "user" | "assistant";
@@ -28,19 +24,11 @@ export async function deepseekChat(options: DeepSeekChatOptions, customAgent?: a
   } = options;
 
   try {
-    let proxyUrl = process.env.DEEPSEEK_PROXY_URL || "https://eazo.ai/api/innoreation/v1/proxy";
-    let apiKey = process.env.DEEPSEEK_API_KEY || "sk-02260d10c28c4bb4b65bace15ba5f754";
-    let headers: Record<string, string> = {
-      "Content-Type": "application/json",
-      "X-Proxy-Key": apiKey,
-      "Authorization": `Bearer ${apiKey}`,
-    };
-    let targetModel = model;
-
+    // If there is a custom agent configured (e.g. custom key/endpoint in settings),
+    // we use the inline custom agent fetch flow. Otherwise, we use the optimized deepseekV4ProChat client.
     if (customAgent && customAgent.enable) {
-      if (customAgent.apiKey) {
-        apiKey = customAgent.apiKey;
-      }
+      let apiKey = customAgent.apiKey || process.env.DEEPSEEK_API_KEY || "sk-02260d10c28c4bb4b65bace15ba5f754";
+      let proxyUrl = "";
       if (customAgent.baseUrl) {
         let base = customAgent.baseUrl.trim();
         if (base.endsWith("/")) {
@@ -58,70 +46,78 @@ export async function deepseekChat(options: DeepSeekChatOptions, customAgent?: a
           proxyUrl = "https://api.moonshot.cn/v1/chat/completions";
         }
       }
-      targetModel = customAgent.model || targetModel;
-      headers = {
+      const targetModel = customAgent.model || model;
+      const headers = {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${apiKey}`,
       };
-    }
 
-    const response = await fetch(proxyUrl, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({
-        model: targetModel,
-        messages,
-        temperature,
-        stream,
-        max_tokens,
-      }),
-    });
+      const response = await fetch(proxyUrl, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          model: targetModel,
+          messages,
+          temperature,
+          stream,
+          max_tokens,
+        }),
+      });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`DeepSeek API error: ${response.status} - ${errorText}`);
-    }
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Custom Agent API error: ${response.status} - ${errorText}`);
+      }
 
-    if (!stream) {
-      return await response.json();
-    }
+      if (!stream) {
+        return await response.json();
+      }
 
-    // SSE stream decoder and parser
-    const reader = response.body!.getReader();
-    const decoder = new TextDecoder();
+      const reader = response.body!.getReader();
+      const decoder = new TextDecoder();
 
-    return {
-      [Symbol.asyncIterator]: async function* () {
-        let buffer = "";
-        try {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
+      return {
+        [Symbol.asyncIterator]: async function* () {
+          let buffer = "";
+          try {
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
 
-            buffer += decoder.decode(value, { stream: true });
-            const lines = buffer.split("\n");
-            buffer = lines.pop() || "";
+              buffer += decoder.decode(value, { stream: true });
+              const lines = buffer.split("\n");
+              buffer = lines.pop() || "";
 
-            for (const line of lines) {
-              const trimmed = line.trim();
-              if (!trimmed.startsWith("data:")) continue;
+              for (const line of lines) {
+                const trimmed = line.trim();
+                if (!trimmed.startsWith("data:")) continue;
 
-              const dataStr = trimmed.slice(5).trim();
-              if (dataStr === "[DONE]") continue;
+                const dataStr = trimmed.slice(5).trim();
+                if (dataStr === "[DONE]") continue;
 
-              try {
-                const parsed = JSON.parse(dataStr);
-                yield parsed;
-              } catch (e) {
-                // Ignore malformed JSON chunks
+                try {
+                  const parsed = JSON.parse(dataStr);
+                  yield parsed;
+                } catch (e) {
+                  // Ignore malformed JSON chunks
+                }
               }
             }
+          } finally {
+            reader.releaseLock();
           }
-        } finally {
-          reader.releaseLock();
-        }
-      },
-    };
+        },
+      };
+    }
+
+    // Default primary flow: call our new deepseek-v4-pro client
+    return await deepseekV4ProChat({
+      messages,
+      temperature,
+      max_tokens,
+      stream,
+    });
+
   } catch (error) {
     console.warn(
       `[DeepSeek API Connector] Warning: Failed to call ${model} at proxyUrl. Falling back to default SDK model.`,

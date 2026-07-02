@@ -429,8 +429,8 @@ export function PointsInviteModal({ isOpen, onClose, initialTab = "packages" }: 
               {/* Tagline & code */}
               <div className="my-4 relative z-10 px-2">
                 <p className="text-xs text-white/95 leading-relaxed font-bold">
-                  让每一块古迹玉石，<br />
-                  都为你娓娓道来
+                  多模态AI数字人导游<br />
+                  与智慧运营系统
                 </p>
                 <p className="text-[10px] text-[#D2A053] mt-2.5 bg-[#D2A053]/10 border border-[#D2A053]/25 py-1 px-3 rounded-full inline-block">
                   专属邀请码：<span className="font-black select-all">TRV888</span>

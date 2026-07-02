@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import fs from "fs";
 import path from "path";
+import { transcribeAudioWithStepFun } from "../../../../lib/stepfun-audio/asr";
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,11 +31,23 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ text: result.text });
         }
       } catch (voskError) {
-        console.warn("[STT Route] Local Vosk ASR failed, falling back to Whisper:", voskError);
+        console.warn("[STT Route] Local Vosk ASR failed, falling back:", voskError);
       }
     }
 
-    // 2. Whisper ASR Fallback
+    // 2. Try StepFun stepaudio-2.5-asr if API key is present
+    if (process.env.STEP_API_KEY) {
+      try {
+        const text = await transcribeAudioWithStepFun(file);
+        if (text) {
+          return NextResponse.json({ text });
+        }
+      } catch (stepError) {
+        console.warn("[STT Route] StepFun ASR failed, falling back to Whisper:", stepError);
+      }
+    }
+
+    // 3. Whisper ASR Fallback
     const asrConfigStr = formData.get("asrConfig") as string;
     let asrConfig: any = null;
     if (asrConfigStr) {
