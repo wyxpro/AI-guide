@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ai } from "@eazo/sdk";
+import { recognizeImageWithStepFun } from "@/lib/stepfun-vision/recognize";
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,6 +15,17 @@ export async function POST(request: NextRequest) {
     const base64 = Buffer.from(arrayBuffer).toString("base64");
     const mimeType = imageFile.type || "image/jpeg";
 
+    // 1. Try StepFun step-3.7-flash model if key is present
+    if (process.env.STEP_API_KEY) {
+      try {
+        const result = await recognizeImageWithStepFun(base64, mimeType, contextSpot);
+        return NextResponse.json(result);
+      } catch (stepError) {
+        console.error("[Recognize Route] StepFun step-3.7-flash vision recognition failed, falling back:", stepError);
+      }
+    }
+
+    // 2. Fallback to default SDK model (deepseek.v3.1)
     const systemPrompt = `你是翠玉景区的专属AI导览员小玉，精通景区所有景点的历史、文化和自然知识。
 ${contextSpot ? `当前游客正在参观：${contextSpot}附近区域。` : ""}
 
