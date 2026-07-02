@@ -4,19 +4,19 @@
 
 ---
 
-## 📊 一、多模态 AI 能力需求与推荐模型
+## 📊 一、多模态 AI 能力需求与已对接模型
 
 > [!NOTE]
 > 价格换算比例参考：$1 USD ≈ 7.25 CNY。大模型计费通常以**每百万 Tokens (1M Tokens)** 为标准单位。
 
-| 模态 | 能力需求 | 对接场景 | 推荐模型 | 调用价格 |
+| 模态 | 能力需求 | 对接场景 | 已对接模型 | 调用价格 |
 | :--- | :--- | :--- | :--- | :--- |
-| **文本模态**<br>(Text) | **智能导游问答**<br>(RAG Chat Engine) | 游客在 C 端进行文本或语音问答，自动基于知识库检索并调整语气（标准/老年/儿童模式），返回特定情感标注。 | **首选（国内旗舰）**：`deepseek-v4-pro` (九章云极代理)<br>**容灾备选**：`gpt-4o-mini` (高速度), `qwen-plus` (高兼容), `moonshot-v1-8k` (Kimi) | - **DeepSeek-V4-Pro**：代理单次计费 (代理授权)<br>- **GPT-4o-mini**：输入 $0.15/M (¥1.09), 输出 $0.60/M (¥4.35)<br>- **Qwen-Plus**：输入 ¥0.8/M, 输出 ¥2.0/M |
-| | **景区运营建议分析**<br>(Analytics Recommendations) | B 端管理后台定期提取近 40 条游客问答日志，通过 AI 进行痛点提取，并生成 3-4 条改进方案。 | **首选**：`deepseek-v4-pro`<br>**备选**：`gpt-4o-mini` | - 同上（单次分析约消耗 2k~4k Tokens） |
-| | **知识库文本向量化**<br>(Text Embedding) | 管理员上传 txt/pdf/docx 景区文档时，自动切段并生成向量，存储至 PostgreSQL 以实现 Hybrid RAG 语义相似度匹配。 | **首选**：`text-embedding-3-small` (1536维)<br>**备选**：`text-embedding-v2` (阿里) | - **text-embedding-3-small**：$0.02/M Tokens (约 ¥0.15/M)<br>- **阿里 text-embedding-v2**：¥0.70/M Tokens |
-| **视觉模态**<br>(Vision) | **VR 即拍即识**<br>(Multimodal Recognition) | 游客拍照或上传风光/展品图片，AI 在 1 秒内提取主体名称、深度历史故事与拍摄建议并输出 JSON。 | **首选**：`deepseek.v3.1` (多模态) 或 `gpt-4o-mini`<br>**高精旗舰**：`gpt-4o` | - **DeepSeek V3 (视觉版)**：极低价格<br>- **GPT-4o-mini**：低解像度约 $0.00085/张，高解像度约 $0.00285/张<br>- **Qwen-VL-Plus**：固定计费 ¥0.015/张 |
-| **音频模态**<br>(Audio) | **语音输入**<br>(ASR / STT) | 游客在 C 端按住麦克风进行语音提问，录音数据传入后台转换为文字。 | **免费本地化**：`Vosk` (vosk-model-cn)<br>**商业首选**：`stepaudio-2.5-asr` (阶跃星辰)<br>**海外备选**：OpenAI `Whisper-1` | - **Vosk**：¥0 (本地部署)<br>- **stepaudio-2.5-asr**：¥0.01 / 分钟 (高采样率识别)<br>- **Whisper-1**：$0.006 / 分钟 (约 ¥0.044 / 分钟) |
-| | **语音输出**<br>(TTS) | 将大模型生成的答复文本转换为流式语音流，用于驱动 Live2D 数字人面部及口型同步。 | **国内首选**：`stepaudio-2.5-tts` (阶跃星辰，极度逼真)<br>**高级备选**：科大讯飞流式 TTS (aisjinger/aisjiuxu)<br>**海外备选**：`ElevenLabs`<br>**保底免费**：`Google Translate TTS` | - **stepaudio-2.5-tts**：¥0.02 / 万字符 (情绪饱满)<br>- **科大讯飞流式 TTS**：约合 ¥10.00 - ¥20.00 / 百万字<br>- **ElevenLabs**：约 $0.15 - $0.30 / 万字符 |
+| **文本模态**<br>(Text) | **智能导游问答**<br>(RAG Chat Engine) | 游客在 C 端进行文本或语音问答，自动基于知识库检索并调整语气（标准/老年/儿童模式），返回特定情感标注。 | **主用**：`deepseek-v4-pro` (九章云极代理)<br>**降级备选**：`deepseek.v3.1` (Eazo SDK) | - **DeepSeek-V4-Pro**：代理单次计费 (代理授权)<br>- **GPT-4o-mini**：输入 $0.15/M (¥1.09), 输出 $0.60/M (¥4.35)<br>- **Qwen-Plus**：输入 ¥0.8/M, 输出 ¥2.0/M |
+| | **景区运营建议分析**<br>(Analytics Recommendations) | B 端管理后台定期提取近 40 条游客问答日志，通过 AI 进行痛点提取，并生成 3-4 条改进方案。 | **主用**：`deepseek-v4-pro` | - 同上（单次分析约消耗 2k~4k Tokens） |
+| | **知识库文本向量化**<br>(Text Embedding) | 管理员上传 txt/pdf/docx 景区文档时，自动切段并生成向量，存储至 PostgreSQL 以实现 Hybrid RAG 语义相似度匹配。 | **主用**：`text-embedding-3-small` (1536维)<br>**保底备选**：本地哈希与余弦相似度保底 | - **text-embedding-3-small**：$0.02/M Tokens (约 ¥0.15/M)<br>- **阿里 text-embedding-v2**：¥0.70/M Tokens |
+| **视觉模态**<br>(Vision) | **VR 即拍即识**<br>(Multimodal Recognition) | 游客拍照或上传风光/展品图片，AI 在 1 秒内提取主体名称、深度历史故事与拍摄建议并输出 JSON。 | **主用**：`step-3.7-flash` (阶跃星辰)<br>**降级备选**：`deepseek.v3.1` (Eazo SDK) | - **DeepSeek V3 (视觉版)**：极低价格<br>- **GPT-4o-mini**：低解像度约 $0.00085/张，高解像度约 $0.00285/张<br>- **Qwen-VL-Plus**：固定计费 ¥0.015/张 |
+| **音频模态**<br>(Audio) | **语音输入**<br>(ASR / STT) | 游客在 C 端按住麦克风进行语音提问，录音数据传入后台转换为文字。 | **主用**：`stepaudio-2.5-asr` (阶跃星辰)<br>**多级降级**：`Vosk` (本地离线), OpenAI `Whisper-1` | - **Vosk**：¥0 (本地部署)<br>- **stepaudio-2.5-asr**：¥0.01 / 分钟 (高采样率识别)<br>- **Whisper-1**：$0.006 / 分钟 (约 ¥0.044 / 分钟) |
+| | **语音输出**<br>(TTS) | 将大模型生成的答复文本转换为流式语音流，用于驱动 Live2D 数字人面部及口型同步。 | **主用**：`stepaudio-2.5-tts` (阶跃星辰)<br>**多级降级**：科大讯飞流式 TTS, `ElevenLabs`, `Google Translate TTS` | - **stepaudio-2.5-tts**：¥0.02 / 万字符 (情绪饱满)<br>- **科大讯飞流式 TTS**：约合 ¥10.00 - ¥20.00 / 百万字<br>- **ElevenLabs**：约 $0.15 - $0.30 / 万字符 |
 
 ---
 
