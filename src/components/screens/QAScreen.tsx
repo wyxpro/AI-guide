@@ -7,10 +7,9 @@ import {
   Image as ImageIcon, User,
 } from "lucide-react";
 import { request } from "@/lib/api/request";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { SatisfactionModal } from "@/components/ui/SatisfactionModal";
 import { DigitalAvatar, type AvatarState } from "@/components/ui/DigitalAvatar";
-import { CameraRecognize } from "@/components/ui/CameraRecognize";
 import { AvatarSelectorModal } from "@/components/ui/AvatarSelectorModal";
 import { toast } from "sonner";
 
@@ -75,6 +74,7 @@ function initMsg(spotName?: string | null): Message {
 
 export function QAScreen() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const spotName = searchParams.get("name");
 
   const [messages, setMessages] = useState<Message[]>([initMsg(spotName)]);
@@ -729,7 +729,7 @@ export function QAScreen() {
   const renderInputBar = (dark = false) => (
     <div className={`flex items-center gap-2`}>
       {/* Camera */}
-      <motion.button type="button" whileTap={{ scale: 0.84 }} onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowCamera(true); }}
+      <motion.button type="button" whileTap={{ scale: 0.84 }} onClick={(e) => { e.preventDefault(); e.stopPropagation(); router.push("/vr-recognize?action=camera"); }}
         className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 shadow-md transition-all hover:brightness-105"
         style={{
           background: "linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%)",
@@ -930,7 +930,7 @@ export function QAScreen() {
           {/* Input row: [Camera] [Mic] [Input pill] [Send/Camera] */}
           <div className="flex items-center gap-2.5">
             {/* Camera button — left of mic */}
-            <motion.button type="button" whileTap={{ scale: 0.88 }} onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowCamera(true); }}
+            <motion.button type="button" whileTap={{ scale: 0.88 }} onClick={(e) => { e.preventDefault(); e.stopPropagation(); router.push("/vr-recognize?action=camera"); }}
               className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg transition-all hover:brightness-105"
               style={{
                 background: "linear-gradient(135deg, #F59E0B 0%, #D97706 100%)",
@@ -1184,7 +1184,6 @@ export function QAScreen() {
         )}
       </AnimatePresence>
       <AnimatePresence>
-        {showCamera && <CameraRecognize currentSpot={spotName ?? undefined} onClose={() => setShowCamera(false)} onRecognized={handleCameraRecognized} />}
       </AnimatePresence>
       <AnimatePresence>
         {showPersonaMenu && (

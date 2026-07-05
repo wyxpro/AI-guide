@@ -210,7 +210,7 @@ function PCView() {
             className="relative bg-gradient-to-br from-[#FFF5F2] to-[#FFF8F6] border border-[#FFE8E2] rounded-3xl p-6 min-h-[120px] flex items-center justify-between overflow-hidden shadow-sm cursor-pointer group"
           >
             <div className="space-y-2 relative z-10">
-              <span className="text-lg font-black text-[#FF5B45] tracking-wide block">名校导览</span>
+              <span className="text-lg font-black text-[#FF5B45] tracking-wide block">全国热门</span>
               <p className="text-xs text-zinc-600 max-w-[280px]">感受名校文化底蕴与学府风范，量身定制名校求索打卡路线。</p>
               <span className="text-[10px] font-bold text-white bg-[#FF5B45] px-2.5 py-0.5 rounded-full inline-flex items-center gap-0.5 shadow-sm mt-1">
                 立即前往
@@ -571,23 +571,23 @@ function MobileChengduPanel() {
 }
 
 /* ═══════════════════════════════════════════════════════
-   Custom Entrance Buttons (名校导览 & 文博精讲 & VR识别)
+   Custom Entrance Buttons (全国热门 & 文博精讲 & VR识别)
    ═══════════════════════════════════════════════════════ */
 function MobileEntranceCards() {
   const router = useRouter();
 
   return (
     <div className="px-4 mt-4 grid grid-cols-3 gap-2 select-none">
-      {/* 1. 名校导览 */}
+      {/* 1. 全国热门 */}
       <motion.div
         whileTap={{ scale: 0.96 }}
         onClick={() => router.push("/spots?category=cultural")}
         className="relative bg-gradient-to-br from-[#FFF5F2] to-[#FFF8F6] border border-[#FFE8E2] rounded-2xl p-2.5 h-[84px] flex flex-col justify-between overflow-hidden shadow-[0_2px_8px_rgba(255,91,69,0.03)] cursor-pointer"
       >
         <div className="flex flex-col">
-          <span className="text-[11px] font-black text-[#FF5B45] tracking-wide">名校导览</span>
+          <span className="text-[11px] font-black text-[#FF5B45] tracking-wide">全国热门</span>
           <span className="text-[7.5px] font-bold text-white bg-[#FF5B45] px-1 py-0.5 rounded-full w-fit mt-1 shadow-sm leading-none flex items-center gap-0.5">
-            名校风范
+            热门景点
             <svg className="w-1.5 h-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4">
               <polyline points="9 18 15 12 9 6" />
             </svg>
