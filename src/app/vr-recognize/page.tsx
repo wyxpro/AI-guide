@@ -72,20 +72,22 @@ export default function VRRecognizePage() {
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   // Stop camera stream
   const stopCamera = () => {
-    if (cameraStream) {
-      cameraStream.getTracks().forEach(track => track.stop());
-      setCameraStream(null);
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
     }
+    setCameraStream(null);
     setIsCameraActive(false);
   };
 
   // Start camera stream
   const startCamera = async () => {
     try {
-      if (cameraStream) {
+      if (streamRef.current) {
         stopCamera();
       }
       if (audioInstance) {
@@ -95,6 +97,7 @@ export default function VRRecognizePage() {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" }
       });
+      streamRef.current = stream;
       setCameraStream(stream);
       setIsCameraActive(true);
       setPreviewUrl(null);
@@ -271,18 +274,23 @@ export default function VRRecognizePage() {
     setIsPlayingAudio(true);
   };
 
-  // Auto trigger camera if action query is set & cleanup camera on unmount
+  // Auto trigger camera if action query is set
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get("action") === "camera") {
       startCamera();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Cleanup camera on unmount
+  useEffect(() => {
     return () => {
-      if (cameraStream) {
-        cameraStream.getTracks().forEach(track => track.stop());
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
       }
     };
-  }, [cameraStream]);
+  }, []);
 
   // Cleanup audio on unmount
   useEffect(() => {

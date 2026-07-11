@@ -838,7 +838,7 @@ export function RoutesScreen() {
         {/* COLUMN 1: LEFT SIDEBAR (City switch, routes, spots list) */}
         <div className={`
           bg-white border-zinc-200/80 flex flex-col p-4 space-y-5 flex-shrink-0 shadow-lg z-30 transition-all duration-300
-          ${isMobile ? 'absolute top-0 bottom-0 left-0 w-[290px] h-full' : 'w-[320px] border-r'}
+          ${isMobile ? 'absolute top-0 bottom-[calc(60px+env(safe-area-inset-bottom))] left-0 w-[290px]' : 'w-[320px] border-r'}
           ${isMobile && !showLeftSidebar ? '-translate-x-full' : 'translate-x-0'}
         `}>
           <div className="pb-1 border-b border-zinc-100 flex items-center justify-between">
@@ -1238,7 +1238,7 @@ export function RoutesScreen() {
         {isMobile && (
           <div className={`
             bg-white border-zinc-200/80 flex flex-col overflow-hidden shadow-lg z-30 transition-all duration-300
-            absolute top-0 bottom-0 right-0 w-[300px]
+            absolute top-0 bottom-[calc(60px+env(safe-area-inset-bottom))] right-0 w-[300px]
             ${!showRightSidebar ? 'translate-x-full' : 'translate-x-0'}
           `}>
             <div className="p-4 border-b border-zinc-100 flex items-center justify-between bg-zinc-50/50 flex-shrink-0">

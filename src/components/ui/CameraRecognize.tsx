@@ -35,7 +35,7 @@ const PRESETS = [
     id: 2,
     name: "唐代彩绘陶侍女俑",
     type: "盛唐彩塑精粹",
-    img: "https://images.unsplash.com/photo-1628157582853-a796fa650a6a?w=800&q=80",
+    img: "/image/tang_pottery_lady.png",
     subject: "大唐彩绘陶侍女俑",
     story: "陶俑面庞饱满红润，发髻高耸，身着红绿相间的宽袖长裙，体态丰腴自然。其神态安详而自信，衣纹褶皱自然流畅，完美再现了盛唐时期“大唐气象”的包容性与自信丰神，体现了当时手工业雕塑艺术的极高水平，将历史的温度刻画进泥土之中。",
     tip: "适合近距离对焦拍摄面部细节与衣服残存的彩绘色彩，拍照时尽量让镜头贴近玻璃以避开反光。"
@@ -257,9 +257,15 @@ export function CameraRecognize({ currentSpot, onClose, onRecognized }: CameraRe
   useEffect(() => {
     return () => {
       if (audioInstance) audioInstance.pause();
-      stopCamera();
     };
   }, [audioInstance]);
+
+  // Cleanup camera on unmount
+  useEffect(() => {
+    return () => {
+      stopCamera();
+    };
+  }, []);
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => {

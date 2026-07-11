@@ -1044,9 +1044,9 @@ export default function WelcomePage() {
               <span className="text-white font-bold">关于我们：</span>
               <span>智慧文旅开发组</span>
               <span className="text-white/10">•</span>
-              <span>Eazo 平台官方应用支撑</span>
+              <span></span>
               <span className="text-white/10">•</span>
-              <span>联系邮箱：support@eazo.ai</span>
+              <span>联系邮箱：wyxcode@qq.com</span>
             </div>
           </div>
 
@@ -1066,7 +1066,7 @@ export default function WelcomePage() {
         </div>
 
         <div className="max-w-7xl mx-auto px-6 mt-12 pt-6 border-t border-white/5 text-center text-[10px]">
-          <p>© {new Date().getFullYear()} 旅行家Pro Inc. 保留所有权利。由 Eazo Platform 强力驱动。</p>
+          <p>© {new Date().getFullYear()} 旅行家Pro Inc. 保留所有权利。由 XIAOYE 强力驱动。</p>
         </div>
       </footer>
     </div>
