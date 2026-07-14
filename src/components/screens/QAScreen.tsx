@@ -23,11 +23,10 @@ const QUICK_PROMPTS = [
 ];
 
 const BG_PRESETS = [
-  { id: "default", label: "玄月幻境", url: "" },
-  { id: "lake", label: "翠玉湖畔", url: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80" },
-  { id: "pavilion", label: "揽月亭台", url: "https://images.unsplash.com/photo-1542224566-6e85f2e6772f?auto=format&fit=crop&w=800&q=80" },
-  { id: "mountain", label: "巍峨山峦", url: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80" },
-  { id: "forest", label: "晨曦竹林", url: "https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80" },
+  { id: "beijing", label: "北京", url: "/background/北京.png" },
+  { id: "hangzhou", label: "杭州", url: "/background/杭州.png" },
+  { id: "pavilion", label: "山景", url: "https://images.unsplash.com/photo-1542224566-6e85f2e6772f?auto=format&fit=crop&w=800&q=80" },
+  { id: "chongqing", label: "重庆", url: "/background/重庆.png" },
 ];
 
 const PERSONAS_FEMALE = [
@@ -152,7 +151,7 @@ export function QAScreen() {
   });
 
   // Background selection state
-  const [bgImage, setBgImage] = useState<string>("https://images.unsplash.com/photo-1542224566-6e85f2e6772f?auto=format&fit=crop&w=800&q=80");
+  const [bgImage, setBgImage] = useState<string>("/background/北京.png");
   const [showBgMenu, setShowBgMenu] = useState(false);
 
   // Persona selection state

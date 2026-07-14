@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     const voskModelPath = path.join(process.cwd(), "models", "vosk-model-cn");
     if (fs.existsSync(voskModelPath)) {
       try {
-        const { Model, Recognizer } = require("vosk");
+        const { Model, Recognizer } = eval('require')("vosk");
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
         
