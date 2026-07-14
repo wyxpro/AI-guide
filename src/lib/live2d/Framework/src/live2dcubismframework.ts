@@ -48,8 +48,8 @@ export function strtod(s: string, endPtr: string[]): number {
 
 let s_isStarted = false;
 let s_isInitialized = false;
-let s_option: Option = null;
-let s_cubismIdManager: CubismIdManager = null;
+let s_option: Option = null as any;
+let s_cubismIdManager: CubismIdManager = null as any;
 
 /**
  * Framework内で使う定数の宣言
@@ -64,7 +64,7 @@ export function csmDelete<T>(address: T): void {
     return;
   }
 
-  address = void 0;
+  address = undefined as any;
 }
 
 /**
@@ -81,7 +81,7 @@ export class CubismFramework {
    *
    * @return   準備処理が完了したらtrueが返ります。
    */
-  public static startUp(option: Option = null): boolean {
+  public static startUp(option: Option = null as any): boolean {
     if (s_isStarted) {
       CubismLogInfo('CubismFramework.startUp() is already done.');
       return s_isStarted;
@@ -124,8 +124,8 @@ export class CubismFramework {
   public static cleanUp(): void {
     s_isStarted = false;
     s_isInitialized = false;
-    s_option = null;
-    s_cubismIdManager = null;
+    s_option = null as any;
+    s_cubismIdManager = null as any;
   }
 
   /**
@@ -193,7 +193,7 @@ export class CubismFramework {
     Value.staticReleaseNotForClientCall();
 
     s_cubismIdManager.release();
-    s_cubismIdManager = null;
+    s_cubismIdManager = null as any;
 
     // レンダラの静的リソース（シェーダプログラム他）を解放する
     CubismRenderer.staticRelease();

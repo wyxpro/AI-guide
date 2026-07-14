@@ -23,7 +23,7 @@ export class CubismEyeBlink {
    * @note 引数がNULLの場合、パラメータIDが設定されていない空のインスタンスを作成する。
    */
   public static create(
-    modelSetting: ICubismModelSetting = null
+    modelSetting: ICubismModelSetting = null as any
   ): CubismEyeBlink {
     return new CubismEyeBlink(modelSetting);
   }
@@ -34,7 +34,7 @@ export class CubismEyeBlink {
    */
   public static delete(eyeBlink: CubismEyeBlink): void {
     if (eyeBlink != null) {
-      eyeBlink = null;
+      eyeBlink = null as any;
     }
   }
 

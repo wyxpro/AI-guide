@@ -99,7 +99,7 @@ export class BreathParameterData {
     cycle?: number,
     weight?: number
   ) {
-    this.parameterId = parameterId == undefined ? null : parameterId;
+    this.parameterId = parameterId == undefined ? null as any : parameterId;
     this.offset = offset == undefined ? 0.0 : offset;
     this.peak = peak == undefined ? 0.0 : peak;
     this.cycle = cycle == undefined ? 0.0 : cycle;

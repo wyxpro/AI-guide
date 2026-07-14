@@ -27,9 +27,9 @@ export class CubismIdManager {
    */
   public release(): void {
     for (let i = 0; i < this._ids.getSize(); ++i) {
-      this._ids.set(i, void 0);
+      this._ids.set(i, undefined as any);
     }
-    this._ids = null;
+    this._ids = null as any;
   }
 
   /**
@@ -50,7 +50,7 @@ export class CubismIdManager {
    * @param id ID名
    */
   public registerId(id: string | csmString): CubismId {
-    let result: CubismId = null;
+    let result: CubismId = null as any;
 
     if ('string' == typeof id) {
       if ((result = this.findId(id)) != null) {
@@ -101,7 +101,7 @@ export class CubismIdManager {
       }
     }
 
-    return null;
+    return null as any;
   }
 
   private _ids: csmVector<CubismId>; // 登録されているIDのリスト

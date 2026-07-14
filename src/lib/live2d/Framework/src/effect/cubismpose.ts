@@ -33,9 +33,9 @@ export class CubismPose {
    * @return 作成されたインスタンス
    */
   public static create(pose3json: ArrayBuffer, size: number): CubismPose {
-    const json: CubismJson = CubismJson.create(pose3json, size);
+    const json: CubismJson = CubismJson.create(pose3json, size) as any;
     if (!json) {
-      return null;
+      return null as any;
     }
 
     const ret: CubismPose = new CubismPose();
@@ -107,7 +107,7 @@ export class CubismPose {
    */
   public static delete(pose: CubismPose): void {
     if (pose != null) {
-      pose = null;
+      pose = null as any;
     }
   }
 
@@ -305,7 +305,7 @@ export class CubismPose {
    */
   public constructor() {
     this._fadeTimeSeconds = DefaultFadeInSeconds;
-    this._lastModel = null;
+    this._lastModel = null as any;
     this._partGroups = new csmVector<PartData>();
     this._partGroupCounts = new csmVector<number>();
   }
@@ -391,7 +391,7 @@ export class PartData {
     return clonePartData;
   }
 
-  partId: CubismIdHandle; // パーツID
+  partId!: CubismIdHandle; // パーツID
   parameterIndex: number; // パラメータのインデックス
   partIndex: number; // パーツのインデックス
   link: csmVector<PartData>; // 連動するパラメータ
