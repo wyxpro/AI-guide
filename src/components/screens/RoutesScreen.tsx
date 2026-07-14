@@ -1151,8 +1151,8 @@ export function RoutesScreen() {
                 {chatMessages.map((msg, idx) => {
                   const isUser = msg.role === "user";
                   const avatarSrc = isUser
-                    ? (user?.avatar || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80")
-                    : "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=120&q=80";
+                    ? (user?.avatar || "https://img0.baidu.com/it/u=830713058,3987335577&fm=253&app=138&f=JPEG?w=819&h=800")
+                    : "https://img2.baidu.com/it/u=3788583827,2446405164&fm=253&app=138&f=JPEG?w=817&h=800";
                   return (
                     <div key={idx} className={`flex gap-2 ${isUser ? "flex-row-reverse" : "flex-row"}`}>
                       <div className="flex-shrink-0 w-7 h-7 rounded-full overflow-hidden border border-zinc-200 bg-white">
@@ -1169,7 +1169,7 @@ export function RoutesScreen() {
                 {chatLoading && (
                   <div className="flex gap-2">
                     <div className="flex-shrink-0 w-7 h-7 rounded-full overflow-hidden border border-zinc-200 bg-white">
-                      <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=120&q=80" alt="小慧" className="w-full h-full object-cover" />
+                      <img src="https://img2.baidu.com/it/u=3788583827,2446405164&fm=253&app=138&f=JPEG?w=817&h=800" alt="小慧" className="w-full h-full object-cover" />
                     </div>
                     <div className="bg-white border text-zinc-500 rounded-2xl rounded-bl-sm px-3 py-1.5 text-xs flex items-center gap-1.5 shadow-sm">
                       <Loader2 className="w-3 h-3 animate-spin" />

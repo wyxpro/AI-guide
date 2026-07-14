@@ -28,7 +28,7 @@ export class CubismBreath {
    */
   public static delete(instance: CubismBreath): void {
     if (instance != null) {
-      instance = null;
+      instance = null as any;
     }
   }
 
@@ -76,7 +76,7 @@ export class CubismBreath {
     this._currentTime = 0.0;
   }
 
-  _breathParameters: csmVector<BreathParameterData>; // 呼吸にひもづいているパラメータのリスト
+  _breathParameters!: csmVector<BreathParameterData>; // 呼吸にひもづいているパラメータのリスト
   _currentTime: number; // 積算時間[秒]
 }
 

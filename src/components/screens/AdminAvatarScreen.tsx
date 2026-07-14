@@ -24,6 +24,7 @@ interface AvatarConfig {
   isDefault: boolean;
   imageUrl?: string;
   isActive?: boolean;
+  settings?: any;
 }
 
 export function AdminAvatarScreen() {

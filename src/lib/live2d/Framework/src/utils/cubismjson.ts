@@ -270,7 +270,7 @@ export class CubismJson {
    * @param instance CubismJsonクラスのインスタンス
    */
   public static delete(instance: CubismJson) {
-    instance = null;
+    instance = null as any;
   }
 
   /**

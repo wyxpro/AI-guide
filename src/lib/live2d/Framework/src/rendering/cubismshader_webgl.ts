@@ -1012,7 +1012,7 @@ export class CubismShaderManager_WebGL {
   public static deleteInstance(): void {
     if (s_instance) {
       s_instance.release();
-      s_instance = null;
+      s_instance = null as any;
     }
   }
 

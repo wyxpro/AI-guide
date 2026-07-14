@@ -74,11 +74,11 @@ export function ProfileScreen() {
   // Local profile states
   const [profileName, setProfileName] = useState("游客小玉");
   const [profileLevel, setProfileLevel] = useState("Lv.5 问鼎江山");
-  const [profileAvatar, setProfileAvatar] = useState("https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80");
+  const [profileAvatar, setProfileAvatar] = useState("https://img0.baidu.com/it/u=830713058,3987335577&fm=253&app=138&f=JPEG?w=819&h=800");
   const [profileBio, setProfileBio] = useState("用双脚丈量世界，用声音感受历史。");
   const [profileGender, setProfileGender] = useState("女");
   const [profileRegion, setProfileRegion] = useState("四川 成都");
-  const [profileBg, setProfileBg] = useState("https://images.unsplash.com/photo-1542224566-6e85f2e6772f?w=1200&q=80");
+  const [profileBg, setProfileBg] = useState("https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&q=80");
 
   // Edit states for form fields
   const [showEditProfile, setShowEditProfile] = useState(false);
@@ -128,11 +128,11 @@ export function ProfileScreen() {
     if (typeof window !== "undefined") {
       const storedName = localStorage.getItem("profile_name") || (user ? (user.name || user.username || "游客小玉") : "游客小玉");
       const storedLevel = localStorage.getItem("profile_level") || "Lv.5 问鼎江山";
-      const storedAvatar = localStorage.getItem("profile_avatar") || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80";
+      const storedAvatar = localStorage.getItem("profile_avatar") || "https://img0.baidu.com/it/u=830713058,3987335577&fm=253&app=138&f=JPEG?w=819&h=800";
       const storedBio = localStorage.getItem("profile_bio") || "用双脚丈量世界，用声音感受历史。";
       const storedGender = localStorage.getItem("profile_gender") || "女";
       const storedRegion = localStorage.getItem("profile_region") || "四川 成都";
-      const storedBg = localStorage.getItem("profile_bg") || "https://images.unsplash.com/photo-1542224566-6e85f2e6772f?w=1200&q=80";
+      const storedBg = localStorage.getItem("profile_bg") || "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&q=80";
 
       setProfileName(storedName);
       setProfileLevel(storedLevel);

@@ -37,7 +37,7 @@ export class CubismModelSettingJson extends ICubismModelSetting {
    */
   public constructor(buffer: ArrayBuffer, size: number) {
     super();
-    this._json = CubismJson.create(buffer, size);
+    this._json = CubismJson.create(buffer, size) as CubismJson;
 
     if (this.getJson()) {
       this._jsonValue = new csmVector<Value>();
@@ -94,7 +94,7 @@ export class CubismModelSettingJson extends ICubismModelSetting {
   public release(): void {
     CubismJson.delete(this._json);
 
-    this._jsonValue = null;
+    this._jsonValue = null as any;
   }
 
   /**
@@ -292,7 +292,7 @@ export class CubismModelSettingJson extends ICubismModelSetting {
    */
   public getMotionGroupName(index: number): string {
     if (!this.isExistMotionGroups()) {
-      return null;
+      return null as any;
     }
 
     return this._jsonValue
@@ -478,7 +478,7 @@ export class CubismModelSettingJson extends ICubismModelSetting {
    */
   public getEyeBlinkParameterId(index: number): CubismIdHandle {
     if (!this.isExistEyeBlinkParameters()) {
-      return null;
+      return null as any;
     }
 
     for (
@@ -499,7 +499,7 @@ export class CubismModelSettingJson extends ICubismModelSetting {
         );
       }
     }
-    return null;
+    return null as any;
   }
 
   /**
@@ -540,7 +540,7 @@ export class CubismModelSettingJson extends ICubismModelSetting {
    */
   public getLipSyncParameterId(index: number): CubismIdHandle {
     if (!this.isExistLipSyncParameters()) {
-      return null;
+      return null as any;
     }
 
     for (
@@ -561,7 +561,7 @@ export class CubismModelSettingJson extends ICubismModelSetting {
         );
       }
     }
-    return null;
+    return null as any;
   }
 
   /**
@@ -773,7 +773,7 @@ export class CubismModelSettingJson extends ICubismModelSetting {
   }
 
   protected _json: CubismJson;
-  protected _jsonValue: csmVector<Value>;
+  protected _jsonValue!: csmVector<Value>;
 
   /**
    * Model3Jsonのキー文字列
