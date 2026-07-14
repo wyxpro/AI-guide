@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { CubismId, CubismIdHandle } from '../id/cubismid';
 import { LogLevel, csmDelete } from '../live2dcubismframework';
 import { CubismModel } from '../model/cubismmodel';

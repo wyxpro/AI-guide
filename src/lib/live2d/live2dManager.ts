@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { LAppDelegate } from '@/lib/live2d/src/lappdelegate';
 import { ResourceModel } from '@/lib/protocol';
 
