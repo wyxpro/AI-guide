@@ -495,7 +495,7 @@ export default function WelcomePage() {
                 title: "全天候双工语音对谈",
                 desc: "极速的语音语义流式处理，打破呆板的按键指引，就像与一位温婉知性的文史专家面对面交谈。",
                 color: "#10B981", // Emerald
-                bgImage: "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?auto=format&fit=crop&w=600&q=80",
+                bgImage: "https://images.unsplash.com/photo-1484704849700-f032a568e944?auto=format&fit=crop&w=600&q=80",
               },
               {
                 icon: MapPin,
@@ -503,7 +503,7 @@ export default function WelcomePage() {
                 title: "自适应智能专属路径",
                 desc: "支持输入您当前的兴趣偏好，如“历史文化优先、走平坦道”，AI自动动态避堵并规划最优旅游足迹。",
                 color: "#D2A053", // Gold/Amber
-                bgImage: "https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=600&q=80",
+                bgImage: "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=600&q=80",
               },
               {
                 icon: Sparkles,
@@ -527,7 +527,7 @@ export default function WelcomePage() {
                 title: "景区大屏与情感雷达",
                 desc: "景区管理后台支持游客情感指数雷达监测、高频热搜词云实时流计算及今日客流量科学预测。",
                 color: "#3B82F6", // Blue
-                bgImage: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=600&q=80",
+                bgImage: "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?auto=format&fit=crop&w=600&q=80",
               }
             ].map((f, i) => {
               // Calculate relative offset wrap-around correctly in range [-3, 2]
@@ -568,11 +568,7 @@ export default function WelcomePage() {
                   }}
                   transition={{ type: "spring", stiffness: 150, damping: 22 }}
                   style={{
-                    backgroundImage: isActive
-                      ? `linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 254, 250, 0.88) 100%), url(${f.bgImage})`
-                      : `linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(250, 248, 245, 0.96) 100%), url(${f.bgImage})`,
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
+                    backgroundColor: isActive ? "#ffffff" : "#FAF8F5",
                     border: isActive
                       ? `2px solid ${f.color}`
                       : `1px solid ${f.color}40`,
@@ -580,9 +576,20 @@ export default function WelcomePage() {
                       ? `0 20px 45px -12px ${f.color}35`
                       : `0 4px 15px -3px ${f.color}10`
                   }}
-                  className={`absolute w-[260px] md:w-[350px] h-[340px] md:h-[380px] rounded-3xl p-6 md:p-8 flex flex-col justify-between cursor-pointer select-none transition-shadow duration-300 group`}
+                  className={`absolute w-[260px] md:w-[350px] h-[340px] md:h-[380px] rounded-3xl p-6 md:p-8 flex flex-col justify-between cursor-pointer select-none transition-shadow duration-300 group overflow-hidden`}
                 >
-                  <div className="space-y-4 md:space-y-6">
+                  {/* Background Image - Faded for Readability */}
+                  <div
+                    className="absolute inset-0 transition-opacity duration-300 pointer-events-none z-0"
+                    style={{
+                      backgroundImage: `url(${f.bgImage})`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                      opacity: isActive ? 0.35 : 0.15,
+                    }}
+                  />
+
+                  <div className="space-y-4 md:space-y-6 z-10 relative">
                     <div className="flex justify-between items-start">
                       <div
                         className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-300 group-hover:scale-105"
@@ -602,7 +609,7 @@ export default function WelcomePage() {
                       <h4 className="text-base md:text-xl font-black text-[#1E2522] tracking-tight group-hover:text-[#4F6F52] transition-colors duration-300">
                         {f.title}
                       </h4>
-                      <p className="text-xs md:text-sm leading-relaxed text-[#374151] font-medium min-h-[50px] md:min-h-[72px]">
+                      <p className="text-xs md:text-sm leading-relaxed text-[#374151] font-semibold min-h-[50px] md:min-h-[72px]">
                         {f.desc}
                       </p>
                     </div>
@@ -613,7 +620,7 @@ export default function WelcomePage() {
                       e.stopPropagation();
                       handleStart();
                     }}
-                    className="pt-4 mt-4 border-t border-[#E6E2D8] flex items-center gap-2 text-xs font-black transition-all duration-300 hover:opacity-80 justify-start"
+                    className="pt-4 mt-4 border-t border-[#E6E2D8] flex items-center gap-2 text-xs font-black transition-all duration-300 hover:opacity-80 justify-start z-10 relative"
                     style={{ color: f.color }}
                   >
                     <span>立即体验</span>
@@ -1066,7 +1073,7 @@ export default function WelcomePage() {
         </div>
 
         <div className="max-w-7xl mx-auto px-6 mt-12 pt-6 border-t border-white/5 text-center text-[10px]">
-          <p>© {new Date().getFullYear()} 旅行家Pro Inc. 保留所有权利。由 XIAOYE 强力驱动。</p>
+          <p>© {new Date().getFullYear()} 旅行家Pro 保留所有权利。由阿里云 强力驱动。</p>
         </div>
       </footer>
     </div>
