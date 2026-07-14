@@ -261,8 +261,8 @@ export class CubismFramework {
 }
 
 export class Option {
-  logFunction: Live2DCubismCore.csmLogFunction; // ログ出力の関数オブジェクト
-  loggingLevel: LogLevel; // ログ出力レベルの設定
+  logFunction!: Live2DCubismCore.csmLogFunction; // ログ出力の関数オブジェクト
+  loggingLevel!: LogLevel; // ログ出力レベルの設定
 }
 
 /**

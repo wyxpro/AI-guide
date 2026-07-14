@@ -29,7 +29,7 @@ export abstract class ACubismMotion {
    */
   public static delete(motion: ACubismMotion): void {
     motion.release();
-    motion = null;
+    motion = null as any;
   }
 
   /**
@@ -356,7 +356,7 @@ export abstract class ACubismMotion {
    * @returns success:透明度のId
    */
   public getModelOpacityId(index: number): CubismIdHandle {
-    return null;
+    return null as any;
   }
 
   /**

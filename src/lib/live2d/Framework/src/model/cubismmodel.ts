@@ -1517,10 +1517,10 @@ export class CubismModel {
    */
   public constructor(model: Live2DCubismCore.Model) {
     this._model = model;
-    this._parameterValues = null;
-    this._parameterMaximumValues = null;
-    this._parameterMinimumValues = null;
-    this._partOpacities = null;
+    this._parameterValues = null as any;
+    this._parameterMaximumValues = null as any;
+    this._parameterMinimumValues = null as any;
+    this._partOpacities = null as any;
     this._savedParameters = new csmVector<number>();
     this._parameterIds = new csmVector<CubismIdHandle>();
     this._drawableIds = new csmVector<CubismIdHandle>();
@@ -1548,7 +1548,7 @@ export class CubismModel {
    */
   public release(): void {
     this._model.release();
-    this._model = null;
+    this._model = null as any;
   }
 
   private _notExistPartOpacities: csmMap<number, number>; // 存在していないパーツの不透明度のリスト

@@ -24,7 +24,7 @@ export class CubismModelUserDataJson {
    * @param size      バッファのサイズ
    */
   public constructor(buffer: ArrayBuffer, size: number) {
-    this._json = CubismJson.create(buffer, size);
+    this._json = CubismJson.create(buffer, size) as any;
   }
 
   /**

@@ -21,7 +21,7 @@ export class CubismMoc {
     mocBytes: ArrayBuffer,
     shouldCheckMocConsistency: boolean
   ): CubismMoc {
-    let cubismMoc: CubismMoc = null;
+    let cubismMoc: CubismMoc = null as any;
 
     if (shouldCheckMocConsistency) {
       // .moc3の整合性を確認
@@ -55,8 +55,8 @@ export class CubismMoc {
    */
   public static delete(moc: CubismMoc): void {
     moc._moc._release();
-    moc._moc = null;
-    moc = null;
+    moc._moc = null as any;
+    moc = null as any;
   }
 
   /**
@@ -65,7 +65,7 @@ export class CubismMoc {
    * @return Mocデータから作成されたモデル
    */
   createModel(): CubismModel {
-    let cubismModel: CubismModel = null;
+    let cubismModel: CubismModel = null as any;
 
     const model: Live2DCubismCore.Model = Live2DCubismCore.Model.fromMoc(
       this._moc
@@ -87,7 +87,7 @@ export class CubismMoc {
   deleteModel(model: CubismModel): void {
     if (model != null) {
       model.release();
-      model = null;
+      model = null as any;
       --this._modelCount;
     }
   }
@@ -108,7 +108,7 @@ export class CubismMoc {
     CSM_ASSERT(this._modelCount == 0);
 
     this._moc._release();
-    this._moc = null;
+    this._moc = null as any;
   }
 
   /**
