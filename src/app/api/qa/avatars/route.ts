@@ -258,9 +258,7 @@ export async function GET() {
     // Seed database if configurations are incomplete, outdated, using URL avatarStyle, or default is not Hiyori
     if (configs.length < 22 || !hasHiyoriDefault || (configs[0] && configs[0].avatarStyle.startsWith("http"))) {
       await db.delete(avatarConfigs);
-      for (const preset of DEFAULT_PRESETS) {
-        await db.insert(avatarConfigs).values(preset);
-      }
+      await db.insert(avatarConfigs).values(DEFAULT_PRESETS);
       configs = await db.select().from(avatarConfigs).where(eq(avatarConfigs.isActive, true)).orderBy(desc(avatarConfigs.createdAt));
     }
     

@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Mic, MicOff, Send, Volume2, VolumeX,
   History, X, ChevronUp, ChevronDown, Camera, Sparkles,
-  Image as ImageIcon, User,
+  Image as ImageIcon, User, Plus
 } from "lucide-react";
 import { request } from "@/lib/api/request";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -335,6 +335,19 @@ export function QAScreen() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [handleMouseMove]);
+
+  const handleNewChat = async () => {
+    stopAudio();
+    try {
+      await request("/api/qa/chat", { method: "DELETE" });
+    } catch (e) {
+      console.error("Failed to delete chat session", e);
+    }
+    setMessages([initMsg(spotName)]);
+    setSubtitle(initMsg(spotName).content);
+    setChatExpanded(false);
+    toast.success("已开启新对话");
+  };
 
   useEffect(() => {
     scrollToBottom("auto");
@@ -824,7 +837,8 @@ export function QAScreen() {
               {loading ? "小玉思考中…" : "旅行家Pro导览官 · 在线"}
             </span>
           </div>
-          <div className="flex gap-2 relative">
+          <div className="flex flex-col items-end gap-2.5 relative">
+            <div className="flex gap-2">
             <motion.button whileTap={{ scale: 0.85 }} onClick={() => { setShowBgMenu(!showBgMenu); setShowPersonaMenu(false); }}
               className="w-8 h-8 rounded-full flex items-center justify-center animate-fade-in"
               style={{ background: "rgba(255,255,255,0.08)", color: showBgMenu ? "#D2A053" : "rgba(255,255,255,0.6)" }}>
@@ -846,6 +860,21 @@ export function QAScreen() {
               style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.4)" }}>
               <History className="w-3.5 h-3.5" />
             </motion.button>
+          </div>
+
+          <motion.button
+            whileTap={{ scale: 0.92 }}
+            onClick={handleNewChat}
+            className="px-4 py-2 rounded-full flex items-center gap-1.5 shadow-lg border border-white/20 select-none animate-fade-in"
+            style={{
+              background: "linear-gradient(135deg, #D2A053 0%, #B8843A 100%)",
+              boxShadow: "0 4px 14px rgba(210, 160, 83, 0.4)",
+              color: "white",
+            }}
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span className="text-[11px] font-black tracking-wider">新建聊天</span>
+          </motion.button>
 
             {/* Background Dropdown Menu */}
             {showBgMenu && (
@@ -1112,13 +1141,21 @@ export function QAScreen() {
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 flex-shrink-0"
             style={{ borderBottom: "1px solid #E6E2D8", background: "rgba(250,248,245,0.98)" }}>
-            <div>
-              <h2 className="font-bold text-base" style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}>
-                智能导览问答
-              </h2>
-              <p className="text-[11px] mt-0.5" style={{ color: "#8F9F8F" }}>
-                可语音提问 · 多轮对话 · 知识库实时检索
-              </p>
+            <div className="flex items-center gap-4">
+              <div>
+                <h2 className="font-bold text-base" style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}>
+                  智能导览问答
+                </h2>
+                <p className="text-[11px] mt-0.5" style={{ color: "#8F9F8F" }}>
+                  可语音提问 · 多轮对话 · 知识库实时检索
+                </p>
+              </div>
+              <button
+                onClick={handleNewChat}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#D5E5DC] text-[#4F6F52] hover:bg-[#EBF3EE] text-xs font-black transition-all cursor-pointer shadow-sm bg-white"
+              >
+                <Plus className="w-3.5 h-3.5" /> 新建聊天
+              </button>
             </div>
             <div className="flex items-center gap-2">
               <motion.div animate={{ backgroundColor: loading ? "#D2A053" : "#34C759" }}

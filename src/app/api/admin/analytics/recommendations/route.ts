@@ -4,7 +4,7 @@ import { qaLogs } from "@/lib/db/schema/admin";
 import { desc } from "drizzle-orm";
 import { requireAdmin } from "@/lib/auth";
 import { ai } from "@eazo/sdk";
-import { deepseekChat } from "@/lib/api/deepseek";
+import { stepChat } from "@/lib/api/stepfun";
 
 export const dynamic = "force-dynamic";
 
@@ -38,8 +38,8 @@ export async function GET(request: NextRequest) {
 
 请以整洁的结构返回，使用 Markdown 格式，不要包含任何自我介绍或废话，直接开始回答。`;
 
-    const result = await deepseekChat({
-      model: "deepseek-v4-pro",
+    const result = await stepChat({
+      model: "step-3.7-flash",
       messages: [
         { role: "user", content: `${systemPrompt}\n\n以下是游客的对话记录：\n\n${logsText}` }
       ],

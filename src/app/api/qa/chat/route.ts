@@ -4,11 +4,13 @@ import { db } from "@/lib/db/client";
 import { knowledgeDocs, qaLogs } from "@/lib/db/schema/admin";
 import { chatSessions } from "@/lib/db/schema/user-data";
 import { ai } from "@eazo/sdk";
-import { deepseekChat } from "@/lib/api/deepseek";
+import { stepChat } from "@/lib/api/stepfun";
 import { getUserPreferences } from "@/lib/db/queries/user-data";
 import { isRateLimited } from "@/lib/api/rate-limit";
 import { getEmbedding, cosineSimilarity } from "@/lib/api/embedding";
 import { eq, desc } from "drizzle-orm";
+
+export const dynamic = "force-dynamic";
 
 const ACCESS_PROMPTS: Record<string, string> = {
   normal: "你是翠玉景区的专属AI导览员小玉，语气温暖亲切、知识丰富，回答时适当引用历史典故。回答200字以内，段落清晰。必须在回复的最开始以 '[情感: 愉快/平静/伤感/思考]' 格式标注你的情感，例如 '[情感: 愉快]您好！很高兴为您服务。'",
@@ -35,22 +37,36 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ answer: "请输入您的问题，小玉随时为您解答！" });
     }
 
-    // User preference → mode
-    let mode = "normal";
-    if (userId) {
-      try {
-        const prefs = await getUserPreferences(userId);
-        if (prefs?.accessibilityMode) mode = prefs.accessibilityMode;
-      } catch { /* ignore */ }
-    }
+    // Simple greeting heuristic check to skip slow RAG database/embedding queries
+    const isSimpleGreeting = (q: string): boolean => {
+      const trimmed = q.trim().toLowerCase();
+      if (trimmed.length <= 4) {
+        const greetings = ["你好", "您好", "哈喽", "嗨", "在吗", "在吗？", "你好呀", "hi", "hello", "hey", "yoo"];
+        return greetings.includes(trimmed);
+      }
+      return false;
+    };
 
-    // Knowledge context (semantic search RAG with dense/sparse hybrid reranking)
+    // User preference → mode & Knowledge context RAG in parallel
+    let mode = "normal";
     let knowledgeCtx = "";
+
     try {
-      const docs = await db.select().from(knowledgeDocs).where(eq(knowledgeDocs.vectorized, true));
-      if (docs.length > 0) {
-        const queryVec = await getEmbedding(question);
-        
+      const shouldSkipRag = isSimpleGreeting(question);
+      const [prefsResult, docsResult, queryVecResult] = await Promise.all([
+        userId ? getUserPreferences(userId).catch(() => null) : Promise.resolve(null),
+        shouldSkipRag ? Promise.resolve([]) : db.select().from(knowledgeDocs).where(eq(knowledgeDocs.vectorized, true)).catch(() => []),
+        shouldSkipRag ? Promise.resolve([]) : getEmbedding(question).catch(() => [])
+      ]);
+
+      if (prefsResult?.accessibilityMode) {
+        mode = prefsResult.accessibilityMode;
+      }
+
+      const docs = docsResult;
+      const queryVec = queryVecResult;
+
+      if (docs.length > 0 && queryVec.length > 0) {
         // 1. Calculate Cosine Similarity
         const scored = docs.map(d => {
           const docVec = (d.embedding as number[]) || [];
@@ -89,7 +105,7 @@ export async function POST(request: NextRequest) {
         }
       }
     } catch (err) {
-      console.error("RAG retrieval failed:", err);
+      console.error("Parallel preparation failed:", err);
     }
 
     const systemPrompt = (agentConfig?.enable && agentConfig?.prompt ? agentConfig.prompt : ACCESS_PROMPTS[mode]) + knowledgeCtx;
@@ -147,8 +163,8 @@ export async function POST(request: NextRequest) {
       const stream = new ReadableStream({
         async start(controller) {
           try {
-            const result = await deepseekChat({
-              model: "deepseek-v4-pro",
+            const result = await stepChat({
+              model: "step-3.7-flash",
               messages,
               stream: true,
               max_tokens: 400,
@@ -201,15 +217,16 @@ export async function POST(request: NextRequest) {
       return new Response(stream, {
         headers: {
           "Content-Type": "text/event-stream",
-          "Cache-Control": "no-cache",
+          "Cache-Control": "no-cache, no-transform",
           "Connection": "keep-alive",
+          "X-Accel-Buffering": "no",
         },
       });
     }
 
     // ── Non-streaming (default) ─────────────────────────────────────────────
-    const result = await deepseekChat({
-      model: "deepseek-v4-pro",
+    const result = await stepChat({
+      model: "step-3.7-flash",
       messages: [
         { role: "user", content: systemPrompt },
         ...chatHistory,
@@ -284,5 +301,20 @@ export async function GET(request: NextRequest) {
     return NextResponse.json([]);
   } catch (error) {
     return NextResponse.json({ error: "Failed to fetch chat session" }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  const authResult = requireAuth(request);
+  if (!authResult.ok) return authResult.response;
+  const userId = authResult.user.id;
+
+  try {
+    await db
+      .delete(chatSessions)
+      .where(eq(chatSessions.userId, userId));
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    return NextResponse.json({ error: "Failed to clear chat session" }, { status: 500 });
   }
 }

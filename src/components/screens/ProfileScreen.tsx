@@ -26,7 +26,7 @@ type Mode = "standard" | "elder" | "child";
 type ActiveSection = "home" | "routes" | "favorites" | "interests" | "settings";
 
 const FEMALE_PRESET_AVATARS = [
-  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
+  "https://img0.baidu.com/it/u=830713058,3987335577&fm=253&app=138&f=JPEG?w=819&h=800",
   "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
   "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80",
   "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80",
@@ -52,7 +52,7 @@ const BG_PRESET_COVERS = [
 export function ProfileScreen() {
   const router = useRouter();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const user = useEazo((s: any) => s.auth.user) as { name?: string | null; username?: string | null; email?: string | null } | null;
+  const user = useEazo((s: any) => s.auth.user) as { name?: string | null; username?: string | null; email?: string | null; avatarUrl?: string | null } | null;
 
   const [activeSection, setActiveSection] = useState<ActiveSection>("home");
   const [visits, setVisits] = useState<VisitRecord[]>([]);
@@ -128,7 +128,11 @@ export function ProfileScreen() {
     if (typeof window !== "undefined") {
       const storedName = localStorage.getItem("profile_name") || (user ? (user.name || user.username || "游客小玉") : "游客小玉");
       const storedLevel = localStorage.getItem("profile_level") || "Lv.5 问鼎江山";
-      const storedAvatar = localStorage.getItem("profile_avatar") || "https://img0.baidu.com/it/u=830713058,3987335577&fm=253&app=138&f=JPEG?w=819&h=800";
+      let storedAvatar = localStorage.getItem("profile_avatar");
+      if (!storedAvatar || storedAvatar.includes("photo-1494790108377-be9c29b29330")) {
+        storedAvatar = (user && user.avatarUrl) || "https://img0.baidu.com/it/u=830713058,3987335577&fm=253&app=138&f=JPEG?w=819&h=800";
+        localStorage.setItem("profile_avatar", storedAvatar);
+      }
       const storedBio = localStorage.getItem("profile_bio") || "用双脚丈量世界，用声音感受历史。";
       const storedGender = localStorage.getItem("profile_gender") || "女";
       const storedRegion = localStorage.getItem("profile_region") || "四川 成都";

@@ -11,8 +11,8 @@ export async function synthesizeSpeechWithStepFun(text: string, voiceStyle?: str
   }
 
   // Map requested style to StepFun voices
-  // Standard natural female voice "linjiajiejie" matches the guide avatar "小玉".
-  let voice = "linjiajiejie";
+  // Standard natural female voice "livelybreezy-female" matches the guide avatar "小玉".
+  let voice = "livelybreezy-female";
   if (voiceStyle === "professional") {
     voice = "cixingnansheng";
   }

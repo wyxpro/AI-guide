@@ -250,12 +250,14 @@ export function SidebarNav({ isAdmin }: { isAdmin: boolean }) {
             <div className="flex flex-col gap-2 bg-white border border-[#E6E2D8] p-2.5 rounded-2xl shadow-sm">
               <div className="flex items-center justify-between">
                 <Link href="/profile" className="flex items-center gap-2.5 min-w-0 cursor-pointer hover:opacity-85 active:scale-98 transition-all">
-                  <div className="w-8 h-8 rounded-full overflow-hidden bg-[#4F6F52]/10 flex items-center justify-center border border-[#E6E2D8] flex-shrink-0">
-                    {user?.avatarUrl ? (
-                      <Image src={user.avatarUrl.startsWith("//") ? `https:${user.avatarUrl}` : user.avatarUrl} alt="avatar" width={32} height={32} className="object-cover w-full h-full" />
-                    ) : (
-                      <span className="text-xs font-black text-[#4F6F52]">{(user?.name ?? user?.email ?? "游")[0].toUpperCase()}</span>
-                    )}
+                  <div className="w-8 h-8 rounded-full overflow-hidden border border-[#E6E2D8] flex-shrink-0 relative">
+                    <Image
+                      src={user?.avatarUrl ? (user.avatarUrl.startsWith("//") ? `https:${user.avatarUrl}` : user.avatarUrl) : "https://img0.baidu.com/it/u=830713058,3987335577&fm=253&app=138&f=JPEG?w=819&h=800"}
+                      alt="avatar"
+                      width={32}
+                      height={32}
+                      className="object-cover w-full h-full"
+                    />
                   </div>
                   <div className="min-w-0">
                     <p className="text-xs font-bold text-[#1E2522] truncate">{user?.name ?? "游客用户"}</p>

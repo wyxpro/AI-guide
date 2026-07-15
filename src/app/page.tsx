@@ -440,15 +440,15 @@ export default function WelcomePage() {
           >
             <button
               onClick={handleStart}
-              className="w-full sm:w-auto px-8 py-4 rounded-full text-base font-bold text-white transition-all hover:scale-105 active:scale-95 shadow-xl shadow-[#4f6f52]/30 flex items-center justify-center gap-2"
-              style={{ background: "linear-gradient(135deg, #4F6F52, #3A5240)" }}
+              className="w-full sm:w-auto px-8 py-4 rounded-full text-base font-bold text-white transition-all hover:scale-105 active:scale-95 shadow-xl shadow-[#D2A053]/30 flex items-center justify-center gap-2"
+              style={{ background: "linear-gradient(135deg, #D2A053, #B8843A)" }}
             >
               立即使用体验 <ArrowRight className="w-5 h-5" />
             </button>
             <a
               href="#feature"
-              className="w-full sm:w-auto px-8 py-4 rounded-full text-base font-bold transition-all hover:bg-[#F5F0E8] active:scale-95 border border-[#E6E2D8] flex items-center justify-center gap-2"
-              style={{ color: "#3A4D39", background: "white" }}
+              className="w-full sm:w-auto px-8 py-4 rounded-full text-base font-bold text-white transition-all hover:scale-105 active:scale-95 shadow-xl shadow-[#4f6f52]/20 flex items-center justify-center gap-2"
+              style={{ background: "linear-gradient(135deg, #4F6F52, #3A5240)" }}
             >
               了解功能特色
             </a>
@@ -568,13 +568,15 @@ export default function WelcomePage() {
                   }}
                   transition={{ type: "spring", stiffness: 150, damping: 22 }}
                   style={{
-                    backgroundColor: isActive ? "#ffffff" : "#FAF8F5",
+                    backgroundColor: isActive ? "rgba(255, 255, 255, 0.45)" : "rgba(255, 255, 255, 0.18)",
+                    backdropFilter: "blur(16px)",
+                    WebkitBackdropFilter: "blur(16px)",
                     border: isActive
                       ? `2px solid ${f.color}`
-                      : `1px solid ${f.color}40`,
+                      : `1px solid ${f.color}15`,
                     boxShadow: isActive
-                      ? `0 20px 45px -12px ${f.color}35`
-                      : `0 4px 15px -3px ${f.color}10`
+                      ? `0 20px 45px -12px ${f.color}15`
+                      : `0 4px 15px -3px ${f.color}02`
                   }}
                   className={`absolute w-[260px] md:w-[350px] h-[340px] md:h-[380px] rounded-3xl p-6 md:p-8 flex flex-col justify-between cursor-pointer select-none transition-shadow duration-300 group overflow-hidden`}
                 >
@@ -585,9 +587,11 @@ export default function WelcomePage() {
                       backgroundImage: `url(${f.bgImage})`,
                       backgroundSize: "cover",
                       backgroundPosition: "center",
-                      opacity: isActive ? 0.35 : 0.15,
+                      opacity: isActive ? 0.6 : 0.35,
                     }}
                   />
+                  {/* White gradient mask to protect text contrast */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-white/45 to-white/85 pointer-events-none z-0" />
 
                   <div className="space-y-4 md:space-y-6 z-10 relative">
                     <div className="flex justify-between items-start">

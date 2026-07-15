@@ -117,28 +117,19 @@ function DropdownPanel({
 }
 
 function Avatar({ user, size }: { user: User; size: number }) {
-  if (user.avatarUrl) {
-    const avatarSrc = user.avatarUrl.startsWith("//")
-      ? `https:${user.avatarUrl}`
-      : user.avatarUrl;
-    return (
-      <Image
-        src={avatarSrc}
-        alt={user.name ?? "avatar"}
-        width={size}
-        height={size}
-        className="rounded-full object-cover ring-2 ring-border"
-        style={{ width: size, height: size }}
-      />
-    );
-  }
+  const avatarUrl = user.avatarUrl || "https://img0.baidu.com/it/u=830713058,3987335577&fm=253&app=138&f=JPEG?w=819&h=800";
+  const avatarSrc = avatarUrl.startsWith("//")
+    ? `https:${avatarUrl}`
+    : avatarUrl;
   return (
-    <div
-      className="flex shrink-0 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary"
-      style={{ width: size, height: size, fontSize: size * 0.4 }}
-    >
-      {(user.name ?? user.email ?? "?")[0].toUpperCase()}
-    </div>
+    <Image
+      src={avatarSrc}
+      alt={user.name ?? "avatar"}
+      width={size}
+      height={size}
+      className="rounded-full object-cover ring-2 ring-border"
+      style={{ width: size, height: size }}
+    />
   );
 }
 
