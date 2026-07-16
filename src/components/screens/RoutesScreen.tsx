@@ -803,35 +803,70 @@ export function RoutesScreen() {
     setGenerating(true);
     setActiveRoute(null);
 
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    try {
+      const res = await request("/api/routes/generate", {
+        method: "POST",
+        body: JSON.stringify({
+          interests: selectedInterests,
+          duration: duration,
+          difficulty: "easy"
+        })
+      });
+      if (!res.ok) throw new Error("Failed to generate route");
+      const data = await res.json();
+      
+      if (data.route) {
+        // Map fields to match UI expectations
+        const formattedRoute: GeneratedRoute = {
+          name: data.route.name,
+          description: data.route.description,
+          highlights: data.route.highlights || [],
+          tips: data.route.tips,
+          spots: data.route.spots.map((s: any) => ({
+            id: s.id,
+            name: s.name,
+            duration: s.duration,
+            description: s.description || s.desc || ""
+          })),
+          totalDuration: data.route.totalDuration,
+          totalDistance: data.route.totalDistance
+        };
+        setActiveRoute(formattedRoute);
+        toast.success("专属路线生成成功！已为您在地图上绘制路径。");
+      } else {
+        throw new Error("No route in response");
+      }
+    } catch (error) {
+      console.warn("Route generation failed, falling back to local simulation:", error);
+      const selectedSpots = currentSpots.filter(s => {
+        if (selectedInterests.includes("history") && (s.type === "文化" || s.type === "寺庙")) return true;
+        if (selectedInterests.includes("nature") && s.type === "自然") return true;
+        if (selectedInterests.includes("cultural") && s.type === "地标") return true;
+        if (selectedInterests.includes("family")) return true;
+        return false;
+      });
 
-    const selectedSpots = currentSpots.filter(s => {
-      if (selectedInterests.includes("history") && (s.type === "文化" || s.type === "寺庙")) return true;
-      if (selectedInterests.includes("nature") && s.type === "自然") return true;
-      if (selectedInterests.includes("cultural") && s.type === "地标") return true;
-      if (selectedInterests.includes("family")) return true;
-      return false;
-    });
+      const routeSpots = selectedSpots.length > 0 ? selectedSpots.slice(0, 4) : currentSpots.slice(0, 3);
+      const mockRoute: GeneratedRoute = {
+        name: selectedInterests.includes("history") ? `${selectedCity} · 历史印记之旅` : `${selectedCity} · 都市探秘游`,
+        description: `结合您的个人喜好，为您量身规划的一条 ${selectedCity} 游览路线。`,
+        highlights: ["核心打卡", "深度慢游", "当地特色"],
+        tips: `${selectedCity}景区步行较多，请备好舒适运动鞋，防晒防暑。`,
+        spots: routeSpots.map((s, idx) => ({
+          id: s.id,
+          name: s.name,
+          duration: Math.min(30 + idx * 15, duration / 3),
+          description: s.desc
+        })),
+        totalDuration: duration,
+        totalDistance: `约 ${(1.2 + routeSpots.length * 0.8).toFixed(1)} 千米`
+      };
 
-    const routeSpots = selectedSpots.length > 0 ? selectedSpots.slice(0, 4) : currentSpots.slice(0, 3);
-    const mockRoute: GeneratedRoute = {
-      name: selectedInterests.includes("history") ? `${selectedCity} · 历史印记之旅` : `${selectedCity} · 都市探秘游`,
-      description: `结合您的个人喜好，为您量身规划的一条 ${selectedCity} 游览路线。`,
-      highlights: ["核心打卡", "深度慢游", "当地特色"],
-      tips: `${selectedCity}景区步行较多，请备好舒适运动鞋，防晒防暑。`,
-      spots: routeSpots.map((s, idx) => ({
-        id: s.id,
-        name: s.name,
-        duration: Math.min(30 + idx * 15, duration / 3),
-        description: s.desc
-      })),
-      totalDuration: duration,
-      totalDistance: `约 ${(1.2 + routeSpots.length * 0.8).toFixed(1)} 千米`
-    };
-
-    setActiveRoute(mockRoute);
-    setGenerating(false);
-    toast.success("专属路线生成成功！已为您在地图上绘制路径。");
+      setActiveRoute(mockRoute);
+      toast.success("专属路线生成成功！已为您在地图上绘制路径。");
+    } finally {
+      setGenerating(false);
+    }
   };
 
   const handleSendChatMessage = async () => {
@@ -855,7 +890,14 @@ export function RoutesScreen() {
       
       const res = await request("/api/qa/chat", {
         method: "POST",
-        body: JSON.stringify({ question: questionWithContext, history })
+        body: JSON.stringify({
+          question: questionWithContext,
+          history,
+          agentConfig: {
+            enable: true,
+            prompt: "你是翠玉景区的智能行程向导“小慧”，专为游客提供旅游路线规划和景点特色咨询服务。你语气热情专业、条理清晰，多给一些实用的旅行建议。回答200字以内，段落清晰。必须在回复的最开始以 '[情感: 愉快/平静/思考]' 格式标注你的情感，例如 '[情感: 愉快]您好！我是您的智能向导小慧。'"
+          }
+        })
       });
       const data = await res.json();
       const answerRaw = data.answer || "抱歉，暂时无法回答。";
