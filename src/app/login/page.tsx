@@ -227,13 +227,13 @@ export default function LoginPage() {
 
       {/* Right Panel - Form panel */}
       <div className="w-full lg:w-[55%] flex items-center justify-center p-6 md:p-16 bg-[#FAF8F5] relative overflow-hidden">
-        
+
         {/* Travel Background Image for Mobile Only */}
-        <div 
+        <div
           className="absolute inset-0 lg:hidden bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: "url('/image/login_bg.png')" }}
         />
-        
+
         {/* Soft overlay + blur to make background illustration subtle and elegant */}
         <div className="absolute inset-0 lg:hidden bg-white/20 backdrop-blur-[5px]" />
 
@@ -389,7 +389,7 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full py-2.5 rounded-xl border border-neutral-200 bg-neutral-50 hover:bg-neutral-100 active:scale-98 transition-all text-xs font-semibold text-neutral-600 flex items-center justify-center gap-1 cursor-pointer"
             >
-              管理员快捷登录 (测试用)
+              管理后台一键登录(测试用)
             </button>
           </div>
 

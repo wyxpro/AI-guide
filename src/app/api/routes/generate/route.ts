@@ -9,12 +9,14 @@ import { eq, inArray } from "drizzle-orm";
 
 export async function POST(request: NextRequest) {
   try {
-    const { interests, duration, difficulty = "easy" } = await request.json();
+    const { interests, duration, difficulty = "easy", spots: clientSpots } = await request.json();
 
-    // Fetch matching spots
-    const allSpots = await db.select().from(spots).where(eq(spots.isActive, true));
+    // Fetch matching spots (fallback to database if not provided by client)
+    const allSpots = clientSpots && clientSpots.length > 0
+      ? clientSpots
+      : await db.select().from(spots).where(eq(spots.isActive, true));
 
-    const matchingSpots = allSpots.filter((s) => {
+    let matchingSpots = allSpots.filter((s: any) => {
       if (!interests || interests.length === 0) return true;
       const tags = (s.tags as string[]) || [];
       const categoryMap: Record<string, string[]> = {
@@ -25,17 +27,26 @@ export async function POST(request: NextRequest) {
       };
       return interests.some((interest: string) => {
         const keywords = categoryMap[interest] || [interest];
-        return keywords.some((kw) => s.category === interest || tags.some((t) => t.includes(kw)));
+        return keywords.some((kw) => 
+          s.category === interest || 
+          (s.type && s.type.includes(kw)) || 
+          tags.some((t: string) => t.includes(kw))
+        );
       });
     });
+
+    // If matching spots is empty, fallback to using first few spots from all spots
+    if (matchingSpots.length === 0) {
+      matchingSpots = allSpots;
+    }
 
     // Build a route based on duration
     const maxSpots = duration <= 90 ? 2 : duration <= 150 ? 3 : 4;
     const selectedSpots = matchingSpots.slice(0, maxSpots);
 
-    const spotList = selectedSpots.map((s, i) => `${i + 1}. ${s.name}（${s.duration}分钟）`).join("\n");
+    const spotList = selectedSpots.map((s: any, i: number) => `${i + 1}. ${s.name}（${s.duration || 30}分钟）`).join("\n");
 
-    const prompt = `为游客规划翠玉景区游览路线：
+    const prompt = `为游客规划景区游览路线：
 游客兴趣：${(interests || []).join("、") || "综合"}
 游览时长：${duration}分钟
 体力情况：${difficulty === "easy" ? "轻松" : difficulty === "medium" ? "一般" : "充沛"}
@@ -44,8 +55,8 @@ export async function POST(request: NextRequest) {
 ${spotList}
 
 请生成一个JSON格式的路线方案，包含：
-- name: 路线名称（有诗意）
-- description: 路线简介（100字以内，有东方园林风格）
+- name: 路线名称（有诗意，贴合选定景点特色）
+- description: 路线简介（100字以内，语气优美）
 - highlights: 路线亮点数组（3-4个短语）
 - tips: 游览小贴士（50字以内）
 
@@ -57,7 +68,7 @@ ${spotList}
       max_tokens: 400,
     });
 
-    let routePlan = { name: "翠玉游览路线", description: "感受东方园林之美", highlights: ["湖光山色", "古迹探幽"], tips: "建议早晨出行，避开人流高峰" };
+    let routePlan = { name: "定制游览路线", description: "感受独特的美景之旅", highlights: ["核心打卡", "深度漫游"], tips: "建议早晨出行，避开人流高峰" };
     try {
       const content = response.choices?.[0]?.message?.content ?? "{}";
       const cleaned = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
@@ -70,7 +81,7 @@ ${spotList}
       route: {
         ...routePlan,
         spots: selectedSpots,
-        totalDuration: selectedSpots.reduce((sum, s) => sum + s.duration, 0),
+        totalDuration: selectedSpots.reduce((sum: number, s: any) => sum + (s.duration || 30), 0),
         totalDistance: `约${(selectedSpots.length * 0.8).toFixed(1)}千米`,
         interest: (interests || [])[0] || "cultural",
       },
