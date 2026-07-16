@@ -560,85 +560,127 @@ export function RoutesScreen() {
 
     if (coordinates.length < 2) return;
 
-    const drawDirectPolyline = () => {
-      if (routePolylineRef.current) {
-        try {
-          routePolylineRef.current.setMap(null);
-        } catch (_) {}
+    // Helper: Interpolate points between two coordinates for a smooth drawing effect
+    const interpolatePoints = (p1: [number, number], p2: [number, number], steps: number): Array<[number, number]> => {
+      const pts: Array<[number, number]> = [];
+      for (let i = 0; i <= steps; i++) {
+        const t = i / steps;
+        pts.push([
+          p1[0] + (p2[0] - p1[0]) * t,
+          p1[1] + (p2[1] - p1[1]) * t
+        ]);
       }
-      const polyline = new AMap.Polyline({
-        path: coordinates,
-        strokeColor: "#3B82F6", // Beautiful blue color for high contrast
-        strokeWeight: 8,
-        strokeOpacity: 0.95,
-        strokeStyle: "solid",
-        lineJoin: "round",
-        lineCap: "round",
-        showDir: true,
-        isOutline: true,
-        outlineColor: "#ffffff",
-        borderWeight: 2,
-      });
-      polyline.setMap(map);
-      map.setFitView([polyline]);
-      routePolylineRef.current = polyline;
+      return pts;
     };
 
-    try {
-      if (AMap.Walking) {
-        const walking = new AMap.Walking({
-          map: map,
-          panel: undefined,
-          hideMarkers: true,
-          autoFitView: true,
-        });
-
-        walking.search(coordinates[0], coordinates[coordinates.length - 1], {
-          waypoints: coordinates.slice(1, -1)
-        }, (status: string, result: any) => {
-          if (status === "complete" && result.routes && result.routes[0]) {
-            const path: Array<[number, number]> = [];
-            result.routes[0].steps.forEach((step: any) => {
-              step.path.forEach((p: any) => {
-                path.push([p.lng, p.lat]);
-              });
-            });
-
-            if (routePolylineRef.current) {
-              try {
-                routePolylineRef.current.setMap(null);
-              } catch (_) {}
-            }
-
-            const polyline = new AMap.Polyline({
-              path: path,
-              strokeColor: "#3B82F6", // Beautiful blue color matching the theme
-              strokeWeight: 8,
-              strokeOpacity: 0.95,
-              strokeStyle: "solid",
-              lineJoin: "round",
-              lineCap: "round",
-              showDir: true,
-              isOutline: true,
-              outlineColor: "#ffffff",
-              borderWeight: 2,
-            });
-            polyline.setMap(map);
-            map.setFitView([polyline]);
-            routePolylineRef.current = polyline;
-          } else {
-            drawDirectPolyline();
-          }
-        });
-      } else {
-        drawDirectPolyline();
+    const animatedPath: Array<[number, number]> = [];
+    const stepsPerSegment = 25; // 25 interpolation frames per segment for rich micro-animation
+    for (let i = 0; i < coordinates.length - 1; i++) {
+      const segmentPoints = interpolatePoints(coordinates[i], coordinates[i + 1], stepsPerSegment);
+      if (i > 0) {
+        segmentPoints.shift(); // Avoid duplicating boundaries
       }
-    } catch (e) {
-      console.error("Failed to draw walking path:", e);
-      drawDirectPolyline();
+      animatedPath.push(...segmentPoints);
     }
 
+    // Temporarily fit view boundaries immediately so the user can watch the drawing animation
+    const boundsPolyline = new AMap.Polyline({
+      path: coordinates,
+      strokeOpacity: 0
+    });
+    boundsPolyline.setMap(map);
+    map.setFitView([boundsPolyline]);
+    setTimeout(() => {
+      try { boundsPolyline.setMap(null); } catch (_) {}
+    }, 100);
+
+    // Create polyline initially starting at the first spot
+    const polyline = new AMap.Polyline({
+      path: [coordinates[0]],
+      strokeColor: "#3B82F6", // Beautiful tech blue for high contrast
+      strokeWeight: 8,
+      strokeOpacity: 0.95,
+      strokeStyle: "solid",
+      lineJoin: "round",
+      lineCap: "round",
+      showDir: true,
+      isOutline: true,
+      outlineColor: "#ffffff",
+      borderWeight: 2,
+    });
+    polyline.setMap(map);
+    routePolylineRef.current = polyline;
+
+    let movingMarker: any = null;
+    let flowTimer: any = null;
+
+    let currentIndex = 0;
+    const intervalTime = 16; // 60fps
+    const drawTimer = setInterval(() => {
+      if (currentIndex >= animatedPath.length) {
+        clearInterval(drawTimer);
+        // Bind original coordinates to polyline to ensure clean direction arrows alignment
+        polyline.setPath(coordinates);
+
+        // --- PATH FLOW ANIMATION ---
+        const travelerHtml = `
+          <div class="traveler-marker-root">
+            <style>
+              @keyframes traveler-walk {
+                0% { transform: translateY(0) rotate(-4deg); }
+                50% { transform: translateY(-4px) rotate(4deg); }
+                100% { transform: translateY(0) rotate(-4deg); }
+              }
+              .traveler-container {
+                width: 28px;
+                height: 28px;
+                background: #ffffff;
+                border: 2px solid #3B82F6;
+                border-radius: 50%;
+                box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                animation: traveler-walk 0.6s infinite ease-in-out;
+              }
+              .traveler-emoji {
+                font-size: 16px;
+                line-height: 1;
+              }
+            </style>
+            <div class="traveler-container">
+              <span class="traveler-emoji">🚶‍♂️</span>
+            </div>
+          </div>
+        `;
+        
+        movingMarker = new AMap.Marker({
+          position: coordinates[0],
+          content: travelerHtml,
+          offset: new AMap.Pixel(-14, -14),
+          zIndex: 300,
+        });
+        movingMarker.setMap(map);
+
+        let flowIndex = 0;
+        flowTimer = setInterval(() => {
+          if (!movingMarker) return;
+          flowIndex = (flowIndex + 1) % animatedPath.length;
+          movingMarker.setPosition(animatedPath[flowIndex]);
+        }, 80);
+        return;
+      }
+      currentIndex += 2; // Incremental steps for smooth drawing speed
+      const currentPath = animatedPath.slice(0, Math.min(currentIndex, animatedPath.length));
+      polyline.setPath(currentPath);
+    }, intervalTime);
+
     return () => {
+      clearInterval(drawTimer);
+      clearInterval(flowTimer);
+      if (movingMarker) {
+        try { movingMarker.setMap(null); } catch (_) {}
+      }
       if (routePolylineRef.current) {
         try {
           routePolylineRef.current.setMap(null);
@@ -665,17 +707,23 @@ export function RoutesScreen() {
       let themeColor =
         s.type === "地标" ? "#EF4444" : s.type === "演出" ? "#F59E0B" : s.type === "寺庙" ? "#8B5CF6" : s.type === "文化" ? "#3B82F6" : s.type === "自然" ? "#10B981" : "#FF5B45";
 
-      if (isInRoute) {
-        themeColor = "#D2A053"; // Gold theme color for spots in route
+      if (isInRoute && activeRoute) {
+        if (routeSpotIndex === 0) {
+          themeColor = "#10B981"; // Start point color: Emerald Green
+        } else if (routeSpotIndex === activeRoute.spots.length - 1) {
+          themeColor = "#EF4444"; // End point color: Vibrant Rose Red
+        } else {
+          themeColor = "#D2A053"; // Middle points color: Luxury Gold
+        }
       }
 
       const numPrefix = isInRoute 
-        ? `<span style="background-color:#D2A053;color:white;border-radius:50%;width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center;margin-right:4px;font-size:9px;font-weight:900;">${routeSpotIndex + 1}</span>` 
+        ? `<span style="background-color:${themeColor};color:white;border-radius:50%;width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center;margin-right:4px;font-size:9px;font-weight:900;">${routeSpotIndex + 1}</span>` 
         : "";
 
       const markerHtml = `
         <div class="flex flex-col items-center select-none cursor-pointer">
-          <div class="px-2 py-1 bg-white/95 border ${isInRoute ? 'border-[#D2A053] ring-2 ring-[#D2A053]/25 scale-105 font-black' : 'border-zinc-200'} shadow-md rounded-md text-[10px] font-bold text-zinc-800 whitespace-nowrap -translate-y-1 flex items-center" style="border-top: 3px solid ${themeColor};">
+          <div class="px-2 py-1 bg-white/95 border ${isInRoute ? 'ring-2 scale-105 font-black' : 'border-zinc-200'} shadow-md rounded-md text-[10px] font-bold text-zinc-800 whitespace-nowrap -translate-y-1 flex items-center" style="border-top: 3px solid ${themeColor}; border-color: ${isInRoute ? themeColor : '#e4e4e7'}; --tw-ring-color: ${isInRoute ? themeColor + '40' : 'transparent'};">
             ${numPrefix}${s.name}
           </div>
           <div class="w-3.5 h-3.5 rounded-full bg-white border-2 flex items-center justify-center shadow-md -translate-y-1 ${isInRoute ? 'scale-110' : ''}" style="border-color: ${themeColor};">
@@ -1040,7 +1088,7 @@ export function RoutesScreen() {
                 {generating ? (
                   <><Loader2 className="w-3.5 h-3.5 animate-spin" />规划中...</>
                 ) : (
-                  <><Compass className="w-3.5 h-3.5" />①生成专属路线</>
+                  <><Compass className="w-3.5 h-3.5" />生成专属路线</>
                 )}
               </button>
 
