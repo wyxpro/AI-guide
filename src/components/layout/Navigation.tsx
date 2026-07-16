@@ -336,3 +336,78 @@ export function SidebarNav({ isAdmin }: { isAdmin: boolean }) {
     </aside>
   );
 }
+
+/* ════════════════════════════════════════════════════════════
+   移动端底部 Tab（仅 B 端管理员后台，md 以下显示）
+   ════════════════════════════════════════════════════════════ */
+export function AdminBottomTabBar() {
+  const pathname = usePathname();
+
+  const handleExitAdmin = async () => {
+    try {
+      localStorage.removeItem("eazo.session");
+      await auth.logout();
+      toast.success("已退出管理员后台");
+      window.location.href = "/home";
+    } catch {
+      toast.error("退出失败，请重试");
+    }
+  };
+
+  const ADMIN_MOBILE_TABS = [
+    { href: "/admin", label: "数据大屏", icon: BarChart2 },
+    { href: "/admin/spots", label: "景点管理", icon: MapPin },
+    { href: "/admin/knowledge", label: "知识库", icon: BookOpen },
+    { href: "/admin/avatar", label: "数字人", icon: Bot },
+    { label: "退出后台", icon: LogOut, onClick: handleExitAdmin },
+  ];
+
+  return (
+    <nav
+      className="fixed bottom-0 left-0 right-0 md:hidden z-30"
+      style={{
+        background: "rgba(18, 24, 21, 0.97)",
+        backdropFilter: "blur(16px)",
+        borderTop: "1px solid rgba(255, 255, 255, 0.08)",
+        paddingBottom: "env(safe-area-inset-bottom)",
+      }}>
+      <div className="flex justify-around items-end h-15 px-2">
+        {ADMIN_MOBILE_TABS.map((tab) => {
+          const active = tab.href && (tab.href === "/admin" ? pathname === "/admin" : pathname.startsWith(tab.href));
+          const Icon = tab.icon;
+
+          const el = (
+            <div 
+              onClick={tab.onClick}
+              className="flex flex-col items-center justify-center gap-1 py-2 min-h-[44px] cursor-pointer relative"
+            >
+              <motion.div animate={{ scale: active ? 1.12 : 1 }}
+                transition={{ type: "spring", stiffness: 400, damping: 20 }}>
+                <Icon className="w-4.5 h-4.5"
+                  style={{ color: active ? "#D2A053" : "rgba(255, 255, 255, 0.4)", strokeWidth: active ? 2.2 : 1.6 }} />
+              </motion.div>
+              <span className="text-[9px] font-bold leading-none"
+                style={{ color: active ? "#D2A053" : "rgba(255, 255, 255, 0.4)" }}>{tab.label}</span>
+              {active && (
+                <motion.div layoutId="admin-tab-indicator"
+                  className="absolute bottom-0 w-8 h-0.5 rounded-full"
+                  style={{ background: "#D2A053" }} />
+              )}
+            </div>
+          );
+
+          return tab.href ? (
+            <Link key={tab.label} href={tab.href} className="flex-1">
+              {el}
+            </Link>
+          ) : (
+            <div key={tab.label} className="flex-1">
+              {el}
+            </div>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
+

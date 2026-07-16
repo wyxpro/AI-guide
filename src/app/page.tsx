@@ -443,7 +443,7 @@ export default function WelcomePage() {
               className="w-full sm:w-auto px-8 py-4 rounded-full text-base font-bold text-white transition-all hover:scale-105 active:scale-95 shadow-xl shadow-[#0D9488]/20 flex items-center justify-center gap-2"
               style={{ background: "linear-gradient(135deg, #0D9488, #0EA5E9)" }}
             >
-              了解功能特色
+              开源文档
             </a>
           </motion.div>
         </div>

@@ -1,6 +1,6 @@
 "use client";
 import { usePathname } from "next/navigation";
-import { BottomTabBar, SidebarNav } from "./Navigation";
+import { BottomTabBar, SidebarNav, AdminBottomTabBar } from "./Navigation";
 import { TopBar } from "./TopBar";
 import { PointsInviteModal } from "@/components/ui/PointsInviteModal";
 import { auth } from "@eazo/sdk";
@@ -96,14 +96,12 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
           marginLeft: 0,
         }}
       >
-        {!isAdmin && (
-          <style>{`
-            main { padding-bottom: calc(env(safe-area-inset-bottom) + 56px); }
-            @media (min-width: 768px) {
-              main { padding-bottom: 0 !important; }
-            }
-          `}</style>
-        )}
+        <style>{`
+          main { padding-bottom: calc(env(safe-area-inset-bottom) + 56px); }
+          @media (min-width: 768px) {
+            main { padding-bottom: 0 !important; }
+          }
+        `}</style>
         {/* Offset from sidebar on PC */}
         <style>{`
           @media (min-width: 768px) {
@@ -116,8 +114,8 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
         {children}
       </main>
 
-      {/* Mobile bottom tab — C端, not admin */}
-      {!isAdmin && <BottomTabBar />}
+      {/* Mobile bottom tab */}
+      {isAdmin ? <AdminBottomTabBar /> : <BottomTabBar />}
 
       <div style={{ position: "static" }}>
         <PointsInviteModal 
