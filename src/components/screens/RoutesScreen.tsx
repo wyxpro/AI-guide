@@ -313,14 +313,16 @@ export function RoutesScreen() {
 
     const contentHtml = `
       <div style="font-family: system-ui, -apple-system, sans-serif; padding: 12px; width: 285px; background: white; border-radius: 14px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1); border: 1px solid #e4e4e7; position: relative;">
-        <button id="infowin-close-btn" style="position: absolute; right: 10px; top: 10px; border: none; background: transparent; color: #a1a1aa; font-size: 18px; font-weight: bold; cursor: pointer; padding: 0 4px; line-height: 1; outline: none;">×</button>
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-right: 15px;">
+        <button id="infowin-close-btn" style="position: absolute; right: 10px; top: 10px; border: none; background: transparent; color: #a1a1aa; font-size: 18px; font-weight: bold; cursor: pointer; padding: 0 4px; line-height: 1; outline: none; z-index: 10;">×</button>
+        
+        <div id="infowin-card-area" style="cursor: pointer; display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-right: 15px; transition: opacity 0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">
           <div style="flex: 1; min-width: 0;">
             <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
               <h4 style="margin: 0; font-size: 13px; font-weight: 800; color: #18181b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${spot.name}</h4>
-              <span style="background: rgba(79, 111, 82, 0.1); color: #4F6F52; font-size: 8px; font-weight: 700; padding: 2px 6px; border-radius: 4px; flex-shrink: 0;">⭐ ${spot.rating}</span>
+              <span style="background: rgba(79, 111, 82, 0.1); color: #4F6F52; font-size: 8px; font-weight: 700; padding: 2px 6px; border-radius: 4px; flex-shrink: 0;">★ ${spot.rating}</span>
             </div>
-            <p style="margin: 6px 0 0 0; font-size: 9.5px; color: #71717a; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">${spot.desc}</p>
+            <p style="margin: 6px 0 4px 0; font-size: 9.5px; color: #71717a; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">${spot.desc}</p>
+            <span style="font-size: 8.5px; color: #3B82F6; font-weight: 700; display: inline-flex; align-items: center; gap: 2px;">查看景点详情 <span style="font-size: 10px;">→</span></span>
           </div>
           <img src="${spot.img}" alt="${spot.name}" style="width: 54px; height: 54px; border-radius: 8px; object-fit: cover; border: 1px solid #e4e4e7; flex-shrink: 0;" />
         </div>
@@ -350,15 +352,23 @@ export function RoutesScreen() {
       const speechBtn = document.getElementById("infowin-speech-btn");
       const artBtn = document.getElementById("infowin-artifacts-btn");
       const closeBtn = document.getElementById("infowin-close-btn");
+      const cardArea = document.getElementById("infowin-card-area");
       
       if (speechBtn) {
-        speechBtn.onclick = () => speakSpotNarration(spot.name, spot.desc);
+        speechBtn.onclick = () => {
+          router.push(`/qa?name=${encodeURIComponent(spot.name)}`);
+        };
       }
       if (artBtn) {
         artBtn.onclick = () => setShowArtifactsDrawer(true);
       }
       if (closeBtn) {
         closeBtn.onclick = () => infoWindow.close();
+      }
+      if (cardArea) {
+        cardArea.onclick = () => {
+          router.push(`/spots/${spot.id}`);
+        };
       }
     }, 150);
   };
@@ -489,12 +499,12 @@ export function RoutesScreen() {
     };
   }, [audioInstance]);
 
-  // Render markers whenever selectedCity changes or amapLoaded becomes true
+  // Render markers whenever selectedCity changes, amapLoaded becomes true, or activeRoute changes
   useEffect(() => {
     if (amapLoaded && mapInstanceRef.current && AMapInstanceRef.current) {
       renderAmapMarkers(AMapInstanceRef.current, mapInstanceRef.current, currentSpots);
     }
-  }, [selectedCity, amapLoaded]);
+  }, [selectedCity, amapLoaded, activeRoute]);
 
   // Close infoWindow when city changes
   useEffect(() => {
@@ -519,14 +529,20 @@ export function RoutesScreen() {
   useEffect(() => {
     const AMap = AMapInstanceRef.current;
     const map = mapInstanceRef.current;
-    if (!AMap || !map || !activeRoute) return;
+    if (!AMap || !map || !activeRoute) {
+      if (routePolylineRef.current) {
+        try {
+          routePolylineRef.current.setMap(null);
+        } catch (_) {}
+        routePolylineRef.current = null;
+      }
+      return;
+    }
 
     if (routePolylineRef.current) {
-      if (typeof routePolylineRef.current.clear === "function") {
-        routePolylineRef.current.clear();
-      } else {
+      try {
         routePolylineRef.current.setMap(null);
-      }
+      } catch (_) {}
       routePolylineRef.current = null;
     }
 
@@ -544,47 +560,89 @@ export function RoutesScreen() {
 
     if (coordinates.length < 2) return;
 
-    const walking = new AMap.Walking({
-      map: map,
-      panel: undefined,
-      hideMarkers: true,
-      autoFitView: true,
-    });
-
-    walking.search(coordinates[0], coordinates[coordinates.length - 1], {
-      waypoints: coordinates.slice(1, -1)
-    }, (status: string, result: any) => {
-      if (status === "complete" && result.routes && result.routes[0]) {
-        const path: Array<[number, number]> = [];
-        result.routes[0].steps.forEach((step: any) => {
-          step.path.forEach((p: any) => {
-            path.push([p.lng, p.lat]);
-          });
-        });
-
-        const polyline = new AMap.Polyline({
-          path: path,
-          strokeColor: "#4F6F52",
-          strokeWeight: 6,
-          strokeOpacity: 0.9,
-          strokeStyle: "solid",
-          lineJoin: "round",
-          lineCap: "round",
-          showDir: true,
-        });
-        polyline.setMap(map);
-        map.setFitView([polyline]);
-        routePolylineRef.current = polyline;
+    const drawDirectPolyline = () => {
+      if (routePolylineRef.current) {
+        try {
+          routePolylineRef.current.setMap(null);
+        } catch (_) {}
       }
-    });
+      const polyline = new AMap.Polyline({
+        path: coordinates,
+        strokeColor: "#3B82F6", // Beautiful blue color for high contrast
+        strokeWeight: 8,
+        strokeOpacity: 0.95,
+        strokeStyle: "solid",
+        lineJoin: "round",
+        lineCap: "round",
+        showDir: true,
+        isOutline: true,
+        outlineColor: "#ffffff",
+        borderWeight: 2,
+      });
+      polyline.setMap(map);
+      map.setFitView([polyline]);
+      routePolylineRef.current = polyline;
+    };
+
+    try {
+      if (AMap.Walking) {
+        const walking = new AMap.Walking({
+          map: map,
+          panel: undefined,
+          hideMarkers: true,
+          autoFitView: true,
+        });
+
+        walking.search(coordinates[0], coordinates[coordinates.length - 1], {
+          waypoints: coordinates.slice(1, -1)
+        }, (status: string, result: any) => {
+          if (status === "complete" && result.routes && result.routes[0]) {
+            const path: Array<[number, number]> = [];
+            result.routes[0].steps.forEach((step: any) => {
+              step.path.forEach((p: any) => {
+                path.push([p.lng, p.lat]);
+              });
+            });
+
+            if (routePolylineRef.current) {
+              try {
+                routePolylineRef.current.setMap(null);
+              } catch (_) {}
+            }
+
+            const polyline = new AMap.Polyline({
+              path: path,
+              strokeColor: "#3B82F6", // Beautiful blue color matching the theme
+              strokeWeight: 8,
+              strokeOpacity: 0.95,
+              strokeStyle: "solid",
+              lineJoin: "round",
+              lineCap: "round",
+              showDir: true,
+              isOutline: true,
+              outlineColor: "#ffffff",
+              borderWeight: 2,
+            });
+            polyline.setMap(map);
+            map.setFitView([polyline]);
+            routePolylineRef.current = polyline;
+          } else {
+            drawDirectPolyline();
+          }
+        });
+      } else {
+        drawDirectPolyline();
+      }
+    } catch (e) {
+      console.error("Failed to draw walking path:", e);
+      drawDirectPolyline();
+    }
 
     return () => {
       if (routePolylineRef.current) {
-        if (typeof routePolylineRef.current.clear === "function") {
-          routePolylineRef.current.clear();
-        } else {
+        try {
           routePolylineRef.current.setMap(null);
-        }
+        } catch (_) {}
         routePolylineRef.current = null;
       }
     };
@@ -599,15 +657,28 @@ export function RoutesScreen() {
         return;
       }
 
-      const themeColor =
+      const routeSpotIndex = activeRoute
+        ? activeRoute.spots.findIndex(rs => rs.id === s.id)
+        : -1;
+      const isInRoute = routeSpotIndex !== -1;
+
+      let themeColor =
         s.type === "地标" ? "#EF4444" : s.type === "演出" ? "#F59E0B" : s.type === "寺庙" ? "#8B5CF6" : s.type === "文化" ? "#3B82F6" : s.type === "自然" ? "#10B981" : "#FF5B45";
+
+      if (isInRoute) {
+        themeColor = "#D2A053"; // Gold theme color for spots in route
+      }
+
+      const numPrefix = isInRoute 
+        ? `<span style="background-color:#D2A053;color:white;border-radius:50%;width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center;margin-right:4px;font-size:9px;font-weight:900;">${routeSpotIndex + 1}</span>` 
+        : "";
 
       const markerHtml = `
         <div class="flex flex-col items-center select-none cursor-pointer">
-          <div class="px-2 py-1 bg-white/95 border border-zinc-200 shadow-md rounded-md text-[10px] font-bold text-zinc-800 whitespace-nowrap -translate-y-1" style="border-top: 3px solid ${themeColor};">
-            ${s.name}
+          <div class="px-2 py-1 bg-white/95 border ${isInRoute ? 'border-[#D2A053] ring-2 ring-[#D2A053]/25 scale-105 font-black' : 'border-zinc-200'} shadow-md rounded-md text-[10px] font-bold text-zinc-800 whitespace-nowrap -translate-y-1 flex items-center" style="border-top: 3px solid ${themeColor};">
+            ${numPrefix}${s.name}
           </div>
-          <div class="w-3.5 h-3.5 rounded-full bg-white border-2 flex items-center justify-center shadow-md -translate-y-1" style="border-color: ${themeColor};">
+          <div class="w-3.5 h-3.5 rounded-full bg-white border-2 flex items-center justify-center shadow-md -translate-y-1 ${isInRoute ? 'scale-110' : ''}" style="border-color: ${themeColor};">
             <div class="w-1.5 h-1.5 rounded-full" style="background-color: ${themeColor};"></div>
           </div>
         </div>
@@ -616,7 +687,8 @@ export function RoutesScreen() {
       const marker = new AMap.Marker({
         position: [s.lng, s.lat],
         content: markerHtml,
-        offset: new AMap.Pixel(-40, -40),
+        offset: isInRoute ? new AMap.Pixel(-45, -45) : new AMap.Pixel(-40, -40),
+        zIndex: isInRoute ? 200 : 100,
       });
 
       marker.on("click", () => {
@@ -963,12 +1035,12 @@ export function RoutesScreen() {
                   }
                 }}
                 disabled={generating}
-                className="w-full py-2 bg-[#3A4D39] hover:bg-[#4F6F52] text-white rounded-xl text-[11px] font-extrabold shadow flex items-center justify-center gap-1.5 transition-colors"
+                className="w-full py-2 bg-gradient-to-r from-[#D2A053] to-[#B8843A] hover:from-[#E3B064] hover:to-[#C9954B] text-white rounded-xl text-[11px] font-extrabold shadow flex items-center justify-center gap-1.5 transition-colors"
               >
                 {generating ? (
                   <><Loader2 className="w-3.5 h-3.5 animate-spin" />规划中...</>
                 ) : (
-                  <><Compass className="w-3.5 h-3.5" />生成专属路线</>
+                  <><Compass className="w-3.5 h-3.5" />①生成专属路线</>
                 )}
               </button>
 

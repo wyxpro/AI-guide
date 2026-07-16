@@ -405,24 +405,15 @@ export default function WelcomePage() {
         </div>
 
         <div className="lg:col-span-7 space-y-6 text-center lg:text-left lg:order-1">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={SPRING}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold"
-            style={{ background: "rgba(210,160,83,0.12)", color: "#D2A053", border: "1px solid rgba(210,160,83,0.25)" }}
-          >
-            <Sparkles className="w-3.5 h-3.5 animate-pulse" /> 旅行家Pro·AI数字人交互导游系统
-          </motion.div>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ ...SPRING, delay: 0.1 }}
-            className="text-4xl md:text-6xl font-black leading-tight"
-            style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}
+            className="text-4xl md:text-6xl font-black leading-tight text-transparent bg-clip-text"
+            style={{ fontFamily: "var(--font-noto-serif)", backgroundImage: "linear-gradient(135deg, #1E2522 0%, #E11D48 50%, #D2A053 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}
           >
             多模态AI数字人导游<br />
-            与<span className="text-transparent bg-clip-text" style={{ backgroundImage: "linear-gradient(135deg,#4F6F52,#D2A053)" }}>智慧运营系统</span>
+            与智慧运营系统
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -446,9 +437,11 @@ export default function WelcomePage() {
               立即使用体验 <ArrowRight className="w-5 h-5" />
             </button>
             <a
-              href="#feature"
-              className="w-full sm:w-auto px-8 py-4 rounded-full text-base font-bold text-white transition-all hover:scale-105 active:scale-95 shadow-xl shadow-[#4f6f52]/20 flex items-center justify-center gap-2"
-              style={{ background: "linear-gradient(135deg, #4F6F52, #3A5240)" }}
+              href="https://my.feishu.cn/wiki/HdfKwpExliHhdckDrD7cyqVtnSd?from=from_copylink"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full sm:w-auto px-8 py-4 rounded-full text-base font-bold text-white transition-all hover:scale-105 active:scale-95 shadow-xl shadow-[#0D9488]/20 flex items-center justify-center gap-2"
+              style={{ background: "linear-gradient(135deg, #0D9488, #0EA5E9)" }}
             >
               了解功能特色
             </a>
