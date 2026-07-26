@@ -8,11 +8,10 @@
 <img width="1919" height="1047" alt="image" src="https://github.com/user-attachments/assets/13193960-4d11-498e-bae7-d57051ea463a" />
 <img width="1336" height="759" alt="image" src="https://github.com/user-attachments/assets/203078b1-98c1-4776-af0f-0fe294296876" />
 <img width="1412" height="760" alt="image" src="https://github.com/user-attachments/assets/9a512eb5-a056-4e64-b739-feb9484c2fd8" />
-哔哩哔哩视频介绍：https://www.bilibili.com/video/BV1PMge6wE4G/
 **旅行家Pro** 是一款面向智慧景区的**全栈式AI伴游与数字化运营管理系统**。项目基于 Next.js 16 + React 19 前沿技术栈构建，深度集成多模态大语言模型、流式语音合成(TTS/STT)、向量知识库检索(RAG)与 Live2D 数字人渲染技术，为游客提供沉浸式、个性化、全天候的智能导览服务，同时为景区运营方提供数据驱动的智慧管理决策平台。
 
 ### 🎯 三大产品矩阵
-
+哔哩哔哩视频介绍：https://www.bilibili.com/video/BV1PMge6wE4G/
 | 终端 | 核心定位 | 关键能力 |
 | :--- | :--- | :--- |
 | **🙋 游客伴游端 (C端)** | 7×24小时AI数字人导览 | 流式对话、VR即拍即识、智能路线规划、FM语音广播、足迹勋章、无障碍三模式适配 |
