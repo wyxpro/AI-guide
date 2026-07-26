@@ -260,7 +260,7 @@ export function QAScreen() {
     }
   };
 
-  // Sync loaded default style
+  // Active avatar config sync
   useEffect(() => {
     if (avatarConfig?.avatarStyle) {
       setSelectedStyle(avatarConfig.avatarStyle);
@@ -276,27 +276,6 @@ export function QAScreen() {
         }
       })
       .catch((e) => console.error("Failed to load active avatar config", e));
-  }, []);
-
-  useEffect(() => {
-    request("/api/qa/chat")
-      .then((r) => r.json())
-      .then((d) => {
-        if (Array.isArray(d) && d.length > 0) {
-          const mapped = d.map((m: any) => ({
-            role: m.role,
-            content: m.content,
-            timestamp: m.timestamp ? new Date(m.timestamp).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }) : new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }),
-          }));
-          setMessages(mapped);
-          const lastMsg = mapped[mapped.length - 1];
-          if (lastMsg) {
-            setSubtitle(lastMsg.content);
-            setAvatarState(detectEmotion(lastMsg.content));
-          }
-        }
-      })
-      .catch((e) => console.error("Failed to load chat history", e));
   }, []);
 
   const [avatarWidth, setAvatarWidth] = useState(450); // Default to a wider layout (450px)
@@ -682,9 +661,11 @@ export function QAScreen() {
           <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center shadow-md"
             style={{ border: isMobileImmersive ? "1.5px solid rgba(255,255,255,0.25)" : "1.5px solid #E6E2D8" }}>
             {msg.role === "assistant" ? (
-              <div className="w-full h-full bg-[#1A2520]">
-                <DigitalAvatar state="idle" size="sm" avatarStyle={selectedStyle} />
-              </div>
+              <img
+                src="https://gips3.baidu.com/it/u=2273134228,3411241180&fm=3074&app=3074&f=PNG?w=2048&h=2048"
+                alt="AI导游小玉"
+                className="w-full h-full object-cover rounded-full"
+              />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-[11px] font-black rounded-full"
                 style={{ background: "linear-gradient(135deg,#4B9EFF,#2563EB)", color: "white" }}>
@@ -828,7 +809,7 @@ export function QAScreen() {
         }}>
 
         {/* Top bar */}
-        <div className="flex items-center justify-between px-4 pb-3 flex-shrink-0"
+        <div className="flex items-center justify-between px-4 pb-3 flex-shrink-0 relative z-[60] pointer-events-auto"
           style={{ paddingTop: "calc(env(safe-area-inset-top,44px) + 24px)" }}>
           <div className="flex items-center gap-2">
             <motion.div animate={{ backgroundColor: loading ? "#D2A053" : "#34C759" }}
@@ -837,26 +818,30 @@ export function QAScreen() {
               {loading ? "小玉思考中…" : "旅行家Pro导览官 · 在线"}
             </span>
           </div>
-          <div className="flex flex-col items-end gap-2.5 relative">
-            <div className="flex gap-2">
-            <motion.button whileTap={{ scale: 0.85 }} onClick={() => { setShowBgMenu(!showBgMenu); setShowPersonaMenu(false); }}
-              className="w-8 h-8 rounded-full flex items-center justify-center animate-fade-in"
+          <div className="flex flex-col items-end gap-2.5 relative z-[60]">
+            <div className="flex gap-2 relative z-[60]">
+            <motion.button whileTap={{ scale: 0.85 }} onClick={(e) => { e.stopPropagation(); setShowBgMenu(!showBgMenu); setShowPersonaMenu(false); }}
+              title="切换背景"
+              className="w-8 h-8 rounded-full flex items-center justify-center animate-fade-in cursor-pointer pointer-events-auto"
               style={{ background: "rgba(255,255,255,0.08)", color: showBgMenu ? "#D2A053" : "rgba(255,255,255,0.6)" }}>
               <ImageIcon className="w-3.5 h-3.5" />
             </motion.button>
-            <motion.button whileTap={{ scale: 0.85 }} onClick={() => { setShowPersonaMenu(true); setShowBgMenu(false); }}
-              className="w-8 h-8 rounded-full flex items-center justify-center animate-fade-in"
+            <motion.button whileTap={{ scale: 0.85 }} onClick={(e) => { e.stopPropagation(); setShowPersonaMenu(true); setShowBgMenu(false); }}
+              title="切换分身形象"
+              className="w-8 h-8 rounded-full flex items-center justify-center animate-fade-in cursor-pointer pointer-events-auto"
               style={{ background: "rgba(255,255,255,0.08)", color: showPersonaMenu ? "#D2A053" : "rgba(255,255,255,0.6)" }}>
               <User className="w-3.5 h-3.5" />
             </motion.button>
             <motion.button whileTap={{ scale: 0.85 }}
-              onClick={() => { setTtsEnabled(!ttsEnabled); if (ttsEnabled) window.speechSynthesis?.cancel(); }}
-              className="w-8 h-8 rounded-full flex items-center justify-center"
+              onClick={(e) => { e.stopPropagation(); setTtsEnabled(!ttsEnabled); if (ttsEnabled) window.speechSynthesis?.cancel(); }}
+              title="语音功能开关"
+              className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer pointer-events-auto"
               style={{ background: "rgba(255,255,255,0.08)", color: ttsEnabled ? "#D2A053" : "rgba(255,255,255,0.3)" }}>
               {ttsEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
             </motion.button>
-            <motion.button whileTap={{ scale: 0.85 }} onClick={() => setShowHistory(true)}
-              className="w-8 h-8 rounded-full flex items-center justify-center"
+            <motion.button whileTap={{ scale: 0.85 }} onClick={(e) => { e.stopPropagation(); setShowHistory(true); }}
+              title="历史对话"
+              className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer pointer-events-auto"
               style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.4)" }}>
               <History className="w-3.5 h-3.5" />
             </motion.button>
@@ -864,8 +849,8 @@ export function QAScreen() {
 
           <motion.button
             whileTap={{ scale: 0.92 }}
-            onClick={handleNewChat}
-            className="px-4 py-2 rounded-full flex items-center gap-1.5 shadow-lg border border-white/20 select-none animate-fade-in"
+            onClick={(e) => { e.stopPropagation(); handleNewChat(); }}
+            className="px-4 py-2 rounded-full flex items-center gap-1.5 shadow-lg border border-white/20 select-none animate-fade-in cursor-pointer pointer-events-auto"
             style={{
               background: "linear-gradient(135deg, #D2A053 0%, #B8843A 100%)",
               boxShadow: "0 4px 14px rgba(210, 160, 83, 0.4)",
@@ -878,15 +863,15 @@ export function QAScreen() {
 
             {/* Background Dropdown Menu */}
             {showBgMenu && (
-              <div className="absolute right-0 top-10 z-50 w-56 rounded-2xl p-3 border border-white/10 backdrop-blur-xl bg-black/80 shadow-2xl space-y-2.5">
+              <div className="absolute right-0 top-12 z-[70] w-56 rounded-2xl p-3 border border-white/10 backdrop-blur-xl bg-black/80 shadow-2xl space-y-2.5 pointer-events-auto">
                 <div className="flex justify-between items-center pb-1.5 border-b border-white/10">
                   <span className="text-xs font-semibold text-white/90">切换景点背景</span>
-                  <button onClick={() => setShowBgMenu(false)} className="text-white/40 hover:text-white"><X className="w-3 h-3" /></button>
+                  <button onClick={() => setShowBgMenu(false)} className="text-white/40 hover:text-white cursor-pointer"><X className="w-3 h-3" /></button>
                 </div>
                 <div className="grid grid-cols-2 gap-1.5 max-h-44 overflow-y-auto pr-0.5">
                   {BG_PRESETS.map((bg) => (
                     <button key={bg.id} onClick={() => { setBgImage(bg.url); setShowBgMenu(false); }}
-                      className="p-1.5 rounded-lg text-left text-[11px] font-medium transition-all border text-white hover:bg-white/10"
+                      className="p-1.5 rounded-lg text-left text-[11px] font-medium transition-all border text-white hover:bg-white/10 cursor-pointer"
                       style={{
                         borderColor: (bgImage === bg.url) ? "#D2A053" : "transparent",
                         background: (bgImage === bg.url) ? "rgba(210,160,83,0.25)" : "rgba(255,255,255,0.05)"
@@ -897,7 +882,7 @@ export function QAScreen() {
                 </div>
                 <div className="pt-1.5 border-t border-white/10">
                   <button onClick={() => fileInputRef.current?.click()}
-                    className="w-full py-1.5 rounded-lg text-center text-[11px] font-semibold text-black bg-[#D2A053] hover:bg-[#b8843a] transition-colors">
+                    className="w-full py-1.5 rounded-lg text-center text-[11px] font-semibold text-black bg-[#D2A053] hover:bg-[#b8843a] transition-colors cursor-pointer">
                     上传自定义背景
                   </button>
                 </div>
@@ -1051,33 +1036,47 @@ export function QAScreen() {
             style={{ background: bgImage ? "none" : "radial-gradient(ellipse 80% 60% at 50% 35%,rgba(79,111,82,0.14) 0%,transparent 70%)" }} />
 
           {/* Desktop Left Panel Floating Controls */}
-          <div className="absolute top-8 left-4 right-4 flex justify-between items-center z-20">
+          <div className="absolute top-8 left-4 right-4 flex justify-between items-center z-[60] pointer-events-auto">
             <div className="text-[11px] font-medium tracking-wide text-white/50 bg-black/30 backdrop-blur px-2.5 py-1 rounded-full border border-white/5">
               旅行家Pro导览官 · 在线
             </div>
-            <div className="flex gap-2 relative">
-              <motion.button whileTap={{ scale: 0.85 }} onClick={() => { setShowBgMenu(!showBgMenu); setShowPersonaMenu(false); }}
-                className="w-8 h-8 rounded-full flex items-center justify-center bg-black/35 backdrop-blur hover:bg-black/55 transition-colors border border-white/10"
+            <div className="flex gap-2 relative z-[60] pointer-events-auto">
+              <motion.button whileTap={{ scale: 0.85 }} onClick={(e) => { e.stopPropagation(); setShowBgMenu(!showBgMenu); setShowPersonaMenu(false); }}
+                title="切换景点背景"
+                className="w-8 h-8 rounded-full flex items-center justify-center bg-black/35 backdrop-blur hover:bg-black/55 transition-colors border border-white/10 cursor-pointer pointer-events-auto"
                 style={{ color: showBgMenu ? "#D2A053" : "rgba(255,255,255,0.75)" }}>
                 <ImageIcon className="w-3.5 h-3.5" />
               </motion.button>
-              <motion.button whileTap={{ scale: 0.85 }} onClick={() => { setShowPersonaMenu(true); setShowBgMenu(false); }}
-                className="w-8 h-8 rounded-full flex items-center justify-center bg-black/35 backdrop-blur hover:bg-black/55 transition-colors border border-white/10"
+              <motion.button whileTap={{ scale: 0.85 }} onClick={(e) => { e.stopPropagation(); setShowPersonaMenu(true); setShowBgMenu(false); }}
+                title="切换分身形象"
+                className="w-8 h-8 rounded-full flex items-center justify-center bg-black/35 backdrop-blur hover:bg-black/55 transition-colors border border-white/10 cursor-pointer pointer-events-auto"
                 style={{ color: showPersonaMenu ? "#D2A053" : "rgba(255,255,255,0.75)" }}>
                 <User className="w-3.5 h-3.5" />
+              </motion.button>
+              <motion.button whileTap={{ scale: 0.85 }} onClick={(e) => { e.stopPropagation(); setTtsEnabled(!ttsEnabled); if (ttsEnabled) window.speechSynthesis?.cancel(); }}
+                title="语音功能开关"
+                className="w-8 h-8 rounded-full flex items-center justify-center bg-black/35 backdrop-blur hover:bg-black/55 transition-colors border border-white/10 cursor-pointer pointer-events-auto"
+                style={{ color: ttsEnabled ? "#D2A053" : "rgba(255,255,255,0.3)" }}>
+                {ttsEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
+              </motion.button>
+              <motion.button whileTap={{ scale: 0.85 }} onClick={(e) => { e.stopPropagation(); setShowHistory(true); }}
+                title="历史对话"
+                className="w-8 h-8 rounded-full flex items-center justify-center bg-black/35 backdrop-blur hover:bg-black/55 transition-colors border border-white/10 cursor-pointer pointer-events-auto"
+                style={{ color: "rgba(255,255,255,0.75)" }}>
+                <History className="w-3.5 h-3.5" />
               </motion.button>
 
               {/* Background Dropdown Menu */}
               {showBgMenu && (
-                <div className="absolute right-0 top-10 z-50 w-56 rounded-2xl p-3 border border-white/10 backdrop-blur-xl bg-black/80 shadow-2xl space-y-2.5">
+                <div className="absolute right-0 top-10 z-[70] w-56 rounded-2xl p-3 border border-white/10 backdrop-blur-xl bg-black/80 shadow-2xl space-y-2.5 pointer-events-auto">
                   <div className="flex justify-between items-center pb-1.5 border-b border-white/10">
                     <span className="text-xs font-semibold text-white/90">切换景点背景</span>
-                    <button onClick={() => setShowBgMenu(false)} className="text-white/40 hover:text-white"><X className="w-3 h-3" /></button>
+                    <button onClick={() => setShowBgMenu(false)} className="text-white/40 hover:text-white cursor-pointer"><X className="w-3 h-3" /></button>
                   </div>
                   <div className="grid grid-cols-2 gap-1.5 max-h-44 overflow-y-auto pr-0.5">
                     {BG_PRESETS.map((bg) => (
                       <button key={bg.id} onClick={() => { setBgImage(bg.url); setShowBgMenu(false); }}
-                        className="p-1.5 rounded-lg text-left text-[11px] font-medium transition-all border text-white hover:bg-white/10"
+                        className="p-1.5 rounded-lg text-left text-[11px] font-medium transition-all border text-white hover:bg-white/10 cursor-pointer"
                         style={{
                           borderColor: (bgImage === bg.url) ? "#D2A053" : "transparent",
                           background: (bgImage === bg.url) ? "rgba(210,160,83,0.25)" : "rgba(255,255,255,0.05)"
@@ -1088,14 +1087,12 @@ export function QAScreen() {
                   </div>
                   <div className="pt-1.5 border-t border-white/10">
                     <button onClick={() => fileInputRef.current?.click()}
-                      className="w-full py-1.5 rounded-lg text-center text-[11px] font-semibold text-black bg-[#D2A053] hover:bg-[#b8843a] transition-colors">
+                      className="w-full py-1.5 rounded-lg text-center text-[11px] font-semibold text-black bg-[#D2A053] hover:bg-[#b8843a] transition-colors cursor-pointer">
                       上传自定义背景
                     </button>
                   </div>
                 </div>
               )}
-
-
             </div>
           </div>
 

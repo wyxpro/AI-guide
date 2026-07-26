@@ -32,7 +32,7 @@ export async function getEmbedding(text: string): Promise<number[]> {
   }
 
   try {
-    const openai = new OpenAI({ apiKey, baseURL });
+    const openai = new OpenAI({ apiKey, baseURL, timeout: 600 });
     const res = await openai.embeddings.create({
       model: "text-embedding-3-small",
       input: text,

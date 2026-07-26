@@ -51,6 +51,7 @@ export async function stepfunChat(options: ChatOptions, customAgent?: any) {
       headers,
       body,
       cache: "no-store",
+      signal: AbortSignal.timeout(3500),
     });
 
     if (!response.ok) {
