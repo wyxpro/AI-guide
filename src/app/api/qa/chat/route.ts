@@ -47,6 +47,24 @@ export async function POST(request: NextRequest) {
       return false;
     };
 
+let cachedDocsList: any[] = [];
+let lastDocsFetchTime = 0;
+
+async function getCachedKnowledgeDocs() {
+  const now = Date.now();
+  if (cachedDocsList.length > 0 && now - lastDocsFetchTime < 60000) {
+    return cachedDocsList;
+  }
+  try {
+    const docs = await db.select().from(knowledgeDocs).where(eq(knowledgeDocs.vectorized, true));
+    cachedDocsList = docs;
+    lastDocsFetchTime = now;
+    return docs;
+  } catch {
+    return cachedDocsList;
+  }
+}
+
     // User preference → mode & Knowledge context RAG in parallel
     let mode = "normal";
     let knowledgeCtx = "";
@@ -55,7 +73,7 @@ export async function POST(request: NextRequest) {
       const shouldSkipRag = isSimpleGreeting(question);
       const [prefsResult, docsResult, queryVecResult] = await Promise.all([
         userId ? getUserPreferences(userId).catch(() => null) : Promise.resolve(null),
-        shouldSkipRag ? Promise.resolve([]) : db.select().from(knowledgeDocs).where(eq(knowledgeDocs.vectorized, true)).catch(() => []),
+        shouldSkipRag ? Promise.resolve([]) : getCachedKnowledgeDocs().catch(() => []),
         shouldSkipRag ? Promise.resolve([]) : getEmbedding(question).catch(() => [])
       ]);
 

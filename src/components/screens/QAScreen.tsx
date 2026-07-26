@@ -422,114 +422,134 @@ export function QAScreen() {
     }
   };
 
-  const toggleRecording = async () => {
-    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+  const startMediaRecorderFallback = async () => {
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        toast.error("当前浏览器暂不支持麦克风录音");
+        setInput("（浏览器不支持录音）");
+        return;
+      }
+      toast.loading("正在开启麦克风…", { id: "mic-perm" });
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      toast.dismiss("mic-perm");
+      toast.success("正在录音中，再次点击按钮可结束录音并发送");
 
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      recognitionRef.current = null;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        stream.getTracks().forEach((track) => track.stop());
+        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        const formData = new FormData();
+        formData.append("file", audioBlob, "audio.webm");
+
+        setInput("正在识别语音...");
+        const toastId = toast.loading("正在识别您的语音...");
+        try {
+          const res = await request("/api/qa/stt", {
+            method: "POST",
+            body: formData,
+          });
+          const data = await res.json();
+          toast.dismiss(toastId);
+          if (data.text) {
+            setInput(data.text);
+            sendMessage(data.text);
+          } else {
+            toast.error("未识别到清晰语音");
+            setInput("");
+          }
+        } catch (err) {
+          toast.dismiss(toastId);
+          console.error("Whisper STT fallback error:", err);
+          toast.error("语音识别失败，请重试");
+          setInput("");
+        }
+      };
+
+      mediaRecorder.start();
+      setRecording(true);
+    } catch (err: any) {
+      toast.dismiss("mic-perm");
+      console.error("Mic access denied or error:", err);
+      toast.error("获取麦克风权限失败，请检查浏览器系统设置");
+    }
+  };
+
+  const toggleRecording = async () => {
     if (recording) {
       recognitionManualStopRef.current = true;
       if (recognitionRef.current) {
-        recognitionRef.current.stop();
+        try { recognitionRef.current.stop(); } catch {}
         setRecording(false);
       } else if (mediaRecorderRef.current) {
-        mediaRecorderRef.current.stop();
+        try { mediaRecorderRef.current.stop(); } catch {}
         setRecording(false);
       }
+      toast.info("已停止录音");
       return;
     }
 
     stopAudio();
 
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     const asrEngine = avatarConfig?.settings?.asr?.engine || "browser";
 
     if (SR && asrEngine !== "whisper") {
-      const rec = new SR();
-      recognitionManualStopRef.current = false;
-      rec.lang = "zh-CN"; rec.continuous = true; rec.interimResults = true;
-      rec.onresult = (e: any) => {
-        const result = e.results[e.results.length - 1];
-        const txt = result?.[0]?.transcript?.trim() || "";
-        if (!txt) return;
-        setInput(txt);
-        if (result.isFinal) {
-          recognitionManualStopRef.current = true;
-          setRecording(false);
-          rec.stop();
-          sendMessage(txt);
-        }
-      };
-      rec.onend = () => {
-        if (recognitionManualStopRef.current) {
-          recognitionManualStopRef.current = false;
-          setRecording(false);
-          return;
-        }
-        try {
-          rec.start();
-        } catch {
-          setRecording(false);
-        }
-      };
-      rec.onerror = (e: any) => {
-        if (e?.error === "no-speech") return;
-        setRecording(false);
-      };
-      rec.start();
-      recognitionRef.current = rec;
-      mediaRecorderRef.current = null;
-      setRecording(true);
-    } else {
       try {
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-          setInput("（浏览器不支持录音）");
-          return;
-        }
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const mediaRecorder = new MediaRecorder(stream);
-        mediaRecorderRef.current = mediaRecorder;
-        recognitionRef.current = null;
-        audioChunksRef.current = [];
+        const rec = new SR();
+        recognitionManualStopRef.current = false;
+        rec.lang = "zh-CN";
+        rec.continuous = false;
+        rec.interimResults = true;
 
-        mediaRecorder.ondataavailable = (event) => {
-          if (event.data.size > 0) {
-            audioChunksRef.current.push(event.data);
+        rec.onstart = () => {
+          setRecording(true);
+          toast.success("正在聆听中，请说话…");
+        };
+
+        rec.onresult = (e: any) => {
+          const result = e.results[e.results.length - 1];
+          const txt = result?.[0]?.transcript?.trim() || "";
+          if (!txt) return;
+          setInput(txt);
+          if (result.isFinal) {
+            recognitionManualStopRef.current = true;
+            setRecording(false);
+            try { rec.stop(); } catch {}
+            sendMessage(txt);
           }
         };
 
-        mediaRecorder.onstop = async () => {
-          stream.getTracks().forEach((track) => track.stop());
-          const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
-          const formData = new FormData();
-          formData.append("file", audioBlob, "audio.webm");
-          if (avatarConfig?.settings?.asr) {
-            formData.append("asrConfig", JSON.stringify(avatarConfig.settings.asr));
-          }
-
-          setInput("正在识别语音...");
-          try {
-            const res = await request("/api/qa/stt", {
-              method: "POST",
-              body: formData,
-            });
-            const data = await res.json();
-            if (data.text) {
-              setInput(data.text);
-              sendMessage(data.text);
-            } else {
-              setInput("");
-            }
-          } catch (err) {
-            console.error("Whisper STT fallback error:", err);
-            setInput("（语音识别失败）");
-          }
+        rec.onend = () => {
+          setRecording(false);
         };
 
-        mediaRecorder.start();
+        rec.onerror = (e: any) => {
+          console.warn("SpeechRecognition error, falling back to MediaRecorder:", e);
+          setRecording(false);
+          startMediaRecorderFallback();
+        };
+
+        rec.start();
+        recognitionRef.current = rec;
+        mediaRecorderRef.current = null;
         setRecording(true);
+        return;
       } catch (err) {
-        console.error("Mic access denied or error:", err);
-        setInput("（无法获取麦克风权限）");
+        console.warn("SpeechRecognition start failed, falling back to MediaRecorder:", err);
       }
     }
+
+    startMediaRecorderFallback();
   };
 
   const sendMessage = async (question: string) => {
