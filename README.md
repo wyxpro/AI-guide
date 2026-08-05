@@ -1,16 +1,17 @@
 
 # 🤖 旅行家Pro · 多模态AI数字人导游与智慧运营平台
-
 ![Next.js](https://img.shields.io/badge/Next.js_16.2-black?style=flat-square&logo=next.js) ![React](https://img.shields.io/badge/React_19-61DAFB?style=flat-square&logo=react) ![TypeScript](https://img.shields.io/badge/TypeScript_5-3178C6?style=flat-square&logo=typescript) ![TailwindCSS](https://img.shields.io/badge/Tailwind_v4-06B6D4?style=flat-square&logo=tailwindcss) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL_16-4169E1?style=flat-square&logo=postgresql) ![Drizzle](https://img.shields.io/badge/Drizzle_ORM_0.45-C5F74F?style=flat-square) ![DeepSeek](https://img.shields.io/badge/DeepSeek_V4--Pro-00B4D8?style=flat-square) ![StepFun](https://img.shields.io/badge/StepFun_3.7--Flash-FF4500?style=flat-square) ![Vercel](https://img.shields.io/badge/Vercel-Deploy-000000?style=flat-square&logo=vercel) ![Bun](https://img.shields.io/badge/Bun_1.3-FBF0DF?style=flat-square&logo=bun) ![MCP](https://img.shields.io/badge/MCP_Protocol-7C3AED?style=flat-square) ![Live2D](https://img.shields.io/badge/Live2D-Cubism-FF6B9D?style=flat-square) ![Framer Motion](https://img.shields.io/badge/Framer_Motion_12-BB4BFF?style=flat-square&logo=framer)
 
 ---
 
 ## 📋 项目简介
-
-**旅行家Pro** 是一款面向智慧景区的**全栈式AI伴游与数字化运营管理系统**。项目基于 Next.js 16 + React 19 前沿技术栈构建，深度集成多模态大语言模型、流式语音合成(TTS/STT)、向量知识库检索(RAG)与 Live2D 数字人渲染技术，为游客提供沉浸式、个性化、全天候的智能导览服务，同时为景区运营方提供数据驱动的智慧管理决策平台。
+<img width="1919" height="1047" alt="image" src="https://github.com/user-attachments/assets/13193960-4d11-498e-bae7-d57051ea463a" />
+<img width="1336" height="759" alt="image" src="https://github.com/user-attachments/assets/203078b1-98c1-4776-af0f-0fe294296876" />
+<img width="1412" height="760" alt="image" src="https://github.com/user-attachments/assets/9a512eb5-a056-4e64-b739-feb9484c2fd8" />
+旅行家Pro 是一款面向智慧景区的全栈式AI伴游与数字化运营平台。项目基于 Next.js 16 + React 19 前沿技术栈构建，深度集成多模态大语言模型、流式语音合成(TTS/STT)、向量知识库检索(RAG)与 Live2D 数字人渲染技术，为游客提供沉浸式、个性化、全天候的智能导览服务，同时为景区运营方提供数据驱动的智慧管理决策平台。
 
 ### 🎯 三大产品矩阵
-
+哔哩哔哩视频介绍：https://www.bilibili.com/video/BV1PMge6wE4G/
 | 终端 | 核心定位 | 关键能力 |
 | :--- | :--- | :--- |
 | **🙋 游客伴游端 (C端)** | 7×24小时AI数字人导览 | 流式对话、VR即拍即识、智能路线规划、FM语音广播、足迹勋章、无障碍三模式适配 |
