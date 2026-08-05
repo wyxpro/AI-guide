@@ -92,7 +92,7 @@ export function QAScreen() {
   const [ttsEnabled, setTtsEnabled] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
   const [showSatisfaction, setShowSatisfaction] = useState(false);
-  const [chatExpanded, setChatExpanded] = useState(false);
+  const [chatExpanded, setChatExpanded] = useState(true);
   const [showCamera, setShowCamera] = useState(false);
   const [subtitle, setSubtitle] = useState(initMsg(spotName).content);
   const satisfactionShownRef = useRef(false);
@@ -324,7 +324,7 @@ export function QAScreen() {
     }
     setMessages([initMsg(spotName)]);
     setSubtitle(initMsg(spotName).content);
-    setChatExpanded(false);
+    setChatExpanded(true);
     toast.success("已开启新对话");
   };
 
@@ -366,7 +366,7 @@ export function QAScreen() {
     setAvatarState("speaking");
     try {
       const payload = {
-        text: text.slice(0, 320),
+        text: text.slice(0, 500),
         voiceStyle: avatarConfig?.voiceStyle || "warm",
         speechRate: avatarConfig?.speechRate || 100,
         pitch: avatarConfig?.pitch || 100,
@@ -382,8 +382,8 @@ export function QAScreen() {
       if (!res.ok) throw new Error("TTS generation failed");
 
       const isLive2D = avatarConfig?.avatarStyle?.startsWith("live2d_");
-
       const blob = await res.blob();
+
       if (isLive2D) {
         const arrayBuffer = await blob.arrayBuffer();
         const { Live2dManager } = require("@/lib/live2d/live2dManager");
@@ -406,16 +406,47 @@ export function QAScreen() {
         await audio.play();
       }
     } catch (err) {
-      console.error("TTS audio play error, falling back to Web Speech API:", err);
+      console.error("TTS audio play error, falling back to Web Speech API with keepalive:", err);
       if ("speechSynthesis" in window) {
         window.speechSynthesis.cancel();
-        const utter = new SpeechSynthesisUtterance(text.slice(0, 320));
-        utter.lang = "zh-CN";
-        utter.rate = (avatarConfig?.speechRate || 100) / 110;
-        utter.pitch = (avatarConfig?.pitch || 100) / 100;
-        utter.onstart = () => setAvatarState("speaking");
-        utter.onend = () => setAvatarState("idle");
-        window.speechSynthesis.speak(utter);
+        const cleanedText = text.replace(/\[情感[:：][^\]]+\]/g, "").trim();
+        const sentences = cleanedText.match(/[^。！？!?；;]+[。！？!?；;]?/g) || [cleanedText];
+
+        let idx = 0;
+        setAvatarState("speaking");
+
+        const keepAliveTimer = setInterval(() => {
+          if (window.speechSynthesis.speaking) {
+            window.speechSynthesis.pause();
+            window.speechSynthesis.resume();
+          }
+        }, 4500);
+
+        const speakNextSentence = () => {
+          if (idx >= sentences.length) {
+            clearInterval(keepAliveTimer);
+            setAvatarState("idle");
+            return;
+          }
+          const utter = new SpeechSynthesisUtterance(sentences[idx]);
+          utter.lang = "zh-CN";
+          utter.rate = (avatarConfig?.speechRate || 100) / 110;
+          utter.pitch = (avatarConfig?.pitch || 100) / 100;
+
+          utter.onend = () => {
+            idx++;
+            speakNextSentence();
+          };
+
+          utter.onerror = () => {
+            idx++;
+            speakNextSentence();
+          };
+
+          window.speechSynthesis.speak(utter);
+        };
+
+        speakNextSentence();
       } else {
         setAvatarState("idle");
       }
@@ -568,7 +599,7 @@ export function QAScreen() {
       const res = await request("/api/qa/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question, history, stream: true, agentConfig: avatarConfig?.settings?.agent }),
+        body: JSON.stringify({ question, history, stream: true, agentConfig: avatarConfig?.settings?.agent, spotName }),
       });
 
       if (!res.ok || !res.body) throw new Error("Stream unavailable");

@@ -5,6 +5,7 @@ import { knowledgeDocs, qaLogs } from "@/lib/db/schema/admin";
 import { chatSessions } from "@/lib/db/schema/user-data";
 import { ai } from "@eazo/sdk";
 import { stepChat } from "@/lib/api/stepfun";
+import { deepseekV4Chat } from "@/lib/deepseek-v4/chat";
 import { getUserPreferences } from "@/lib/db/queries/user-data";
 import { isRateLimited } from "@/lib/api/rate-limit";
 import { getEmbedding, cosineSimilarity } from "@/lib/api/embedding";
@@ -12,18 +13,25 @@ import { eq, desc } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
-const ACCESS_PROMPTS: Record<string, string> = {
-  normal: "你是翠玉景区的专属AI导览员小玉，语气温暖亲切、知识丰富，回答时适当引用历史典故。回答200字以内，段落清晰。必须在回复的最开始以 '[情感: 愉快/平静/伤感/思考]' 格式标注你的情感，例如 '[情感: 愉快]您好！很高兴为您服务。'",
-  elder:  "你是翠玉景区的AI导览员小玉，专为老年游客服务。语速慢、语气温和、措辞简洁易懂，避免复杂句子，优先推荐平坦无障碍路线。回答150字以内。必须在回复的最开始以 '[情感: 愉快/平静/伤感/思考]' 格式标注你的情感，例如 '[情感: 平静]老人家您好！请慢慢走。'",
-  child:  "你是翠玉景区的AI导览员小玉，专为小朋友服务！用可爱活泼的语气讲故事，多用比喻和有趣的说法，让知识变得好玩！回答100字以内。必须在回复的最开始以 '[情感: 愉快/平静/思考]' 格式标注你的情感，例如 '[情感: 愉快]哇！小朋友，今天想听什么好玩的故事呢？'",
-};
+function getAccessPrompt(mode: string, spotName?: string, destinationName?: string): string {
+  const scope = [destinationName, spotName].filter(Boolean).join(" · ") || "智慧文旅";
+  const baseGuidance = "如果游客询问当前景点或城市，请结合历史文化详细解答；如果游客询问其他城市、景点或旅行规划（例如成都、北京、外滩等），请热情客观解答并提供专业建议，切勿将回答限定在某单一固定景区！";
+
+  if (mode === "elder") {
+    return `你是【${scope}】的AI导览员小玉，专为老年游客服务。语速慢、语气温和、措辞简洁易懂，避免复杂句子，优先推荐平坦无障碍路线。${baseGuidance}回答150字以内。必须在回复的最开始以 '[情感: 愉快/平静/伤感/思考]' 格式标注你的情感，例如 '[情感: 平静]老人家您好！请慢慢走。'`;
+  }
+  if (mode === "child") {
+    return `你是【${scope}】的AI导览员小玉，专为小朋友服务！用可爱活泼的语气讲故事，多用比喻和有趣的说法，让知识变得好玩！${baseGuidance}回答100字以内。必须在回复的最开始以 '[情感: 愉快/平静/思考]' 格式标注你的情感，例如 '[情感: 愉快]哇！小朋友，今天想听什么好玩的故事呢？'`;
+  }
+  return `你是【${scope}】的专属AI导览员小玉，语气温暖亲切、知识丰富，回答时适当引用历史典故。${baseGuidance}回答200字以内，段落清晰。必须在回复的最开始以 '[情感: 愉快/平静/伤感/思考]' 格式标注你的情感，例如 '[情感: 愉快]您好！很高兴为您服务。'`;
+}
 
 export async function POST(request: NextRequest) {
   try {
     const ip = request.headers.get("x-forwarded-for") || "anonymous";
     if (isRateLimited(ip)) {
       return NextResponse.json(
-        { answer: "您提问的速度太快了，小玉脑子有点转不过来了。请稍等一分钟再试！" },
+        { answer: "您提问稍有些快，小玉正在为您整理灵感，请稍等半分钟后再试！" },
         { status: 429 }
       );
     }
@@ -32,7 +40,7 @@ export async function POST(request: NextRequest) {
     const authResult = requireAuth(request);
     const userId = authResult.ok ? authResult.user.id : null;
 
-    const { question, history = [], stream: wantStream = false, agentConfig } = await request.json();
+    const { question, history = [], stream: wantStream = false, agentConfig, spotName, destinationName } = await request.json();
     if (!question?.trim()) {
       return NextResponse.json({ answer: "请输入您的问题，小玉随时为您解答！" });
     }
@@ -126,7 +134,8 @@ async function getCachedKnowledgeDocs() {
       console.error("Parallel preparation failed:", err);
     }
 
-    const systemPrompt = (agentConfig?.enable && agentConfig?.prompt ? agentConfig.prompt : ACCESS_PROMPTS[mode]) + knowledgeCtx;
+    const basePrompt = agentConfig?.enable && agentConfig?.prompt ? agentConfig.prompt : getAccessPrompt(mode, spotName, destinationName);
+    const systemPrompt = basePrompt + knowledgeCtx;
 
     // Multi-turn history (keep last 6 turns max, filter only user & assistant roles to save tokens)
     const chatHistory = (history as Array<{ role: string; content: string }>)
@@ -181,12 +190,22 @@ async function getCachedKnowledgeDocs() {
       const stream = new ReadableStream({
         async start(controller) {
           try {
-            const result = await stepChat({
-              model: "step-3.7-flash",
-              messages,
-              stream: true,
-              max_tokens: 400,
-            }, agentConfig);
+            let result: any;
+            try {
+              result = await deepseekV4Chat({
+                messages,
+                stream: true,
+                max_tokens: 450,
+              }, agentConfig);
+            } catch (v4Err) {
+              console.warn("[DeepSeek-V4-Flash Stream Error, falling back to stepChat]", v4Err);
+              result = await stepChat({
+                model: "step-3.7-flash",
+                messages,
+                stream: true,
+                max_tokens: 400,
+              }, agentConfig);
+            }
 
             let accumulatedAnswer = "";
             for await (const chunk of result as any) {
@@ -243,16 +262,30 @@ async function getCachedKnowledgeDocs() {
     }
 
     // ── Non-streaming (default) ─────────────────────────────────────────────
-    const result = await stepChat({
-      model: "step-3.7-flash",
-      messages: [
-        { role: "user", content: systemPrompt },
-        ...chatHistory,
-        { role: "user", content: question },
-      ],
-      max_tokens: 400,
-    }, agentConfig);
-    const answer = result.choices?.[0]?.message?.content?.trim() ?? "小玉暂时无法回答，请稍后再试。";
+    let answer = "";
+    try {
+      const v4Res = await deepseekV4Chat({
+        messages: [
+          { role: "user", content: systemPrompt },
+          ...chatHistory,
+          { role: "user", content: question },
+        ],
+        stream: false,
+        max_tokens: 450,
+      }, agentConfig);
+      answer = v4Res.choices?.[0]?.message?.content?.trim() ?? "";
+    } catch {
+      const result = await stepChat({
+        model: "step-3.7-flash",
+        messages: [
+          { role: "user", content: systemPrompt },
+          ...chatHistory,
+          { role: "user", content: question },
+        ],
+        max_tokens: 400,
+      }, agentConfig);
+      answer = result.choices?.[0]?.message?.content?.trim() ?? "小玉暂时无法回答，请稍后再试。";
+    }
 
     // Async: increment daily QA counter and sentiment count
     const today = new Date().toISOString().slice(0, 10);

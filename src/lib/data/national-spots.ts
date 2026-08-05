@@ -22,6 +22,8 @@ export const CITIES = [
   { id: "shanghai", name: "上海", icon: "🗼" },
   { id: "chongqing", name: "重庆", icon: "🌶️" },
   { id: "suzhou", name: "苏州", icon: "🛶" },
+  { id: "nanjing", name: "南京", icon: "🏛️" },
+  { id: "guangzhou", name: "广州", icon: "🗼" },
   { id: "xiamen", name: "厦门", icon: "🏖️" },
   { id: "guilin", name: "桂林", icon: "⛰️" },
   { id: "lijiang", name: "丽江", icon: "❄️" },
@@ -429,5 +431,63 @@ export const NATIONAL_SPOTS: NationalSpot[] = [
     visitCount: 65000,
     tags: ["城中明珠", "东湖绿道", "樱花园林", "环湖骑行"],
     location: { lat: 30.5583, lng: 114.3821 }
+  },
+  // 南京
+  {
+    id: 10029,
+    name: "中山陵",
+    category: "history",
+    city: "南京",
+    description: "中山陵是中国民主革命先行者孙中山先生的陵寝，位于南京市玄武区紫金山南麓。整个建筑群依山势而建，融汇中国古代与西方建筑风格，庄严雄伟，被誉为中国近代建筑史上第一陵。",
+    imageUrl: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=1000&q=80",
+    duration: 150,
+    distance: "南京市玄武区紫金山",
+    rating: 49,
+    visitCount: 92000,
+    tags: ["民主革命", "紫金山麓", "近代建筑", "免费开放"],
+    location: { lat: 32.0622, lng: 118.8481 }
+  },
+  {
+    id: 10030,
+    name: "夫子庙秦淮风光带",
+    category: "cultural",
+    city: "南京",
+    description: "夫子庙秦淮风光带以夫子庙为中心，秦淮河为纽带，集古迹、园林、画坊、市井于一体。夜晚画舫凌波、彩灯交辉，“桨声灯影里的秦淮河”充满浓郁的古都文脉风情。",
+    imageUrl: "https://images.unsplash.com/photo-1542224566-6e85f2e6772f?w=1000&q=80",
+    duration: 120,
+    distance: "南京市秦淮区",
+    rating: 48,
+    visitCount: 110000,
+    tags: ["秦淮风情", "古都夜景", "秦淮八艳", "特色小吃"],
+    location: { lat: 32.0224, lng: 118.7883 }
+  },
+  // 广州
+  {
+    id: 10031,
+    name: "广州塔",
+    category: "cultural",
+    city: "广州",
+    description: "广州塔昵称“小蛮腰”，塔高600米，是中国第一高塔、世界第三高塔。塔身呈纤细挺拔的双曲面造型。登顶可体验极速云霄滑勇、高空观景轮以及全览珠江两岸繁华夜景。",
+    imageUrl: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=1000&q=80",
+    duration: 120,
+    distance: "广州市海珠区珠江畔",
+    rating: 49,
+    visitCount: 135000,
+    tags: ["小蛮腰", "城市地标", "珠江夜景", "高空观景"],
+    location: { lat: 23.1091, lng: 113.3245 }
+  },
+  {
+    id: 10032,
+    name: "沙面岛",
+    category: "history",
+    city: "广州",
+    description: "沙面岛是广州极具欧陆风情的地方，曾为英法租界。岛上拥有上百座保存完好的新古典式、哥特式、巴洛克式建筑，古树参天，环境优雅，是摄影与漫步的好去处。",
+    imageUrl: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1000&q=80",
+    duration: 90,
+    distance: "广州市荔湾区",
+    rating: 47,
+    visitCount: 84000,
+    tags: ["欧陆风情", "租界建筑", "文艺打卡", "林荫大道"],
+    location: { lat: 23.1095, lng: 113.2428 }
   }
 ];
