@@ -641,23 +641,15 @@ export function QAScreen() {
               if (desktopBottomRef.current) desktopBottomRef.current.scrollIntoView({ behavior: "auto", block: "end" });
               if (desktopScrollRef.current) desktopScrollRef.current.scrollTop = desktopScrollRef.current.scrollHeight;
               setSubtitle(clean);
-              // Detect sentence boundary → flush TTS
-              const sentenceEnd = /[。！？.!?]/.test(delta);
-              if (sentenceEnd && !ttsStarted && ttsBuffer.replace(/\[情感[:：]\s*[^\]]+\]/g, "").trim().length > 12) {
-                ttsStarted = true;
-                const firstSentence = ttsBuffer.replace(/\[情感[:：]\s*[^\]]+\]/g, "").trim();
-                ttsBuffer = "";
-                flushTTS(firstSentence);
-              }
             }
           } catch { /* ignore parse errors */ }
         }
       }
 
-      // If TTS wasn't started yet (short answer), speak the full answer
-      if (!ttsStarted) {
-        const clean = fullAnswer.replace(/\[情感[:：]\s*[^\]]+\]/g, "").trim();
-        speak(clean);
+      // Speak the complete concise answer (within 4 lines) smoothly
+      const cleanFull = fullAnswer.replace(/\[情感[:：]\s*[^\]]+\]/g, "").trim();
+      if (cleanFull) {
+        speak(cleanFull);
       }
 
       // Satisfaction modal disabled per user request

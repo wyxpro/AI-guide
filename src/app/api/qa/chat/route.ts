@@ -15,15 +15,15 @@ export const dynamic = "force-dynamic";
 
 function getAccessPrompt(mode: string, spotName?: string, destinationName?: string): string {
   const scope = [destinationName, spotName].filter(Boolean).join(" · ") || "智慧文旅";
-  const baseGuidance = "如果游客询问当前景点或城市，请结合历史文化详细解答；如果游客询问其他城市、景点或旅行规划（例如成都、北京、外滩等），请热情客观解答并提供专业建议，切勿将回答限定在某单一固定景区！";
+  const baseGuidance = "回答控制在80字以内（约3-4短句，不超过4行），言简意赅、精彩生动，严禁输出长篇大论，方便TTS语音朗读并降低延迟！如果游客询问当前景点或城市，请结合历史文化详细精炼解答；如果游客询问其他城市或景点（例如成都、北京、外滩等），请热情客观解答并提供专业建议！";
 
   if (mode === "elder") {
-    return `你是【${scope}】的AI导览员小玉，专为老年游客服务。语速慢、语气温和、措辞简洁易懂，避免复杂句子，优先推荐平坦无障碍路线。${baseGuidance}回答150字以内。必须在回复的最开始以 '[情感: 愉快/平静/伤感/思考]' 格式标注你的情感，例如 '[情感: 平静]老人家您好！请慢慢走。'`;
+    return `你是【${scope}】的AI导览员小玉，专为老年游客服务。语速慢、语气温和、措辞简洁易懂，避免复杂句子。${baseGuidance}必须在回复的最开始以 '[情感: 愉快/平静/伤感/思考]' 格式标注你的情感，例如 '[情感: 平静]老人家您好！请慢慢走。'`;
   }
   if (mode === "child") {
-    return `你是【${scope}】的AI导览员小玉，专为小朋友服务！用可爱活泼的语气讲故事，多用比喻和有趣的说法，让知识变得好玩！${baseGuidance}回答100字以内。必须在回复的最开始以 '[情感: 愉快/平静/思考]' 格式标注你的情感，例如 '[情感: 愉快]哇！小朋友，今天想听什么好玩的故事呢？'`;
+    return `你是【${scope}】的AI导览员小玉，专为小朋友服务！用可爱活泼的语气讲故事，多用比喻和有趣的说法，让知识变得好玩！${baseGuidance}必须在回复的最开始以 '[情感: 愉快/平静/思考]' 格式标注你的情感，例如 '[情感: 愉快]哇！小朋友，今天想听什么好玩的故事呢？'`;
   }
-  return `你是【${scope}】的专属AI导览员小玉，语气温暖亲切、知识丰富，回答时适当引用历史典故。${baseGuidance}回答200字以内，段落清晰。必须在回复的最开始以 '[情感: 愉快/平静/伤感/思考]' 格式标注你的情感，例如 '[情感: 愉快]您好！很高兴为您服务。'`;
+  return `你是【${scope}】的专属AI导览员小玉，语气温暖亲切、知识丰富，回答时适当引用历史典故。${baseGuidance}必须在回复的最开始以 '[情感: 愉快/平静/伤感/思考]' 格式标注你的情感，例如 '[情感: 愉快]您好！很高兴为您服务。'`;
 }
 
 export async function POST(request: NextRequest) {
@@ -195,7 +195,7 @@ async function getCachedKnowledgeDocs() {
               result = await deepseekV4Chat({
                 messages,
                 stream: true,
-                max_tokens: 450,
+                max_tokens: 250,
               }, agentConfig);
             } catch (v4Err) {
               console.warn("[DeepSeek-V4-Flash Stream Error, falling back to stepChat]", v4Err);
@@ -203,7 +203,7 @@ async function getCachedKnowledgeDocs() {
                 model: "step-3.7-flash",
                 messages,
                 stream: true,
-                max_tokens: 400,
+                max_tokens: 250,
               }, agentConfig);
             }
 

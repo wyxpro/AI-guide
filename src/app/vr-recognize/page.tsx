@@ -84,6 +84,16 @@ export default function VRRecognizePage() {
     setIsCameraActive(false);
   };
 
+  // Auto bind video stream whenever isCameraActive or cameraStream updates
+  useEffect(() => {
+    if (isCameraActive && cameraStream && videoRef.current) {
+      if (videoRef.current.srcObject !== cameraStream) {
+        videoRef.current.srcObject = cameraStream;
+        videoRef.current.play().catch(() => {});
+      }
+    }
+  }, [isCameraActive, cameraStream]);
+
   // Start camera stream
   const startCamera = async () => {
     try {
@@ -106,13 +116,6 @@ export default function VRRecognizePage() {
       setRecognizeResult(null);
       setScanStep(0);
       setScanning(false);
-      
-      // Delay slightly to ensure video element is rendered and reference is bound
-      setTimeout(() => {
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-      }, 100);
     } catch (err) {
       console.error("Failed to open camera:", err);
       toast.error("无法打开摄像头，请确保已授予权限");
@@ -365,7 +368,7 @@ export default function VRRecognizePage() {
               {/* Viewport Grid Lines */}
               <div className="absolute inset-0 bg-[linear-gradient(rgba(210,160,83,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(210,160,83,0.02)_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none z-10" />
 
-              <AnimatePresence mode="wait">
+              <AnimatePresence>
                 {isCameraActive ? (
                   <motion.div 
                     key="camera-feed"
@@ -375,7 +378,13 @@ export default function VRRecognizePage() {
                     className="absolute inset-0 w-full h-full"
                   >
                     <video 
-                      ref={videoRef}
+                      ref={(node) => {
+                        (videoRef as any).current = node;
+                        if (node && cameraStream && node.srcObject !== cameraStream) {
+                          node.srcObject = cameraStream;
+                          node.play().catch(() => {});
+                        }
+                      }}
                       autoPlay
                       playsInline
                       muted
