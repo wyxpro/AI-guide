@@ -381,7 +381,7 @@ export default function LoginPage() {
               className="w-full py-3.5 rounded-xl border border-dashed border-[#10a37f] bg-[#e6f7f4] text-[#10a37f] hover:bg-[#d0f2eb] active:scale-98 transition-all text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <Sparkles className="w-4 h-4" />
-              游客一键登录 · 无需注册，立即体验
+              游客一键登录 · 立即体验
             </button>
 
             <button
