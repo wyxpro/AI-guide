@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useState, memo } from "react";
 import { LAppDelegate } from "@/lib/live2d/src/lappdelegate";
 import { Live2dManager } from "@/lib/live2d/live2dManager";
 import { ResourceModel, RESOURCE_TYPE } from "@/lib/protocol";
@@ -9,7 +9,7 @@ interface Live2DViewerProps {
   avatarStyle: string; // e.g., "live2d_Haru"
 }
 
-export default function Live2DViewer({ avatarStyle }: Live2DViewerProps) {
+function Live2DViewer({ avatarStyle }: Live2DViewerProps) {
   const reactId = useId();
   const canvasId = `live2dCanvas-${reactId.replace(/:/g, "")}`;
   const [ready, setReady] = useState(false);
@@ -87,3 +87,5 @@ export default function Live2DViewer({ avatarStyle }: Live2DViewerProps) {
     </div>
   );
 }
+
+export default memo(Live2DViewer);

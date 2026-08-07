@@ -607,13 +607,23 @@ export function QAScreen() {
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let fullAnswer = "";
-      let ttsBuffer = "";
-      let ttsStarted = false;
+      let lastUpdateTime = 0;
 
-      const flushTTS = (text: string) => {
-        if (!ttsEnabled || text.trim().length < 10) return;
-        // Speak first sentence immediately, rest after
-        speak(text.trim());
+      const updateUIBatch = (force = false) => {
+        const now = Date.now();
+        if (force || now - lastUpdateTime >= 35) {
+          lastUpdateTime = now;
+          const clean = fullAnswer.replace(/\[情感[:：]\s*[^\]]+\]/g, "").trim();
+          setMessages((prev) => {
+            if (prev.length === 0) return prev;
+            const copy = [...prev];
+            copy[copy.length - 1] = { ...copy[copy.length - 1], content: clean };
+            return copy;
+          });
+          setSubtitle(clean);
+          if (mobileScrollRef.current) mobileScrollRef.current.scrollTop = mobileScrollRef.current.scrollHeight;
+          if (desktopScrollRef.current) desktopScrollRef.current.scrollTop = desktopScrollRef.current.scrollHeight;
+        }
       };
 
       while (true) {
@@ -628,23 +638,13 @@ export function QAScreen() {
             const { delta } = JSON.parse(payload);
             if (delta) {
               fullAnswer += delta;
-              ttsBuffer += delta;
-              const clean = fullAnswer.replace(/\[情感[:：]\s*[^\]]+\]/g, "").trim();
-              // Update streaming message in real-time
-              setMessages((prev) => {
-                const copy = [...prev];
-                copy[copy.length - 1] = { ...copy[copy.length - 1], content: clean };
-                return copy;
-              });
-              if (mobileBottomRef.current) mobileBottomRef.current.scrollIntoView({ behavior: "auto", block: "end" });
-              if (mobileScrollRef.current) mobileScrollRef.current.scrollTop = mobileScrollRef.current.scrollHeight;
-              if (desktopBottomRef.current) desktopBottomRef.current.scrollIntoView({ behavior: "auto", block: "end" });
-              if (desktopScrollRef.current) desktopScrollRef.current.scrollTop = desktopScrollRef.current.scrollHeight;
-              setSubtitle(clean);
+              updateUIBatch(false);
             }
           } catch { /* ignore parse errors */ }
         }
       }
+
+      updateUIBatch(true);
 
       // Speak the complete concise answer (within 4 lines) smoothly
       const cleanFull = fullAnswer.replace(/\[情感[:：]\s*[^\]]+\]/g, "").trim();
@@ -852,7 +852,7 @@ export function QAScreen() {
         }}>
 
         {/* Top bar */}
-        <div className="flex items-center justify-between px-4 pb-3 flex-shrink-0 relative z-[60] pointer-events-auto"
+        <div className="flex items-center justify-between px-4 pb-3 flex-shrink-0 relative z-30 pointer-events-auto"
           style={{ paddingTop: "calc(env(safe-area-inset-top,44px) + 24px)" }}>
           <div className="flex items-center gap-2">
             <motion.div animate={{ backgroundColor: loading ? "#D2A053" : "#34C759" }}
@@ -861,8 +861,8 @@ export function QAScreen() {
               {loading ? "小玉思考中…" : "旅行家Pro导览官 · 在线"}
             </span>
           </div>
-          <div className="flex flex-col items-end gap-2.5 relative z-[60]">
-            <div className="flex gap-2 relative z-[60]">
+          <div className="flex flex-col items-end gap-2.5 relative z-30">
+            <div className="flex gap-2 relative z-30">
             <motion.button whileTap={{ scale: 0.85 }} onClick={(e) => { e.stopPropagation(); setShowBgMenu(!showBgMenu); setShowPersonaMenu(false); }}
               title="切换背景"
               className="w-8 h-8 rounded-full flex items-center justify-center animate-fade-in cursor-pointer pointer-events-auto"
@@ -1079,11 +1079,11 @@ export function QAScreen() {
             style={{ background: bgImage ? "none" : "radial-gradient(ellipse 80% 60% at 50% 35%,rgba(79,111,82,0.14) 0%,transparent 70%)" }} />
 
           {/* Desktop Left Panel Floating Controls */}
-          <div className="absolute top-8 left-4 right-4 flex justify-between items-center z-[60] pointer-events-auto">
+          <div className="absolute top-8 left-4 right-4 flex justify-between items-center z-30 pointer-events-auto">
             <div className="text-[11px] font-medium tracking-wide text-white/50 bg-black/30 backdrop-blur px-2.5 py-1 rounded-full border border-white/5">
               旅行家Pro导览官 · 在线
             </div>
-            <div className="flex gap-2 relative z-[60] pointer-events-auto">
+            <div className="flex gap-2 relative z-30 pointer-events-auto">
               <motion.button whileTap={{ scale: 0.85 }} onClick={(e) => { e.stopPropagation(); setShowBgMenu(!showBgMenu); setShowPersonaMenu(false); }}
                 title="切换景点背景"
                 className="w-8 h-8 rounded-full flex items-center justify-center bg-black/35 backdrop-blur hover:bg-black/55 transition-colors border border-white/10 cursor-pointer pointer-events-auto"

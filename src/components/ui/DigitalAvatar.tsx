@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef, useId } from "react";
+import { useState, useEffect, useRef, useId, memo } from "react";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
 
@@ -373,7 +373,7 @@ const STATE_LABEL: Record<AvatarState, string> = {
   idle: "恭候中", thinking: "思考中", speaking: "讲解中", happy: "很高兴", concerned: "关切中",
 };
 
-export function DigitalAvatar({ state, size = "md", audioElement, avatarStyle }: Props) {
+function DigitalAvatarComponent({ state, size = "md", audioElement, avatarStyle }: Props) {
   const px = SIZES_PX[size];
   const idSuffix = useId().replace(/:/g, "");
   const p = PALETTE[state];
@@ -551,3 +551,5 @@ export function DigitalAvatar({ state, size = "md", audioElement, avatarStyle }:
     </div>
   );
 }
+
+export const DigitalAvatar = memo(DigitalAvatarComponent);

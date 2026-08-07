@@ -392,7 +392,7 @@ export default function WelcomePage() {
       {/* Hero Section */}
       <section className="relative pt-12 md:pt-24 pb-20 max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
         {/* Shizuku Live2D */}
-        <div className="lg:col-span-5 flex justify-center lg:order-2">
+        <div className="hidden lg:flex lg:col-span-5 justify-center lg:order-2">
           <motion.div
             initial={{ opacity: 0, rotateY: 20 }}
             animate={{ opacity: 1, rotateY: 0 }}
