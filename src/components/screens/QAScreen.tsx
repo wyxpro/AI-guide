@@ -1284,7 +1284,7 @@ export function QAScreen() {
         avatarName={avatarConfig?.name || "Hiyori (Live2D)"}
         avatarStyle={avatarConfig?.avatarStyle || "live2d_Hiyori"}
         avatarImage={avatarConfig?.imageUrl || "/sentio/characters/free/Hiyori/Hiyori.png"}
-        spotName={spotName}
+        spotName={spotName || "景区"}
         onSendMessage={async (text) => {
           await sendMessage(text);
         }}
