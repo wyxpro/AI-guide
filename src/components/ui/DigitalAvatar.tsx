@@ -486,7 +486,7 @@ function DigitalAvatarComponent({ state, size = "md", audioElement, avatarStyle 
           style={{ width: avatarWidth + 60, height: avatarHeight + 60, top: -30, left: -30,
             background: `radial-gradient(ellipse at center, ${p.aura} 0%, transparent 68%)` }}
           animate={{ scale: [1, 1.1, 1], opacity: [0.65, 1, 0.65] }}
-          transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }} />
+          transition={{ duration: 5.2, repeat: Infinity, ease: "easeInOut" }} />
         {/* Avatar */}
         <motion.div style={{ width: avatarWidth, height: avatarHeight }}
           className="relative flex items-center justify-center overflow-hidden bg-transparent"

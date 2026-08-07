@@ -15,15 +15,15 @@ export interface NationalSpot {
 }
 
 export const CITIES = [
-  { id: "changsha", name: "长沙", icon: "🌶️" },
+  { id: "beijing", name: "北京", icon: "🏯" },
+  { id: "shanghai", name: "上海", icon: "🗼" },
   { id: "chongqing", name: "重庆", icon: "🌶️" },
   { id: "chengdu", name: "成都", icon: "🐼" },
   { id: "xian", name: "西安", icon: "📜" },
-  { id: "guilin", name: "桂林", icon: "⛰️" },
-  { id: "beijing", name: "北京", icon: "🏯" },
   { id: "hangzhou", name: "杭州", icon: "⛵" },
+  { id: "guilin", name: "桂林", icon: "⛰️" },
+  { id: "changsha", name: "长沙", icon: "🌶️" },
   { id: "wuhan", name: "武汉", icon: "🌸" },
-  { id: "shanghai", name: "上海", icon: "🗼" },
   { id: "nanjing", name: "南京", icon: "🏛️" },
   { id: "suzhou", name: "苏州", icon: "🛶" },
   { id: "guangzhou", name: "广州", icon: "🗼" },

@@ -13,8 +13,8 @@ const SITE_URL = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   ...(SITE_URL ? { metadataBase: new URL(SITE_URL) } : {}),
-  title: "旅行家Pro · 智能景区导游",
-  description: "旅行家Pro智能景区导游系统，7×24小时在线个性化游览服务。支持语音问答、路线规划、景点讲解。",
+  title: "旅行家Pro·智慧景区导游",
+  description: "旅行家Pro智慧景区导游系统，7×24小时在线个性化游览服务。支持语音问答、路线规划、景点讲解。",
   manifest: "/manifest.json",
   icons: {
     icon: "/image/logo.png",
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "旅行家Pro",
-    title: "旅行家Pro · 智能景区导游",
+    title: "旅行家Pro·智慧景区导游",
     description: "AI数字人导览，让每个景点都有故事可听。",
     locale: "zh_CN",
   },

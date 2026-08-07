@@ -1,7 +1,7 @@
 {
-  "name": "翠玉AI导览",
-  "short_name": "翠玉导览",
-  "description": "清溪烟雨景区智能导览AI数字人，实时问答、路线推荐、语音讲解",
+  "name": "旅行家Pro·智慧景区导游",
+  "short_name": "旅行家Pro",
+  "description": "旅行家Pro智慧景区导游系统，实时问答、路线推荐、语音讲解与数字人伴游",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FAF8F5",
