@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { X, Check, Upload, Play, Sparkles } from "lucide-react";
 
@@ -25,6 +25,12 @@ export function AvatarSelectorModal({
   const [activeTab, setActiveTab] = useState<"presets" | "custom">("presets");
   const [activeGender, setActiveGender] = useState<"all" | "live2d" | "female" | "male">("all");
 
+  const triggerHaptic = () => {
+    if (typeof window !== "undefined" && "vibrate" in navigator) {
+      try { navigator.vibrate(10); } catch {}
+    }
+  };
+
   const isMale = (avatar: any) => {
     const maleNames = ["元气少年", "商业精英", "潮流酷哥", "阳光运动男", "儒雅书生", "男生", "帅气"];
     return (
@@ -33,19 +39,16 @@ export function AvatarSelectorModal({
     );
   };
 
-  const filteredPresets = allAvatars.filter((a) => {
-    const isLive2D = a.avatarStyle?.startsWith("live2d_");
-    if (activeGender === "live2d") {
-      return isLive2D;
-    }
-    if (activeGender === "all") return true;
-
-    // For female and male tabs, exclude Live2D characters
-    if (isLive2D) return false;
-
-    const male = isMale(a);
-    return activeGender === "male" ? male : !male;
-  });
+  const filteredPresets = useMemo(() => {
+    return allAvatars.filter((a) => {
+      const isLive2D = a.avatarStyle?.startsWith("live2d_");
+      if (activeGender === "live2d") return isLive2D;
+      if (activeGender === "all") return true;
+      if (isLive2D) return false;
+      const male = isMale(a);
+      return activeGender === "male" ? male : !male;
+    });
+  }, [allAvatars, activeGender]);
 
   return (
     <motion.div

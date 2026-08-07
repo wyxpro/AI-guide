@@ -45,6 +45,14 @@ export function BottomTabBar() {
     { href: "/routes", label: "行程规划", icon: Navigation },
     { href: "/profile", label: "我的", icon: User },
   ];
+  const triggerHaptic = () => {
+    if (typeof window !== "undefined" && "vibrate" in navigator) {
+      try {
+        navigator.vibrate(12);
+      } catch {}
+    }
+  };
+
   return (
     <>
       <nav
@@ -92,8 +100,8 @@ export function BottomTabBar() {
               </div>
             );
             return tab.href
-              ? <Link key={tab.label} href={tab.href}>{el}</Link>
-              : <div key={tab.label}>{el}</div>;
+              ? <Link key={tab.label} href={tab.href} onClick={triggerHaptic}>{el}</Link>
+              : <div key={tab.label} onClick={triggerHaptic}>{el}</div>;
           })}
         </div>
       </nav>

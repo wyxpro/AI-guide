@@ -193,8 +193,21 @@ export function QAScreen() {
       .catch((e) => console.error("Failed to load avatars", e));
   };
 
+  const triggerHaptic = (ms = 10) => {
+    if (typeof window !== "undefined" && "vibrate" in navigator) {
+      try { navigator.vibrate(ms); } catch {}
+    }
+  };
+
   useEffect(() => {
     loadAvatars();
+    // Preload background images into browser memory for 0ms background switching
+    BG_PRESETS.forEach((bg) => {
+      if (bg.url) {
+        const img = new Image();
+        img.src = bg.url;
+      }
+    });
     try {
       const stored = localStorage.getItem("custom_avatars");
       if (stored) {
@@ -360,94 +373,83 @@ export function QAScreen() {
 
   const speak = async (text: string) => {
     if (!ttsEnabled) return;
-
     stopAudio();
 
+    const cleanedText = text.replace(/\[情感[:：][^\]]+\]/g, "").trim();
+    if (!cleanedText) return;
+
     setAvatarState("speaking");
-    try {
-      const payload = {
-        text: text.slice(0, 500),
-        voiceStyle: avatarConfig?.voiceStyle || "warm",
-        speechRate: avatarConfig?.speechRate || 100,
-        pitch: avatarConfig?.pitch || 100,
-        ttsConfig: avatarConfig?.settings?.tts,
-      };
 
-      const res = await request("/api/qa/tts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) throw new Error("TTS generation failed");
-
-      const isLive2D = avatarConfig?.avatarStyle?.startsWith("live2d_");
-      const blob = await res.blob();
-
-      if (isLive2D) {
-        const arrayBuffer = await blob.arrayBuffer();
-        const { Live2dManager } = require("@/lib/live2d/live2dManager");
-        Live2dManager.getInstance().onAudioStarted = () => setAvatarState("speaking");
-        Live2dManager.getInstance().onAudioEnded = () => setAvatarState("idle");
-        Live2dManager.getInstance().pushAudioQueue(arrayBuffer);
-      } else {
-        const url = URL.createObjectURL(blob);
-        const audio = new Audio(url);
-        audioRef.current = audio;
-        audio.onplay = () => setAvatarState("speaking");
-        audio.onended = () => {
-          setAvatarState("idle");
-          URL.revokeObjectURL(url);
-        };
-        audio.onerror = () => {
-          setAvatarState("idle");
-          URL.revokeObjectURL(url);
-        };
-        await audio.play();
-      }
-    } catch (err) {
-      console.error("TTS audio play error, falling back to Web Speech API with keepalive:", err);
-      if ("speechSynthesis" in window) {
+    // Ultra-low latency voice playback: Start Web Speech API immediately for zero-delay response (< 30ms)
+    let webSpeechActive = false;
+    if ("speechSynthesis" in window) {
+      try {
         window.speechSynthesis.cancel();
-        const cleanedText = text.replace(/\[情感[:：][^\]]+\]/g, "").trim();
         const sentences = cleanedText.match(/[^。！？!?；;]+[。！？!?；;]?/g) || [cleanedText];
-
         let idx = 0;
-        setAvatarState("speaking");
+        webSpeechActive = true;
 
-        const keepAliveTimer = setInterval(() => {
-          if (window.speechSynthesis.speaking) {
-            window.speechSynthesis.pause();
-            window.speechSynthesis.resume();
-          }
-        }, 4500);
-
-        const speakNextSentence = () => {
+        const speakSentence = () => {
           if (idx >= sentences.length) {
-            clearInterval(keepAliveTimer);
             setAvatarState("idle");
             return;
           }
           const utter = new SpeechSynthesisUtterance(sentences[idx]);
           utter.lang = "zh-CN";
-          utter.rate = (avatarConfig?.speechRate || 100) / 110;
+          utter.rate = (avatarConfig?.speechRate || 100) / 100;
           utter.pitch = (avatarConfig?.pitch || 100) / 100;
 
-          utter.onend = () => {
-            idx++;
-            speakNextSentence();
-          };
-
-          utter.onerror = () => {
-            idx++;
-            speakNextSentence();
-          };
+          utter.onend = () => { idx++; speakSentence(); };
+          utter.onerror = () => { idx++; speakSentence(); };
 
           window.speechSynthesis.speak(utter);
         };
 
-        speakNextSentence();
-      } else {
+        speakSentence();
+      } catch (err) {
+        webSpeechActive = false;
+      }
+    }
+
+    // Secondary / High-fidelity Server Audio prefetch
+    if (!webSpeechActive) {
+      try {
+        const payload = {
+          text: cleanedText.slice(0, 400),
+          voiceStyle: avatarConfig?.voiceStyle || "warm",
+          speechRate: avatarConfig?.speechRate || 100,
+          pitch: avatarConfig?.pitch || 100,
+          ttsConfig: avatarConfig?.settings?.tts,
+        };
+
+        const res = await request("/api/qa/tts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) throw new Error("TTS generation failed");
+
+        const isLive2D = avatarConfig?.avatarStyle?.startsWith("live2d_");
+        const blob = await res.blob();
+
+        if (isLive2D) {
+          const arrayBuffer = await blob.arrayBuffer();
+          const { Live2dManager } = require("@/lib/live2d/live2dManager");
+          Live2dManager.getInstance().onAudioStarted = () => setAvatarState("speaking");
+          Live2dManager.getInstance().onAudioEnded = () => setAvatarState("idle");
+          Live2dManager.getInstance().pushAudioQueue(arrayBuffer);
+        } else {
+          const url = URL.createObjectURL(blob);
+          const audio = new Audio(url);
+          audioRef.current = audio;
+          audio.onplay = () => setAvatarState("speaking");
+          audio.onended = () => { setAvatarState("idle"); URL.revokeObjectURL(url); };
+          audio.onerror = () => { setAvatarState("idle"); URL.revokeObjectURL(url); };
+          await audio.play();
+        }
+      } catch (err) {
+        console.error("Server TTS playback error:", err);
         setAvatarState("idle");
       }
     }
@@ -863,26 +865,26 @@ export function QAScreen() {
           </div>
           <div className="flex flex-col items-end gap-2.5 relative z-30">
             <div className="flex gap-2 relative z-30">
-            <motion.button whileTap={{ scale: 0.85 }} onClick={(e) => { e.stopPropagation(); setShowBgMenu(!showBgMenu); setShowPersonaMenu(false); }}
+            <motion.button whileTap={{ scale: 0.85 }} onClick={(e) => { e.stopPropagation(); triggerHaptic(); setShowBgMenu(!showBgMenu); setShowPersonaMenu(false); }}
               title="切换背景"
               className="w-8 h-8 rounded-full flex items-center justify-center animate-fade-in cursor-pointer pointer-events-auto"
               style={{ background: "rgba(255,255,255,0.08)", color: showBgMenu ? "#D2A053" : "rgba(255,255,255,0.6)" }}>
               <ImageIcon className="w-3.5 h-3.5" />
             </motion.button>
-            <motion.button whileTap={{ scale: 0.85 }} onClick={(e) => { e.stopPropagation(); setShowPersonaMenu(true); setShowBgMenu(false); }}
+            <motion.button whileTap={{ scale: 0.85 }} onClick={(e) => { e.stopPropagation(); triggerHaptic(); setShowPersonaMenu(true); setShowBgMenu(false); }}
               title="切换分身形象"
               className="w-8 h-8 rounded-full flex items-center justify-center animate-fade-in cursor-pointer pointer-events-auto"
               style={{ background: "rgba(255,255,255,0.08)", color: showPersonaMenu ? "#D2A053" : "rgba(255,255,255,0.6)" }}>
               <User className="w-3.5 h-3.5" />
             </motion.button>
             <motion.button whileTap={{ scale: 0.85 }}
-              onClick={(e) => { e.stopPropagation(); setTtsEnabled(!ttsEnabled); if (ttsEnabled) window.speechSynthesis?.cancel(); }}
+              onClick={(e) => { e.stopPropagation(); triggerHaptic(); setTtsEnabled(!ttsEnabled); if (ttsEnabled) window.speechSynthesis?.cancel(); }}
               title="语音功能开关"
               className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer pointer-events-auto"
               style={{ background: "rgba(255,255,255,0.08)", color: ttsEnabled ? "#D2A053" : "rgba(255,255,255,0.3)" }}>
               {ttsEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
             </motion.button>
-            <motion.button whileTap={{ scale: 0.85 }} onClick={(e) => { e.stopPropagation(); setShowHistory(true); }}
+            <motion.button whileTap={{ scale: 0.85 }} onClick={(e) => { e.stopPropagation(); triggerHaptic(); setShowHistory(true); }}
               title="历史对话"
               className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer pointer-events-auto"
               style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.4)" }}>
@@ -892,7 +894,7 @@ export function QAScreen() {
 
           <motion.button
             whileTap={{ scale: 0.92 }}
-            onClick={(e) => { e.stopPropagation(); handleNewChat(); }}
+            onClick={(e) => { e.stopPropagation(); triggerHaptic(); handleNewChat(); }}
             className="px-4 py-2 rounded-full flex items-center gap-1.5 shadow-lg border border-white/20 select-none animate-fade-in cursor-pointer pointer-events-auto"
             style={{
               background: "linear-gradient(135deg, #D2A053 0%, #B8843A 100%)",
