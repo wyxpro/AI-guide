@@ -20,30 +20,21 @@ const PRESETS = [
   },
   {
     id: 2,
-    name: "唐代彩绘陶侍女俑",
-    type: "盛唐彩塑精粹",
-    img: "https://images.unsplash.com/photo-1628157582853-a796fa650a6a?w=800&q=80",
-    subject: "大唐彩绘陶侍女俑",
-    story: "陶俑面庞饱满红润，发髻高耸，身着红绿相间的宽袖长裙，体态丰腴自然。其神态安详而自信，衣纹褶皱自然流畅，完美再现了盛唐时期“大唐气象”的包容性与自信丰神，体现了当时手工业雕塑艺术的极高水平，将历史的温度刻画进泥土之中。",
-    tip: "适合近距离对焦拍摄面部细节与衣服残存的彩绘色彩，拍照时尽量让镜头贴近玻璃以避开反光。"
-  },
-  {
-    id: 3,
-    name: "洪崖洞吊脚楼",
-    type: "巴渝民俗地标",
-    img: "https://images.unsplash.com/photo-1624953901718-e24ee7200b85?w=800&q=80",
-    subject: "洪崖洞民俗风貌区吊脚楼群",
-    story: "洪崖洞以巴渝传统建筑“吊脚楼”风貌为主体，依山就势，沿江而建。层层叠叠的木质吊脚楼在现代摩天大楼的映衬下显得格外独特，展示了山城重庆“依山筑屋、临江托阁”的魔幻地貌与巴渝先民的建筑智慧，变陡峭悬崖为生活长卷。",
-    tip: "推荐在傍晚18:30点灯时分，从侧下方的千厮门大桥引桥上远眺拍摄全景，或者在崖底街道仰拍，最具有魔幻山城的视觉冲击力。"
-  },
-  {
-    id: 4,
     name: "武侯祠红墙竹影",
     type: "三国蜀汉遗迹",
     img: "https://images.unsplash.com/photo-1599661046289-e31897846e41?w=800&q=80",
     subject: "武侯祠红墙夹道与惠陵",
     story: "这道夹在汉昭烈庙与惠陵之间的粉红墙通道，红色的粉墙与挺拔的翠竹交相辉映，竹影随风斑驳。厚重温润的历史朱红墙面与翠竹的清幽静谧完美融合，形成了武侯祠最具代表性的“红墙夹道”景观，诉说着三国蜀汉文化的深邃底蕴与君臣合祀的千古佳话。",
     tip: "利用透视原理站在夹道中央，等待阳光穿过竹叶在红墙上留下斑驳光影时按下快门，静谧的古风意境绝佳。"
+  },
+  {
+    id: 3,
+    name: "越王勾践青铜剑",
+    type: "春秋国宝重器",
+    img: "https://images.unsplash.com/photo-1547981609-4b6bfe67ca0b?w=800&q=80",
+    subject: "越王勾践自作用剑",
+    story: "此剑全长55.6厘米，剑身满饰黑色菱形暗格纹，剑格正面镶有蓝色琉璃，背面镶有绿松石。出土时千年不锈，锋利无比。剑身刻有“越王勾践 自作用剑”鸟篆铭文，展现了春秋战国时期极高的铸剑科技与冷兵器艺术巅峰。",
+    tip: "拍摄时建议对焦于剑身上的黑色菱形暗纹与鸟篆铭文，利用展示柜顶部射光突出青铜金属冷冽的质感与暗纹流光。"
   }
 ];
 
@@ -303,7 +294,7 @@ export default function VRRecognizePage() {
   }, [audioInstance]);
 
   return (
-    <div className="min-h-screen bg-[#070908] text-[#E6EADF] flex flex-col font-sans select-none overflow-x-hidden p-4 md:p-8 justify-center items-center relative"
+    <div className="min-h-screen bg-[#070908] text-[#E6EADF] flex flex-col font-sans select-none overflow-y-auto p-3 sm:p-6 lg:p-8 justify-center items-center relative"
       style={{ background: "radial-gradient(circle at center, #1b2520 0%, #0d1210 100%)" }}>
       
       {/* Dynamic Ambient Background Blur */}
@@ -313,7 +304,7 @@ export default function VRRecognizePage() {
       <motion.div 
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-6xl bg-[#121815]/90 backdrop-blur-xl rounded-[32px] border border-white/10 flex flex-col overflow-hidden shadow-[0_30px_70px_rgba(0,0,0,0.8)] relative z-10"
+        className="w-full max-w-6xl bg-[#121815]/90 backdrop-blur-xl rounded-[32px] border border-white/10 flex flex-col overflow-hidden shadow-[0_30px_70px_rgba(0,0,0,0.8)] relative z-10 my-auto"
       >
         {/* ── Top Header ── */}
         <header className="sticky top-0 z-30 bg-[#121815]/80 backdrop-blur-md border-b border-white/5 px-6 py-4 flex items-center justify-between">
@@ -344,7 +335,7 @@ export default function VRRecognizePage() {
         </header>
 
         {/* ── Main Layout (Two-Column Split Grid) ── */}
-        <main className="flex-1 w-full p-5 lg:p-7 grid grid-cols-1 lg:grid-cols-12 gap-7 items-start overflow-y-auto max-h-[calc(100vh-140px)]">
+        <main className="flex-1 w-full p-5 lg:p-7 grid grid-cols-1 lg:grid-cols-12 gap-7 items-stretch overflow-y-auto">
           
           {/* Left Column - Image Viewport & Controls (7 Cols) */}
           <section className="lg:col-span-7 flex flex-col gap-5 w-full min-w-0">
@@ -561,7 +552,7 @@ export default function VRRecognizePage() {
                 <Eye className="w-3.5 h-3.5" />
                 <span>珍玩预设快捷体验 (点击查看)</span>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              <div className="grid grid-cols-3 gap-2.5">
                 {PRESETS.map((p) => {
                   const active = selectedPreset?.id === p.id;
                   return (

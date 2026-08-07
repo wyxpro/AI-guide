@@ -17,9 +17,8 @@ const SPRING = { type: "spring" as const, stiffness: 280, damping: 35 };
 interface Message { role: "user" | "assistant"; content: string; timestamp: string }
 
 const QUICK_PROMPTS = [
-  "揽月亭历史故事", "景区门票价格", "适合老人路线",
-  "翠玉湖怎么走", "亲子游推荐", "景区开放时间",
-  "有哪些特色小吃", "最美拍照地点",
+  "历史典故", "门票价格", "游览路线",
+  "避堵推荐", "特色小吃", "拍照打卡",
 ];
 
 const BG_PRESETS = [
@@ -968,7 +967,7 @@ export function QAScreen() {
         <div className="flex-shrink-0 px-3 pb-8 pt-2 relative z-40">
           {/* Quick prompts */}
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-none mb-2.5 px-1">
-            {["揽月亭历史故事", "景区门票价格", "适合老人路线", "翠玉湖怎么走"].map((p) => (
+            {["历史典故", "门票价格", "游览路线", "避堵推荐", "特色小吃", "拍照打卡"].map((p) => (
               <motion.button
                 key={p}
                 whileTap={{ scale: 0.94 }}
@@ -1222,7 +1221,7 @@ export function QAScreen() {
           <div className="px-6 py-4 flex-shrink-0"
             style={{ borderTop: "1px solid #E6E2D8", background: "rgba(250,248,245,0.98)" }}>
             <div className="flex items-center gap-2 overflow-x-auto scrollbar-none mb-3 px-1 py-0.5">
-              {["揽月亭历史故事", "景区门票价格", "适合老人路线", "翠玉湖怎么走"].map((p) => (
+              {["历史典故", "门票价格", "游览路线", "避堵推荐", "特色小吃", "拍照打卡"].map((p) => (
                 <motion.button
                   key={p}
                   whileTap={{ scale: 0.94 }}

@@ -120,18 +120,18 @@ export function SpotsScreen() {
       <div className="px-4 pt-2 pb-1.5 bg-white flex-shrink-0 border-b border-[#EEF2F0]">
         <div className="flex gap-2.5 overflow-x-auto scrollbar-none pb-0.5">
           {[
-            { city: "重庆", tab: "chongqing", title: "洪崖洞夜色", img: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?auto=format&fit=crop&w=300&q=90" },
-            { city: "北京", tab: "beijing", title: "故宫红墙", img: "https://images.unsplash.com/photo-1547981609-4b6bfe67ca0b?auto=format&fit=crop&w=300&q=90" },
-            { city: "杭州", tab: "hangzhou", title: "西湖烟柳", img: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=300&q=90" },
-            { city: "西安", tab: "xian", title: "古城晨光", img: "https://images.unsplash.com/photo-1528360983277-13d401cdc186?auto=format&fit=crop&w=300&q=90" },
+            { city: "重庆", tab: "chongqing", title: "洪崖洞夜色", img: "https://images.unsplash.com/photo-1542359649-31e03cd4d909?auto=format&fit=crop&w=300&q=90" },
+            { city: "北京", tab: "beijing", title: "故宫红墙", img: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?auto=format&fit=crop&w=300&q=90" },
+            { city: "杭州", tab: "hangzhou", title: "西湖烟柳", img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=300&q=90" },
+            { city: "西安", tab: "xian", title: "古城晨光", img: "https://images.unsplash.com/photo-1545569341-9eb8b30979d9?auto=format&fit=crop&w=300&q=90" },
             { city: "上海", tab: "shanghai", title: "外滩天际", img: "https://images.unsplash.com/photo-1538428494232-9c0d8a3ab403?auto=format&fit=crop&w=300&q=90" },
-            { city: "成都", tab: "chengdu", title: "大熊猫基地", img: "https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=300&q=90" },
-            { city: "南京", tab: "nanjing", title: "金陵夜色", img: "https://images.unsplash.com/photo-1542359649-31e03cd4d909?auto=format&fit=crop&w=300&q=90" },
-            { city: "武汉", tab: "wuhan", title: "江城樱花", img: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?auto=format&fit=crop&w=300&q=90" },
-            { city: "苏州", tab: "suzhou", title: "江南园林", img: "https://images.unsplash.com/photo-1547981609-4b6bfe67ca0b?auto=format&fit=crop&w=300&q=90" },
-            { city: "广州", tab: "guangzhou", title: "珠江夜韵", img: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=300&q=90" },
-            { city: "青岛", tab: "qingdao", title: "红瓦绿树", img: "https://images.unsplash.com/photo-1528360983277-13d401cdc186?auto=format&fit=crop&w=300&q=90" },
-            { city: "厦门", tab: "xiamen", title: "鹭岛海风", img: "https://images.unsplash.com/photo-1538428494232-9c0d8a3ab403?auto=format&fit=crop&w=300&q=90" },
+            { city: "成都", tab: "chengdu", title: "大熊猫基地", img: "https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?auto=format&fit=crop&w=300&q=90" },
+            { city: "南京", tab: "nanjing", title: "中山陵绿林", img: "https://images.unsplash.com/photo-1520116468816-95b69f847357?auto=format&fit=crop&w=300&q=90" },
+            { city: "武汉", tab: "wuhan", title: "黄鹤楼古韵", img: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=300&q=90" },
+            { city: "苏州", tab: "suzhou", title: "拙政园林", img: "https://images.unsplash.com/photo-1599599810769-bcde5a160d32?auto=format&fit=crop&w=300&q=90" },
+            { city: "广州", tab: "guangzhou", title: "广州塔夜景", img: "https://images.unsplash.com/photo-1589308078059-be1415eab4c3?auto=format&fit=crop&w=300&q=90" },
+            { city: "青岛", tab: "qingdao", title: "栈桥碧海", img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=300&q=90" },
+            { city: "厦门", tab: "xiamen", title: "鼓浪屿风情", img: "https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?auto=format&fit=crop&w=300&q=90" },
           ].map((banner) => {
             const isActive = activeTab === banner.tab;
             return (

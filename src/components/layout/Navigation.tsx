@@ -48,7 +48,7 @@ export function BottomTabBar() {
   const triggerHaptic = () => {
     if (typeof window !== "undefined" && "vibrate" in navigator) {
       try {
-        navigator.vibrate(12);
+        navigator.vibrate([35, 30, 35]);
       } catch {}
     }
   };

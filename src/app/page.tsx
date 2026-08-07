@@ -16,64 +16,72 @@ const SPRING = { type: "spring" as const, stiffness: 100, damping: 20 };
 // 1. User Personas Data
 const PERSONAS = [
   {
-    title: "特种兵极致打卡",
-    role: "独立青年探索者",
-    icon: "⚡",
-    desc: "高效出片首选。算法定制“用时最少、打卡点最全、拍照光线最佳”的极致路线，实时应对拥堵动态规划。",
-    sliders: [
-      { name: "时间紧凑度", value: 98 },
-      { name: "出片出圈率", value: 90 },
-      { name: "线路自主性", value: 85 },
-      { name: "缓步休憩度", value: 10 },
-    ],
-    bg: "rgba(240, 249, 255, 0.95)",
-    border: "border-blue-200",
-    themeColor: "#3B82F6",
-  },
-  {
+    id: "elder",
     title: "银发暖心旅伴",
-    role: "中老年游客 (60岁+)",
+    role: "60岁+ 银发长者",
     icon: "🌸",
-    desc: "注重适老化无障碍设计。支持超大字体显示、舒缓的语音语速以及无陡坡、有座椅的舒适路线推荐。",
-    sliders: [
-      { name: "字体大小偏好", value: 95 },
-      { name: "语音缓和度", value: 90 },
-      { name: "舒适度优先", value: 85 },
-      { name: "探险刺激度", value: 15 },
-    ],
-    bg: "rgba(255, 240, 245, 0.95)",
-    border: "border-pink-200",
+    tag: "适老关物 · 大字缓速",
+    desc: "针对中老年游客的无障碍设计，提供大字号播报、舒缓语音与平坦休憩路线。",
     themeColor: "#EC4899",
+    bgGradient: "from-pink-500/10 via-rose-500/5 to-transparent",
+    borderColor: "border-pink-200 hover:border-pink-400",
+    badgeBg: "bg-pink-50 text-pink-600 border-pink-200",
+    features: ["超大字号清晰读", "舒缓温和语速", "无陡坡平坦路线"],
+    sliders: [
+      { name: "字体大小关怀", value: 95 },
+      { name: "防摔舒适指数", value: 90 },
+    ],
   },
   {
-    title: "童趣家庭包",
+    id: "child",
+    title: "童趣家庭伴游",
     role: "亲子家庭与儿童",
     icon: "🍬",
-    desc: "趣味化语音讲解，卡通数字人伴游。自动串联洗手间、餐饮及儿童游乐场所，边游览边做科普趣味问答。",
+    tag: "卡通拟音 · 趣味问答",
+    desc: "卡通数字人化身探险队长，将历史知识转化为童话故事与趣味闯关问答。",
+    themeColor: "#F59E0B",
+    bgGradient: "from-amber-500/10 via-yellow-500/5 to-transparent",
+    borderColor: "border-amber-200 hover:border-amber-400",
+    badgeBg: "bg-amber-50 text-amber-600 border-amber-200",
+    features: ["卡通数字人音色", "启发式科普问答", "洗手间游乐点串联"],
     sliders: [
-      { name: "趣味故事化", value: 90 },
+      { name: "故事化趣味度", value: 92 },
       { name: "服务点密集度", value: 95 },
-      { name: "科普启发性", value: 85 },
-      { name: "纯学术研究", value: 10 },
     ],
-    bg: "rgba(254, 249, 195, 0.95)",
-    border: "border-yellow-200",
-    themeColor: "#EAB308",
   },
   {
+    id: "scholar",
     title: "深度文史行者",
-    role: "文史爱好者",
+    role: "文史古建爱好者",
     icon: "📜",
-    desc: "深度挖掘景区历史古迹的前世今生。提供学术级考证、历代文献引用、深度建筑艺术美学剖析与考证路线。",
+    tag: "考证典故 · 学术解说",
+    desc: "深度挖掘历史古迹的前世今生，提供学术级考证、文献引用与建筑美学剖析。",
+    themeColor: "#10B981",
+    bgGradient: "from-emerald-500/10 via-teal-500/5 to-transparent",
+    borderColor: "border-emerald-200 hover:border-emerald-400",
+    badgeBg: "bg-emerald-50 text-emerald-600 border-emerald-200",
+    features: ["历代典故学术考证", "古建筑结构拆解", "深度人文探寻路线"],
     sliders: [
-      { name: "历史考证深度", value: 95 },
-      { name: "路线学术性", value: 90 },
-      { name: "多媒体趣味", value: 30 },
-      { name: "观光打卡度", value: 20 },
+      { name: "历史考证深度", value: 96 },
+      { name: "学术严谨指数", value: 92 },
     ],
-    bg: "rgba(240, 253, 244, 0.95)",
-    border: "border-green-200",
-    themeColor: "#22C55E",
+  },
+  {
+    id: "speed",
+    title: "特种兵极致打卡",
+    role: "独立青年与摄友",
+    icon: "⚡",
+    tag: "用时最少 · 极致出片",
+    desc: "算法定制“用时最少、打卡最全、光线最佳”路线，动态避堵高频精讲。",
+    themeColor: "#3B82F6",
+    bgGradient: "from-blue-500/10 via-indigo-500/5 to-transparent",
+    borderColor: "border-blue-200 hover:border-blue-400",
+    badgeBg: "bg-blue-50 text-blue-600 border-blue-200",
+    features: ["出片最佳光线机位", "即时避堵路线重构", "3分钟要点精炼"],
+    sliders: [
+      { name: "时间紧凑指数", value: 98 },
+      { name: "出片胜率预测", value: 94 },
+    ],
   },
 ];
 
@@ -762,89 +770,90 @@ export default function WelcomePage() {
       </section>
 
       {/* User Personas (用户画像) */}
-      <section id="persona" className="py-20">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center space-y-3 mb-16">
-            <span className="text-xs font-bold tracking-widest text-[#D2A053] uppercase">Target Personas</span>
-            <h3 className="text-3xl md:text-4xl font-black" style={{ fontFamily: "var(--font-noto-serif)" }}>定制化解说，听你想听的声音</h3>
-            <div className="w-12 h-1 rounded bg-[#D2A053] mx-auto mt-2" />
-            <p className="text-sm text-[#8F9F8F] max-w-xl mx-auto">大字、童趣、学术、极速——鼠标悬停切换，抢先预览不同人群画像的参数定制。</p>
+      <section id="persona" className="py-20 bg-[#FAF8F5]/60 border-t border-[#E6E2D8] relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
+          <div className="text-center space-y-3 mb-14">
+            <span className="text-xs font-black tracking-[0.2em] text-[#4F6F52] uppercase block">
+              Profiles & Accessibility
+            </span>
+            <h3 className="text-3xl md:text-4xl font-black text-[#1E2522]" style={{ fontFamily: "var(--font-noto-serif)" }}>
+              千人千面 · 适老化与全人群智能感知
+            </h3>
+            <div className="w-12 h-1 rounded-full bg-[#4F6F52] mx-auto mt-2" />
+            <p className="text-sm text-[#8F9F8F] max-w-2xl mx-auto leading-relaxed">
+              针对银发长者、亲子家庭、文史学者与极致打卡客群，AI 智能感知识别，自动重构语音语速、界面字号与文化解说深度。
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-            {/* Left selector */}
-            <div className="lg:col-span-5 space-y-3">
-              {PERSONAS.map((p, i) => (
-                <button
-                  key={i}
-                  onMouseEnter={() => setActivePersona(i)}
-                  onClick={() => setActivePersona(i)}
-                  className={`w-full p-5 rounded-2xl text-left border transition-all flex items-center gap-4 ${activePersona === i
-                    ? "border-l-4 bg-white shadow-md"
-                    : "border-[#E6E2D8] bg-[#FAF8F5] opacity-75 hover:opacity-100"
-                    }`}
-                  style={{ borderLeftColor: activePersona === i ? p.themeColor : undefined }}
-                >
-                  <span className="text-3xl">{p.icon}</span>
-                  <div>
-                    <h4 className="font-bold text-sm text-[#1E2522]">{p.title}</h4>
-                    <p className="text-xs text-[#8F9F8F] mt-0.5">{p.role}</p>
-                  </div>
-                  <ChevronRight className="w-4 h-4 ml-auto opacity-50" />
-                </button>
-              ))}
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
+            {PERSONAS.map((p) => (
+              <motion.div
+                key={p.id}
+                whileHover={{ y: -6 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                className={`p-6 rounded-3xl bg-white border ${p.borderColor} shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between relative overflow-hidden group`}
+              >
+                {/* Subtle light accent background gradient */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${p.bgGradient} opacity-60 pointer-events-none`} />
 
-            {/* Right details */}
-            <div className="lg:col-span-7 flex">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activePersona}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={SPRING}
-                  className={`w-full p-8 rounded-3xl border flex flex-col justify-between ${PERSONAS[activePersona].border}`}
-                  style={{ background: PERSONAS[activePersona].bg }}
-                >
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-2xl font-bold" style={{ color: PERSONAS[activePersona].themeColor }}>
-                        {PERSONAS[activePersona].title}
-                      </span>
-                      <span className="text-xs font-semibold px-3 py-1 rounded-full bg-white border border-[#E6E2D8]" style={{ color: "#3A4D39" }}>
-                        {PERSONAS[activePersona].role}
-                      </span>
-                    </div>
-                    <p className="text-sm leading-relaxed text-[#1E2522]">
-                      {PERSONAS[activePersona].desc}
+                <div className="space-y-4 relative z-10">
+                  {/* Card Top Header */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-3xl p-2 rounded-2xl bg-[#FAF8F5] border border-[#E6E2D8]/50 shadow-inner">
+                      {p.icon}
+                    </span>
+                    <span className={`text-[11px] font-extrabold px-3 py-1 rounded-full border ${p.badgeBg}`}>
+                      {p.role}
+                    </span>
+                  </div>
+
+                  <div>
+                    <h4 className="text-lg font-black text-[#1E2522] group-hover:text-[#4F6F52] transition-colors">
+                      {p.title}
+                    </h4>
+                    <p className="text-xs text-[#8F9F8F] font-semibold mt-1">
+                      {p.tag}
                     </p>
                   </div>
 
-                  {/* Preference sliders */}
-                  <div className="space-y-4 pt-6 border-t border-[#E6E2D8]/50">
-                    <p className="text-xs font-bold uppercase tracking-wider text-[#8F9F8F]">AI系统适配参数</p>
-                    {PERSONAS[activePersona].sliders.map((s, idx) => (
-                      <div key={idx} className="space-y-1.5">
-                        <div className="flex justify-between text-xs font-medium">
-                          <span>{s.name}</span>
-                          <span style={{ color: PERSONAS[activePersona].themeColor }}>{s.value}%</span>
-                        </div>
-                        <div className="w-full h-2.5 rounded-full bg-[#FAF8F5] border border-[#E6E2D8]/30 overflow-hidden">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${s.value}%` }}
-                            transition={{ duration: 0.8, delay: idx * 0.1 }}
-                            className="h-full rounded-full"
-                            style={{ backgroundColor: PERSONAS[activePersona].themeColor }}
-                          />
-                        </div>
-                      </div>
+                  <p className="text-xs leading-relaxed text-[#556358] min-h-[40px]">
+                    {p.desc}
+                  </p>
+
+                  {/* Bullet features */}
+                  <ul className="space-y-1.5 pt-2 border-t border-[#EEF2F0]">
+                    {p.features.map((feat, fIdx) => (
+                      <li key={fIdx} className="flex items-center gap-1.5 text-[11px] text-[#374151] font-medium">
+                        <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: p.themeColor }} />
+                        <span>{feat}</span>
+                      </li>
                     ))}
-                  </div>
-                </motion.div>
-              </AnimatePresence>
-            </div>
+                  </ul>
+                </div>
+
+                {/* Bottom preference sliders */}
+                <div className="pt-4 mt-5 border-t border-[#EEF2F0] space-y-2.5 relative z-10">
+                  {p.sliders.map((s, sIdx) => (
+                    <div key={sIdx} className="space-y-1">
+                      <div className="flex justify-between text-[11px] font-bold text-[#4B5563]">
+                        <span>{s.name}</span>
+                        <span style={{ color: p.themeColor }}>{s.value}%</span>
+                      </div>
+                      <div className="w-full h-2 rounded-full bg-[#FAF8F5] border border-[#E6E2D8]/40 overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          whileInView={{ width: `${s.value}%` }}
+                          viewport={{ once: true }}
+                          transition={{ duration: 1.0, delay: sIdx * 0.15 }}
+                          className="h-full rounded-full"
+                          style={{ backgroundColor: p.themeColor }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
