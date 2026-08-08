@@ -32,6 +32,14 @@ export class Live2dManager {
       }
     }
 
+    public setSpeaking(speaking: boolean): void {
+      this._isSpeaking = speaking;
+    }
+
+    public isSpeaking(): boolean {
+      return this._isSpeaking;
+    }
+
     public changeCharacter(character: ResourceModel | null) {
       // _subdelegates中只有一个画布, 所以设置第一个即可
       this._ready = false;

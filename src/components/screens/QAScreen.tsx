@@ -480,6 +480,34 @@ export function QAScreen() {
 
   const handleNewChat = async () => {
     stopAudio();
+
+    // Save current conversation to history if user has messages
+    if (messages.length > 1) {
+      try {
+        const userMsg = messages.find((m) => m.role === "user")?.content || "导览问答";
+        const title = spotName ? `[${spotName}] ${userMsg.slice(0, 18)}` : userMsg.slice(0, 22);
+        const newRecord = {
+          id: Date.now(),
+          title,
+          updatedAt: new Date().toISOString(),
+          messages: [...messages],
+        };
+
+        const existingStr = localStorage.getItem("guide_chat_history_sessions");
+        const existingArr = existingStr ? JSON.parse(existingStr) : [];
+        const updated = [newRecord, ...existingArr.filter((s: any) => s.title !== title)];
+        localStorage.setItem("guide_chat_history_sessions", JSON.stringify(updated.slice(0, 30)));
+
+        request("/api/qa/sessions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title }),
+        }).catch(() => {});
+      } catch (e) {
+        console.error("Failed to save chat session to history", e);
+      }
+    }
+
     try {
       await request("/api/qa/chat", { method: "DELETE" });
     } catch (e) {
@@ -488,7 +516,7 @@ export function QAScreen() {
     setMessages([initMsg(spotName)]);
     setSubtitle(initMsg(spotName).content);
     setChatExpanded(true);
-    toast.success("已开启新对话");
+    toast.success("已开启新对话，旧对话已归档存至历史记录");
   };
 
   useEffect(() => {
@@ -1471,8 +1499,94 @@ export function QAScreen() {
       {/* ── Modals ── */}
       <input type="file" ref={fileInputRef} onChange={handleBgUpload} accept="image/*" className="hidden" />
       <input type="file" ref={avatarUploadRef} onChange={handleCustomAvatarUpload} accept="image/*,video/*" className="hidden" />
+      {/* ── Modals ── */}
+      <input type="file" ref={fileInputRef} onChange={handleBgUpload} accept="image/*" className="hidden" />
+      <input type="file" ref={avatarUploadRef} onChange={handleCustomAvatarUpload} accept="image/*,video/*" className="hidden" />
+
+      {/* Voice Selection Dropdown Menu - Global Positioned for Desktop & Mobile */}
       <AnimatePresence>
-        {showHistory && <HistorySheet onClose={() => setShowHistory(false)} onResume={(q) => { setShowHistory(false); sendMessage(q); }} />}
+        {showVoiceMenu && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: -8 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -8 }}
+            className="fixed top-16 right-4 md:right-24 z-[100] w-72 rounded-2xl p-4 border border-white/20 backdrop-blur-2xl bg-black/90 shadow-2xl space-y-3.5 pointer-events-auto text-white"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center pb-2.5 border-b border-white/10">
+              <div className="flex items-center gap-2">
+                <Volume2 className="w-4.5 h-4.5 text-[#D2A053]" />
+                <span className="text-sm font-bold tracking-wide">导游声音选择</span>
+              </div>
+              <button
+                onClick={() => setShowVoiceMenu(false)}
+                className="w-6 h-6 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 text-white/60 hover:text-white cursor-pointer transition-colors"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            {/* Voice On/Off Toggle Bar */}
+            <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-white/5 border border-white/10">
+              <span className="text-xs text-white/80 font-medium">语音播报功能</span>
+              <button
+                onClick={() => {
+                  setTtsEnabled(!ttsEnabled);
+                  if (ttsEnabled) window.speechSynthesis?.cancel();
+                }}
+                className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  ttsEnabled ? "bg-[#D2A053] text-black shadow-sm" : "bg-white/10 text-white/40"
+                }`}
+              >
+                {ttsEnabled ? "已开启语音" : "已静音"}
+              </button>
+            </div>
+
+            {/* Voice Options List */}
+            <div className="space-y-2 max-h-64 overflow-y-auto pr-0.5 scrollbar-none">
+              {VOICE_OPTIONS.map((opt) => {
+                const isSelected = selectedVoiceId === opt.id;
+                return (
+                  <button
+                    key={opt.id}
+                    onClick={() => selectVoice(opt)}
+                    className={`w-full p-2.5 rounded-xl text-left transition-all border flex items-center justify-between cursor-pointer ${
+                      isSelected
+                        ? "border-[#D2A053] bg-[#D2A053]/25 text-white shadow-md"
+                        : "border-white/5 bg-white/5 text-white/80 hover:bg-white/10"
+                    }`}
+                  >
+                    <div className="flex flex-col gap-0.5">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-bold">{opt.name}</span>
+                        <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${
+                          opt.gender === "female" ? "bg-pink-500/20 text-pink-300 border border-pink-500/30" : "bg-blue-500/20 text-blue-300 border border-blue-500/30"
+                        }`}>
+                          {opt.tag}
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-white/50">{opt.desc}</span>
+                    </div>
+                    {isSelected && <Check className="w-4 h-4 text-[#D2A053] flex-shrink-0" />}
+                  </button>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showHistory && (
+          <HistorySheet
+            onClose={() => setShowHistory(false)}
+            onResume={(msgs) => {
+              setShowHistory(false);
+              setMessages(msgs);
+              setChatExpanded(true);
+            }}
+          />
+        )}
       </AnimatePresence>
       <AnimatePresence>
         {showSatisfaction && (
@@ -1492,8 +1606,6 @@ export function QAScreen() {
         )}
       </AnimatePresence>
       <AnimatePresence>
-      </AnimatePresence>
-      <AnimatePresence>
         {showPersonaMenu && (
           <AvatarSelectorModal
             onClose={() => setShowPersonaMenu(false)}
@@ -1509,43 +1621,143 @@ export function QAScreen() {
   );
 }
 
-function HistorySheet({ onClose, onResume }: { onClose: () => void; onResume: (q: string) => void }) {
-  const [sessions, setSessions] = useState<Array<{ id: number; title: string; updatedAt: string; messages: Array<{ role: string; content: string }> }>>([]);
+function HistorySheet({
+  onClose,
+  onResume,
+}: {
+  onClose: () => void;
+  onResume: (msgs: Array<{ role: "user" | "assistant"; content: string; timestamp: string }>) => void;
+}) {
+  const [sessions, setSessions] = useState<
+    Array<{ id: number; title: string; updatedAt: string; messages: Array<{ role: "user" | "assistant"; content: string; timestamp: string }> }>
+  >([]);
   const [ld, setLd] = useState(true);
+
+  const loadHistory = async () => {
+    setLd(true);
+    let localItems: any[] = [];
+    try {
+      const stored = localStorage.getItem("guide_chat_history_sessions");
+      if (stored) localItems = JSON.parse(stored);
+    } catch (e) {}
+
+    try {
+      const r = await request("/api/qa/sessions");
+      const remoteData = await r.json();
+      if (Array.isArray(remoteData) && remoteData.length > 0) {
+        const mergedMap = new Map();
+        [...localItems, ...remoteData].forEach((item) => {
+          if (item && (item.id || item.title)) {
+            mergedMap.set(item.id || item.title, item);
+          }
+        });
+        setSessions(Array.from(mergedMap.values()));
+      } else {
+        setSessions(localItems);
+      }
+    } catch {
+      setSessions(localItems);
+    } finally {
+      setLd(false);
+    }
+  };
+
   useEffect(() => {
-    request("/api/qa/sessions").then((r) => r.json()).then((d) => { setSessions(Array.isArray(d) ? d : []); setLd(false); }).catch(() => setLd(false));
+    loadHistory();
   }, []);
+
+  const clearHistory = () => {
+    try {
+      localStorage.removeItem("guide_chat_history_sessions");
+    } catch {}
+    setSessions([]);
+    toast.success("历史记录已清空");
+  };
+
   const lastMsg = (msgs: Array<{ role: string; content: string }>) =>
-    msgs.filter((m) => m.role === "user").slice(-1)[0]?.content || "（空对话）";
+    msgs.filter((m) => m.role === "user").slice(-1)[0]?.content || "（包含问答解说）";
+
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-40 flex flex-col justify-end"
-      style={{ background: "rgba(0,0,0,0.55)" }}
-      onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[110] flex flex-col justify-end pointer-events-auto"
+      style={{ background: "rgba(0,0,0,0.65)" }}
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <motion.div
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        exit={{ y: "100%" }}
         transition={{ type: "spring" as const, stiffness: 300, damping: 35 }}
-        className="rounded-t-2xl p-5 space-y-3 overflow-y-auto"
-        style={{ background: "#1A2520", maxHeight: "65vh" }}>
-        <div className="flex items-center justify-between mb-1">
-          <h3 className="font-semibold text-white" style={{ fontFamily: "var(--font-noto-serif)" }}>历史对话</h3>
-          <motion.button whileTap={{ scale: 0.88 }} onClick={onClose}>
-            <X className="w-5 h-5" style={{ color: "rgba(255,255,255,0.45)" }} />
-          </motion.button>
+        className="rounded-t-3xl p-6 space-y-4 overflow-y-auto border-t border-white/10"
+        style={{ background: "#16201B", maxHeight: "75vh" }}
+      >
+        <div className="flex items-center justify-between border-b border-white/10 pb-3">
+          <div className="flex items-center gap-2">
+            <History className="w-5 h-5 text-[#D2A053]" />
+            <h3 className="font-bold text-base text-white" style={{ fontFamily: "var(--font-noto-serif)" }}>
+              历史对话记录
+            </h3>
+          </div>
+          <div className="flex items-center gap-3">
+            {sessions.length > 0 && (
+              <button
+                onClick={clearHistory}
+                className="text-xs text-red-400 hover:text-red-300 transition-colors cursor-pointer"
+              >
+                清空历史
+              </button>
+            )}
+            <motion.button whileTap={{ scale: 0.88 }} onClick={onClose} className="text-white/50 hover:text-white cursor-pointer">
+              <X className="w-5 h-5" />
+            </motion.button>
+          </div>
         </div>
-        {ld ? <div className="skeleton h-16 rounded-xl" /> :
-          sessions.length === 0 ? (
-            <div className="text-center py-8"><p className="text-2xl mb-2">💬</p><p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>暂无历史对话</p></div>
-          ) : sessions.map((s) => (
-            <motion.div key={s.id} whileTap={{ scale: 0.98 }} onClick={() => onResume(lastMsg(s.messages ?? []))}
-              className="p-3 rounded-xl cursor-pointer"
-              style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)" }}>
-              <p className="text-[13px] font-medium truncate text-white">{s.title}</p>
-              <p className="text-[11px] mt-0.5 truncate" style={{ color: "rgba(255,255,255,0.4)" }}>{lastMsg(s.messages ?? [])}</p>
-              <p className="text-[9px] mt-1 font-mono" style={{ color: "rgba(255,255,255,0.25)" }}>
-                {new Date(s.updatedAt).toLocaleDateString("zh-CN")} · {(s.messages ?? []).length} 条
-              </p>
-            </motion.div>
-          ))}
+
+        {ld ? (
+          <div className="space-y-3 py-4">
+            <div className="h-16 rounded-xl bg-white/5 animate-pulse" />
+            <div className="h-16 rounded-xl bg-white/5 animate-pulse" />
+          </div>
+        ) : sessions.length === 0 ? (
+          <div className="text-center py-10">
+            <p className="text-3xl mb-2">💬</p>
+            <p className="text-sm text-white/50">暂无历史对话记录</p>
+            <p className="text-xs text-white/30 mt-1">点击「新建聊天」时会自动归档上一次对话</p>
+          </div>
+        ) : (
+          <div className="space-y-2.5 max-h-[55vh] overflow-y-auto pr-0.5">
+            {sessions.map((s) => (
+              <motion.div
+                key={s.id}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => {
+                  if (s.messages && s.messages.length > 0) {
+                    onResume(s.messages as any);
+                    toast.success(`已载入历史对话：「${s.title}」`);
+                  } else {
+                    toast.info("该会话为空");
+                  }
+                }}
+                className="p-3.5 rounded-2xl cursor-pointer transition-all border border-white/10 bg-white/5 hover:bg-white/10 hover:border-[#D2A053]/40"
+              >
+                <div className="flex justify-between items-start gap-2">
+                  <p className="text-sm font-bold truncate text-white">{s.title}</p>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#D2A053]/20 text-[#D2A053] font-mono flex-shrink-0">
+                    {(s.messages ?? []).length} 条消息
+                  </span>
+                </div>
+                <p className="text-xs mt-1.5 truncate text-white/60">{lastMsg(s.messages ?? [])}</p>
+                <div className="flex justify-between items-center mt-2 pt-1.5 border-t border-white/5 text-[10px] text-white/35 font-mono">
+                  <span>{new Date(s.updatedAt || Date.now()).toLocaleString("zh-CN")}</span>
+                  <span className="text-[#D2A053]">点击载入对话 ➔</span>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </motion.div>
     </motion.div>
   );

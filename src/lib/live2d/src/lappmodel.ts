@@ -595,6 +595,12 @@ export class LAppModel extends CubismUserModel {
         // 乘以 4.0 放大系数使说话口型更为生动明显，上限限制为 1.0
         value = Live2dManager.getInstance().getRms() * Live2dManager.getInstance().getLipFactor() * 4.0;
         if (value > 1.0) value = 1.0;
+      } else if (Live2dManager.getInstance().isSpeaking()) {
+        // 语音播放状态口型合成振幅（保证 Web Speech API 朗读时电脑端口型同步开合）
+        const now = Date.now() / 140;
+        value = (Math.sin(now) * 0.4 + Math.sin(now * 2.4) * 0.3 + 0.45) * Live2dManager.getInstance().getLipFactor();
+        if (value > 1.0) value = 1.0;
+        if (value < 0.0) value = 0.0;
       }
 
       for (let i = 0; i < this._lipSyncIds.getSize(); ++i) {
