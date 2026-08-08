@@ -50,6 +50,7 @@ export function WeChatVoiceCallModal({
   
   const recognitionRef = useRef<any>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Synchronized refs to avoid stale closures in Web Speech API event callbacks
   const isOpenRef = useRef(isOpen);
@@ -73,10 +74,12 @@ export function WeChatVoiceCallModal({
       }, 1000);
     } else {
       if (timerRef.current) clearInterval(timerRef.current);
+      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
       stopRecognition();
     }
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
+      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
       stopRecognition();
     };
   }, [isOpen]);
@@ -118,6 +121,12 @@ export function WeChatVoiceCallModal({
         if (trimmed) {
           setLiveTranscript(trimmed);
           setUserTranscript(trimmed);
+
+          // Auto-send silence timer: if user stops speaking for 1.8 seconds, automatically send question
+          if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+          silenceTimerRef.current = setTimeout(() => {
+            handleSendCurrentSpeech();
+          }, 1800);
         }
       };
 
@@ -126,7 +135,6 @@ export function WeChatVoiceCallModal({
       };
 
       rec.onend = () => {
-        setIsListening(false);
         // Auto restart speech recognition if call is active and not speaking/thinking/muted
         if (
           isOpenRef.current &&
@@ -136,8 +144,10 @@ export function WeChatVoiceCallModal({
         ) {
           try {
             rec.start();
+            return; // Maintain isListening state true during seamless restart
           } catch {}
         }
+        setIsListening(false);
       };
 
       rec.start();
@@ -147,6 +157,7 @@ export function WeChatVoiceCallModal({
   };
 
   const stopRecognition = () => {
+    if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
     if (recognitionRef.current) {
       try {
         recognitionRef.current.stop();
@@ -167,6 +178,7 @@ export function WeChatVoiceCallModal({
 
   // Handle Send User Speech
   const handleSendCurrentSpeech = async () => {
+    if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
     const textToSend = userTranscript.trim() || liveTranscript.trim();
     if (!textToSend) return;
     
@@ -305,29 +317,29 @@ export function WeChatVoiceCallModal({
 
           {/* Live Call Transcript / Status Box */}
           <div className="w-full max-w-md bg-white/5 border border-white/10 backdrop-blur-2xl rounded-2xl p-4 min-h-[96px] flex flex-col justify-center items-center shadow-2xl relative z-20">
-            {aiStreamingContent ? (
-              <div className="space-y-1 text-left w-full">
-                <span className="text-[10px] font-bold text-[#D2A053] tracking-widest uppercase block flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-[#D2A053] animate-ping" />
-                  🗣️ AI导游 实时回答中
-                </span>
-                <p className="text-sm font-semibold text-white leading-relaxed line-clamp-3">
-                  {aiStreamingContent}
-                </p>
-              </div>
-            ) : isAiThinking ? (
-              <div className="flex items-center gap-2 text-xs text-[#D2A053] font-bold animate-pulse">
-                <Radio className="w-4 h-4 animate-spin" />
-                <span>导览官正在智能思考并检索中...</span>
-              </div>
-            ) : liveTranscript ? (
-              <div className="space-y-1 text-left w-full">
+            {liveTranscript ? (
+              <div className="space-y-1 text-left w-full animate-fade-in">
                 <span className="text-[10px] font-bold text-[#10B981] tracking-widest uppercase block flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-ping" />
                   实时识别您的语音
                 </span>
                 <p className="text-sm font-semibold text-white leading-relaxed">
                   “{liveTranscript}”
+                </p>
+              </div>
+            ) : (isAiThinking && !aiStreamingContent) ? (
+              <div className="flex items-center gap-2 text-xs text-[#D2A053] font-bold animate-pulse">
+                <Radio className="w-4 h-4 animate-spin" />
+                <span>导览官正在智能思考并检索中...</span>
+              </div>
+            ) : aiStreamingContent ? (
+              <div className="space-y-1 text-left w-full animate-fade-in">
+                <span className="text-[10px] font-bold text-[#D2A053] tracking-widest uppercase block flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-[#D2A053] animate-ping" />
+                  🗣️ AI导游 实时回答中
+                </span>
+                <p className="text-sm font-semibold text-white leading-relaxed line-clamp-3">
+                  {aiStreamingContent}
                 </p>
               </div>
             ) : (

@@ -21,6 +21,8 @@ export let s_instance: LAppDelegate = null;
  * Cubism SDKの管理を行う。
  */
 export class LAppDelegate {
+  private _isLooping: boolean = false;
+
   /**
    * クラスのインスタンス（シングルトン）を返す。
    * インスタンスが生成されていない場合は内部でインスタンスを生成する。
@@ -59,10 +61,14 @@ export class LAppDelegate {
    * 実行処理。
    */
   public run(): void {
+    if (this._isLooping) return;
+    this._isLooping = true;
+
     // メインループ
     const loop = (): void => {
       // インスタンスの有無の確認
-      if (s_instance == null) {
+      if (s_instance == null || !this._isLooping) {
+        this._isLooping = false;
         return;
       }
 
@@ -70,6 +76,7 @@ export class LAppDelegate {
       LAppPal.updateTime();
       
       if (!this._subdelegates) {
+        this._isLooping = false;
         return;
       }
 
@@ -87,7 +94,9 @@ export class LAppDelegate {
    * 解放する。
    */
   private release(): void {
+    this._isLooping = false;
     this.releaseEventListener();
+    this.releaseSubdelegates();
     this.releaseSubdelegates();
 
     // Cubism SDKの解放
