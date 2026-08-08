@@ -370,6 +370,36 @@ export function QAScreen() {
     return () => clearTimeout(t);
   }, [loading, messages]);
 
+  const getFemaleVoice = () => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return null;
+    const voices = window.speechSynthesis.getVoices();
+    if (!voices || voices.length === 0) return null;
+    return (
+      voices.find((v) => {
+        const name = v.name.toLowerCase();
+        const lang = v.lang.toLowerCase();
+        const isZh = lang.includes("zh") || lang.includes("cn");
+        return (
+          isZh &&
+          (name.includes("xiaoxiao") ||
+            name.includes("xiaoyi") ||
+            name.includes("huihui") ||
+            name.includes("xiaoxuan") ||
+            name.includes("yaoyao") ||
+            name.includes("ting-ting") ||
+            name.includes("mei-jia") ||
+            name.includes("sin-ji") ||
+            name.includes("female") ||
+            name.includes("女") ||
+            name.includes("google") ||
+            (name.includes("microsoft") && !name.includes("kangkang") && !name.includes("yunxi")))
+        );
+      }) ||
+      voices.find((v) => v.lang.toLowerCase().includes("zh") || v.lang.toLowerCase().includes("cn")) ||
+      null
+    );
+  };
+
   const speak = async (text: string) => {
     if (!ttsEnabled) return;
     stopAudio();
@@ -379,7 +409,13 @@ export function QAScreen() {
 
     setAvatarState("speaking");
 
-    // Ultra-low latency voice playback: Start Web Speech API immediately for zero-delay response (< 30ms)
+    // Trigger Live2D gesture motion for explanation
+    try {
+      const { Live2dManager } = require("@/lib/live2d/live2dManager");
+      Live2dManager.getInstance().triggerSpeakMotion();
+    } catch (e) {}
+
+    // Ultra-low latency voice playback: Start Web Speech API immediately with sweet female voice
     let webSpeechActive = false;
     if ("speechSynthesis" in window) {
       try {
@@ -395,11 +431,26 @@ export function QAScreen() {
           }
           const utter = new SpeechSynthesisUtterance(sentences[idx]);
           utter.lang = "zh-CN";
-          utter.rate = (avatarConfig?.speechRate || 100) / 100;
-          utter.pitch = (avatarConfig?.pitch || 100) / 100;
 
-          utter.onend = () => { idx++; speakSentence(); };
-          utter.onerror = () => { idx++; speakSentence(); };
+          const femaleVoice = getFemaleVoice();
+          if (femaleVoice) {
+            utter.voice = femaleVoice;
+          }
+
+          utter.rate = (avatarConfig?.speechRate || 98) / 100;
+          utter.pitch = 1.15; // Pleasant, warm female voice pitch
+
+          utter.onstart = () => {
+            setAvatarState("speaking");
+          };
+          utter.onend = () => {
+            idx++;
+            speakSentence();
+          };
+          utter.onerror = () => {
+            idx++;
+            speakSentence();
+          };
 
           window.speechSynthesis.speak(utter);
         };

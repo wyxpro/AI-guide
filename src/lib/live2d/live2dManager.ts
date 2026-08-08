@@ -20,6 +20,18 @@ export class Live2dManager {
       return this._ready;
     }
 
+    public triggerSpeakMotion(): void {
+      try {
+        const manager = LAppDelegate.getInstance().getLive2DManager();
+        if (manager && manager._models && manager._models.at(0)) {
+          const model = manager._models.at(0);
+          model.startRandomMotion("Tap", 2);
+        }
+      } catch (e) {
+        console.warn("Trigger speak motion failed:", e);
+      }
+    }
+
     public changeCharacter(character: ResourceModel | null) {
       // _subdelegates中只有一个画布, 所以设置第一个即可
       this._ready = false;

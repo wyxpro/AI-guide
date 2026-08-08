@@ -203,6 +203,27 @@ function AvatarSVG({ state, mouthOpen, mouthPathOverride, avatarStyle, idSuffix 
       <path d="M 42 86 Q 50 97 58 86" fill="none" stroke="rgba(210,160,83,0.65)" strokeWidth="1.4" />
       <circle cx="50" cy="92" r="2.2" fill="rgba(210,160,83,0.75)" />
 
+      {/* Hand Gesture for Speaking (Explanation Motion) */}
+      {state === "speaking" && (
+        <motion.g
+          initial={{ opacity: 0, y: 5 }}
+          animate={{ opacity: 1, y: [0, -3, 0], rotate: [-2, 4, -2] }}
+          transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
+          style={{ transformOrigin: "68px 92px" }}
+        >
+          {/* Raised Arm & Sleeve */}
+          <path d="M 68 92 Q 76 86 82 78 Q 78 74 72 82 Z" fill={`url(#${gradientId})`} />
+          {/* Hand palm */}
+          <ellipse cx="83" cy="76" rx="4" ry="4.5" fill={`url(#${skinGradientId})`} />
+          {/* Fingers in gentle explaining gesture */}
+          <path d="M 82 72 Q 86 68 87 72" fill="none" stroke={p.shadow} strokeWidth="1.2" strokeLinecap="round" />
+          <path d="M 84 74 Q 89 71 89 75" fill="none" stroke={p.shadow} strokeWidth="1.2" strokeLinecap="round" />
+          <path d="M 85 76 Q 89 75 88 78" fill="none" stroke={p.shadow} strokeWidth="1.2" strokeLinecap="round" />
+          {/* Guide Badge / Sparkle on Hand */}
+          <circle cx="83" cy="76" r="1.5" fill="#FFD700" />
+        </motion.g>
+      )}
+
       {/* Neck */}
       <rect x="44" y="79" width="12" height="11" rx="5" fill={`url(#${skinGradientId})`} />
 
