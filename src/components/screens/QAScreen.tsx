@@ -42,26 +42,26 @@ export interface VoiceOption {
 
 export const VOICE_OPTIONS: VoiceOption[] = [
   {
-    id: "female_xiaoxiao",
-    name: "清甜小玉 (专属女声)",
-    desc: "清甜甜美 · 自然灵动 · 导游首选",
-    gender: "female",
-    avatarName: "导游小玉",
-    tag: "推荐女声",
-    pitch: 1.15,
-    rate: 0.98,
-    keywords: ["xiaoxiao", "晓晓", "xiaoyi", "晓伊", "huihui", "慧慧", "ting-ting", "mei-jia", "female", "女", "google"]
-  },
-  {
     id: "female_xiaoyi",
     name: "知性翠竹 (温柔女声)",
     desc: "温婉优雅 · 吐字清晰 · 如沐春风",
     gender: "female",
     avatarName: "导游翠竹",
-    tag: "知性女声",
+    tag: "默认女声",
     pitch: 1.08,
     rate: 0.95,
-    keywords: ["xiaoyi", "晓伊", "xiaoxuan", "晓萱", "huihui", "慧慧", "female", "女"]
+    keywords: ["xiaoyi", "晓伊", "xiaoxuan", "晓萱", "huihui", "慧慧", "xiaoxiao", "晓晓", "ting-ting", "mei-jia", "female", "女"]
+  },
+  {
+    id: "female_xiaoxiao",
+    name: "清甜小玉 (专属女声)",
+    desc: "清甜甜美 · 自然灵动 · 导游首选",
+    gender: "female",
+    avatarName: "导游小玉",
+    tag: "清甜女声",
+    pitch: 1.15,
+    rate: 0.98,
+    keywords: ["xiaoxiao", "晓晓", "xiaoyi", "晓伊", "huihui", "慧慧", "ting-ting", "mei-jia", "female", "女", "google"]
   },
   {
     id: "female_yaoyao",
@@ -280,7 +280,7 @@ export function QAScreen() {
   const [showBgMenu, setShowBgMenu] = useState(false);
 
   // Voice selection state
-  const [selectedVoiceId, setSelectedVoiceId] = useState<string>("female_xiaoxiao");
+  const [selectedVoiceId, setSelectedVoiceId] = useState<string>("female_xiaoyi");
   const [showVoiceMenu, setShowVoiceMenu] = useState<boolean>(false);
 
   const selectVoice = (opt: VoiceOption) => {

@@ -438,8 +438,13 @@ function DigitalAvatarComponent({ state, size = "md", audioElement, avatarStyle 
     };
 
     const tick = () => {
-      if (!analyserRef.current) {
-        setMouthOpen(state === "speaking");
+      if (!analyserRef.current || analyserRef.current.context.state === "suspended") {
+        if (state === "speaking") {
+          const isSpeechOpen = Math.floor(Date.now() / 140) % 2 === 0;
+          setMouthOpen(isSpeechOpen);
+        } else {
+          setMouthOpen(false);
+        }
         animFrameRef.current = requestAnimationFrame(tick);
         return;
       }
@@ -451,7 +456,14 @@ function DigitalAvatarComponent({ state, size = "md", audioElement, avatarStyle 
       const avg = sum / bufLen;
       const normalized = Math.min(avg / 80, 1);
       setMouthAmplitude(normalized);
-      setMouthOpen(normalized > 0.08);
+      if (normalized > 0.05) {
+        setMouthOpen(true);
+      } else if (state === "speaking") {
+        const isSpeechOpen = Math.floor(Date.now() / 140) % 2 === 0;
+        setMouthOpen(isSpeechOpen);
+      } else {
+        setMouthOpen(false);
+      }
       animFrameRef.current = requestAnimationFrame(tick);
     };
 
@@ -470,7 +482,7 @@ function DigitalAvatarComponent({ state, size = "md", audioElement, avatarStyle 
       setMouthOpen(false);
       return;
     }
-    const id = setInterval(() => setMouthOpen((v) => !v), 155);
+    const id = setInterval(() => setMouthOpen((v) => !v), 140);
     return () => clearInterval(id);
   }, [state, audioElement]);
 
