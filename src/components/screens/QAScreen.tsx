@@ -558,9 +558,10 @@ export function QAScreen() {
 
     setAvatarState("speaking");
 
-    // Trigger Live2D gesture motion for explanation
+    // Trigger Live2D gesture motion and set speaking state for Live2D lip sync
     try {
       const { Live2dManager } = require("@/lib/live2d/live2dManager");
+      Live2dManager.getInstance().setSpeaking(true);
       Live2dManager.getInstance().triggerSpeakMotion();
     } catch (e) {}
 
@@ -578,6 +579,10 @@ export function QAScreen() {
         const speakSentence = () => {
           if (idx >= sentences.length) {
             setAvatarState("idle");
+            try {
+              const { Live2dManager } = require("@/lib/live2d/live2dManager");
+              Live2dManager.getInstance().setSpeaking(false);
+            } catch (e) {}
             return;
           }
           const utter = new SpeechSynthesisUtterance(sentences[idx]);
@@ -593,6 +598,10 @@ export function QAScreen() {
 
           utter.onstart = () => {
             setAvatarState("speaking");
+            try {
+              const { Live2dManager } = require("@/lib/live2d/live2dManager");
+              Live2dManager.getInstance().setSpeaking(true);
+            } catch (e) {}
           };
           utter.onend = () => {
             idx++;
@@ -637,21 +646,51 @@ export function QAScreen() {
         if (isLive2D) {
           const arrayBuffer = await blob.arrayBuffer();
           const { Live2dManager } = require("@/lib/live2d/live2dManager");
-          Live2dManager.getInstance().onAudioStarted = () => setAvatarState("speaking");
-          Live2dManager.getInstance().onAudioEnded = () => setAvatarState("idle");
+          Live2dManager.getInstance().onAudioStarted = () => {
+            setAvatarState("speaking");
+            Live2dManager.getInstance().setSpeaking(true);
+          };
+          Live2dManager.getInstance().onAudioEnded = () => {
+            setAvatarState("idle");
+            Live2dManager.getInstance().setSpeaking(false);
+          };
           Live2dManager.getInstance().pushAudioQueue(arrayBuffer);
         } else {
           const url = URL.createObjectURL(blob);
           const audio = new Audio(url);
           audioRef.current = audio;
-          audio.onplay = () => setAvatarState("speaking");
-          audio.onended = () => { setAvatarState("idle"); URL.revokeObjectURL(url); };
-          audio.onerror = () => { setAvatarState("idle"); URL.revokeObjectURL(url); };
+          audio.onplay = () => {
+            setAvatarState("speaking");
+            try {
+              const { Live2dManager } = require("@/lib/live2d/live2dManager");
+              Live2dManager.getInstance().setSpeaking(true);
+            } catch (e) {}
+          };
+          audio.onended = () => {
+            setAvatarState("idle");
+            try {
+              const { Live2dManager } = require("@/lib/live2d/live2dManager");
+              Live2dManager.getInstance().setSpeaking(false);
+            } catch (e) {}
+            URL.revokeObjectURL(url);
+          };
+          audio.onerror = () => {
+            setAvatarState("idle");
+            try {
+              const { Live2dManager } = require("@/lib/live2d/live2dManager");
+              Live2dManager.getInstance().setSpeaking(false);
+            } catch (e) {}
+            URL.revokeObjectURL(url);
+          };
           await audio.play();
         }
       } catch (err) {
         console.error("Server TTS playback error:", err);
         setAvatarState("idle");
+        try {
+          const { Live2dManager } = require("@/lib/live2d/live2dManager");
+          Live2dManager.getInstance().setSpeaking(false);
+        } catch (e) {}
       }
     }
   };
@@ -1499,79 +1538,100 @@ export function QAScreen() {
       {/* ── Modals ── */}
       <input type="file" ref={fileInputRef} onChange={handleBgUpload} accept="image/*" className="hidden" />
       <input type="file" ref={avatarUploadRef} onChange={handleCustomAvatarUpload} accept="image/*,video/*" className="hidden" />
-      {/* ── Modals ── */}
-      <input type="file" ref={fileInputRef} onChange={handleBgUpload} accept="image/*" className="hidden" />
-      <input type="file" ref={avatarUploadRef} onChange={handleCustomAvatarUpload} accept="image/*,video/*" className="hidden" />
 
-      {/* Voice Selection Dropdown Menu - Global Positioned for Desktop & Mobile */}
+      {/* Voice Selection Dropdown Menu - Centered Screen Modal */}
       <AnimatePresence>
         {showVoiceMenu && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: -8 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -8 }}
-            className="fixed top-16 right-4 md:right-24 z-[100] w-72 rounded-2xl p-4 border border-white/20 backdrop-blur-2xl bg-black/90 shadow-2xl space-y-3.5 pointer-events-auto text-white"
-            onClick={(e) => e.stopPropagation()}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[110] flex items-center justify-center p-4 pointer-events-auto"
+            style={{ background: "rgba(0,0,0,0.68)", backdropFilter: "blur(8px)" }}
+            onClick={() => setShowVoiceMenu(false)}
           >
-            <div className="flex justify-between items-center pb-2.5 border-b border-white/10">
-              <div className="flex items-center gap-2">
-                <Volume2 className="w-4.5 h-4.5 text-[#D2A053]" />
-                <span className="text-sm font-bold tracking-wide">导游声音选择</span>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 15 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              className="w-full max-w-md rounded-3xl p-6 border border-white/20 bg-[#16201B] shadow-2xl space-y-4 text-white pointer-events-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-center pb-3 border-b border-white/10">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-full bg-[#D2A053]/20 flex items-center justify-center border border-[#D2A053]/30">
+                    <Volume2 className="w-5 h-5 text-[#D2A053]" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold tracking-wide" style={{ fontFamily: "var(--font-noto-serif)" }}>
+                      导游声音选择与音色设置
+                    </h3>
+                    <p className="text-[11px] text-white/50">支持实时试听与声音音色自由切换</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowVoiceMenu(false)}
+                  className="w-8 h-8 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 text-white/60 hover:text-white cursor-pointer transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
-              <button
-                onClick={() => setShowVoiceMenu(false)}
-                className="w-6 h-6 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 text-white/60 hover:text-white cursor-pointer transition-colors"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            </div>
 
-            {/* Voice On/Off Toggle Bar */}
-            <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-white/5 border border-white/10">
-              <span className="text-xs text-white/80 font-medium">语音播报功能</span>
-              <button
-                onClick={() => {
-                  setTtsEnabled(!ttsEnabled);
-                  if (ttsEnabled) window.speechSynthesis?.cancel();
-                }}
-                className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                  ttsEnabled ? "bg-[#D2A053] text-black shadow-sm" : "bg-white/10 text-white/40"
-                }`}
-              >
-                {ttsEnabled ? "已开启语音" : "已静音"}
-              </button>
-            </div>
+              {/* Voice On/Off Toggle Bar */}
+              <div className="flex items-center justify-between px-4 py-3 rounded-2xl bg-white/5 border border-white/10">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-white/90">语音播报功能</span>
+                  <span className="text-[10px] text-white/40">关闭后仅显示文本不发声</span>
+                </div>
+                <button
+                  onClick={() => {
+                    setTtsEnabled(!ttsEnabled);
+                    if (ttsEnabled) window.speechSynthesis?.cancel();
+                  }}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                    ttsEnabled ? "bg-[#D2A053] text-black shadow-md" : "bg-white/10 text-white/40"
+                  }`}
+                >
+                  {ttsEnabled ? "已开启语音" : "已静音"}
+                </button>
+              </div>
 
-            {/* Voice Options List */}
-            <div className="space-y-2 max-h-64 overflow-y-auto pr-0.5 scrollbar-none">
-              {VOICE_OPTIONS.map((opt) => {
-                const isSelected = selectedVoiceId === opt.id;
-                return (
-                  <button
-                    key={opt.id}
-                    onClick={() => selectVoice(opt)}
-                    className={`w-full p-2.5 rounded-xl text-left transition-all border flex items-center justify-between cursor-pointer ${
-                      isSelected
-                        ? "border-[#D2A053] bg-[#D2A053]/25 text-white shadow-md"
-                        : "border-white/5 bg-white/5 text-white/80 hover:bg-white/10"
-                    }`}
-                  >
-                    <div className="flex flex-col gap-0.5">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-xs font-bold">{opt.name}</span>
-                        <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${
-                          opt.gender === "female" ? "bg-pink-500/20 text-pink-300 border border-pink-500/30" : "bg-blue-500/20 text-blue-300 border border-blue-500/30"
-                        }`}>
-                          {opt.tag}
-                        </span>
+              {/* Voice Options List */}
+              <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1 scrollbar-none">
+                {VOICE_OPTIONS.map((opt) => {
+                  const isSelected = selectedVoiceId === opt.id;
+                  return (
+                    <button
+                      key={opt.id}
+                      onClick={() => selectVoice(opt)}
+                      className={`w-full p-3.5 rounded-2xl text-left transition-all border flex items-center justify-between cursor-pointer ${
+                        isSelected
+                          ? "border-[#D2A053] bg-[#D2A053]/25 text-white shadow-lg ring-1 ring-[#D2A053]/50"
+                          : "border-white/10 bg-white/5 text-white/80 hover:bg-white/10 hover:border-white/20"
+                      }`}
+                    >
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-bold">{opt.name}</span>
+                          <span
+                            className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                              opt.gender === "female"
+                                ? "bg-pink-500/20 text-pink-300 border border-pink-500/30"
+                                : "bg-blue-500/20 text-blue-300 border border-blue-500/30"
+                            }`}
+                          >
+                            {opt.tag}
+                          </span>
+                        </div>
+                        <span className="text-xs text-white/50">{opt.desc}</span>
                       </div>
-                      <span className="text-[10px] text-white/50">{opt.desc}</span>
-                    </div>
-                    {isSelected && <Check className="w-4 h-4 text-[#D2A053] flex-shrink-0" />}
-                  </button>
-                );
-              })}
-            </div>
+                      {isSelected && <Check className="w-5 h-5 text-[#D2A053] flex-shrink-0" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

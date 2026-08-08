@@ -604,8 +604,13 @@ export class LAppModel extends CubismUserModel {
       }
 
       for (let i = 0; i < this._lipSyncIds.getSize(); ++i) {
-        this._model.addParameterValueById(this._lipSyncIds.at(i), value, 0.8);
+        this._model.setParameterValueById(this._lipSyncIds.at(i), value);
       }
+      try {
+        const idManager = CubismFramework.getIdManager();
+        this._model.setParameterValueById(idManager.getId("ParamMouthOpenY"), value);
+        this._model.setParameterValueById(idManager.getId("PARAM_MOUTH_OPEN_Y"), value);
+      } catch (e) {}
     }
 
     // ポーズの設定
