@@ -17,6 +17,8 @@ function Live2DViewer({ avatarStyle }: Live2DViewerProps) {
   useEffect(() => {
     // 1. Initialize LAppDelegate
     try {
+      // Release any previous singleton instance to ensure clean canvas binding on first click
+      LAppDelegate.releaseInstance();
       if (LAppDelegate.getInstance().initialize(canvasId) === false) {
         console.error("Failed to initialize LAppDelegate");
         return;

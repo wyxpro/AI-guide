@@ -51,6 +51,19 @@ export function WeChatVoiceCallModal({
   const recognitionRef = useRef<any>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Synchronized refs to avoid stale closures in Web Speech API event callbacks
+  const isOpenRef = useRef(isOpen);
+  const isMutedRef = useRef(isMuted);
+  const isAiSpeakingRef = useRef(isAiSpeaking);
+  const isAiThinkingRef = useRef(isAiThinking);
+
+  useEffect(() => {
+    isOpenRef.current = isOpen;
+    isMutedRef.current = isMuted;
+    isAiSpeakingRef.current = isAiSpeaking;
+    isAiThinkingRef.current = isAiThinking;
+  }, [isOpen, isMuted, isAiSpeaking, isAiThinking]);
+
   // Call duration counter
   useEffect(() => {
     if (isOpen) {
@@ -83,6 +96,9 @@ export function WeChatVoiceCallModal({
     }
 
     try {
+      if (recognitionRef.current) {
+        try { recognitionRef.current.stop(); } catch {}
+      }
       const rec = new SR();
       recognitionRef.current = rec;
       rec.lang = "zh-CN";
@@ -94,18 +110,15 @@ export function WeChatVoiceCallModal({
       };
 
       rec.onresult = (e: any) => {
-        let interim = "";
-        let finalStr = "";
-        for (let i = e.resultIndex; i < e.results.length; ++i) {
-          if (e.results[i].isFinal) {
-            finalStr += e.results[i][0].transcript;
-          } else {
-            interim += e.results[i][0].transcript;
-          }
+        let fullText = "";
+        for (let i = 0; i < e.results.length; ++i) {
+          fullText += e.results[i][0].transcript;
         }
-        const currentText = finalStr || interim;
-        setLiveTranscript(currentText);
-        setUserTranscript(currentText);
+        const trimmed = fullText.trim();
+        if (trimmed) {
+          setLiveTranscript(trimmed);
+          setUserTranscript(trimmed);
+        }
       };
 
       rec.onerror = (err: any) => {
@@ -114,6 +127,17 @@ export function WeChatVoiceCallModal({
 
       rec.onend = () => {
         setIsListening(false);
+        // Auto restart speech recognition if call is active and not speaking/thinking/muted
+        if (
+          isOpenRef.current &&
+          !isMutedRef.current &&
+          !isAiSpeakingRef.current &&
+          !isAiThinkingRef.current
+        ) {
+          try {
+            rec.start();
+          } catch {}
+        }
       };
 
       rec.start();
@@ -211,9 +235,9 @@ export function WeChatVoiceCallModal({
         <main className="relative z-10 flex-1 flex flex-col items-center justify-center text-center px-4 py-2 my-auto overflow-hidden">
           
           {/* Sized & Proportionate Live2D Model Stage */}
-          <div className="relative w-full max-w-sm h-[310px] sm:h-[340px] flex items-center justify-center my-auto pointer-events-none">
+          <div className="relative w-full max-w-sm h-[320px] sm:h-[360px] flex items-center justify-center my-auto pointer-events-none">
             
-            {/* Concentric Ambient Aura Effect behind Avatar (Slow 5s Breathing Aura) */}
+            {/* Concentric Ambient Aura Effect behind Avatar */}
             {(isListening || isAiSpeaking) && (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
                 <motion.div
@@ -232,7 +256,7 @@ export function WeChatVoiceCallModal({
             )}
 
             {/* Scaled Live2D Avatar Frame - Clean & Unclipped */}
-            <div className="scale-[0.72] sm:scale-[0.80] md:scale-[0.85] origin-center flex items-center justify-center">
+            <div className="scale-[0.78] sm:scale-[0.85] md:scale-[0.90] origin-center flex items-center justify-center">
               <DigitalAvatar
                 state={
                   isAiSpeaking
@@ -246,15 +270,6 @@ export function WeChatVoiceCallModal({
                 size="hero"
                 avatarStyle={avatarStyle || "live2d_Hiyori"}
               />
-            </div>
-          </div>
-
-          {/* Floating Avatar Name & Location Badge */}
-          <div className="mb-2.5 relative z-20 flex flex-col items-center gap-1">
-            <div className="bg-black/70 border border-[#10B981]/50 backdrop-blur-md px-4 py-1.5 rounded-full text-xs font-extrabold text-[#10B981] flex items-center gap-1.5 shadow-xl">
-              <Sparkles className="w-3.5 h-3.5 text-[#D2A053] animate-pulse" />
-              <span>{avatarName}</span>
-              <span className="text-[10px] font-normal text-zinc-400">· {spotName}AI导游</span>
             </div>
           </div>
 
@@ -289,20 +304,21 @@ export function WeChatVoiceCallModal({
           </div>
 
           {/* Live Call Transcript / Status Box */}
-          <div className="w-full max-w-md bg-white/5 border border-white/10 backdrop-blur-2xl rounded-2xl p-4 min-h-[92px] flex flex-col justify-center items-center shadow-2xl relative z-20">
-            {isAiThinking ? (
+          <div className="w-full max-w-md bg-white/5 border border-white/10 backdrop-blur-2xl rounded-2xl p-4 min-h-[96px] flex flex-col justify-center items-center shadow-2xl relative z-20">
+            {aiStreamingContent ? (
+              <div className="space-y-1 text-left w-full">
+                <span className="text-[10px] font-bold text-[#D2A053] tracking-widest uppercase block flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-[#D2A053] animate-ping" />
+                  🗣️ AI导游 实时回答中
+                </span>
+                <p className="text-sm font-semibold text-white leading-relaxed line-clamp-3">
+                  {aiStreamingContent}
+                </p>
+              </div>
+            ) : isAiThinking ? (
               <div className="flex items-center gap-2 text-xs text-[#D2A053] font-bold animate-pulse">
                 <Radio className="w-4 h-4 animate-spin" />
-                <span>Hiyori 正在智能思考并检索中...</span>
-              </div>
-            ) : isAiSpeaking ? (
-              <div className="space-y-1 text-left w-full">
-                <span className="text-[10px] font-bold text-[#D2A053] tracking-widest uppercase block">
-                  🗣️ Hiyori 正在语音讲解
-                </span>
-                <p className="text-xs leading-relaxed text-white font-medium line-clamp-2">
-                  {aiStreamingContent || "正在为您语音讲解中..."}
-                </p>
+                <span>导览官正在智能思考并检索中...</span>
               </div>
             ) : liveTranscript ? (
               <div className="space-y-1 text-left w-full">
