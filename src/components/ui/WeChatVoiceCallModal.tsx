@@ -184,7 +184,7 @@ export function WeChatVoiceCallModal({
           <div className="flex items-center gap-2.5 bg-white/5 border border-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full text-xs text-[#8F9F8F] shadow-md">
             <span className="w-2 h-2 rounded-full bg-[#10B981] animate-ping" />
             <span className="font-mono font-bold text-white">{formatTimer(callDuration)}</span>
-            <span className="text-[10px] text-emerald-400 font-mono">· HD语音通话</span>
+            <span className="text-[10px] text-emerald-400 font-mono">· StepAudio 2.5 Realtime</span>
           </div>
 
           <div className="flex items-center gap-2">
