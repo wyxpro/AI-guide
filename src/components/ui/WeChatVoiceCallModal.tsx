@@ -281,6 +281,8 @@ export function WeChatVoiceCallModal({
                 }
                 size="hero"
                 avatarStyle={avatarStyle || "live2d_Hiyori"}
+                hideWave={true}
+                hideLabel={true}
               />
             </div>
           </div>

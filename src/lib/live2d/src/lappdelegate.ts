@@ -97,7 +97,6 @@ export class LAppDelegate {
     this._isLooping = false;
     this.releaseEventListener();
     this.releaseSubdelegates();
-    this.releaseSubdelegates();
 
     // Cubism SDKの解放
     CubismFramework.dispose();
@@ -120,6 +119,8 @@ export class LAppDelegate {
    * Subdelegate を解放する
    */
   private releaseSubdelegates(): void {
+    if (!this._subdelegates) return;
+
     for (
       let ite = this._subdelegates.begin();
       ite.notEqual(this._subdelegates.end());

@@ -12,6 +12,8 @@ interface Props {
   size?: "sm" | "md" | "lg" | "hero" | "desktop-hero";
   audioElement?: HTMLAudioElement | null; // Pass TTS audio element for lip-sync
   avatarStyle?: string; // Links configured style
+  hideWave?: boolean; // Suppress embedded VoiceWave when container provides custom spectrum
+  hideLabel?: boolean; // Suppress STATE_LABEL when inside custom call container
 }
 
 const PALETTE: Record<AvatarState, {
@@ -373,7 +375,7 @@ const STATE_LABEL: Record<AvatarState, string> = {
   idle: "恭候中", thinking: "思考中", speaking: "讲解中", happy: "很高兴", concerned: "关切中",
 };
 
-function DigitalAvatarComponent({ state, size = "md", audioElement, avatarStyle }: Props) {
+function DigitalAvatarComponent({ state, size = "md", audioElement, avatarStyle, hideWave = false, hideLabel = false }: Props) {
   const px = SIZES_PX[size];
   const idSuffix = useId().replace(/:/g, "");
   const p = PALETTE[state];
@@ -507,15 +509,19 @@ function DigitalAvatarComponent({ state, size = "md", audioElement, avatarStyle 
           )}
         </motion.div>
         {/* Status label + wave */}
-        <div className="flex flex-col items-center gap-1 mt-2">
-          <motion.span key={state}
-            initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
-            className="text-[11px] font-medium tracking-wider"
-            style={{ color: "rgba(255,255,255,0.55)" }}>
-            {STATE_LABEL[state]}
-          </motion.span>
-          <VoiceWave active={state === "speaking"} />
-        </div>
+        {(!hideWave || !hideLabel) && (
+          <div className="flex flex-col items-center gap-1 mt-2">
+            {!hideLabel && (
+              <motion.span key={state}
+                initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
+                className="text-[11px] font-medium tracking-wider"
+                style={{ color: "rgba(255,255,255,0.55)" }}>
+                {STATE_LABEL[state]}
+              </motion.span>
+            )}
+            {!hideWave && <VoiceWave active={state === "speaking"} />}
+          </div>
+        )}
       </div>
     );
   }
