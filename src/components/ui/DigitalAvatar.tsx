@@ -12,8 +12,6 @@ interface Props {
   size?: "sm" | "md" | "lg" | "hero" | "desktop-hero";
   audioElement?: HTMLAudioElement | null; // Pass TTS audio element for lip-sync
   avatarStyle?: string; // Links configured style
-  hideWave?: boolean; // Suppress embedded VoiceWave when container provides custom spectrum
-  hideLabel?: boolean; // Suppress STATE_LABEL when inside custom call container
 }
 
 const PALETTE: Record<AvatarState, {
@@ -375,7 +373,7 @@ const STATE_LABEL: Record<AvatarState, string> = {
   idle: "恭候中", thinking: "思考中", speaking: "讲解中", happy: "很高兴", concerned: "关切中",
 };
 
-function DigitalAvatarComponent({ state, size = "md", audioElement, avatarStyle, hideWave = false, hideLabel = false }: Props) {
+function DigitalAvatarComponent({ state, size = "md", audioElement, avatarStyle }: Props) {
   const px = SIZES_PX[size];
   const idSuffix = useId().replace(/:/g, "");
   const p = PALETTE[state];
@@ -484,11 +482,11 @@ function DigitalAvatarComponent({ state, size = "md", audioElement, avatarStyle,
     return (
       <div className="relative flex flex-col items-center select-none">
         {/* Outer ambient glow */}
-        <motion.div className="absolute rounded-full pointer-events-none top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-          style={{ width: avatarWidth + 60, height: avatarHeight + 60,
+        <motion.div className="absolute rounded-full pointer-events-none"
+          style={{ width: avatarWidth + 60, height: avatarHeight + 60, top: -30, left: -30,
             background: `radial-gradient(ellipse at center, ${p.aura} 0%, transparent 68%)` }}
           animate={{ scale: [1, 1.1, 1], opacity: [0.65, 1, 0.65] }}
-          transition={{ duration: 5.2, repeat: Infinity, ease: "easeInOut" }} />
+          transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }} />
         {/* Avatar */}
         <motion.div style={{ width: avatarWidth, height: avatarHeight }}
           className="relative flex items-center justify-center overflow-hidden bg-transparent"
@@ -509,19 +507,15 @@ function DigitalAvatarComponent({ state, size = "md", audioElement, avatarStyle,
           )}
         </motion.div>
         {/* Status label + wave */}
-        {(!hideWave || !hideLabel) && (
-          <div className="flex flex-col items-center gap-1 mt-2">
-            {!hideLabel && (
-              <motion.span key={state}
-                initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
-                className="text-[11px] font-medium tracking-wider"
-                style={{ color: "rgba(255,255,255,0.55)" }}>
-                {STATE_LABEL[state]}
-              </motion.span>
-            )}
-            {!hideWave && <VoiceWave active={state === "speaking"} />}
-          </div>
-        )}
+        <div className="flex flex-col items-center gap-1 mt-2">
+          <motion.span key={state}
+            initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
+            className="text-[11px] font-medium tracking-wider"
+            style={{ color: "rgba(255,255,255,0.55)" }}>
+            {STATE_LABEL[state]}
+          </motion.span>
+          <VoiceWave active={state === "speaking"} />
+        </div>
       </div>
     );
   }

@@ -11,7 +11,6 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { SatisfactionModal } from "@/components/ui/SatisfactionModal";
 import { DigitalAvatar, type AvatarState } from "@/components/ui/DigitalAvatar";
 import { AvatarSelectorModal } from "@/components/ui/AvatarSelectorModal";
-import { WeChatVoiceCallModal } from "@/components/ui/WeChatVoiceCallModal";
 import { toast } from "sonner";
 
 const SPRING = { type: "spring" as const, stiffness: 280, damping: 35 };
@@ -157,7 +156,6 @@ export function QAScreen() {
   // Persona selection state
   const [selectedStyle, setSelectedStyle] = useState<string>("live2d_Hiyori");
   const [showPersonaMenu, setShowPersonaMenu] = useState(false);
-  const [showVoiceCallModal, setShowVoiceCallModal] = useState(false);
   const [allAvatars, setAllAvatars] = useState<any[]>([]);
   const [customAvatars, setCustomAvatars] = useState<any[]>([]);
 
@@ -780,7 +778,7 @@ export function QAScreen() {
       </motion.button>
 
       {/* Voice */}
-      <motion.button type="button" whileTap={{ scale: 0.84 }} onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowVoiceCallModal(true); }}
+      <motion.button type="button" whileTap={{ scale: 0.84 }} onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleRecording(); }}
         className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 relative shadow-md transition-all hover:brightness-105"
         style={{
           background: recording
@@ -1000,7 +998,7 @@ export function QAScreen() {
             </motion.button>
 
             {/* Voice button */}
-            <motion.button type="button" whileTap={{ scale: 0.88 }} onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowVoiceCallModal(true); }}
+            <motion.button type="button" whileTap={{ scale: 0.88 }} onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleRecording(); }}
               className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 relative shadow-lg transition-all hover:brightness-105"
               style={{
                 background: recording
@@ -1276,22 +1274,6 @@ export function QAScreen() {
           />
         )}
       </AnimatePresence>
-
-      {/* WeChat Style Real-Time Voice Call Modal */}
-      <WeChatVoiceCallModal
-        isOpen={showVoiceCallModal}
-        onClose={() => setShowVoiceCallModal(false)}
-        avatarName={avatarConfig?.name || "Hiyori (Live2D)"}
-        avatarStyle={avatarConfig?.avatarStyle || "live2d_Hiyori"}
-        avatarImage={avatarConfig?.imageUrl || "/sentio/characters/free/Hiyori/Hiyori.png"}
-        spotName={spotName || "景区"}
-        onSendMessage={async (text) => {
-          await sendMessage(text);
-        }}
-        aiStreamingContent={messages[messages.length - 1]?.role === "assistant" ? messages[messages.length - 1].content : ""}
-        isAiThinking={loading}
-        isAiSpeaking={avatarState === "speaking"}
-      />
     </>
   );
 }
