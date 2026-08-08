@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Mic, MicOff, Send, Volume2, VolumeX,
   History, X, ChevronUp, ChevronDown, Camera, Sparkles,
-  Image as ImageIcon, User, Plus
+  Image as ImageIcon, User, Plus, Check
 } from "lucide-react";
 import { request } from "@/lib/api/request";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -27,6 +27,132 @@ const BG_PRESETS = [
   { id: "pavilion", label: "山景", url: "https://images.unsplash.com/photo-1542224566-6e85f2e6772f?auto=format&fit=crop&w=800&q=80" },
   { id: "chongqing", label: "重庆", url: "/background/重庆.png" },
 ];
+
+export interface VoiceOption {
+  id: string;
+  name: string;
+  desc: string;
+  gender: "female" | "male";
+  avatarName: string;
+  tag: string;
+  pitch: number;
+  rate: number;
+  keywords: string[];
+}
+
+export const VOICE_OPTIONS: VoiceOption[] = [
+  {
+    id: "female_xiaoxiao",
+    name: "清甜小玉 (专属女声)",
+    desc: "清甜甜美 · 自然灵动 · 导游首选",
+    gender: "female",
+    avatarName: "导游小玉",
+    tag: "推荐女声",
+    pitch: 1.15,
+    rate: 0.98,
+    keywords: ["xiaoxiao", "晓晓", "xiaoyi", "晓伊", "huihui", "慧慧", "ting-ting", "mei-jia", "female", "女", "google"]
+  },
+  {
+    id: "female_xiaoyi",
+    name: "知性翠竹 (温柔女声)",
+    desc: "温婉优雅 · 吐字清晰 · 如沐春风",
+    gender: "female",
+    avatarName: "导游翠竹",
+    tag: "知性女声",
+    pitch: 1.08,
+    rate: 0.95,
+    keywords: ["xiaoyi", "晓伊", "xiaoxuan", "晓萱", "huihui", "慧慧", "female", "女"]
+  },
+  {
+    id: "female_yaoyao",
+    name: "亲切小萌 (活泼女声)",
+    desc: "朝气蓬勃 · 软萌亲切 · 活泼灵动",
+    gender: "female",
+    avatarName: "导游小萌",
+    tag: "活泼女声",
+    pitch: 1.25,
+    rate: 1.02,
+    keywords: ["yaoyao", "瑶瑶", "xiaoxiao", "晓晓", "female", "女"]
+  },
+  {
+    id: "male_yunxi",
+    name: "阳光子轩 (帅气男声)",
+    desc: "阳光温暖 · 磁性自然 · 充满活力",
+    gender: "male",
+    avatarName: "导游子轩",
+    tag: "帅气男声",
+    pitch: 0.96,
+    rate: 1.0,
+    keywords: ["yunxi", "云希", "yunjian", "云健", "kangkang", "康康", "male", "男"]
+  },
+  {
+    id: "male_yunjian",
+    name: "沉稳伟祺 (睿智男声)",
+    desc: "睿智沉稳 · 大气干练 · 专业严谨",
+    gender: "male",
+    avatarName: "导游伟祺",
+    tag: "沉稳男声",
+    pitch: 0.88,
+    rate: 0.94,
+    keywords: ["yunjian", "云健", "yunyang", "云扬", "male", "男"]
+  },
+  {
+    id: "male_zhemai",
+    name: "古风诗仙 (吟诵男声)",
+    desc: "古风古韵 · 满腹经纶 · 朗朗上口",
+    gender: "male",
+    avatarName: "诗仙李白",
+    tag: "古风男声",
+    pitch: 0.92,
+    rate: 0.92,
+    keywords: ["zhemai", "哲麦", "yunxi", "云希", "male", "男"]
+  }
+];
+
+function getVoiceForOption(opt: VoiceOption): SpeechSynthesisVoice | null {
+  if (typeof window === "undefined" || !("speechSynthesis" in window)) return null;
+  const voices = window.speechSynthesis.getVoices();
+  if (!voices || voices.length === 0) return null;
+
+  const isZh = (v: SpeechSynthesisVoice) => {
+    const l = v.lang.toLowerCase();
+    return l.includes("zh") || l.includes("cn");
+  };
+
+  const zhVoices = voices.filter(isZh);
+  if (zhVoices.length === 0) return voices[0] || null;
+
+  // 1. Keyword match
+  for (const kw of opt.keywords) {
+    const match = zhVoices.find((v) => v.name.toLowerCase().includes(kw.toLowerCase()));
+    if (match) return match;
+  }
+
+  // 2. Gender fallback
+  if (opt.gender === "female") {
+    const femaleFallback = zhVoices.find((v) => {
+      const n = v.name.toLowerCase();
+      return (
+        n.includes("xiaoxiao") || n.includes("xiaoyi") || n.includes("huihui") ||
+        n.includes("xiaoxuan") || n.includes("yaoyao") || n.includes("ting-ting") ||
+        n.includes("mei-jia") || n.includes("sin-ji") || n.includes("female") ||
+        n.includes("女") || n.includes("google") || (n.includes("microsoft") && !n.includes("kangkang"))
+      );
+    });
+    if (femaleFallback) return femaleFallback;
+  } else {
+    const maleFallback = zhVoices.find((v) => {
+      const n = v.name.toLowerCase();
+      return (
+        n.includes("yunxi") || n.includes("yunjian") || n.includes("yunyang") ||
+        n.includes("kangkang") || n.includes("male") || n.includes("男")
+      );
+    });
+    if (maleFallback) return maleFallback;
+  }
+
+  return zhVoices[0];
+}
 
 const PERSONAS_FEMALE = [
   { id: "female_hanfu", label: "汉服古风 · 小玉", desc: "典雅端庄，文旅专属" },
@@ -153,6 +279,21 @@ export function QAScreen() {
   const [bgImage, setBgImage] = useState<string>("/background/北京.png");
   const [showBgMenu, setShowBgMenu] = useState(false);
 
+  // Voice selection state
+  const [selectedVoiceId, setSelectedVoiceId] = useState<string>("female_xiaoxiao");
+  const [showVoiceMenu, setShowVoiceMenu] = useState<boolean>(false);
+
+  const selectVoice = (opt: VoiceOption) => {
+    setSelectedVoiceId(opt.id);
+    try {
+      localStorage.setItem("guide_selected_voice_id", opt.id);
+    } catch {}
+    setTtsEnabled(true);
+    setShowVoiceMenu(false);
+    toast.success(`已切换音色为「${opt.name}」`);
+    speak(`您好！我是${opt.avatarName}，很高兴为您服务！`);
+  };
+
   // Persona selection state
   const [selectedStyle, setSelectedStyle] = useState<string>("live2d_Hiyori");
   const [showPersonaMenu, setShowPersonaMenu] = useState(false);
@@ -200,6 +341,16 @@ export function QAScreen() {
 
   useEffect(() => {
     loadAvatars();
+    try {
+      const savedVoice = localStorage.getItem("guide_selected_voice_id");
+      if (savedVoice) setSelectedVoiceId(savedVoice);
+    } catch {}
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+      };
+    }
     // Preload background images into browser memory for 0ms background switching
     BG_PRESETS.forEach((bg) => {
       if (bg.url) {
@@ -370,36 +521,6 @@ export function QAScreen() {
     return () => clearTimeout(t);
   }, [loading, messages]);
 
-  const getFemaleVoice = () => {
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) return null;
-    const voices = window.speechSynthesis.getVoices();
-    if (!voices || voices.length === 0) return null;
-    return (
-      voices.find((v) => {
-        const name = v.name.toLowerCase();
-        const lang = v.lang.toLowerCase();
-        const isZh = lang.includes("zh") || lang.includes("cn");
-        return (
-          isZh &&
-          (name.includes("xiaoxiao") ||
-            name.includes("xiaoyi") ||
-            name.includes("huihui") ||
-            name.includes("xiaoxuan") ||
-            name.includes("yaoyao") ||
-            name.includes("ting-ting") ||
-            name.includes("mei-jia") ||
-            name.includes("sin-ji") ||
-            name.includes("female") ||
-            name.includes("女") ||
-            name.includes("google") ||
-            (name.includes("microsoft") && !name.includes("kangkang") && !name.includes("yunxi")))
-        );
-      }) ||
-      voices.find((v) => v.lang.toLowerCase().includes("zh") || v.lang.toLowerCase().includes("cn")) ||
-      null
-    );
-  };
-
   const speak = async (text: string) => {
     if (!ttsEnabled) return;
     stopAudio();
@@ -415,7 +536,9 @@ export function QAScreen() {
       Live2dManager.getInstance().triggerSpeakMotion();
     } catch (e) {}
 
-    // Ultra-low latency voice playback: Start Web Speech API immediately with sweet female voice
+    const currentOpt = VOICE_OPTIONS.find((v) => v.id === selectedVoiceId) || VOICE_OPTIONS[0];
+
+    // Ultra-low latency voice playback: Start Web Speech API immediately with matched voice option
     let webSpeechActive = false;
     if ("speechSynthesis" in window) {
       try {
@@ -432,13 +555,13 @@ export function QAScreen() {
           const utter = new SpeechSynthesisUtterance(sentences[idx]);
           utter.lang = "zh-CN";
 
-          const femaleVoice = getFemaleVoice();
-          if (femaleVoice) {
-            utter.voice = femaleVoice;
+          const voiceObj = getVoiceForOption(currentOpt);
+          if (voiceObj) {
+            utter.voice = voiceObj;
           }
 
-          utter.rate = (avatarConfig?.speechRate || 98) / 100;
-          utter.pitch = 1.15; // Pleasant, warm female voice pitch
+          utter.rate = (avatarConfig?.speechRate || Math.round(currentOpt.rate * 100)) / 100;
+          utter.pitch = currentOpt.pitch;
 
           utter.onstart = () => {
             setAvatarState("speaking");
@@ -461,12 +584,12 @@ export function QAScreen() {
       }
     }
 
-    // Secondary / High-fidelity Server Audio prefetch
+    // Secondary / High-fidelity Server Audio fallback
     if (!webSpeechActive) {
       try {
         const payload = {
           text: cleanedText.slice(0, 400),
-          voiceStyle: avatarConfig?.voiceStyle || "warm",
+          voiceStyle: currentOpt.gender === "female" ? "warm" : "professional",
           speechRate: avatarConfig?.speechRate || 100,
           pitch: avatarConfig?.pitch || 100,
           ttsConfig: avatarConfig?.settings?.tts,
@@ -928,10 +1051,10 @@ export function QAScreen() {
               <User className="w-3.5 h-3.5" />
             </motion.button>
             <motion.button whileTap={{ scale: 0.85 }}
-              onClick={(e) => { e.stopPropagation(); triggerHaptic(); setTtsEnabled(!ttsEnabled); if (ttsEnabled) window.speechSynthesis?.cancel(); }}
-              title="语音功能开关"
+              onClick={(e) => { e.stopPropagation(); triggerHaptic(); setShowVoiceMenu(!showVoiceMenu); setShowBgMenu(false); setShowPersonaMenu(false); }}
+              title="声音选择与音色切换"
               className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer pointer-events-auto"
-              style={{ background: "rgba(255,255,255,0.08)", color: ttsEnabled ? "#D2A053" : "rgba(255,255,255,0.3)" }}>
+              style={{ background: "rgba(255,255,255,0.08)", color: showVoiceMenu || ttsEnabled ? "#D2A053" : "rgba(255,255,255,0.3)" }}>
               {ttsEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
             </motion.button>
             <motion.button whileTap={{ scale: 0.85 }} onClick={(e) => { e.stopPropagation(); triggerHaptic(); setShowHistory(true); }}
@@ -941,6 +1064,63 @@ export function QAScreen() {
               <History className="w-3.5 h-3.5" />
             </motion.button>
           </div>
+
+          {/* Voice Dropdown Menu */}
+          {showVoiceMenu && (
+            <div className="absolute right-0 top-12 z-[80] w-64 rounded-2xl p-3.5 border border-white/15 backdrop-blur-2xl bg-black/90 shadow-2xl space-y-3 pointer-events-auto text-white">
+              <div className="flex justify-between items-center pb-2 border-b border-white/10">
+                <div className="flex items-center gap-1.5">
+                  <Volume2 className="w-4 h-4 text-[#D2A053]" />
+                  <span className="text-xs font-bold tracking-wide">切换导游音色</span>
+                </div>
+                <button onClick={() => setShowVoiceMenu(false)} className="text-white/40 hover:text-white cursor-pointer"><X className="w-3.5 h-3.5" /></button>
+              </div>
+
+              {/* Voice On/Off Toggle Bar */}
+              <div className="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-white/5 border border-white/10">
+                <span className="text-[11px] text-white/70">语音播报开关</span>
+                <button
+                  onClick={() => { setTtsEnabled(!ttsEnabled); if (ttsEnabled) window.speechSynthesis?.cancel(); }}
+                  className={`px-2.5 py-1 rounded-full text-[10px] font-bold transition-all cursor-pointer ${
+                    ttsEnabled ? "bg-[#D2A053] text-black shadow-sm" : "bg-white/10 text-white/40"
+                  }`}
+                >
+                  {ttsEnabled ? "已开启" : "已静音"}
+                </button>
+              </div>
+
+              {/* Voice Options List */}
+              <div className="space-y-1.5 max-h-56 overflow-y-auto pr-0.5 scrollbar-none">
+                {VOICE_OPTIONS.map((opt) => {
+                  const isSelected = selectedVoiceId === opt.id;
+                  return (
+                    <button
+                      key={opt.id}
+                      onClick={() => selectVoice(opt)}
+                      className={`w-full p-2 rounded-xl text-left transition-all border flex items-center justify-between cursor-pointer ${
+                        isSelected
+                          ? "border-[#D2A053] bg-[#D2A053]/25 text-white shadow-md"
+                          : "border-white/5 bg-white/5 text-white/80 hover:bg-white/10"
+                      }`}
+                    >
+                      <div className="flex flex-col gap-0.5">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-bold">{opt.name}</span>
+                          <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${
+                            opt.gender === "female" ? "bg-pink-500/20 text-pink-300 border border-pink-500/30" : "bg-blue-500/20 text-blue-300 border border-blue-500/30"
+                          }`}>
+                            {opt.tag}
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-white/50">{opt.desc}</span>
+                      </div>
+                      {isSelected && <Check className="w-4 h-4 text-[#D2A053] flex-shrink-0" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           <motion.button
             whileTap={{ scale: 0.92 }}
@@ -1148,10 +1328,10 @@ export function QAScreen() {
                 style={{ color: showPersonaMenu ? "#D2A053" : "rgba(255,255,255,0.75)" }}>
                 <User className="w-3.5 h-3.5" />
               </motion.button>
-              <motion.button whileTap={{ scale: 0.85 }} onClick={(e) => { e.stopPropagation(); setTtsEnabled(!ttsEnabled); if (ttsEnabled) window.speechSynthesis?.cancel(); }}
-                title="语音功能开关"
+              <motion.button whileTap={{ scale: 0.85 }} onClick={(e) => { e.stopPropagation(); setShowVoiceMenu(!showVoiceMenu); setShowBgMenu(false); setShowPersonaMenu(false); }}
+                title="声音选择与音色切换"
                 className="w-8 h-8 rounded-full flex items-center justify-center bg-black/35 backdrop-blur hover:bg-black/55 transition-colors border border-white/10 cursor-pointer pointer-events-auto"
-                style={{ color: ttsEnabled ? "#D2A053" : "rgba(255,255,255,0.3)" }}>
+                style={{ color: showVoiceMenu || ttsEnabled ? "#D2A053" : "rgba(255,255,255,0.3)" }}>
                 {ttsEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
               </motion.button>
               <motion.button whileTap={{ scale: 0.85 }} onClick={(e) => { e.stopPropagation(); setShowHistory(true); }}
@@ -1213,14 +1393,14 @@ export function QAScreen() {
             {/* TTS + history controls */}
             <div className="mt-5 flex gap-2 justify-center">
               <motion.button whileTap={{ scale: 0.88 }}
-                onClick={() => { setTtsEnabled(!ttsEnabled); if (ttsEnabled) window.speechSynthesis?.cancel(); }}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px]"
-                style={{ background: "rgba(255,255,255,0.08)", color: ttsEnabled ? "#D2A053" : "rgba(255,255,255,0.35)", border: "1px solid rgba(255,255,255,0.1)" }}>
-                {ttsEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
-                {ttsEnabled ? "语音开" : "语音关"}
+                onClick={() => { setShowVoiceMenu(!showVoiceMenu); setShowBgMenu(false); }}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] cursor-pointer"
+                style={{ background: "rgba(255,255,255,0.08)", color: "#D2A053", border: "1px solid rgba(255,255,255,0.1)" }}>
+                <Volume2 className="w-3.5 h-3.5" />
+                声音选择
               </motion.button>
               <motion.button whileTap={{ scale: 0.88 }} onClick={() => setShowHistory(true)}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px]"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] cursor-pointer"
                 style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.45)", border: "1px solid rgba(255,255,255,0.1)" }}>
                 <History className="w-3.5 h-3.5" />历史
               </motion.button>
