@@ -268,25 +268,25 @@ export function WeChatVoiceCallModal({
   return (
     <AnimatePresence>
       {/* Outer Backdrop Layer: Full screen fixed container */}
-      <div className="fixed inset-0 z-[200] flex items-center justify-center p-0 md:p-6 bg-black/60 md:backdrop-blur-md">
+      <div className="fixed inset-0 z-[200] flex items-center justify-center p-0 md:p-6 bg-black/65 md:backdrop-blur-md">
         
-        {/* Main Voice Call Window Container: Full Screen on Mobile, Sleek Floating Card on Desktop */}
+        {/* Main Voice Call Window Container: Borderless floating modal card on desktop */}
         <motion.div
           initial={{ opacity: 0, scale: 0.94, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.94, y: 15 }}
           transition={{ type: "spring", stiffness: 280, damping: 26 }}
-          className="w-full h-full md:max-w-xl md:h-[680px] md:max-h-[90vh] md:rounded-3xl flex flex-col justify-between p-4 md:p-6 text-[#E6EADF] font-sans select-none overflow-hidden md:border md:border-white/15 md:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] relative"
+          className="w-full h-full md:max-w-lg md:h-[650px] md:max-h-[88vh] md:rounded-3xl flex flex-col justify-between p-4 md:p-6 text-[#E6EADF] font-sans select-none overflow-hidden md:shadow-[0_30px_70px_rgba(0,0,0,0.85)] relative mx-auto"
           style={{
             background: "radial-gradient(circle at center, #152B20 0%, #070D09 100%)",
           }}
         >
           {/* Dynamic Background Ambient Glow Effects */}
-          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] bg-[#10B981]/15 rounded-full blur-[100px] pointer-events-none z-0" />
-          <div className="absolute bottom-1/4 right-1/4 w-[300px] h-[300px] bg-[#D2A053]/15 rounded-full blur-[90px] pointer-events-none z-0" />
+          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] h-[340px] bg-[#10B981]/15 rounded-full blur-[100px] pointer-events-none z-0" />
+          <div className="absolute bottom-1/4 right-1/4 w-[280px] h-[280px] bg-[#D2A053]/15 rounded-full blur-[90px] pointer-events-none z-0" />
 
           {/* ── Top Header Bar ── */}
-          <header className="relative z-30 flex items-center justify-between pt-2 px-2 flex-shrink-0">
+          <header className="relative z-30 flex items-center justify-between pt-1 px-1 flex-shrink-0 w-full">
             <div className="flex items-center gap-2.5 bg-white/5 border border-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full text-xs text-[#8F9F8F] shadow-md">
               <span className="w-2 h-2 rounded-full bg-[#10B981] animate-ping" />
               <span className="font-mono font-bold text-white">{formatTimer(callDuration)}</span>
@@ -313,11 +313,11 @@ export function WeChatVoiceCallModal({
             </div>
           </header>
 
-          {/* ── Central Stage: Live2D Digital Avatar Sized & Centered ── */}
-          <main className="relative z-10 flex-1 flex flex-col items-center justify-center text-center px-4 py-2 my-auto overflow-hidden">
+          {/* ── Central Stage: Live2D Digital Avatar Perfectly Centered ── */}
+          <main className="relative z-10 flex-1 flex flex-col items-center justify-center text-center px-2 py-1 my-auto overflow-hidden w-full">
             
-            {/* Sized & Proportionate Live2D Model Stage */}
-            <div className="relative w-full max-w-sm h-[300px] sm:h-[340px] flex items-center justify-center my-auto pointer-events-none">
+            {/* Perfectly Sized & Centered Live2D Model Stage */}
+            <div className="relative w-full max-w-xs sm:max-w-sm h-[280px] sm:h-[320px] flex items-center justify-center my-auto pointer-events-none mx-auto">
               
               {/* Concentric Ambient Aura Effect behind Avatar */}
               {(isListening || isAiSpeaking) && (
@@ -332,13 +332,13 @@ export function WeChatVoiceCallModal({
                       repeat: Infinity,
                       ease: "easeInOut",
                     }}
-                    className="w-64 h-64 md:w-80 md:h-80 rounded-full bg-[#10B981]/20 blur-2xl"
+                    className="w-64 h-64 md:w-72 md:h-72 rounded-full bg-[#10B981]/20 blur-2xl"
                   />
                 </div>
               )}
 
-              {/* Scaled Live2D Avatar Frame */}
-              <div className="scale-[0.75] sm:scale-[0.82] md:scale-[0.85] origin-center flex items-center justify-center">
+              {/* Centered Live2D Avatar Frame - No Offset */}
+              <div className="flex items-center justify-center mx-auto w-full h-full">
                 <DigitalAvatar
                   state={
                     isAiSpeaking
@@ -358,7 +358,7 @@ export function WeChatVoiceCallModal({
             </div>
 
             {/* Real-time Soundwave Spectrum Bars */}
-            <div className="flex items-center justify-center gap-1.5 h-6 mb-3 relative z-20">
+            <div className="flex items-center justify-center gap-1.5 h-6 mb-2.5 relative z-20 mx-auto">
               {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((bar) => {
                 const active = isListening || isAiSpeaking;
                 return (
@@ -388,7 +388,7 @@ export function WeChatVoiceCallModal({
             </div>
 
             {/* Live Call Transcript / Status Box */}
-            <div className="w-full max-w-md bg-white/5 border border-white/10 backdrop-blur-2xl rounded-2xl p-4 min-h-[92px] flex flex-col justify-center items-center shadow-2xl relative z-20">
+            <div className="w-full max-w-md bg-white/5 border border-white/10 backdrop-blur-2xl rounded-2xl p-3.5 min-h-[88px] flex flex-col justify-center items-center shadow-2xl relative z-20 mx-auto">
               {liveTranscript ? (
                 <div className="space-y-1 text-left w-full animate-fade-in">
                   <span className="text-[10px] font-bold text-[#10B981] tracking-widest uppercase block flex items-center gap-1">
@@ -428,7 +428,7 @@ export function WeChatVoiceCallModal({
           </main>
 
           {/* ── Bottom Call Action Control Bar ── */}
-          <footer className="relative z-30 w-full max-w-md mx-auto pb-2 md:pb-4 px-4 flex-shrink-0">
+          <footer className="relative z-30 w-full max-w-md mx-auto pb-2 md:pb-3 px-4 flex-shrink-0">
             <div className="flex items-center justify-around">
               {/* Mute Button */}
               <div className="flex flex-col items-center gap-1.5">
