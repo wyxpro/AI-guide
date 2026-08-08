@@ -189,7 +189,7 @@ export function WeChatVoiceCallModal({
 
       rec.onerror = (err: any) => {
         console.warn("Speech recognition error, trying fallback:", err);
-        if (isMobile || err.error === "not-allowed" || err.error === "service-not-allowed") {
+        if (isMobile || err.error === "network" || err.error === "not-allowed" || err.error === "service-not-allowed" || err.error === "audio-capture") {
           startMediaRecorderFallback();
         }
       };

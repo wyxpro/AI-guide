@@ -484,8 +484,8 @@ function DigitalAvatarComponent({ state, size = "md", audioElement, avatarStyle,
     return (
       <div className="relative flex flex-col items-center select-none">
         {/* Outer ambient glow */}
-        <motion.div className="absolute rounded-full pointer-events-none"
-          style={{ width: avatarWidth + 60, height: avatarHeight + 60, top: -30, left: -30,
+        <motion.div className="absolute rounded-full pointer-events-none top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+          style={{ width: avatarWidth + 60, height: avatarHeight + 60,
             background: `radial-gradient(ellipse at center, ${p.aura} 0%, transparent 68%)` }}
           animate={{ scale: [1, 1.1, 1], opacity: [0.65, 1, 0.65] }}
           transition={{ duration: 5.2, repeat: Infinity, ease: "easeInOut" }} />

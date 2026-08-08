@@ -82,7 +82,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ text: transcription.text });
   } catch (error: any) {
     console.error("[STT Error]", error);
-    // Graceful fallback for demo or when the upstream API does not support audio transcription
-    return NextResponse.json({ text: "听到您说：请带我参观一下这里的核心景点。" });
+    return NextResponse.json({ error: error.message || "STT failed", text: "" }, { status: 500 });
   }
 }
