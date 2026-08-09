@@ -5,7 +5,7 @@ import {
   MapPin, Heart, Clock, Settings, MessageSquare,
   Share2, Image as ImageIcon, ChevronRight, ChevronLeft, ChevronDown,
   History, Trophy, Bell, Sun, Zap, Baby, ArrowRight, LogOut, X,
-  Shield, Eye, BookOpen, Volume2, Trash2, HelpCircle, Info, Sparkles, Map, User, Navigation
+  Shield, Eye, BookOpen, Volume2, Trash2, HelpCircle, Info, Sparkles, Map, User, Navigation, Check
 } from "lucide-react";
 import { useEazo } from "@eazo/sdk/react";
 import { auth } from "@eazo/sdk";
