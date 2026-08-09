@@ -138,7 +138,7 @@ export function FMScreen() {
   }, [audioInstance, currentTrackIndex, playlist.length]);
 
   // Audio Playback handler
-  const playTrack = (index: number, autoPlay = true) => {
+  const playTrack = (index: number, autoPlay = true, _mode?: "music" | "tts") => {
     if (audioInstance) {
       audioInstance.pause();
     }

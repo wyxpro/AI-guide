@@ -63,39 +63,66 @@ export function BottomTabBar() {
           borderTop: "1px solid #E6E2D8",
           paddingBottom: "env(safe-area-inset-bottom)",
         }}>
-        <div className="flex justify-around items-end h-15 px-2">
+        <div className="flex justify-around items-end h-16 px-2">
           {MOBILE_TABS.map((tab) => {
             const active = tab.href && (tab.href === "/" ? pathname === "/" : pathname.startsWith(tab.href));
             const Icon = tab.icon;
             const isCenterButton = tab.label === "AI数字人导游";
 
             const el = isCenterButton ? (
-              <div className="relative -top-3 flex flex-col items-center justify-center cursor-pointer min-w-[56px] select-none">
+              <div className="relative -top-3.5 flex flex-col items-center justify-center cursor-pointer min-w-[56px] select-none">
                 <motion.div
-                  animate={{ scale: active ? 1.08 : 1 }}
-                  whileTap={{ scale: 0.92 }}
-                  className="w-12 h-12 rounded-full bg-gradient-to-br from-[#FF7A5A] to-[#FF5B45] border-4 border-[#FFFDF9] shadow-[0_4px_12px_rgba(255,91,69,0.22)] flex items-center justify-center text-white text-[10px] font-black text-center"
+                  animate={{ scale: active ? 1.15 : 1, y: active ? -2 : 0 }}
+                  whileTap={{ scale: 0.9 }}
+                  transition={{ type: "spring", stiffness: 450, damping: 22 }}
+                  className="relative w-13 h-13 rounded-full border-2 border-white shadow-[0_6px_18px_rgba(79,111,82,0.35)] bg-[#1A2520] flex items-center justify-center p-0.5"
                 >
-                  AI导游
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/images/spots/10007.webp"
+                    alt="AI数字人导游"
+                    className="w-full h-full object-cover rounded-full"
+                  />
+                  <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white animate-pulse" />
                 </motion.div>
-                <span className="text-[9px] font-black mt-1 leading-none transition-colors"
-                  style={{ color: active ? "#FF5B45" : "#B8B4AC" }}>
-                  AI数字人导游
+                <span
+                  className="text-[9.5px] font-black mt-1 leading-none transition-colors"
+                  style={{ color: active ? "#FF5B45" : "#71717A" }}
+                >
+                  数字人导游
                 </span>
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center gap-1 flex-1 py-2 min-h-[44px] cursor-pointer relative">
-                <motion.div animate={{ scale: active ? 1.12 : 1 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 20 }}>
-                  <Icon className="w-4.5 h-4.5"
-                    style={{ color: active ? "#4F6F52" : "#B8B4AC", strokeWidth: active ? 2.2 : 1.6 }} />
+              <div className="flex flex-col items-center justify-center gap-1 flex-1 py-2 min-h-[44px] cursor-pointer relative select-none">
+                <motion.div
+                  animate={{ scale: active ? 1.18 : 1, y: active ? -1 : 0 }}
+                  whileTap={{ scale: 0.88 }}
+                  transition={{ type: "spring", stiffness: 450, damping: 22 }}
+                  className="relative flex items-center justify-center"
+                >
+                  <Icon
+                    className="w-5 h-5 transition-colors"
+                    style={{ color: active ? "#4F6F52" : "#9CA3AF", strokeWidth: active ? 2.3 : 1.7 }}
+                  />
+                  {active && (
+                    <motion.div
+                      layoutId="active-tab-glow"
+                      className="absolute -inset-1.5 bg-[#4F6F52]/15 rounded-full blur-xs -z-10"
+                    />
+                  )}
                 </motion.div>
-                <span className="text-[9px] font-bold leading-none"
-                  style={{ color: active ? "#4F6F52" : "#B8B4AC" }}>{tab.label}</span>
+                <span
+                  className="text-[9.5px] font-bold leading-none transition-colors"
+                  style={{ color: active ? "#4F6F52" : "#71717A" }}
+                >
+                  {tab.label}
+                </span>
                 {active && (
-                  <motion.div layoutId="tab-indicator"
-                    className="absolute bottom-0 w-8 h-0.5 rounded-full"
-                    style={{ background: "#4F6F52" }} />
+                  <motion.div
+                    layoutId="tab-indicator"
+                    className="absolute bottom-0.5 w-6 h-1 rounded-full bg-[#4F6F52]"
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  />
                 )}
               </div>
             );

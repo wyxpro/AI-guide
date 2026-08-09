@@ -270,107 +270,190 @@ export function ProfileScreen() {
         {/* ── Main Content Area ── */}
         <div className="flex-1 w-full min-h-[600px] flex flex-col">
           {/* Mobile Profile Card (Hidden on Desktop) */}
-          {/* Mobile Profile Card (Hidden on Desktop) */}
-          <div className="lg:hidden w-full relative">
-            {/* Background Cover Overlay wrapper - spans over header, user info, and bio description */}
-            <div className="relative overflow-hidden px-4 pt-6 pb-5">
-              {/* Background Cover Overlay */}
-              <div 
-                className="absolute inset-0 z-0 bg-cover bg-center transition-all duration-500 filter brightness-[0.72] contrast-[0.95]"
-                style={{ backgroundImage: `url(${profileBg})` }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/15 to-black/45 z-0" />
-
-              {/* Content on top of background */}
-              <div className="relative z-10">
-                {/* Header row with Title and Icons */}
-                <div className="flex items-center justify-between mb-5">
-                  <h1 className="text-[20px] font-extrabold text-white tracking-tight drop-shadow-sm">个人中心</h1>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setShowNotifications(true)}
-                      className="w-9 h-9 rounded-full bg-white/15 backdrop-blur-md border border-white/20 flex items-center justify-center text-white active:scale-95 transition-transform cursor-pointer relative shadow-sm hover:bg-white/25"
-                    >
-                      <Bell className="w-3.5 h-3.5" />
-                      <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 rounded-full bg-red-500" />
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSettingsSubView(null);
-                        setActiveSection("settings");
-                      }}
-                      className="w-9 h-9 rounded-full bg-white/15 backdrop-blur-md border border-white/20 flex items-center justify-center text-white active:scale-95 transition-transform cursor-pointer shadow-sm hover:bg-white/25"
-                    >
-                      <Settings className="w-3.5 h-3.5" />
-                    </button>
+          <div className="lg:hidden w-full relative pb-6">
+            {/* Top Pink-Purple Gradient Banner */}
+            <div
+              className="relative px-5 pt-8 pb-10 overflow-hidden"
+              style={{
+                background: "linear-gradient(135deg, #EC4899 0%, #D946EF 45%, #8B5CF6 100%)",
+              }}
+            >
+              {/* Subtle light mesh background effects */}
+              <div className="absolute inset-0 bg-white/5 backdrop-blur-[1px]" />
+              
+              <div className="relative z-10 flex items-start justify-between">
+                {/* Avatar & User Info */}
+                <div className="flex items-center gap-3.5">
+                  <div className="relative flex-shrink-0">
+                    <img
+                      src={profileAvatar}
+                      className="w-16 h-16 rounded-full border-2 border-white shadow-xl object-cover"
+                      alt="Avatar"
+                    />
+                    <span className="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-white shadow-sm" />
                   </div>
-                </div>
-
-                {/* Profile Info */}
-                <div className="flex items-end gap-3.5 mb-4">
-                  <img
-                    src={profileAvatar}
-                    className="w-16 h-16 rounded-2xl border-2 border-white/80 shadow-md object-cover flex-shrink-0"
-                    alt="Avatar"
-                  />
-                  <div className="min-w-0 flex-1 pb-0.5">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h2 className="text-base font-black text-white truncate max-w-[140px] drop-shadow-sm">{displayName}</h2>
-                      <span className="px-1.5 py-0.5 rounded-full bg-white/20 border border-white/10 text-white text-[8.5px] font-black flex items-center gap-0.5 flex-shrink-0 backdrop-blur-xs shadow-xs">
-                        <Trophy className="w-2.5 h-2.5 text-yellow-300" /> {profileLevel}
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-xl font-extrabold text-white tracking-tight drop-shadow-sm">
+                        {displayName || "xiaoye"}
+                      </h2>
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-500 text-white text-[10px] font-black shadow-sm flex-shrink-0">
+                        已认证
                       </span>
                     </div>
-                    <p className="text-[10px] text-white/80 font-bold mt-0.5 drop-shadow-xs">{profileGender} | {profileRegion}</p>
+                    <div className="flex items-center gap-1.5 bg-white/20 backdrop-blur-md border border-white/30 text-white/90 text-[11px] font-mono px-2.5 py-0.5 rounded-full w-fit">
+                      <span>ID 33a4****c533</span>
+                      <button
+                        onClick={() => toast.success("账号ID已复制到剪贴板")}
+                        className="text-white/80 hover:text-white font-bold text-[10px] ml-0.5 cursor-pointer"
+                      >
+                        复制
+                      </button>
+                    </div>
                   </div>
-                  <button
-                    onClick={() => {
-                      setEditName(profileName);
-                      setEditLevel(profileLevel);
-                      setEditAvatar(profileAvatar);
-                      setEditBio(profileBio);
-                      setEditGender(profileGender);
-                      setEditRegion(profileRegion);
-                      setEditBg(profileBg);
-                      setShowEditProfile(true);
-                    }}
-                    className="text-[9.5px] font-extrabold text-white px-3.5 py-2 rounded-xl border border-white/30 bg-white/10 backdrop-blur-md shadow-md active:scale-95 transition-transform cursor-pointer flex-shrink-0 hover:bg-white/20"
-                  >
-                    编辑资料
-                  </button>
                 </div>
 
-                {/* Bio text */}
-                <p className="text-xs font-medium text-white/95 leading-relaxed bg-black/20 border border-white/10 p-3 rounded-2xl backdrop-blur-xs shadow-xs">
-                  {profileBio}
-                </p>
+                {/* Edit Profile Top Right Button */}
+                <button
+                  onClick={() => {
+                    setEditName(profileName);
+                    setEditLevel(profileLevel);
+                    setEditAvatar(profileAvatar);
+                    setEditBio(profileBio);
+                    setEditGender(profileGender);
+                    setEditRegion(profileRegion);
+                    setEditBg(profileBg);
+                    setShowEditProfile(true);
+                  }}
+                  className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white active:scale-95 transition-transform cursor-pointer shadow-md hover:bg-white/30"
+                  title="编辑资料"
+                >
+                  <Settings className="w-4 h-4" />
+                </button>
               </div>
             </div>
 
-            {/* Stats Card sitting below the background banner, on the solid page background */}
-            <div className="px-4 py-4">
-              <div className="grid grid-cols-3 gap-2.5 bg-white border border-[#E8EDE9] rounded-2xl p-3.5 shadow-sm">
-                <div 
-                  onClick={() => setShowVisitedSpots(true)}
-                  className="text-center relative after:absolute after:right-0 after:top-1/4 after:h-1/2 after:w-[1px] after:bg-[#E2EAE5] cursor-pointer active:opacity-75 transition-opacity"
-                >
-                  <span className="block text-base font-black text-[#2C3E35]">{spotCount}</span>
-                  <span className="text-[10px] font-bold text-[#8F9F8F]">足迹景区</span>
+            {/* Featured Hero Card (Elevated Assessment Card) */}
+            <div className="-mt-6 mx-4 relative z-10">
+              <div
+                onClick={() => setShowVisitedSpots(true)}
+                className="bg-gradient-to-r from-white via-white to-[#F5F3FF] border border-white/90 shadow-[0_8px_24px_rgba(0,0,0,0.06)] rounded-3xl p-4 flex items-center justify-between cursor-pointer active:scale-[0.99] transition-all group"
+              >
+                <div className="flex items-center gap-3.5">
+                  <div className="w-12 h-12 rounded-2xl bg-[#7C3AED] text-white flex items-center justify-center shadow-md flex-shrink-0 group-hover:scale-105 transition-transform">
+                    <BookOpen className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-black text-base text-zinc-900 tracking-tight">查看行程评估报告</h3>
+                    <p className="text-xs text-zinc-500 font-medium mt-0.5">多模态评估结果与专属导览建议</p>
+                  </div>
                 </div>
-                <div 
-                  onClick={() => setActiveSection("favorites")}
-                  className="text-center relative after:absolute after:right-0 after:top-1/4 after:h-1/2 after:w-[1px] after:bg-[#E2EAE5] cursor-pointer active:opacity-75 transition-opacity"
-                >
-                  <span className="block text-base font-black text-[#2C3E35]">{favCount}</span>
-                  <span className="text-[10px] font-bold text-[#8F9F8F]">我的收藏</span>
-                </div>
-                <div 
-                  onClick={() => setShowCheckinHistory(true)}
-                  className="text-center cursor-pointer active:opacity-75 transition-opacity"
-                >
-                  <span className="block text-base font-black text-[#2C3E35]">{totalVisits}</span>
-                  <span className="text-[10px] font-bold text-[#8F9F8F]">足迹打卡</span>
-                </div>
+                <ChevronRight className="w-5 h-5 text-zinc-300 group-hover:text-zinc-500 transition-colors" />
               </div>
+            </div>
+
+            {/* Menu List Group Card */}
+            <div className="mx-4 mt-4 bg-white rounded-3xl p-2 shadow-sm border border-neutral-100/90 divide-y divide-neutral-100/70">
+              {[
+                {
+                  id: "favorites",
+                  icon: Heart,
+                  colorBg: "bg-purple-100/80 text-purple-600",
+                  title: "我的收藏",
+                  desc: "已收藏的景区、导览与路线",
+                  onClick: () => setActiveSection("favorites")
+                },
+                {
+                  id: "visits",
+                  icon: MapPin,
+                  colorBg: "bg-blue-100/80 text-blue-600",
+                  title: "行程足迹",
+                  desc: "打卡轨迹与历史漫游记录",
+                  onClick: () => setShowVisitedSpots(true)
+                },
+                {
+                  id: "avatar",
+                  icon: User,
+                  colorBg: "bg-rose-100/80 text-rose-600",
+                  title: "AI 导览分身",
+                  desc: "导览声音模式与形象选择",
+                  onClick: () => router.push("/qa")
+                },
+                {
+                  id: "vip",
+                  icon: Sparkles,
+                  colorBg: "bg-amber-100/80 text-amber-600",
+                  title: "会员订阅",
+                  desc: "开通尊享全网智能伴游特权",
+                  onClick: () => toast.success("您已享有 VIP 尊享无界伴游特权！")
+                },
+                {
+                  id: "privacy",
+                  icon: Shield,
+                  colorBg: "bg-emerald-100/80 text-emerald-600",
+                  title: "隐私安全",
+                  desc: "账号安全加固与加密管理",
+                  onClick: () => {
+                    setActiveSection("settings");
+                    setSettingsSubView("privacy");
+                  }
+                },
+                {
+                  id: "about",
+                  icon: HelpCircle,
+                  colorBg: "bg-slate-100/80 text-slate-600",
+                  title: "关于我们",
+                  desc: "旅行家Pro 智慧导览 v2.0",
+                  onClick: () => {
+                    setActiveSection("settings");
+                    setSettingsSubView("about");
+                  }
+                },
+                {
+                  id: "admin",
+                  icon: Settings,
+                  colorBg: "bg-zinc-100/80 text-zinc-700",
+                  title: "后台管理登录",
+                  desc: "知识库配置与系统管理后台",
+                  onClick: () => router.push("/admin")
+                }
+              ].map((item) => (
+                <div
+                  key={item.id}
+                  onClick={item.onClick}
+                  className="flex items-center justify-between p-3.5 hover:bg-neutral-50 rounded-2xl cursor-pointer active:scale-[0.99] transition-all group"
+                >
+                  <div className="flex items-center gap-3.5">
+                    <div className={`w-10 h-10 rounded-2xl ${item.colorBg} flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform`}>
+                      <item.icon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="font-extrabold text-sm text-zinc-800">{item.title}</h4>
+                      <p className="text-[11px] text-zinc-400 mt-0.5">{item.desc}</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-zinc-300 group-hover:text-zinc-400 transition-colors" />
+                </div>
+              ))}
+            </div>
+
+            {/* Bottom Logout Red Button */}
+            <div className="mt-4 px-4">
+              <button
+                onClick={async () => {
+                  try {
+                    await auth.logout();
+                    toast.success("已安全退出登录");
+                    router.push("/login");
+                  } catch {
+                    toast.error("退出登录失败，请重试");
+                  }
+                }}
+                className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 text-sm font-extrabold text-rose-500 hover:text-rose-600 active:scale-95 transition-all cursor-pointer hover:bg-rose-50/50"
+              >
+                <LogOut className="w-4.5 h-4.5" />
+                <span>退出当前账号</span>
+              </button>
             </div>
           </div>
 

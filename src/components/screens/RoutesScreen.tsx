@@ -1702,6 +1702,8 @@ export function RoutesScreen() {
             </motion.div>
           </motion.div>
         )}
+      </AnimatePresence>
+
       {/* AI Route Collection & History Modal */}
       <AnimatePresence>
         {showRouteHistoryModal && (
