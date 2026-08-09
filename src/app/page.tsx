@@ -429,7 +429,7 @@ export default function WelcomePage() {
             transition={{ ...SPRING, delay: 0.2 }}
             className="text-base md:text-lg leading-relaxed text-[#8F9F8F] max-w-2xl mx-auto lg:mx-0"
           >
-            一款面向（C端游客 + B端运营）AI 数字人导游与智慧运营Agent。打造热门景点攻略、伴游FM、VR 3D识景、 RAG 景区知识检索、行程智能规划智慧服务。
+            一款面向（C端游客 + B端运营）AI 数字人导游与智慧运营Agent。集成高德地图IP，满血 DeepSeek-V4-Flash，打造全国热门景点攻略、伴游FM、VR 3D识景、 RAG 景区知识检索、行程智能规划与运营服务。
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}

@@ -232,7 +232,7 @@ export function RoutesScreen() {
   const [amapLoaded, setAmapLoaded] = useState(false);
 
   // Chat popups
-  const [showFloatChat, setShowFloatChat] = useState(true);
+  const [showFloatChat, setShowFloatChat] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   // Drag controls for Q&A panel
@@ -668,10 +668,22 @@ export function RoutesScreen() {
       try { boundsPolyline.setMap(null); } catch (_) {}
     }, 100);
 
-    // Create polyline initially starting at the first spot
+    // Create glowing halo polyline underneath for dynamic glowing route effect
+    const haloPolyline = new AMap.Polyline({
+      path: [coordinates[0]],
+      strokeColor: "#FF4D8D",
+      strokeWeight: 16,
+      strokeOpacity: 0.35,
+      strokeStyle: "solid",
+      lineJoin: "round",
+      lineCap: "round",
+    });
+    haloPolyline.setMap(map);
+
+    // Create main route polyline
     const polyline = new AMap.Polyline({
       path: [coordinates[0]],
-      strokeColor: "#3B82F6", // Beautiful tech blue for high contrast
+      strokeColor: "#FF4D8D",
       strokeWeight: 8,
       strokeOpacity: 0.95,
       strokeStyle: "solid",
@@ -1045,20 +1057,21 @@ export function RoutesScreen() {
       {/* 1. Integrated Header (Mobile only) */}
       <div className="md:hidden flex items-center justify-between px-4 h-14 bg-white border-b border-zinc-200/80 shadow-sm z-40 flex-shrink-0">
         <div className="flex items-center gap-2">
+          {/* Mobile Left Header AI Badge Icon Button */}
           <button
             onClick={() => {
               setShowLeftSidebar(!showLeftSidebar);
               setShowRightSidebar(false);
             }}
-            className="w-8 h-8 rounded-lg bg-[#4F6F52]/10 flex items-center justify-center text-[#4F6F52] hover:bg-[#4F6F52]/20 active:scale-95 transition-all"
-            title="查看选项"
+            className="w-8.5 h-8.5 rounded-xl bg-gradient-to-tr from-[#3A4D39] via-[#4F6F52] to-[#7C9A7D] text-white flex items-center justify-center font-black text-xs shadow-md border border-[#D2A053]/50 hover:opacity-90 active:scale-95 transition-all cursor-pointer"
+            title="AI 智能向导地图"
           >
-            <Menu className="w-4 h-4" />
+            <span className="tracking-tighter font-black text-[11px] bg-gradient-to-r from-amber-200 to-white bg-clip-text text-transparent">AI</span>
           </button>
         </div>
 
         {/* Integrated Top Search in mobile header */}
-        <div className="flex-1 max-w-[180px] h-8.5 mx-2 flex items-center bg-zinc-100/90 rounded-full px-2.5 border border-zinc-200/40">
+        <div className="flex-1 max-w-[190px] h-8.5 mx-2 flex items-center bg-zinc-100/90 rounded-full px-2.5 border border-zinc-200/40">
           <Search className="w-3.5 h-3.5 text-zinc-400 mr-1.5 flex-shrink-0" />
           <input
             value={searchQuery}
@@ -1079,17 +1092,6 @@ export function RoutesScreen() {
           >
             <MapPin className="w-3 h-3" />
             <span>{selectedCity}</span>
-          </button>
-
-          <button
-            onClick={() => {
-              setShowRightSidebar(!showRightSidebar);
-              setShowLeftSidebar(false);
-            }}
-            className="w-8 h-8 rounded-lg bg-[#4D96FF] text-white flex items-center justify-center hover:bg-[#3D85EF] active:scale-95 transition-all"
-            title="AI咨询"
-          >
-            <MessageSquare className="w-4.5 h-4.5" />
           </button>
         </div>
       </div>

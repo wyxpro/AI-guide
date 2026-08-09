@@ -403,14 +403,6 @@ export function ProfileScreen() {
                   onClick: () => setShowThemeModal(true)
                 },
                 {
-                  id: "vip",
-                  icon: Sparkles,
-                  colorBg: "bg-amber-100/80 text-amber-600",
-                  title: "会员订阅",
-                  desc: "开通尊享全网智能伴游特权",
-                  onClick: () => setShowVipModal(true)
-                },
-                {
                   id: "privacy",
                   icon: Shield,
                   colorBg: "bg-emerald-100/80 text-emerald-600",

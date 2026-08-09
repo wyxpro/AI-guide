@@ -59,81 +59,83 @@ export function PosterGenerator({ data, onClose }: PosterGeneratorProps) {
     ctx.fillStyle = theme.accent + "33";
     ctx.fill();
 
+    const userNickname = data.userName || "游客小玉";
+
     // Avatar circle
     ctx.beginPath();
     ctx.arc(W / 2, 180, 48, 0, Math.PI * 2);
     ctx.fillStyle = theme.accent;
     ctx.fill();
-    ctx.font = "bold 42px serif";
+    ctx.font = "bold 38px serif";
     ctx.fillStyle = "#FFFFFF";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText("玉", W / 2, 183);
+    ctx.fillText(userNickname.slice(0, 1) || "旅", W / 2, 183);
 
-    // Title
-    ctx.font = "bold 36px serif";
+    // Title (User Nickname instead of 翠玉景区)
+    ctx.font = "bold 34px serif";
     ctx.fillStyle = theme.id === "ink" ? "#1E2522" : "#FFFFFF";
     ctx.textAlign = "center";
     ctx.textBaseline = "alphabetic";
-    ctx.fillText("翠玉景区 · 游览打卡", W / 2, 290);
+    ctx.fillText(`${userNickname} · 游览打卡`, W / 2, 290);
 
-    ctx.font = "20px sans-serif";
-    ctx.fillStyle = theme.id === "ink" ? "#8F9F8F" : theme.accent + "CC";
-    ctx.fillText("AI数字人导览系统", W / 2, 325);
+    ctx.font = "bold 18px sans-serif";
+    ctx.fillStyle = theme.id === "ink" ? "#4F6F52" : theme.accent + "EE";
+    ctx.fillText("旅行家Pro 智慧导览专属报告", W / 2, 325);
 
     // Divider
-    ctx.strokeStyle = theme.accent + "44";
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = theme.accent + "55";
+    ctx.lineWidth = 1.5;
     ctx.setLineDash([8, 6]);
     ctx.beginPath(); ctx.moveTo(60, 365); ctx.lineTo(W - 60, 365); ctx.stroke();
     ctx.setLineDash([]);
 
     // Stats block
     const textColor = theme.id === "ink" ? "#1E2522" : "#FFFFFF";
-    const mutedColor = theme.id === "ink" ? "#8F9F8F" : "rgba(255,255,255,0.5)";
+    const mutedColor = theme.id === "ink" ? "#8F9F8F" : "rgba(255,255,255,0.65)";
 
     const stats = [
-      { label: "游览景点", value: data.spotsVisited.toString(), unit: "处" },
-      { label: "最爱景点", value: data.favoriteSpot, unit: "" },
-      { label: "游览日期", value: data.date, unit: "" },
+      { label: "打卡景点", value: data.spotsVisited.toString(), unit: "处" },
+      { label: "最爱地标", value: data.favoriteSpot || "故宫太和殿", unit: "" },
+      { label: "打卡日期", value: data.date || "2026.08", unit: "" },
     ];
 
     stats.forEach((s, i) => {
-      const x = 100 + i * 160;
+      const x = 100 + i * 165;
       const y = 430;
-      ctx.font = "bold 28px serif";
+      ctx.font = "bold 26px serif";
       ctx.fillStyle = theme.accent;
       ctx.textAlign = "center";
       ctx.fillText(s.value + s.unit, x, y);
-      ctx.font = "16px sans-serif";
+      ctx.font = "14px sans-serif";
       ctx.fillStyle = mutedColor;
       ctx.fillText(s.label, x, y + 30);
     });
 
-    // Badge
+    // Badge Frame
     ctx.beginPath();
-    const bx = W / 2 - 100, by = 530, bw = 200, bh = 60;
+    const bx = W / 2 - 110, by = 530, bw = 220, bh = 60;
     ctx.roundRect(bx, by, bw, bh, 30);
     ctx.fillStyle = theme.accent + "22";
     ctx.fill();
-    ctx.strokeStyle = theme.accent + "66";
+    ctx.strokeStyle = theme.accent + "88";
     ctx.lineWidth = 1.5;
     ctx.stroke();
     ctx.font = "bold 18px sans-serif";
     ctx.fillStyle = theme.accent;
     ctx.textAlign = "center";
-    ctx.fillText(data.badge, W / 2, by + 37);
+    ctx.fillText(data.badge || "Lv.5 问鼎江山", W / 2, by + 37);
 
     // User name area
     ctx.font = "bold 22px serif";
     ctx.fillStyle = textColor;
     ctx.textAlign = "center";
-    ctx.fillText(`"${data.userName}" 的专属足迹`, W / 2, 650);
+    ctx.fillText(`"${userNickname}" 的专属足迹海报`, W / 2, 650);
 
     // Bottom ornament
     ctx.font = "14px sans-serif";
     ctx.fillStyle = mutedColor;
-    ctx.fillText("扫码加入导览 · 翠玉景区官方出品", W / 2, 780);
+    ctx.fillText("扫码加入导览 · 旅行家Pro 官方智导出品", W / 2, 780);
 
     // Decorative dots
     for (let i = 0; i < 5; i++) {
