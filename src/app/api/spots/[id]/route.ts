@@ -8,11 +8,9 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
     const spotIdNum = Number(id);
 
     // Support national popular spots
-    if (spotIdNum >= 10001 && spotIdNum <= 10030) {
-      const nationalSpot = NATIONAL_SPOTS.find((s) => s.id === spotIdNum);
-      if (nationalSpot) {
-        return NextResponse.json(nationalSpot);
-      }
+    const nationalSpot = NATIONAL_SPOTS.find((s) => s.id === spotIdNum);
+    if (nationalSpot) {
+      return NextResponse.json(nationalSpot);
     }
 
     const spot = await getSpotById(spotIdNum);

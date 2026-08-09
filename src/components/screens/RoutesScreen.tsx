@@ -23,7 +23,7 @@ if (typeof window !== "undefined") {
 const SPRING = { type: "spring" as const, stiffness: 280, damping: 35 };
 
 const INTERESTS = [
-  { id: "history", label: "人文史学", emoji: "📖" },
+  { id: "instagrammable", label: "网红打卡", emoji: "📸" },
   { id: "nature", label: "山水自然", emoji: "🏔️" },
   { id: "family", label: "亲子游览", emoji: "👨‍👩‍👧" },
   { id: "special_forces", label: "特种兵", emoji: "⚡" },
@@ -175,15 +175,16 @@ export function RoutesScreen() {
   const [selectedCity, setSelectedCity] = useState("重庆");
   const currentSpots = ALL_CITIES_SPOTS[selectedCity] || CHONGQING_SPOTS;
 
-  const [selectedInterests, setSelectedInterests] = useState<string[]>(["history"]);
+  const [selectedInterests, setSelectedInterests] = useState<string[]>(["instagrammable"]);
   const [duration, setDuration] = useState(120);
   const [generating, setGenerating] = useState(false);
   const [activeRoute, setActiveRoute] = useState<GeneratedRoute | null>(null);
 
-  // Progress modal state
+  // Modals state
   const [showProgressModal, setShowProgressModal] = useState(false);
   const [progressPercent, setProgressPercent] = useState(0);
   const [progressStep, setProgressStep] = useState("");
+  const [showRouteHistoryModal, setShowRouteHistoryModal] = useState(false);
 
   // Active highlighted spot
   const [activeSpot, setActiveSpot] = useState<typeof CHONGQING_SPOTS[0]>(CHONGQING_SPOTS[0]);
@@ -923,10 +924,35 @@ export function RoutesScreen() {
           };
           setActiveRoute(formattedRoute);
           toast.success(`「${formattedRoute.name}」生成成功！已贯穿当前全城 ${currentSpots.length} 个景点。`);
+        } else if (selectedInterests.includes("instagrammable")) {
+          // Instagrammable Photo-Worthy Spots Route
+          const photoSpots = currentSpots.filter(s =>
+            s.name.includes("洪崖洞") || s.name.includes("李子坝") || s.name.includes("索道") ||
+            s.name.includes("故宫") || s.name.includes("外滩") || s.name.includes("明珠") ||
+            s.name.includes("宽窄") || s.name.includes("不夜城") || s.name.includes("西湖") ||
+            s.type === "地标" || s.type === "自然"
+          );
+          const picked = photoSpots.length >= 3 ? photoSpots.slice(0, 5) : currentSpots.slice(0, 4);
+
+          const formattedRoute: GeneratedRoute = {
+            name: `【${selectedCity}网红绝美打卡】出片路线`,
+            description: `为您精选 ${selectedCity} 出片率最高的 ${picked.length} 大核心打卡景观，定格极致视效！`,
+            highlights: ["极致摄影视角", "网红热搜地标", "黄金光影时段"],
+            tips: "建议在傍晚黄昏至夜幕初降时段前往主地标，带上补光设备与亮色穿搭出片效果最佳！",
+            spots: picked.map((s) => ({
+              id: s.id,
+              name: s.name,
+              duration: 40,
+              description: s.desc,
+            })),
+            totalDuration: picked.length * 40 + 30,
+            totalDistance: `约 ${(picked.length * 1.6).toFixed(1)}km`,
+          };
+          setActiveRoute(formattedRoute);
+          toast.success(`「${formattedRoute.name}」网红打卡路线生成成功！已为您在地图上绘制路径。`);
         } else {
           // Standard simulated route based on selected preferences
           const filtered = currentSpots.filter((s) => {
-            if (selectedInterests.includes("history") && (s.type === "文化" || s.type === "寺庙")) return true;
             if (selectedInterests.includes("nature") && s.type === "自然") return true;
             if (selectedInterests.includes("family") && (s.type === "地标" || s.type === "演出")) return true;
             return false;
@@ -1349,8 +1375,16 @@ export function RoutesScreen() {
               <Navigation className="w-4.5 h-4.5 text-zinc-600" />
             </button>
 
-            <button onClick={() => mapInstanceRef.current?.zoomIn()} className="w-10 h-10 rounded-xl bg-white/95 backdrop-blur-md border shadow-lg flex items-center justify-center font-bold text-zinc-700 hover:bg-neutral-50 active:scale-95">+</button>
-            <button onClick={() => mapInstanceRef.current?.zoomOut()} className="w-10 h-10 rounded-xl bg-white/95 backdrop-blur-md border shadow-lg flex items-center justify-center font-bold text-zinc-700 hover:bg-neutral-50 active:scale-95">-</button>
+            <button onClick={() => mapInstanceRef.current?.zoomIn()} className="w-10 h-10 rounded-xl bg-white/95 backdrop-blur-md border border-zinc-200/80 shadow-lg flex items-center justify-center font-bold text-zinc-700 hover:bg-neutral-50 active:scale-95">+</button>
+            <button onClick={() => mapInstanceRef.current?.zoomOut()} className="w-10 h-10 rounded-xl bg-white/95 backdrop-blur-md border border-zinc-200/80 shadow-lg flex items-center justify-center font-bold text-zinc-700 hover:bg-neutral-50 active:scale-95">-</button>
+            <button
+              onClick={() => setShowRouteHistoryModal(true)}
+              className="px-2.5 py-2 rounded-xl bg-[#3A4D39] text-white backdrop-blur-md border border-[#4F6F52] shadow-xl flex items-center gap-1.5 font-bold text-[11px] hover:bg-[#4F6F52] active:scale-95 transition-all cursor-pointer mt-1"
+              title="路线合集"
+            >
+              <Compass className="w-3.5 h-3.5 text-[#D2A053]" />
+              <span>路线合集</span>
+            </button>
           </div>
 
           {/* Desktop Draggable Float AI Assistant Panel (Wider and shorter: w-360px h-500px) */}
@@ -1664,6 +1698,164 @@ export function RoutesScreen() {
               {/* Step message */}
               <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-xs text-white/90 min-h-[50px] flex items-center leading-relaxed">
                 <span>{progressStep}</span>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      {/* AI Route Collection & History Modal */}
+      <AnimatePresence>
+        {showRouteHistoryModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowRouteHistoryModal(false)}
+            className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md pointer-events-auto"
+          >
+            <motion.div
+              initial={{ scale: 0.92, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.92, opacity: 0, y: 20 }}
+              transition={{ type: "spring", stiffness: 300, damping: 28 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-2xl max-h-[85vh] rounded-3xl p-6 bg-white border border-zinc-200 shadow-2xl flex flex-col overflow-hidden text-zinc-800"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between pb-4 border-b border-zinc-100 flex-shrink-0">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-2xl bg-[#3A4D39] text-[#D2A053] flex items-center justify-center shadow-md">
+                    <Sparkles className="w-5 h-5 animate-pulse" />
+                  </div>
+                  <div>
+                    <h3 className="font-extrabold text-base text-zinc-900 tracking-wide" style={{ fontFamily: "var(--font-noto-serif)" }}>
+                      AI 智游路线合集与历史行程库
+                    </h3>
+                    <p className="text-xs text-zinc-500">挑选精选高能打卡方案，一键载入 3D 轨迹与伴游解说</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowRouteHistoryModal(false)}
+                  className="w-8 h-8 rounded-full hover:bg-zinc-100 flex items-center justify-center text-zinc-400 hover:text-zinc-700 transition-colors cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Body Content - Scrollable Route Cards List */}
+              <div className="flex-1 overflow-y-auto py-4 space-y-4 pr-1 scrollbar-thin">
+                {[
+                  {
+                    id: "route-photo",
+                    tag: "📸 网红打卡",
+                    tagColor: "bg-rose-500 text-white",
+                    title: `【${selectedCity}网红绝美打卡】出片专线`,
+                    duration: "约3.5小时",
+                    distance: "8.6km",
+                    spotsCount: "5大热搜地标",
+                    spots: currentSpots.slice(0, 5).map(s => s.name),
+                    advice: "建议 16:30 前往最核心地标捕捉傍晚魔幻光影，随后乘坐缆车或漫步江畔，19:30 欣赏璀璨灯火，摄影出片率最高！",
+                    routeData: {
+                      name: `【${selectedCity}网红绝美打卡】出片专线`,
+                      description: `为您精选 ${selectedCity} 出片率最高的 5 大核心打卡景观，定格极致视效！`,
+                      highlights: ["极致摄影视角", "网红热搜地标", "黄金光影时段"],
+                      tips: "建议在傍晚黄昏至夜幕初降时段前往主地标，带上补光设备与亮色穿搭出片效果最佳！",
+                      spots: currentSpots.slice(0, 5).map(s => ({ id: s.id, name: s.name, duration: 40, description: s.desc })),
+                      totalDuration: 210,
+                      totalDistance: "8.6km"
+                    }
+                  },
+                  {
+                    id: "route-all",
+                    tag: "⚡ 特种兵全景",
+                    tagColor: "bg-[#D2A053] text-black font-extrabold",
+                    title: `【${selectedCity}全景极限特种兵】全城名胜贯通线`,
+                    duration: "约7.0小时",
+                    distance: `约 ${(currentSpots.length * 2.2).toFixed(1)}km`,
+                    spotsCount: `贯穿全城 ${currentSpots.length} 大名胜`,
+                    spots: currentSpots.map(s => s.name),
+                    advice: "适合精力充沛的极速打卡玩家，建议穿轻便运动鞋并准备移动电源，早晨 08:30 出发，无缝衔接地铁与缆车。",
+                    routeData: {
+                      name: `【${selectedCity}全景极限特种兵】全城名胜贯通线`,
+                      description: `为“特种兵”玩家量身定制的高能极限路线，贯穿${selectedCity}全城 ${currentSpots.length} 大核心名胜景观，高效打卡无遗漏！`,
+                      highlights: [`贯穿全部 ${currentSpots.length} 个城市名胜`, "极致高效打卡路线", "立体魔幻全景打卡"],
+                      tips: "特种兵打卡路线强度较大，建议穿着舒适运动鞋，保持充足水分补充！",
+                      spots: currentSpots.map((s) => ({ id: s.id, name: s.name, duration: 35, description: s.desc })),
+                      totalDuration: currentSpots.length * 35 + 50,
+                      totalDistance: `约 ${(currentSpots.length * 2.2).toFixed(1)}km`
+                    }
+                  },
+                  {
+                    id: "route-slow",
+                    tag: "🍵 烟火漫游",
+                    tagColor: "bg-emerald-600 text-white",
+                    title: `【${selectedCity}老街茶馆】市井民俗慢游专线`,
+                    duration: "约4.5小时",
+                    distance: "6.2km",
+                    spotsCount: "4大古韵街区",
+                    spots: currentSpots.slice(0, 4).map(s => s.name),
+                    advice: "适合喜欢沉浸式感受人文烟火气的朋友，可以在老街茶馆听戏品茶，尝古法特色小吃。",
+                    routeData: {
+                      name: `【${selectedCity}老街茶馆】市井民俗慢游专线`,
+                      description: `为您量身定制的慢节奏民俗体验路线，漫步古老街区，聆听盖碗茶里的巴蜀故事。`,
+                      highlights: ["老街茶馆漫步", "传统非遗小吃", "人文沉浸体验"],
+                      tips: "建议下午时段在老茶馆歇脚听戏，体验最地道的市井生活风情。",
+                      spots: currentSpots.slice(0, 4).map(s => ({ id: s.id, name: s.name, duration: 45, description: s.desc })),
+                      totalDuration: 270,
+                      totalDistance: "6.2km"
+                    }
+                  }
+                ].map((rItem) => (
+                  <div
+                    key={rItem.id}
+                    className="p-4 rounded-2xl border border-zinc-200/80 bg-[#FAF8F5] hover:border-[#4F6F52]/50 hover:shadow-md transition-all space-y-3"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${rItem.tagColor}`}>
+                          {rItem.tag}
+                        </span>
+                        <h4 className="font-extrabold text-sm text-zinc-900" style={{ fontFamily: "var(--font-noto-serif)" }}>
+                          {rItem.title}
+                        </h4>
+                      </div>
+                      <span className="text-[11px] font-mono text-zinc-500 font-semibold">{rItem.distance}</span>
+                    </div>
+
+                    {/* Spot flow pills */}
+                    <div className="flex flex-wrap gap-1.5 items-center text-xs">
+                      {rItem.spots.map((spotName, idx) => (
+                        <span key={idx} className="inline-flex items-center gap-1 text-[11px] bg-white border border-zinc-200 px-2 py-0.5 rounded-lg text-zinc-700 font-semibold">
+                          <span className="text-[9px] text-[#D2A053] font-bold">{idx + 1}</span>
+                          {spotName}
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* Planning advice box */}
+                    <div className="p-3 rounded-xl bg-white border border-amber-200/60 text-xs text-amber-900 leading-relaxed flex items-start gap-2">
+                      <span className="text-sm flex-shrink-0">💡</span>
+                      <div>
+                        <strong className="font-bold text-amber-950 block mb-0.5">AI 规划建议：</strong>
+                        <span>{rItem.advice}</span>
+                      </div>
+                    </div>
+
+                    {/* Load button */}
+                    <div className="pt-1 flex justify-end">
+                      <button
+                        onClick={() => {
+                          setActiveRoute(rItem.routeData as GeneratedRoute);
+                          setShowRouteHistoryModal(false);
+                          toast.success(`已载入「${rItem.title}」至地图！`);
+                        }}
+                        className="px-4 py-2 rounded-xl bg-[#3A4D39] text-white text-xs font-bold hover:bg-[#4F6F52] shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <Compass className="w-3.5 h-3.5 text-[#D2A053]" />
+                        载入地图并开始游览
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
             </motion.div>
           </motion.div>

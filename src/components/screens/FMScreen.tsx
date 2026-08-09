@@ -138,12 +138,14 @@ export function FMScreen() {
   }, [audioInstance, currentTrackIndex, playlist.length]);
 
   // Audio Playback handler
-  const playTrack = (index: number, autoPlay = true, forcedMode?: "music" | "tts") => {
+  const playTrack = (index: number, autoPlay = true) => {
     if (audioInstance) {
       audioInstance.pause();
     }
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
 
-    const targetMode = forcedMode || audioMode;
     setCurrentTrackIndex(index);
     setProgress(0);
     setIsLiked(false);
@@ -151,18 +153,29 @@ export function FMScreen() {
     const track = playlist[index];
     if (!track) return;
 
-    // Synthesize real, distinct high quality narration audio for each track
-    const primaryUrl = `/api/qa/tts?text=${encodeURIComponent("正在为您播放伴游广播：" + track.title + "。" + track.text)}`;
-
+    const primaryUrl = `/api/fm/audio?track=${track.id}`;
     const audio = new Audio(primaryUrl);
     setAudioInstance(audio);
 
     if (autoPlay) {
       setIsPlaying(true);
-      audio.play().catch((err) => {
-        console.warn("Primary audio playback error:", err);
-        toast.error("音频加载失败，请重试");
-        setIsPlaying(false);
+      audio.play().then(() => {
+        setIsPlaying(true);
+      }).catch((err) => {
+        console.warn("HTML5 Audio play blocked or failed, using Web Speech API fallback:", err);
+        if (typeof window !== "undefined" && window.speechSynthesis) {
+          const speechText = `正在为您播放伴游FM：${track.title}。${track.text}`;
+          const utter = new SpeechSynthesisUtterance(speechText);
+          utter.lang = "zh-CN";
+          utter.rate = 0.95;
+          utter.onend = () => setIsPlaying(false);
+          utter.onerror = () => setIsPlaying(false);
+          window.speechSynthesis.speak(utter);
+          setIsPlaying(true);
+        } else {
+          toast.error("音频加载失败，请重试");
+          setIsPlaying(false);
+        }
       });
     } else {
       setIsPlaying(false);

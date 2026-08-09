@@ -25,7 +25,7 @@ export function SpotDetailScreen({ spotId }: { spotId: string }) {
   const [favId, setFavId] = useState<number | null>(null);
   const [userRating, setUserRating] = useState(0);
   const [ratingSubmitted, setRatingSubmitted] = useState(false);
-  const [showStory, setShowStory] = useState(false);
+  const [showStory, setShowStory] = useState(searchParams.get("showStory") === "true");
   const [showCamera, setShowCamera] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [autoplayBanner, setAutoplayBanner] = useState(autoplay);

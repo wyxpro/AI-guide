@@ -1100,8 +1100,8 @@ export function QAScreen() {
           <div className="flex items-center gap-2">
             <motion.div animate={{ backgroundColor: loading ? "#D2A053" : "#34C759" }}
               className="w-2 h-2 rounded-full" />
-            <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.45)" }}>
-              {loading ? "小玉思考中…" : "旅行家Pro导览官 · 在线"}
+            <span className="text-[11px] font-medium" style={{ color: loading ? "#D2A053" : "rgba(255,255,255,0.75)" }}>
+              {loading ? "正在合成语音播放..." : "旅行家Pro导览官 · 在线"}
             </span>
           </div>
           <div className="flex flex-col items-end gap-2.5 relative z-30">
@@ -1245,24 +1245,6 @@ export function QAScreen() {
               <Sparkles className="w-3 h-3" />当前聚焦：<strong>{spotName}</strong>
             </motion.div>
           )}
-          <AnimatePresence>
-            {loading && (
-              <motion.div
-                initial={{ opacity: 0, y: -12, scale: 0.9 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -12, scale: 0.9 }}
-                className="z-40 px-4 py-2 rounded-full bg-black/75 backdrop-blur-md border border-[#D2A053]/50 shadow-xl flex items-center gap-2 text-xs text-white font-medium mb-3 animate-pulse"
-              >
-                <span className="w-2.5 h-2.5 rounded-full bg-[#D2A053] animate-ping" />
-                <span className="font-bold tracking-wide">正在合成语音播放...</span>
-                <div className="flex items-center gap-1 ml-1">
-                  <span className="w-1 h-3.5 bg-[#D2A053] rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                  <span className="w-1 h-4.5 bg-[#D2A053] rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                  <span className="w-1 h-2.5 bg-[#D2A053] rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
           {!isDesktop && <DigitalAvatar state={avatarState} size="hero" audioElement={audioRef.current} avatarStyle={selectedStyle} />}
         </div>
 
@@ -1398,8 +1380,9 @@ export function QAScreen() {
 
           {/* Desktop Left Panel Floating Controls */}
           <div className="absolute top-8 left-4 right-4 flex justify-between items-center z-30 pointer-events-auto">
-            <div className="text-[11px] font-medium tracking-wide text-white/50 bg-black/30 backdrop-blur px-2.5 py-1 rounded-full border border-white/5">
-              旅行家Pro导览官 · 在线
+            <div className="text-[11px] font-medium tracking-wide bg-black/40 backdrop-blur px-3 py-1 rounded-full border border-white/10 flex items-center gap-2" style={{ color: loading ? "#D2A053" : "rgba(255,255,255,0.75)" }}>
+              <span className={`w-2 h-2 rounded-full ${loading ? "bg-[#D2A053] animate-ping" : "bg-[#34C759]"}`} />
+              <span>{loading ? "正在合成语音播放..." : "旅行家Pro导览官 · 在线"}</span>
             </div>
             <div className="flex gap-2 relative z-30 pointer-events-auto">
               <motion.button whileTap={{ scale: 0.85 }} onClick={(e) => { e.stopPropagation(); setShowBgMenu(!showBgMenu); setShowPersonaMenu(false); }}
@@ -1467,24 +1450,6 @@ export function QAScreen() {
           </div>
 
           <div className="relative z-10 flex flex-col items-center px-6 w-full animate-fade-in">
-            <AnimatePresence>
-              {loading && (
-                <motion.div
-                  initial={{ opacity: 0, y: -12, scale: 0.9 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -12, scale: 0.9 }}
-                  className="z-40 px-4.5 py-2.5 rounded-full bg-black/75 backdrop-blur-md border border-[#D2A053]/50 shadow-xl flex items-center gap-2.5 text-xs text-white font-medium mb-4 animate-pulse"
-                >
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#D2A053] animate-ping" />
-                  <span className="font-bold tracking-wide">正在合成语音播放...</span>
-                  <div className="flex items-center gap-1 ml-1">
-                    <span className="w-1 h-3.5 bg-[#D2A053] rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                    <span className="w-1 h-4.5 bg-[#D2A053] rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                    <span className="w-1 h-2.5 bg-[#D2A053] rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
             {isDesktop && <DigitalAvatar state={avatarState} size="desktop-hero" audioElement={audioRef.current} avatarStyle={selectedStyle} />}
 
             {spotName && (

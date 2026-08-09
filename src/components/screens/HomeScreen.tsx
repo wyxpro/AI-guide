@@ -180,14 +180,14 @@ function PCView() {
 
             <div className="pt-4 border-t border-zinc-100 flex items-center justify-between">
               <button
-                onClick={handleAudioPlay}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm ${isPlaying ? 'bg-[#FF5B45] text-white animate-pulse' : 'bg-[#FFF0ED] text-[#FF5B45] hover:bg-[#FFE0DB]'}`}
+                onClick={() => router.push("/spots/10001?showStory=true")}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-[#FFF0ED] text-[#FF5B45] hover:bg-[#FFE0DB] transition-colors shadow-sm"
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
                   <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
                 </svg>
-                {isPlaying ? "讲解中..." : "语音讲解"}
+                语音讲解
               </button>
 
               <button
@@ -197,7 +197,7 @@ function PCView() {
                 <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
                   <polygon points="5 3 19 12 5 21 5 3" />
                 </svg>
-                视频互动
+                数字人导游
               </button>
             </div>
           </div>
@@ -541,19 +541,19 @@ function MobileChengduPanel() {
         <div className="flex items-center gap-3">
           {/* Audio/Explain button */}
           <div
-            onClick={handleAudioPlay}
+            onClick={() => router.push("/spots/10001?showStory=true")}
             className="flex flex-col items-center cursor-pointer select-none group"
           >
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center shadow-sm transition-all ${isPlaying ? 'bg-[#FF5B45] text-white animate-pulse' : 'bg-[#FFF0ED] text-[#FF5B45] hover:bg-[#FFE0DB]'}`}>
+            <div className="w-8 h-8 rounded-full flex items-center justify-center shadow-sm transition-all bg-[#FFF0ED] text-[#FF5B45] hover:bg-[#FFE0DB]">
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
                 <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
               </svg>
             </div>
-            <span className="text-[9px] font-bold text-zinc-700 mt-1">讲解</span>
+            <span className="text-[9px] font-bold text-zinc-700 mt-1">语音讲解</span>
           </div>
 
-          {/* Video button */}
+          {/* Digital Human button */}
           <div
             onClick={() => router.push("/qa")}
             className="flex flex-col items-center cursor-pointer select-none group"
@@ -563,7 +563,7 @@ function MobileChengduPanel() {
                 <polygon points="5 3 19 12 5 21 5 3" />
               </svg>
             </div>
-            <span className="text-[9px] font-bold text-zinc-700 mt-1">视频</span>
+            <span className="text-[9px] font-bold text-zinc-700 mt-1">数字人导游</span>
           </div>
         </div>
       </div>
