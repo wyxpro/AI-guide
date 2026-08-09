@@ -180,14 +180,18 @@ function PCView() {
 
             <div className="pt-4 border-t border-zinc-100 flex items-center justify-between">
               <button
-                onClick={() => router.push("/spots/10001?showStory=true")}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-[#FFF0ED] text-[#FF5B45] hover:bg-[#FFE0DB] transition-colors shadow-sm"
+                onClick={() => {
+                  handlePlayVoice();
+                  toast.success("正在为您即时开启本地语音导览解说...");
+                  setTimeout(() => router.push("/spots/10001?showStory=true&autoplay=true"), 300);
+                }}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-[#FFF0ED] text-[#FF5B45] hover:bg-[#FFE0DB] transition-colors shadow-sm cursor-pointer"
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
                   <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
                 </svg>
-                语音讲解
+                {isPlaying ? "暂停讲解" : "语音讲解"}
               </button>
 
               <button
@@ -486,7 +490,7 @@ function MobileChengduPanel() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
 
-  const handleAudioPlay = () => {
+  const handlePlayVoice = () => {
     if (isPlaying) {
       audio?.pause();
       setIsPlaying(false);

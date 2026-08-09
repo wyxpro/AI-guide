@@ -1057,21 +1057,21 @@ export function RoutesScreen() {
       {/* 1. Integrated Header (Mobile only) */}
       <div className="md:hidden flex items-center justify-between px-4 h-14 bg-white border-b border-zinc-200/80 shadow-sm z-40 flex-shrink-0">
         <div className="flex items-center gap-2">
-          {/* Mobile Left Header City Selector Pill (Moved from right) */}
+          {/* Mobile Left Header Hamburger Menu Button */}
           <button
             onClick={() => {
-              setShowLeftSidebar(true);
+              setShowLeftSidebar(!showLeftSidebar);
               setShowRightSidebar(false);
             }}
-            className="px-3 h-8.5 rounded-full bg-[#D2A053] text-white flex items-center gap-1 text-[11px] font-black shadow-sm active:scale-95 transition-all cursor-pointer"
+            className="w-9 h-9 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 flex items-center justify-center font-bold shadow-xs border border-zinc-200/60 active:scale-95 transition-all cursor-pointer"
+            title="展开菜单"
           >
-            <MapPin className="w-3.5 h-3.5" />
-            <span>{selectedCity}</span>
+            <Menu className="w-5 h-5 text-zinc-700" />
           </button>
         </div>
 
         {/* Integrated Top Search in mobile header */}
-        <div className="flex-1 max-w-[210px] h-8.5 mx-2 flex items-center bg-zinc-100/90 rounded-full px-2.5 border border-zinc-200/40">
+        <div className="flex-1 max-w-[170px] h-8.5 mx-2 flex items-center bg-zinc-100/90 rounded-full px-2.5 border border-zinc-200/40">
           <Search className="w-3.5 h-3.5 text-zinc-400 mr-1.5 flex-shrink-0" />
           <input
             value={searchQuery}
@@ -1082,7 +1082,26 @@ export function RoutesScreen() {
           />
         </div>
 
-        <div className="flex items-center gap-2" />
+        {/* Mobile Right Header: City Pill + Blue Chat Button */}
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => {
+              setShowLeftSidebar(true);
+              setShowRightSidebar(false);
+            }}
+            className="px-2.5 h-8.5 rounded-full bg-[#D2A053] text-white flex items-center gap-1 text-[10.5px] font-black shadow-xs active:scale-95 transition-all cursor-pointer"
+          >
+            <MapPin className="w-3 h-3" />
+            <span>{selectedCity}</span>
+          </button>
+          <button
+            onClick={() => setShowFloatChat(!showFloatChat)}
+            className="w-8.5 h-8.5 rounded-full bg-[#2563EB] text-white shadow-md shadow-blue-500/30 flex items-center justify-center active:scale-95 transition-all cursor-pointer"
+            title="智能向导小慧"
+          >
+            <MessageSquare className="w-4.5 h-4.5" />
+          </button>
+        </div>
       </div>
 
       {/* 2. Main Workspace */}
@@ -1375,14 +1394,6 @@ export function RoutesScreen() {
               title="路线合集"
             >
               <BookOpen className="w-5 h-5" />
-            </button>
-            {/* 智能向导小慧 icon button placed 3 spaces (mt-3) below 路线合集 button */}
-            <button
-              onClick={() => setShowFloatChat(!showFloatChat)}
-              className="w-10 h-10 rounded-xl bg-[#2563EB] text-white shadow-lg shadow-blue-500/30 border border-blue-400 flex items-center justify-center font-bold hover:bg-[#1D4ED8] active:scale-95 transition-all cursor-pointer mt-3 group"
-              title="智能向导小慧"
-            >
-              <MessageSquare className="w-5 h-5 animate-pulse" />
             </button>
           </div>
 
