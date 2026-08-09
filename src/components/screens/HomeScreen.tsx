@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search, MapPin, ChevronRight, Star, Clock } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { getLocalScenicImage } from "@/lib/scenic-image";
 
 const SPRING = { type: "spring" as const, stiffness: 300, damping: 32 };
@@ -181,7 +182,7 @@ function PCView() {
             <div className="pt-4 border-t border-zinc-100 flex items-center justify-between">
               <button
                 onClick={() => {
-                  handlePlayVoice();
+                  handleAudioPlay();
                   toast.success("正在为您即时开启本地语音导览解说...");
                   setTimeout(() => router.push("/spots/10001?showStory=true&autoplay=true"), 300);
                 }}
@@ -545,7 +546,10 @@ function MobileChengduPanel() {
         <div className="flex items-center gap-3">
           {/* Audio/Explain button */}
           <div
-            onClick={() => router.push("/spots/10001?showStory=true")}
+            onClick={() => {
+              toast.success("正在为您即时开启本地语音导览解说...");
+              router.push("/spots/10001?showStory=true&autoplay=true");
+            }}
             className="flex flex-col items-center cursor-pointer select-none group"
           >
             <div className="w-8 h-8 rounded-full flex items-center justify-center shadow-sm transition-all bg-[#FFF0ED] text-[#FF5B45] hover:bg-[#FFE0DB]">
