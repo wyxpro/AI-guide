@@ -69,6 +69,7 @@ export function ProfileScreen() {
   const [showVipModal, setShowVipModal] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
+  const [selectedPosterSpot, setSelectedPosterSpot] = useState<any>(null);
   const [allSpots, setAllSpots] = useState<any[]>([]);
 
   // States for sub-views
@@ -2275,10 +2276,13 @@ export function ProfileScreen() {
                 {selectedPosterSpot && (
                   <div className="pt-2">
                     <PosterGenerator
-                      spotName={selectedPosterSpot.name}
-                      spotImage={selectedPosterSpot.img}
-                      userName={displayName}
-                      userAvatar={profileAvatar}
+                      data={{
+                        userName: displayName,
+                        spotsVisited: spotCount || 5,
+                        favoriteSpot: selectedPosterSpot.name,
+                        date: new Date().toLocaleDateString("zh-CN"),
+                        badge: selectedPosterSpot.tag || "文旅打卡"
+                      }}
                       onClose={() => setSelectedPosterSpot(null)}
                     />
                   </div>
