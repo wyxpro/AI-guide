@@ -75,15 +75,14 @@ export function BottomTabBar() {
                   animate={{ scale: active ? 1.15 : 1, y: active ? -2 : 0 }}
                   whileTap={{ scale: 0.9 }}
                   transition={{ type: "spring", stiffness: 450, damping: 22 }}
-                  className="relative w-13 h-13 rounded-full border-2 border-white shadow-[0_6px_18px_rgba(79,111,82,0.35)] bg-[#1A2520] flex items-center justify-center p-0.5"
+                  className="relative w-13 h-13 rounded-full border-2 border-white shadow-[0_6px_18px_rgba(79,111,82,0.35)] bg-white flex items-center justify-center p-1 overflow-hidden"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src="/images/spots/10007.webp"
-                    alt="AI数字人导游"
-                    className="w-full h-full object-cover rounded-full"
+                    src="/image/logo.png"
+                    alt="旅行家Pro Logo"
+                    className="w-full h-full object-contain rounded-full"
                   />
-                  <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white animate-pulse" />
                 </motion.div>
                 <span
                   className="text-[9.5px] font-black mt-1 leading-none transition-colors"
@@ -117,13 +116,6 @@ export function BottomTabBar() {
                 >
                   {tab.label}
                 </span>
-                {active && (
-                  <motion.div
-                    layoutId="tab-indicator"
-                    className="absolute bottom-0.5 w-6 h-1 rounded-full bg-[#4F6F52]"
-                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  />
-                )}
               </div>
             );
             return tab.href

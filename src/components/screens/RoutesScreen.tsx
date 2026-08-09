@@ -1201,10 +1201,10 @@ export function RoutesScreen() {
                   {INTERESTS.map(item => {
                     const active = selectedInterests.includes(item.id);
                     const activeStyles: Record<string, string> = {
-                      history: "bg-rose-500 border-rose-500 text-white shadow-sm shadow-rose-500/10 hover:bg-rose-600",
-                      nature: "bg-emerald-500 border-emerald-500 text-white shadow-sm shadow-emerald-500/10 hover:bg-emerald-600",
-                      family: "bg-sky-500 border-sky-500 text-white shadow-sm shadow-sky-500/10 hover:bg-sky-600",
-                      cultural: "bg-amber-500 border-amber-500 text-white shadow-sm shadow-amber-500/10 hover:bg-amber-600",
+                      instagrammable: "bg-gradient-to-r from-pink-500 to-rose-500 border-pink-400 text-white shadow-md shadow-pink-500/25 font-extrabold hover:from-pink-600 hover:to-rose-600",
+                      special_forces: "bg-gradient-to-r from-amber-500 to-orange-500 border-amber-400 text-black shadow-md shadow-amber-500/25 font-black hover:from-amber-600 hover:to-orange-600",
+                      nature: "bg-gradient-to-r from-emerald-600 to-teal-600 border-emerald-500 text-white shadow-md shadow-emerald-600/25 font-bold hover:from-emerald-700 hover:to-teal-700",
+                      family: "bg-gradient-to-r from-indigo-600 to-blue-600 border-indigo-500 text-white shadow-md shadow-indigo-600/25 font-bold hover:from-indigo-700 hover:to-blue-700",
                     };
                     return (
                       <button
@@ -1212,7 +1212,7 @@ export function RoutesScreen() {
                         onClick={() => {
                           setSelectedInterests(prev => prev.includes(item.id) ? prev.filter(x => x !== item.id) : [...prev, item.id]);
                         }}
-                        className={`py-1.5 rounded-lg border text-[10px] font-bold transition-all ${active ? activeStyles[item.id] : "bg-white text-zinc-600 border-zinc-200 hover:bg-neutral-50"}`}
+                        className={`py-1.5 rounded-lg border text-[10px] font-bold transition-all cursor-pointer ${active ? (activeStyles[item.id] || "bg-[#4F6F52] text-white") : "bg-white text-zinc-600 border-zinc-200 hover:bg-neutral-50"}`}
                       >
                         {item.emoji} {item.label}
                       </button>
@@ -1379,11 +1379,10 @@ export function RoutesScreen() {
             <button onClick={() => mapInstanceRef.current?.zoomOut()} className="w-10 h-10 rounded-xl bg-white/95 backdrop-blur-md border border-zinc-200/80 shadow-lg flex items-center justify-center font-bold text-zinc-700 hover:bg-neutral-50 active:scale-95">-</button>
             <button
               onClick={() => setShowRouteHistoryModal(true)}
-              className="px-2.5 py-2 rounded-xl bg-[#3A4D39] text-white backdrop-blur-md border border-[#4F6F52] shadow-xl flex items-center gap-1.5 font-bold text-[11px] hover:bg-[#4F6F52] active:scale-95 transition-all cursor-pointer mt-1"
+              className="w-10 h-10 rounded-xl bg-[#FF4D8D] text-white shadow-lg shadow-pink-500/30 border border-pink-400 flex items-center justify-center font-bold hover:bg-[#E03E79] active:scale-95 transition-all cursor-pointer"
               title="路线合集"
             >
-              <Compass className="w-3.5 h-3.5 text-[#D2A053]" />
-              <span>路线合集</span>
+              <BookOpen className="w-5 h-5" />
             </button>
           </div>
 
@@ -1754,7 +1753,7 @@ export function RoutesScreen() {
                     duration: "约3.5小时",
                     distance: "8.6km",
                     spotsCount: "5大热搜地标",
-                    spots: currentSpots.slice(0, 5).map(s => s.name),
+                    spotObjects: currentSpots.slice(0, 5),
                     advice: "建议 16:30 前往最核心地标捕捉傍晚魔幻光影，随后乘坐缆车或漫步江畔，19:30 欣赏璀璨灯火，摄影出片率最高！",
                     routeData: {
                       name: `【${selectedCity}网红绝美打卡】出片专线`,
@@ -1774,7 +1773,7 @@ export function RoutesScreen() {
                     duration: "约7.0小时",
                     distance: `约 ${(currentSpots.length * 2.2).toFixed(1)}km`,
                     spotsCount: `贯穿全城 ${currentSpots.length} 大名胜`,
-                    spots: currentSpots.map(s => s.name),
+                    spotObjects: currentSpots,
                     advice: "适合精力充沛的极速打卡玩家，建议穿轻便运动鞋并准备移动电源，早晨 08:30 出发，无缝衔接地铁与缆车。",
                     routeData: {
                       name: `【${selectedCity}全景极限特种兵】全城名胜贯通线`,
@@ -1794,7 +1793,7 @@ export function RoutesScreen() {
                     duration: "约4.5小时",
                     distance: "6.2km",
                     spotsCount: "4大古韵街区",
-                    spots: currentSpots.slice(0, 4).map(s => s.name),
+                    spotObjects: currentSpots.slice(0, 4),
                     advice: "适合喜欢沉浸式感受人文烟火气的朋友，可以在老街茶馆听戏品茶，尝古法特色小吃。",
                     routeData: {
                       name: `【${selectedCity}老街茶馆】市井民俗慢游专线`,
@@ -1823,13 +1822,26 @@ export function RoutesScreen() {
                       <span className="text-[11px] font-mono text-zinc-500 font-semibold">{rItem.distance}</span>
                     </div>
 
-                    {/* Spot flow pills */}
-                    <div className="flex flex-wrap gap-1.5 items-center text-xs">
-                      {rItem.spots.map((spotName, idx) => (
-                        <span key={idx} className="inline-flex items-center gap-1 text-[11px] bg-white border border-zinc-200 px-2 py-0.5 rounded-lg text-zinc-700 font-semibold">
-                          <span className="text-[9px] text-[#D2A053] font-bold">{idx + 1}</span>
-                          {spotName}
-                        </span>
+                    {/* Spot flow image cards */}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 my-1">
+                      {rItem.spotObjects.map((sObj, idx) => (
+                        <div key={idx} className="flex flex-col bg-white rounded-xl overflow-hidden border border-zinc-200/90 shadow-2xs group hover:border-[#D2A053] transition-all">
+                          <div className="relative h-16 w-full overflow-hidden bg-zinc-100">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={sObj.img || "/images/spots/10001.webp"}
+                              alt={sObj.name}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                            <span className="absolute top-1 left-1 bg-black/65 backdrop-blur-xs text-[8.5px] text-white px-1.5 py-0.5 rounded font-extrabold">
+                              {idx + 1}
+                            </span>
+                          </div>
+                          <div className="p-1.5">
+                            <span className="text-[11px] font-extrabold text-zinc-900 block truncate">{sObj.name}</span>
+                            <span className="text-[9px] text-[#D2A053] font-bold block mt-0.5">{sObj.type || "景区名胜"}</span>
+                          </div>
+                        </div>
                       ))}
                     </div>
 

@@ -1101,7 +1101,7 @@ export function QAScreen() {
             <motion.div animate={{ backgroundColor: loading ? "#D2A053" : "#34C759" }}
               className="w-2 h-2 rounded-full" />
             <span className="text-[11px] font-medium" style={{ color: loading ? "#D2A053" : "rgba(255,255,255,0.75)" }}>
-              {loading ? "正在合成语音播放..." : "旅行家Pro导览官 · 在线"}
+              {loading ? "正在合成语音播放" : "旅行家Pro导览官 · 在线"}
             </span>
           </div>
           <div className="flex flex-col items-end gap-2.5 relative z-30">
@@ -1382,7 +1382,7 @@ export function QAScreen() {
           <div className="absolute top-8 left-4 right-4 flex justify-between items-center z-30 pointer-events-auto">
             <div className="text-[11px] font-medium tracking-wide bg-black/40 backdrop-blur px-3 py-1 rounded-full border border-white/10 flex items-center gap-2" style={{ color: loading ? "#D2A053" : "rgba(255,255,255,0.75)" }}>
               <span className={`w-2 h-2 rounded-full ${loading ? "bg-[#D2A053] animate-ping" : "bg-[#34C759]"}`} />
-              <span>{loading ? "正在合成语音播放..." : "旅行家Pro导览官 · 在线"}</span>
+              <span>{loading ? "正在合成语音播放" : "旅行家Pro导览官 · 在线"}</span>
             </div>
             <div className="flex gap-2 relative z-30 pointer-events-auto">
               <motion.button whileTap={{ scale: 0.85 }} onClick={(e) => { e.stopPropagation(); setShowBgMenu(!showBgMenu); setShowPersonaMenu(false); }}

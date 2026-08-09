@@ -64,6 +64,11 @@ export function ProfileScreen() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showVisitedSpots, setShowVisitedSpots] = useState(false);
   const [showCheckinHistory, setShowCheckinHistory] = useState(false);
+  const [showTravelReportModal, setShowTravelReportModal] = useState(false);
+  const [showFavoritesModal, setShowFavoritesModal] = useState(false);
+  const [showVipModal, setShowVipModal] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [showAboutModal, setShowAboutModal] = useState(false);
   const [allSpots, setAllSpots] = useState<any[]>([]);
 
   // States for sub-views
@@ -336,7 +341,7 @@ export function ProfileScreen() {
             {/* Featured Hero Card (Elevated Assessment Card) */}
             <div className="-mt-6 mx-4 relative z-10">
               <div
-                onClick={() => setShowVisitedSpots(true)}
+                onClick={() => setShowTravelReportModal(true)}
                 className="bg-gradient-to-r from-white via-white to-[#F5F3FF] border border-white/90 shadow-[0_8px_24px_rgba(0,0,0,0.06)] rounded-3xl p-4 flex items-center justify-between cursor-pointer active:scale-[0.99] transition-all group"
               >
                 <div className="flex items-center gap-3.5">
@@ -361,7 +366,7 @@ export function ProfileScreen() {
                   colorBg: "bg-purple-100/80 text-purple-600",
                   title: "我的收藏",
                   desc: "已收藏的景区、导览与路线",
-                  onClick: () => setActiveSection("favorites")
+                  onClick: () => setShowFavoritesModal(true)
                 },
                 {
                   id: "visits",
@@ -385,7 +390,7 @@ export function ProfileScreen() {
                   colorBg: "bg-amber-100/80 text-amber-600",
                   title: "会员订阅",
                   desc: "开通尊享全网智能伴游特权",
-                  onClick: () => toast.success("您已享有 VIP 尊享无界伴游特权！")
+                  onClick: () => setShowVipModal(true)
                 },
                 {
                   id: "privacy",
@@ -393,10 +398,7 @@ export function ProfileScreen() {
                   colorBg: "bg-emerald-100/80 text-emerald-600",
                   title: "隐私安全",
                   desc: "账号安全加固与加密管理",
-                  onClick: () => {
-                    setActiveSection("settings");
-                    setSettingsSubView("privacy");
-                  }
+                  onClick: () => setShowPrivacyModal(true)
                 },
                 {
                   id: "about",
@@ -404,10 +406,7 @@ export function ProfileScreen() {
                   colorBg: "bg-slate-100/80 text-slate-600",
                   title: "关于我们",
                   desc: "旅行家Pro 智慧导览 v2.0",
-                  onClick: () => {
-                    setActiveSection("settings");
-                    setSettingsSubView("about");
-                  }
+                  onClick: () => setShowAboutModal(true)
                 },
                 {
                   id: "admin",
@@ -2171,6 +2170,394 @@ export function ProfileScreen() {
                     })}
                   </div>
                 )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      {/* Travel Assessment & Publicity Poster Modal ("查看行程评估报告") */}
+      <AnimatePresence>
+        {showTravelReportModal && (
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md" onClick={() => setShowTravelReportModal(false)}>
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={SPRING}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-lg max-h-[88vh] bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col text-zinc-800 border border-zinc-200"
+            >
+              {/* Report Header Banner */}
+              <div className="relative p-6 bg-gradient-to-br from-[#7C3AED] via-[#6D28D9] to-[#4C1D95] text-white flex-shrink-0">
+                <button
+                  onClick={() => setShowTravelReportModal(false)}
+                  className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-white/20 border border-white/30 backdrop-blur flex items-center justify-center text-yellow-300">
+                    <Trophy className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-black text-purple-200 bg-white/10 px-2.5 py-0.5 rounded-full border border-white/20">
+                      多模态AI智游评估
+                    </span>
+                    <h3 className="text-xl font-extrabold tracking-tight mt-1" style={{ fontFamily: "var(--font-noto-serif)" }}>
+                      个人行程评估报告
+                    </h3>
+                  </div>
+                </div>
+
+                {/* Score badge */}
+                <div className="mt-5 p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-between">
+                  <div>
+                    <span className="text-xs text-purple-200 font-medium">综合探索等级</span>
+                    <h4 className="text-lg font-black text-white">98分 · 资深文旅探索家</h4>
+                  </div>
+                  <div className="w-12 h-12 rounded-full bg-yellow-400 text-purple-950 font-black text-lg flex items-center justify-center shadow-lg border-2 border-white">
+                    S+
+                  </div>
+                </div>
+              </div>
+
+              {/* Report Content Body */}
+              <div className="flex-1 overflow-y-auto p-5 space-y-4">
+                {/* AI Advice Summary */}
+                <div className="p-4 rounded-2xl bg-purple-50 border border-purple-100 space-y-2">
+                  <h4 className="font-extrabold text-xs text-purple-900 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+                    AI 伴游智能分析结论
+                  </h4>
+                  <p className="text-xs text-purple-800 leading-relaxed font-medium">
+                    根据您最近打卡的 <strong>{spotCount || 5}</strong> 大景点及漫游轨迹，您偏爱包含深厚文史底蕴与拍照热搜的地标景观。系统为您量身生成专属的景区打卡宣传海报！
+                  </p>
+                </div>
+
+                {/* Poster Showcase Section */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-extrabold text-sm text-zinc-900">打卡景点宣传海报</h4>
+                    <span className="text-[10px] text-zinc-400">点击景点生成高清晰海报</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { id: 10011, name: "洪崖洞民俗风貌区", img: "/images/spots/10011.webp", tag: "夜景首选" },
+                      { id: 10001, name: "故宫博物院", img: "/images/spots/10001.webp", tag: "帝都胜景" },
+                      { id: 10005, name: "东方明珠广播电视塔", img: "/images/spots/10005.webp", tag: "时尚地标" },
+                      { id: 10067, name: "李子坝轻轨穿楼", img: "/images/spots/10067.webp", tag: "魔幻城际" },
+                    ].map((posterSpot) => (
+                      <div
+                        key={posterSpot.id}
+                        onClick={() => setSelectedPosterSpot(posterSpot)}
+                        className="group relative rounded-2xl overflow-hidden border border-zinc-200 shadow-sm cursor-pointer hover:shadow-md transition-all"
+                      >
+                        <div className="h-32 w-full relative">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={posterSpot.img} alt={posterSpot.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                          <span className="absolute top-2 left-2 bg-black/60 backdrop-blur-xs text-[8.5px] text-white px-2 py-0.5 rounded-full font-bold">
+                            {posterSpot.tag}
+                          </span>
+                        </div>
+                        <div className="p-2.5 bg-white flex items-center justify-between">
+                          <span className="text-xs font-extrabold text-zinc-800 truncate">{posterSpot.name}</span>
+                          <Share2 className="w-3.5 h-3.5 text-purple-600 group-hover:scale-110 transition-transform" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Poster Generator Container */}
+                {selectedPosterSpot && (
+                  <div className="pt-2">
+                    <PosterGenerator
+                      spotName={selectedPosterSpot.name}
+                      spotImage={selectedPosterSpot.img}
+                      userName={displayName}
+                      userAvatar={profileAvatar}
+                      onClose={() => setSelectedPosterSpot(null)}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Bottom Action Footer */}
+              <div className="p-4 border-t border-zinc-100 bg-zinc-50 flex gap-2 justify-end flex-shrink-0">
+                <button
+                  onClick={() => {
+                    toast.success("行程评估报告已生成并可随时下载分享！");
+                    setShowTravelReportModal(false);
+                  }}
+                  className="w-full py-3 rounded-xl bg-[#7C3AED] text-white font-extrabold text-xs shadow-md hover:bg-[#6D28D9] active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <Share2 className="w-4 h-4" />
+                  生成并保存全部宣传海报
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Dedicated My Favorites Modal ("我的收藏") */}
+      <AnimatePresence>
+        {showFavoritesModal && (
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md" onClick={() => setShowFavoritesModal(false)}>
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={SPRING}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-lg max-h-[85vh] bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col text-zinc-800 border border-zinc-200"
+            >
+              {/* Header */}
+              <div className="p-5 border-b border-zinc-100 flex items-center justify-between flex-shrink-0">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center shadow-sm">
+                    <Heart className="w-5 h-5 fill-current" />
+                  </div>
+                  <div>
+                    <h3 className="font-extrabold text-base text-zinc-900">我的收藏库</h3>
+                    <p className="text-xs text-zinc-400">已收藏的景区、伴游广播与精选路线</p>
+                  </div>
+                </div>
+                <button onClick={() => setShowFavoritesModal(false)} className="w-8 h-8 rounded-full hover:bg-zinc-100 flex items-center justify-center text-zinc-400 transition-colors">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Favorites Content */}
+              <div className="flex-1 overflow-y-auto p-5 space-y-3.5">
+                {favorites.length === 0 ? (
+                  <div className="text-center py-16 text-zinc-400">
+                    <Heart className="w-12 h-12 mx-auto text-zinc-300 mb-2" />
+                    <p className="text-xs font-bold">暂无收藏项目</p>
+                    <p className="text-[10px] mt-1">在景点详情页点击心形图标即可一键收藏</p>
+                  </div>
+                ) : (
+                  favorites.map((fav) => {
+                    const spot = allSpots.find(s => s.id === fav.spotId);
+                    const title = fav.spotName || (spot ? spot.name : "收藏经典景区");
+                    const imgUrl = fav.spotImage || (spot ? spot.img : "/images/spots/10001.webp");
+
+                    return (
+                      <div key={fav.id} className="p-3 rounded-2xl border border-zinc-200/80 bg-[#FAF9F6] flex items-center gap-3.5 group hover:border-purple-300 transition-all">
+                        <img src={imgUrl} alt={title} className="w-16 h-16 rounded-xl object-cover flex-shrink-0 shadow-sm" />
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-extrabold text-xs text-zinc-900 truncate">{title}</h4>
+                          <span className="text-[9.5px] font-bold text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full inline-block mt-1">
+                            {fav.type === "spot" ? "精选景点" : "音频导览"}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => unfavorite(fav.id)}
+                          className="w-8 h-8 rounded-xl bg-red-50 text-red-500 hover:bg-red-100 flex items-center justify-center transition-colors cursor-pointer"
+                          title="取消收藏"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Dedicated VIP Membership Modal ("会员订阅") */}
+      <AnimatePresence>
+        {showVipModal && (
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md" onClick={() => setShowVipModal(false)}>
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={SPRING}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-lg bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col text-zinc-800 border border-zinc-200"
+            >
+              {/* VIP Gold Card Header */}
+              <div className="p-6 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-black relative flex-shrink-0">
+                <button onClick={() => setShowVipModal(false)} className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/10 hover:bg-black/20 flex items-center justify-center text-black transition-colors cursor-pointer">
+                  <X className="w-4 h-4" />
+                </button>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-black text-amber-400 flex items-center justify-center shadow-lg">
+                    <Sparkles className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-black text-black/70 bg-white/30 px-2.5 py-0.5 rounded-full">
+                      旅行家Pro · 尊享黑金卡
+                    </span>
+                    <h3 className="text-xl font-extrabold tracking-tight mt-1">VIP 无界伴游会员</h3>
+                  </div>
+                </div>
+              </div>
+
+              {/* VIP Privileges Body */}
+              <div className="p-5 space-y-4 max-h-[60vh] overflow-y-auto">
+                <h4 className="font-extrabold text-xs text-zinc-800">尊享四大核心专属特权</h4>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { title: "AI 双向实时对谈", desc: "无限次语音即时响应与多方言支持" },
+                    { title: "4K 3D 沉浸地图", desc: "专属全景高精三维轨迹绘制" },
+                    { title: "全城特种兵路线", desc: "AI 高效极限规划与一键无缝导航" },
+                    { title: "专属声音音色定制", desc: "解锁知性女声与磁性男声高品质声音" },
+                  ].map((p, idx) => (
+                    <div key={idx} className="p-3 rounded-2xl bg-amber-50/60 border border-amber-200/80 space-y-1">
+                      <h5 className="font-extrabold text-xs text-amber-950">{p.title}</h5>
+                      <p className="text-[10px] text-amber-900/80 leading-relaxed">{p.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="p-4 border-t border-zinc-100 bg-zinc-50">
+                <button
+                  onClick={() => {
+                    toast.success("已为您激活 VIP 无界伴游终身尊享卡！");
+                    setShowVipModal(false);
+                  }}
+                  className="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-extrabold text-xs shadow-md hover:from-amber-600 hover:to-yellow-600 active:scale-95 transition-all cursor-pointer"
+                >
+                  立即领用 VIP 尊享特权卡
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Dedicated Privacy Modal ("隐私安全") */}
+      <AnimatePresence>
+        {showPrivacyModal && (
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md" onClick={() => setShowPrivacyModal(false)}>
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={SPRING}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-lg bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col text-zinc-800 border border-zinc-200"
+            >
+              {/* Header */}
+              <div className="p-5 border-b border-zinc-100 flex items-center justify-between flex-shrink-0">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center shadow-sm">
+                    <Shield className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-extrabold text-base text-zinc-900">隐私与数据安全中心</h3>
+                    <p className="text-xs text-zinc-400">端到端数据加密与自主权限保护</p>
+                  </div>
+                </div>
+                <button onClick={() => setShowPrivacyModal(false)} className="w-8 h-8 rounded-full hover:bg-zinc-100 flex items-center justify-center text-zinc-400 transition-colors">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Toggles */}
+              <div className="p-5 space-y-4">
+                <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-between">
+                  <span className="text-xs font-extrabold text-emerald-900">安全防护级别：100分 (极其安全)</span>
+                  <span className="text-[10px] font-bold text-white bg-emerald-600 px-2 py-0.5 rounded-full">AES-256 加密</span>
+                </div>
+
+                {[
+                  { title: "行程足迹公开保护", desc: "仅允许个人查看景区打卡轨迹", state: privacyShareFootprint, setter: setPrivacyShareFootprint },
+                  { title: "AI 交互数据加密", desc: "对话文本及音色数据本地脱敏存储", state: privacyAIActive, setter: setPrivacyAIActive },
+                  { title: "高精度 GPS 动态定位", desc: "仅在浏览地图与导览时获取精准坐标", state: privacyShareFav, setter: setPrivacyShareFav },
+                ].map((item, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-3 rounded-2xl border border-zinc-200/80 bg-neutral-50">
+                    <div>
+                      <h4 className="font-extrabold text-xs text-zinc-800">{item.title}</h4>
+                      <p className="text-[10px] text-zinc-400 mt-0.5">{item.desc}</p>
+                    </div>
+                    <button
+                      onClick={() => item.setter(!item.state)}
+                      className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer ${item.state ? "bg-emerald-500" : "bg-zinc-300"}`}
+                    >
+                      <span className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${item.state ? "translate-x-5" : ""}`} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Footer */}
+              <div className="p-4 border-t border-zinc-100 bg-zinc-50 flex justify-end">
+                <button
+                  onClick={() => {
+                    toast.success("隐私安全设置已全局生效");
+                    setShowPrivacyModal(false);
+                  }}
+                  className="px-5 py-2.5 rounded-xl bg-emerald-600 text-white font-extrabold text-xs hover:bg-emerald-700 active:scale-95 transition-all cursor-pointer"
+                >
+                  保存安全策略
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Dedicated About Modal ("关于我们") */}
+      <AnimatePresence>
+        {showAboutModal && (
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md" onClick={() => setShowAboutModal(false)}>
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={SPRING}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-lg bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col text-zinc-800 border border-zinc-200"
+            >
+              {/* Header */}
+              <div className="p-6 bg-[#1A2520] text-white text-center relative flex-shrink-0">
+                <button onClick={() => setShowAboutModal(false)} className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors cursor-pointer">
+                  <X className="w-4 h-4" />
+                </button>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/image/logo.png" alt="Logo" className="w-16 h-16 mx-auto rounded-2xl shadow-lg border-2 border-white/20 object-contain bg-white p-1" />
+                <h3 className="text-lg font-extrabold tracking-wide mt-3" style={{ fontFamily: "var(--font-noto-serif)" }}>
+                  旅行家Pro · 智慧文旅伴游
+                </h3>
+                <span className="text-[10px] font-mono text-zinc-400 bg-white/10 px-2.5 py-0.5 rounded-full mt-1 inline-block">
+                  v2.0.4 Release (Build 2026.08)
+                </span>
+              </div>
+
+              {/* Tech Architecture Stack */}
+              <div className="p-5 space-y-4 max-h-[55vh] overflow-y-auto">
+                <h4 className="font-extrabold text-xs text-zinc-800">AI 多模态底层技术架构</h4>
+                <div className="flex flex-wrap gap-1.5">
+                  {["DeepSeek-V3 LLM", "StepFun Audio 2.5", "iFlytek Voice TTS", "Live2D HD Model", "AMap 3D WebGL", "Next.js 16 AppRouter"].map((tech, idx) => (
+                    <span key={idx} className="text-[10.5px] font-mono font-extrabold bg-zinc-100 text-zinc-700 px-2.5 py-1 rounded-lg border border-zinc-200">
+                      ⚡ {tech}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200/80 text-xs text-zinc-600 leading-relaxed space-y-1.5">
+                  <h5 className="font-extrabold text-zinc-900">品牌愿景与探索</h5>
+                  <p>用双脚丈量世界，用声音感受历史。致力于通过 AIGC 多模态交互与三维空间算法，为全网游客打造最贴心、最懂景区的智能伴游体验。</p>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="p-4 border-t border-zinc-100 bg-zinc-50 text-center">
+                <button
+                  onClick={() => setShowAboutModal(false)}
+                  className="w-full py-3 rounded-xl bg-[#3A4D39] text-white font-extrabold text-xs hover:bg-[#4F6F52] active:scale-95 transition-all cursor-pointer"
+                >
+                  关闭
+                </button>
               </div>
             </motion.div>
           </div>
