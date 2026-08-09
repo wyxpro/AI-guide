@@ -2174,6 +2174,8 @@ export function ProfileScreen() {
             </motion.div>
           </div>
         )}
+      </AnimatePresence>
+
       {/* Travel Assessment & Publicity Poster Modal ("查看行程评估报告") */}
       <AnimatePresence>
         {showTravelReportModal && (
