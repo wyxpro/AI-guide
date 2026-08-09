@@ -39,16 +39,21 @@ const getShortName = (name: string) => {
 };
 
 const CITY_BANNERS: Record<string, string> = {
-  hot: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=800&q=80",
-  hangzhou: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&q=80",
-  xian: "https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=800&q=80",
-  chongqing: "https://images.unsplash.com/photo-1542359649-31e03cd4d909?w=800&q=80",
-  chengdu: "https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=800&q=80",
-  beijing: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=800&q=80",
-  changsha: "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=800&q=80",
-  wuhan: "https://images.unsplash.com/photo-1542224566-6e85f2e6772f?w=800&q=80",
-  guilin: "https://images.unsplash.com/photo-1523731407965-2430cd12f5e4?w=800&q=80",
-  shanghai: "https://images.unsplash.com/photo-1538428494232-9c0d8a3ab403?w=800&q=80",
+  hot: "/images/spots/10001.webp",
+  beijing: "/images/spots/10001.webp",
+  shanghai: "/images/spots/10009.webp",
+  chongqing: "/images/spots/10011.webp",
+  chengdu: "/images/spots/10007.webp",
+  xian: "/images/spots/10004.webp",
+  hangzhou: "/images/spots/10005.webp",
+  guilin: "/images/spots/10017.webp",
+  changsha: "/images/spots/10025.webp",
+  wuhan: "/images/spots/10027.webp",
+  nanjing: "/images/spots/10029.webp",
+  suzhou: "/images/spots/10013.webp",
+  guangzhou: "/images/spots/10031.webp",
+  qingdao: "/images/spots/10078.webp",
+  xiamen: "/images/spots/10015.webp",
 };
 
 export function SpotsScreen() {
@@ -120,20 +125,20 @@ export function SpotsScreen() {
       <div className="px-4 pt-2 pb-1.5 bg-white flex-shrink-0 border-b border-[#EEF2F0]">
         <div className="flex gap-2.5 overflow-x-auto scrollbar-none pb-0.5">
           {[
-            { city: "北京", tab: "beijing", title: "故宫红墙", img: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?auto=format&fit=crop&w=300&q=90" },
-            { city: "上海", tab: "shanghai", title: "外滩天际", img: "https://images.unsplash.com/photo-1538428494232-9c0d8a3ab403?auto=format&fit=crop&w=300&q=90" },
-            { city: "重庆", tab: "chongqing", title: "洪崖洞夜色", img: "https://images.unsplash.com/photo-1542359649-31e03cd4d909?auto=format&fit=crop&w=300&q=90" },
-            { city: "成都", tab: "chengdu", title: "大熊猫基地", img: "https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?auto=format&fit=crop&w=300&q=90" },
-            { city: "西安", tab: "xian", title: "古城晨光", img: "https://images.unsplash.com/photo-1545569341-9eb8b30979d9?auto=format&fit=crop&w=300&q=90" },
-            { city: "杭州", tab: "hangzhou", title: "西湖烟柳", img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=300&q=90" },
-            { city: "桂林", tab: "guilin", title: "漓江山水", img: "https://images.unsplash.com/photo-1523731407965-2430cd12f5e4?auto=format&fit=crop&w=300&q=90" },
-            { city: "长沙", tab: "changsha", title: "岳麓红枫", img: "https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=300&q=90" },
-            { city: "武汉", tab: "wuhan", title: "黄鹤楼古韵", img: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=300&q=90" },
-            { city: "南京", tab: "nanjing", title: "中山陵绿林", img: "https://images.unsplash.com/photo-1520116468816-95b69f847357?auto=format&fit=crop&w=300&q=90" },
-            { city: "苏州", tab: "suzhou", title: "拙政园林", img: "https://images.unsplash.com/photo-1599599810769-bcde5a160d32?auto=format&fit=crop&w=300&q=90" },
-            { city: "广州", tab: "guangzhou", title: "广州塔夜景", img: "https://images.unsplash.com/photo-1589308078059-be1415eab4c3?auto=format&fit=crop&w=300&q=90" },
-            { city: "青岛", tab: "qingdao", title: "栈桥碧海", img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=300&q=90" },
-            { city: "厦门", tab: "xiamen", title: "鼓浪屿风情", img: "https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?auto=format&fit=crop&w=300&q=90" },
+            { city: "北京", tab: "beijing", title: "故宫红墙", img: "/images/spots/10001.webp" },
+            { city: "上海", tab: "shanghai", title: "外滩天际", img: "/images/spots/10009.webp" },
+            { city: "重庆", tab: "chongqing", title: "洪崖洞夜色", img: "/images/spots/10011.webp" },
+            { city: "成都", tab: "chengdu", title: "大熊猫基地", img: "/images/spots/10007.webp" },
+            { city: "西安", tab: "xian", title: "古城晨光", img: "/images/spots/10004.webp" },
+            { city: "杭州", tab: "hangzhou", title: "西湖烟柳", img: "/images/spots/10005.webp" },
+            { city: "桂林", tab: "guilin", title: "漓江山水", img: "/images/spots/10017.webp" },
+            { city: "长沙", tab: "changsha", title: "岳麓红枫", img: "/images/spots/10025.webp" },
+            { city: "武汉", tab: "wuhan", title: "黄鹤楼古韵", img: "/images/spots/10027.webp" },
+            { city: "南京", tab: "nanjing", title: "中山陵绿林", img: "/images/spots/10029.webp" },
+            { city: "苏州", tab: "suzhou", title: "拙政园林", img: "/images/spots/10013.webp" },
+            { city: "广州", tab: "guangzhou", title: "广州塔夜景", img: "/images/spots/10031.webp" },
+            { city: "青岛", tab: "qingdao", title: "栈桥碧海", img: "/images/spots/10078.webp" },
+            { city: "厦门", tab: "xiamen", title: "鼓浪屿风情", img: "/images/spots/10015.webp" },
           ].map((banner) => {
             const isActive = activeTab === banner.tab;
             return (

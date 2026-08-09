@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Heart, MessageCircle, Clock, MapPin, Star, Volume2, Users, BookOpen, Camera, Share2, ChevronRight, ChevronLeft } from "lucide-react";
+import { ArrowLeft, Heart, MessageCircle, Clock, MapPin, Star, Volume2, Users, BookOpen, Camera, Share2, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useEazo } from "@eazo/sdk/react";
 import { request } from "@/lib/api/request";
@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { useSearchParams } from "next/navigation";
 import { StoryModePlayer } from "@/components/ui/StoryModePlayer";
 import { CameraRecognize } from "@/components/ui/CameraRecognize";
+import { getLocalScenicImage } from "@/lib/scenic-image";
 
 const SPRING = { type: "spring" as const, stiffness: 280, damping: 35 };
 
@@ -29,8 +30,6 @@ export function SpotDetailScreen({ spotId }: { spotId: string }) {
   const [speaking, setSpeaking] = useState(false);
   const [autoplayBanner, setAutoplayBanner] = useState(autoplay);
   const [nearbySpots, setNearbySpots] = useState<Array<any>>([]);
-  const [activeMedia, setActiveMedia] = useState<"image" | "video">("image");
-  const [currentImgIdx, setCurrentImgIdx] = useState(0);
   const [guideExpanded, setGuideExpanded] = useState(false);
   const [storyExpanded, setStoryExpanded] = useState(false);
 
@@ -291,62 +290,14 @@ export function SpotDetailScreen({ spotId }: { spotId: string }) {
 
           {/* Hero media section */}
           <div className="relative overflow-hidden bg-black" style={{ height: 320 }}>
-            {activeMedia === "video" ? (
-              <video
-                src="https://assets.mixkit.co/videos/preview/mixkit-scenic-view-of-a-historical-chinese-palace-41710-large.mp4"
-                controls
-                autoPlay
-                muted
-                loop
-                playsInline
-                className="w-full h-full object-cover"
+            <div className="relative w-full h-full">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={getLocalScenicImage(spot.imageUrl)}
+                alt={spot.name}
+                className="w-full h-full object-cover transition-all duration-500"
               />
-            ) : (
-              <div className="relative w-full h-full">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={
-                    [
-                      spot.imageUrl || "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800&q=80",
-                      "https://images.unsplash.com/photo-1508193638397-1c4234db14d8?w=800&q=80",
-                      "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&q=80"
-                    ][currentImgIdx]
-                  }
-                  alt={spot.name}
-                  className="w-full h-full object-cover transition-all duration-500"
-                />
-                
-                {/* Left/Right image slide controllers */}
-                {currentImgIdx > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => setCurrentImgIdx((prev) => prev - 1)}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/45 hover:bg-black/60 p-2 rounded-full text-white z-20 transition-all"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                )}
-                {currentImgIdx < 2 && (
-                  <button
-                    type="button"
-                    onClick={() => setCurrentImgIdx((prev) => prev + 1)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/45 hover:bg-black/60 p-2 rounded-full text-white z-20 transition-all"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                )}
-
-                {/* Dot indicator */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
-                  {[0, 1, 2].map((idx) => (
-                    <div
-                      key={idx}
-                      className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${idx === currentImgIdx ? "bg-white w-3" : "bg-white/40"}`}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
+            </div>
 
             {/* Dark gradient overlay for text readability */}
             <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, transparent 60%, rgba(0,0,0,0.4) 100%)" }} />
@@ -364,24 +315,6 @@ export function SpotDetailScreen({ spotId }: { spotId: string }) {
                 className="w-9 h-9 rounded-full flex items-center justify-center bg-black/35 backdrop-blur-md hover:bg-black/50 transition-colors">
                 <Heart className="w-4 h-4" fill={favorited ? "#DC2626" : "none"} style={{ color: favorited ? "#DC2626" : "white" }} />
               </motion.button>
-            </div>
-
-            {/* Media toggle tabs (Bottom Right) */}
-            <div className="absolute bottom-4 right-4 flex bg-black/40 backdrop-blur-md rounded-full p-0.5 border border-white/10 z-20">
-              <button
-                type="button"
-                onClick={() => setActiveMedia("image")}
-                className={`px-3 py-1 rounded-full text-[10px] font-bold transition-all ${activeMedia === "image" ? "bg-white text-black" : "text-white/80 hover:text-white"}`}
-              >
-                图片
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveMedia("video")}
-                className={`px-3 py-1 rounded-full text-[10px] font-bold transition-all ${activeMedia === "video" ? "bg-white text-black" : "text-white/80 hover:text-white"}`}
-              >
-                视频
-              </button>
             </div>
 
             {/* Rating overlay badge */}
@@ -485,7 +418,7 @@ export function SpotDetailScreen({ spotId }: { spotId: string }) {
                     <motion.div whileTap={{ scale: 0.98 }}
                       className="flex items-center gap-3 p-2 rounded-2xl border border-[#E6E2D8] hover:bg-neutral-50 transition-colors">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={nSpot.imageUrl} alt={nSpot.name} className="w-12 h-12 rounded-xl object-cover" />
+                      <img src={getLocalScenicImage(nSpot.imageUrl)} alt={nSpot.name} className="w-12 h-12 rounded-xl object-cover" />
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-semibold text-[#1E2522] truncate">{nSpot.name}</p>
                         <p className="text-[10px] text-[#8F9F8F] mt-0.5">
@@ -518,7 +451,7 @@ export function SpotDetailScreen({ spotId }: { spotId: string }) {
           {/* Hero thumbnail */}
           <div className="relative" style={{ height: 200 }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={spot.imageUrl || "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=600&q=80"}
+            <img src={getLocalScenicImage(spot.imageUrl)}
               alt={spot.name} className="w-full h-full object-cover" />
             <div className="absolute inset-0"
               style={{ background: "linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 55%)" }} />

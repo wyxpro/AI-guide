@@ -24,7 +24,7 @@ const QUICK_PROMPTS = [
 const BG_PRESETS = [
   { id: "beijing", label: "北京", url: "/background/北京.png" },
   { id: "hangzhou", label: "杭州", url: "/background/杭州.png" },
-  { id: "pavilion", label: "山景", url: "https://images.unsplash.com/photo-1542224566-6e85f2e6772f?auto=format&fit=crop&w=800&q=80" },
+  { id: "pavilion", label: "山景", url: "/images/spots/10024.webp" },
   { id: "chongqing", label: "重庆", url: "/background/重庆.png" },
 ];
 

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search, X, MapPin, BookOpen, ArrowLeft, Clock } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { getLocalScenicImage } from "@/lib/scenic-image";
 
 const SPRING = { type: "spring" as const, stiffness: 300, damping: 32 };
 
@@ -208,7 +209,7 @@ export function SearchScreen() {
                               style={{ background: "white", border: "1px solid #E6E2D8", boxShadow: "0 1px 6px rgba(0,0,0,0.04)" }}>
                               <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={spot.imageUrl || "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=200&q=60"}
+                                <img src={getLocalScenicImage(spot.imageUrl)}
                                   alt={spot.name} className="w-full h-full object-cover" />
                               </div>
                               <div className="flex-1 min-w-0">

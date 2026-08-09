@@ -10,25 +10,7 @@ const SPRING = { type: "spring" as const, stiffness: 280, damping: 35 };
 const CATEGORIES = ["全部", "general", "faq", "spot", "history", "transport"];
 const CATEGORY_LABELS: Record<string, string> = { general: "概况", faq: "常见问题", spot: "景点", history: "历史", transport: "交通" };
 
-const getDefaultCover = (title: string) => {
-  const t = title || "";
-  if (t.includes("餐") || t.includes("食") || t.includes("吃") || t.includes("饭") || t.includes("菜") || t.includes("饮")) {
-    return "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80"; // Dining
-  }
-  if (t.includes("亭") || t.includes("历史") || t.includes("文献") || t.includes("阁") || t.includes("楼")) {
-    return "https://images.unsplash.com/photo-1590001155093-a3c66ab0c3ff?auto=format&fit=crop&w=600&q=80"; // Pavilion/History
-  }
-  if (t.includes("交通") || t.includes("指南") || t.includes("怎么走") || t.includes("地铁") || t.includes("公交") || t.includes("路")) {
-    return "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=600&q=80"; // Bus/Guide
-  }
-  if (t.includes("票") || t.includes("时间") || t.includes("开放") || t.includes("价格") || t.includes("门票")) {
-    return "https://images.unsplash.com/photo-1435527173128-983b87201f4d?auto=format&fit=crop&w=600&q=80"; // Ticketing/Time
-  }
-  if (t.includes("翠玉") || t.includes("概况") || t.includes("介绍") || t.includes("山") || t.includes("水") || t.includes("景区")) {
-    return "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=600&q=80"; // Landscape
-  }
-  return "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=600&q=80"; // General Scenic
-};
+const getDefaultCover = (_title: string) => "/images/spots/placeholder.svg";
 
 interface Doc { id: number; title: string; category: string; content: string; status: string; vectorized: boolean; tags: string[]; fileType: string; coverUrl?: string; updatedAt: string }
 

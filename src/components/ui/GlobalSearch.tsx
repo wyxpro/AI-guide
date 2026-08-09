@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, X, MapPin, Navigation, Loader2, Mic, MicOff, History } from "lucide-react";
 import Link from "next/link";
+import { getLocalScenicImage } from "@/lib/scenic-image";
 
 const SPRING = { type: "spring" as const, stiffness: 300, damping: 32 };
 
@@ -275,7 +276,7 @@ export function GlobalSearch({ onClose }: { onClose?: () => void }) {
                           <div className="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0 bg-neutral-100 border border-[#E6E2D8]">
                             {spot.imageUrl && (
                               // eslint-disable-next-line @next/next/no-img-element
-                              <img src={spot.imageUrl} alt={spot.name} className="w-full h-full object-cover" />
+                              <img src={getLocalScenicImage(spot.imageUrl)} alt={spot.name} className="w-full h-full object-cover" />
                             )}
                           </div>
                           <div className="flex-1 min-w-0">

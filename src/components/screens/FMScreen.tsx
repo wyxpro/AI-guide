@@ -19,62 +19,62 @@ interface InterestItem {
 }
 
 const INTEREST_OPTIONS: InterestItem[] = [
-  { id: "heritage", label: "非遗文化", img: "https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=150&q=80", icon: "🏺" },
-  { id: "celebrities", label: "城市名人", img: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=150&q=80", icon: "👑" },
-  { id: "history", label: "历史典故", img: "https://images.unsplash.com/photo-1542224566-6e85f2e6772f?w=150&q=80", icon: "🏯" },
-  { id: "food", label: "美食起源", img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=150&q=80", icon: "🍜" },
-  { id: "life", label: "市井生活", img: "https://images.unsplash.com/photo-1624953901718-e24ee7200b85?w=150&q=80", icon: "🏮" },
-  { id: "landmarks", label: "城市地标", img: "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=150&q=80", icon: "📸" },
-  { id: "legends", label: "民间传说", img: "https://images.unsplash.com/photo-1528164344705-47542687000d?w=150&q=80", icon: "📖" },
+  { id: "heritage", label: "非遗文化", img: "/images/spots/placeholder.svg", icon: "🏺" },
+  { id: "celebrities", label: "城市名人", img: "/images/spots/placeholder.svg", icon: "👑" },
+  { id: "history", label: "历史典故", img: "/images/spots/placeholder.svg", icon: "🏯" },
+  { id: "food", label: "美食起源", img: "/images/spots/placeholder.svg", icon: "🍜" },
+  { id: "life", label: "市井生活", img: "/images/spots/placeholder.svg", icon: "🏮" },
+  { id: "landmarks", label: "城市地标", img: "/images/spots/placeholder.svg", icon: "📸" },
+  { id: "legends", label: "民间传说", img: "/images/spots/placeholder.svg", icon: "📖" },
 ];
 
 const TRACKS_DATABASE: Record<string, { title: string; artist: string; cover: string; text: string; audioUrl: string }> = {
   heritage: {
     title: "指尖上的蜀绣：巴蜀锦绣非遗传奇",
     artist: "AI 导游小玉",
-    cover: "https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=500&q=80",
+    cover: "/images/spots/placeholder.svg",
     audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
     text: "蜀绣，又名“川绣”，是中国四大名绣之一，有着两千多年的历史。它以软缎和彩丝为主要原料，结合巴蜀独特的风土人情，形成了细腻针法与亮丽色彩的完美平衡。蜀绣针法严谨、针脚整水，以“变针”和“晕针”为核心特色。今天，跟随伴游FM的叙事声波，让我们一起走进锦江两岸的刺绣工坊，聆听那细针穿过软缎的沙沙声，感受匠人心尖上的温度与指尖上的华彩。"
   },
   celebrities: {
     title: "草堂留后世：诗圣杜甫的蜀中岁月",
     artist: "AI 导游小玉",
-    cover: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=500&q=80",
+    cover: "/images/spots/route-301.webp",
     audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
     text: "杜甫，字子美，唐代伟大的现实主义诗人。安史之乱爆发后，他流落至成都，在浣花溪畔营造了一间茅屋，这便是名扬千古的杜甫草堂。在此期间，他度过了相对安宁的四年，创作了《春夜喜雨》、《蜀相》等无数脍炙人口的经典诗篇。草堂的一草一木，至今仍回荡着诗人的家国情怀与对这片土地的深情眷恋。让我们通过声音，重回那个烟雨朦胧的唐代蓉城。"
   },
   history: {
     title: "蜀地千年史：古蜀国与蓉城起源",
     artist: "AI 导游小玉",
-    cover: "https://images.unsplash.com/photo-1542224566-6e85f2e6772f?w=500&q=80",
+    cover: "/images/spots/placeholder.svg",
     audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
     text: "成都，简称“蓉”，是一座有着三千余年建城史的历史文化名城。从宝墩遗址到金沙文明，古蜀先民在这片肥沃的盆地创造了璀璨的青铜文明。西周时期，建都者“一年成邑，二年成都”，由此得名成都，且城名与城址千百年来从未更改。它是南方丝物之路的起点，汉代全国第二大商业都市，唐代富庶的“扬一益二”。今天，我们将拨开历史的迷雾，重温那段激荡人心的巴蜀史诗。"
   },
   food: {
     title: "舌尖上的麻辣：川菜与火物器的进化史",
     artist: "AI 导游小玉",
-    cover: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=500&q=80",
+    cover: "/images/spots/placeholder.svg",
     audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3",
     text: "川菜作为中国四大名系之一，以“一菜一格，百菜百味”闻名天下。然而，今天川菜标志性的辣椒，其实是在明末清初才传入巴蜀的。在漫长的历史中，花椒、茱萸与生姜才是巴蜀麻辣的核心。而成都火锅更是码头文化的缩影，江边纤夫用简单的佐料与食材烹煮，最终演变为风靡全国的辣味盛宴。这一餐麻辣的背后，是巴蜀人民对生活的热烈期望与包容豁达的性格印记。"
   },
   life: {
     title: "老茶馆的慢时光：盖碗茶里的生活美学",
     artist: "AI 导游小玉",
-    cover: "https://images.unsplash.com/photo-1624953901718-e24ee7200b85?w=500&q=80",
+    cover: "/images/spots/placeholder.svg",
     audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3",
     text: "在成都，有一种生活美学叫“喝盖碗茶”。走进街角的老茶馆，一把竹椅，一张矮木桌，一具茶具，三两好友，一坐就是一下午。龙门阵摆起，长嘴铜壶倒出滚烫的开水，茶叶在盖碗中舒展。茶馆不仅是喝茶的地方，更是一个社交、调解纠纷、甚至进行商业谈判的公共场所。这里的慢时光，是天府之国闲适安逸的缩影，也是最本真的市井人间烟火气。"
   },
   landmarks: {
     title: "宽窄巷子：老成都的院落生活缩影",
     artist: "AI 导游小玉",
-    cover: "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=500&q=80",
+    cover: "/images/spots/10060.webp",
     audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3",
     text: "宽窄巷子是成都极具代表性的历史文化保护区，由宽巷子、窄巷子和井巷子平行排列组成。这里原本是清代少城遗留的兵丁胡同，如今完整保留了清末民初的四合院落风貌。宽巷子是“闲生活”的代表，展示着老成都的悠闲惬意；窄巷子则是“慢生活”的缩影，折射出院落文化的精致优雅。漫步于此，青砖黛瓦之间，是古典与现代的交融，是时间的静静流淌。"
   },
   legends: {
     title: "金沙神鸟：太阳神鸟的飞翔传说",
     artist: "AI 导游小玉",
-    cover: "https://images.unsplash.com/photo-1528164344705-47542687000d?w=500&q=80",
+    cover: "/images/spots/placeholder.svg",
     audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3",
     text: "在成都金沙遗址出土的“太阳神鸟”金饰，是一件震惊世界的国宝级文物。它极薄的金箔上镂空刻画着四只首尾相接、逆时针飞翔的神鸟，环绕着十二道光芒旋转的太阳。这一构图不仅体现了古蜀先民高超的黄金锻造工艺，更寓意着四季轮回与对光明的无限向往。四只神鸟承载着古蜀国的飞天梦想，飞过三千年的时光，成为中国文化遗产的标志，继续守护着天府之国的祥和与安宁。"
   }
@@ -101,7 +101,7 @@ export function FMScreen() {
   const currentTrack = playlist[currentTrackIndex] || {
     title: "成都市介绍",
     artist: "AI 导游小玉",
-    cover: "https://images.unsplash.com/photo-1624953901718-e24ee7200b85?w=500&q=80",
+    cover: "/images/spots/10060.webp",
     text: "和我在成都的街头走一走，直到所有的灯都熄灭了也不停留。游客朋友们，今天西游兔带你来了解的是天府之国——成都。成都，简称“蓉”，别称蓉城、锦城，是四川省的省会，也是首批国家历史文化名城，古蜀文明发祥地，中国最佳旅游城市。"
   };
 

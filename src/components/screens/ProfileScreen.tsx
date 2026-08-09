@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation";
 import { PosterGenerator } from "@/components/ui/PosterGenerator";
 import { request } from "@/lib/api/request";
 import { toast } from "sonner";
+import { getLocalScenicImage } from "@/lib/scenic-image";
 
 const SPRING = { type: "spring" as const, stiffness: 280, damping: 35 };
 
@@ -42,11 +43,11 @@ const MALE_PRESET_AVATARS = [
 ];
 
 const BG_PRESET_COVERS = [
-  "https://images.unsplash.com/photo-1542224566-6e85f2e6772f?w=800&auto=format&fit=crop&q=80",
-  "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&auto=format&fit=crop&q=80",
-  "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800&auto=format&fit=crop&q=80",
-  "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80",
-  "https://images.unsplash.com/photo-1501854140801-50d01698950b?w=800&auto=format&fit=crop&q=80"
+  "/images/spots/10022.webp",
+  "/images/spots/10024.webp",
+  "/images/spots/10011.webp",
+  "/images/spots/10015.webp",
+  "/images/spots/10080.webp"
 ];
 
 export function ProfileScreen() {
@@ -78,7 +79,7 @@ export function ProfileScreen() {
   const [profileBio, setProfileBio] = useState("用双脚丈量世界，用声音感受历史。");
   const [profileGender, setProfileGender] = useState("女");
   const [profileRegion, setProfileRegion] = useState("四川 成都");
-  const [profileBg, setProfileBg] = useState("https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&q=80");
+  const [profileBg, setProfileBg] = useState("/images/spots/10015.webp");
 
   // Edit states for form fields
   const [showEditProfile, setShowEditProfile] = useState(false);
@@ -136,7 +137,7 @@ export function ProfileScreen() {
       const storedBio = localStorage.getItem("profile_bio") || "用双脚丈量世界，用声音感受历史。";
       const storedGender = localStorage.getItem("profile_gender") || "女";
       const storedRegion = localStorage.getItem("profile_region") || "四川 成都";
-      const storedBg = localStorage.getItem("profile_bg") || "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&q=80";
+      const storedBg = localStorage.getItem("profile_bg") || "/images/spots/10015.webp";
 
       setProfileName(storedName);
       setProfileLevel(storedLevel);
@@ -548,9 +549,9 @@ export function ProfileScreen() {
 
                     <div className="space-y-2.5">
                       {[
-                        { name: "岳阳楼", time: "今天 10:32", desc: "江南三大名楼之一", img: "https://images.unsplash.com/photo-1542224566-6e85f2e6772f?w=300&q=80", label: "景点" },
-                        { name: "商后母戊鼎", time: "昨天 18:40", desc: "中国国家博物馆藏", img: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=300&q=80", label: "文物" },
-                        { name: "黄鹤楼", time: "09-15 15:30", desc: "天下江山第一楼", img: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=300&q=80", label: "景点" },
+                        { name: "岳阳楼", time: "今天 10:32", desc: "江南三大名楼之一", img: "/images/spots/yueyang-tower.webp", label: "景点" },
+                        { name: "商后母戊鼎", time: "昨天 18:40", desc: "中国国家博物馆藏", img: "/images/spots/houmuwu-ding.webp", label: "文物" },
+                        { name: "黄鹤楼", time: "09-15 15:30", desc: "天下江山第一楼", img: "/images/spots/10027.webp", label: "景点" },
                       ].map((item, index) => (
                         <div key={index} className="flex items-center gap-3.5 p-3 rounded-2xl border border-[#EEF2F0] hover:bg-neutral-50 transition-colors">
                           <img src={item.img} className="w-11 h-11 rounded-xl object-cover shadow-sm flex-shrink-0" alt="" />
@@ -636,19 +637,19 @@ export function ProfileScreen() {
                       title: "岳阳楼一日游",
                       date: "2024.05.20 周一",
                       status: "ongoing",
-                      img: "https://images.unsplash.com/photo-1542224566-6e85f2e6772f?w=600&q=80",
+                      img: "/images/spots/yueyang-tower.webp",
                     },
                     {
                       title: "历史文化之旅",
                       date: "2024.05.15 周六",
                       status: "completed",
-                      img: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=600&q=80",
+                      img: "/images/spots/10001.webp",
                     },
                     {
                       title: "自然风光之旅",
                       date: "2024.05.10 周五",
                       status: "cancelled",
-                      img: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=600&q=80",
+                      img: "/images/spots/10022.webp",
                     },
                   ].filter(r => r.status === routeTab).map((route, idx) => (
                     <div key={idx} className="rounded-3xl border border-[#EEF2F0] bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
@@ -755,11 +756,11 @@ export function ProfileScreen() {
                 {/* Favorite cards list */}
                 <div className="p-4 sm:p-6 space-y-3">
                   {[
-                    { id: 1, type: "relic", name: "商后母戊鼎", desc: "中国国家博物馆藏，商代晚期青铜重器...", date: "2024.06.18 收藏", img: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=300&q=80" },
-                    { id: 2, type: "spot", name: "岳阳楼", desc: "江南三大名楼之一，登楼远眺，气象万千...", date: "2024.05.20 收藏", img: "https://images.unsplash.com/photo-1542224566-6e85f2e6772f?w=300&q=80" },
-                    { id: 3, type: "spot", name: "黄鹤楼", desc: "天下江山第一楼，武汉地标古迹建筑...", date: "2024.05.15 收藏", img: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=300&q=80" },
-                    { id: 4, type: "route", name: "历史文化路线", desc: "探寻千年巴渝文化，感受红岩精神底蕴...", date: "2024.05.10 收藏", img: "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=300&q=80" },
-                    { id: 5, type: "audio", name: "瓷器发展史讲解", desc: "从原始陶器到青花瓷器演变历程的沉浸声景...", date: "2024.05.08 收藏", img: "https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=300&q=80" },
+                    { id: 1, type: "relic", name: "商后母戊鼎", desc: "中国国家博物馆藏，商代晚期青铜重器...", date: "2024.06.18 收藏", img: "/images/spots/houmuwu-ding.webp" },
+                    { id: 2, type: "spot", name: "岳阳楼", desc: "江南三大名楼之一，登楼远眺，气象万千...", date: "2024.05.20 收藏", img: "/images/spots/yueyang-tower.webp" },
+                    { id: 3, type: "spot", name: "黄鹤楼", desc: "天下江山第一楼，武汉地标古迹建筑...", date: "2024.05.15 收藏", img: "/images/spots/10027.webp" },
+                    { id: 4, type: "route", name: "历史文化路线", desc: "探寻千年巴渝文化，感受红岩精神底蕴...", date: "2024.05.10 收藏", img: "/images/spots/10011.webp" },
+                    { id: 5, type: "audio", name: "瓷器发展史讲解", desc: "从原始陶器到青花瓷器演变历程的沉浸声景...", date: "2024.05.08 收藏", img: "/images/spots/placeholder.svg" },
                   ].filter(item => favoriteTag === "all" || item.type === favoriteTag).map((item, idx) => (
                     <div key={idx} className="flex items-center gap-3.5 p-3 rounded-2xl border border-[#EEF2F0] hover:bg-neutral-50 transition-colors">
                       <img src={item.img} className="w-16 h-16 rounded-xl object-cover shadow-sm flex-shrink-0" alt="" />
@@ -893,7 +894,7 @@ export function ProfileScreen() {
                     <h4 className="text-xs font-black text-zinc-800">根据偏好为您推荐</h4>
                     <div className="rounded-3xl border border-[#EEF2F0] p-4 bg-zinc-50/50 flex items-center gap-4">
                       <img
-                        src="https://images.unsplash.com/photo-1542224566-6e85f2e6772f?w=300&q=80"
+                        src="/images/spots/10001.webp"
                         className="w-16 h-16 rounded-2xl object-cover shadow-sm flex-shrink-0"
                         alt=""
                       />
@@ -1984,7 +1985,7 @@ export function ProfileScreen() {
                         className="flex gap-3.5 p-3 rounded-2xl border border-[#EEF2F0] bg-white hover:bg-neutral-50 active:scale-[0.99] transition-all cursor-pointer shadow-xs"
                       >
                         <img
-                          src={spot.imageUrl || "https://images.unsplash.com/photo-1542224566-6e85f2e6772f?w=300&q=80"}
+                          src={getLocalScenicImage(spot.imageUrl)}
                           className="w-16 h-16 rounded-xl object-cover shadow-xs flex-shrink-0"
                           alt={spot.name}
                         />

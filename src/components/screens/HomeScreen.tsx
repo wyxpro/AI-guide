@@ -4,16 +4,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search, MapPin, ChevronRight, Star, Clock } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { getLocalScenicImage } from "@/lib/scenic-image";
 
 const SPRING = { type: "spring" as const, stiffness: 300, damping: 32 };
 interface Spot { id: number; name: string; imageUrl: string; rating: number; duration: number }
 
 const CITY_BANNERS = [
-  { city: "重庆", title: "洪崖洞夜色", img: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?auto=format&fit=crop&w=1400&q=90" },
-  { city: "杭州", title: "西湖烟柳", img: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1400&q=90" },
-  { city: "北京", title: "故宫红墙", img: "https://images.unsplash.com/photo-1547981609-4b6bfe67ca0b?auto=format&fit=crop&w=1400&q=90" },
-  { city: "西安", title: "古城晨光", img: "https://images.unsplash.com/photo-1528360983277-13d401cdc186?auto=format&fit=crop&w=1400&q=90" },
-  { city: "上海", title: "外滩天际", img: "https://images.unsplash.com/photo-1538428494232-9c0d8a3ab403?auto=format&fit=crop&w=1400&q=90" },
+  { city: "重庆", title: "洪崖洞夜色", img: "/images/spots/10011.webp" },
+  { city: "杭州", title: "西湖烟柳", img: "/images/spots/10005.webp" },
+  { city: "北京", title: "故宫红墙", img: "/images/spots/10001.webp" },
+  { city: "西安", title: "古城晨光", img: "/images/spots/10004.webp" },
+  { city: "上海", title: "外滩天际", img: "/images/spots/10009.webp" },
 ];
 
 /* ═══════════════════════════════════════════════════════
@@ -158,8 +159,8 @@ function PCView() {
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-2xl overflow-hidden border border-zinc-100 bg-[#FAF8F5] flex-shrink-0 flex items-center justify-center">
                   <img
-                    src="https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=100&q=80"
-                    alt="Panda"
+                    src="/images/spots/10007.webp"
+                    alt="成都大熊猫基地"
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -278,7 +279,7 @@ function PCView() {
                   >
                     <div className="relative h-[150px] overflow-hidden">
                       <img
-                        src={spot.imageUrl || "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400&q=70"}
+                        src={getLocalScenicImage(spot.imageUrl)}
                         alt={spot.name}
                         className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                       />
@@ -520,8 +521,8 @@ function MobileChengduPanel() {
           <div className="w-9 h-9 rounded-full overflow-hidden border border-neutral-100 flex-shrink-0 bg-neutral-50">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=100&q=80"
-              alt="Panda"
+              src="/images/spots/10007.webp"
+              alt="成都大熊猫基地"
               className="w-full h-full object-cover"
             />
           </div>
@@ -726,7 +727,7 @@ function MobileSpots() {
                 <div className="relative" style={{ height: 100 }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={spot.imageUrl || "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=300&q=70"}
+                    src={getLocalScenicImage(spot.imageUrl)}
                     alt={spot.name} className="w-full h-full object-cover" />
                   <div className="absolute inset-0"
                     style={{ background: "linear-gradient(to top,rgba(0,0,0,0.38) 0%,transparent 55%)" }} />

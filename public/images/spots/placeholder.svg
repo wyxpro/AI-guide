@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">景点图片待补充</title>
+  <desc id="desc">非照片的山水轮廓占位图</desc>
+  <rect width="1600" height="900" fill="#eef1ed"/>
+  <circle cx="1240" cy="210" r="72" fill="#d2a053"/>
+  <path d="M0 650 350 330l250 235 185-170 390 360H0Z" fill="#91a596"/>
+  <path d="M0 720 430 455l230 185 285-245 420 325Z" fill="#4f6f52"/>
+  <path d="M0 720h1600v180H0Z" fill="#dbe5e6"/>
+  <path d="M0 780c240-70 420-70 660 0s420 70 660 0 280-50 280-50v170H0Z" fill="#9fc1c4"/>
+</svg>
