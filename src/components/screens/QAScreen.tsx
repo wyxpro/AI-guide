@@ -887,8 +887,9 @@ export function QAScreen() {
       }
 
       updateUIBatch(true);
+      setLoading(false);
 
-      // Speak the complete concise answer (within 4 lines) smoothly
+      // Speak the complete concise answer smoothly ONLY after text bubble finishes generating
       const cleanFull = fullAnswer.replace(/\[情感[:：]\s*[^\]]+\]/g, "").trim();
       if (cleanFull) {
         speak(cleanFull);

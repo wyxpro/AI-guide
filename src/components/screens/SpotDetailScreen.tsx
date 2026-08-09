@@ -418,7 +418,7 @@ export function SpotDetailScreen({ spotId }: { spotId: string }) {
                     <motion.div whileTap={{ scale: 0.98 }}
                       className="flex items-center gap-3 p-2 rounded-2xl border border-[#E6E2D8] hover:bg-neutral-50 transition-colors">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={getLocalScenicImage(nSpot.imageUrl)} alt={nSpot.name} className="w-12 h-12 rounded-xl object-cover" />
+                      <img src={getLocalScenicImage(nSpot)} alt={nSpot.name} className="w-12 h-12 rounded-xl object-cover" />
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-semibold text-[#1E2522] truncate">{nSpot.name}</p>
                         <p className="text-[10px] text-[#8F9F8F] mt-0.5">

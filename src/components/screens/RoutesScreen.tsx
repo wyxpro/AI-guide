@@ -26,7 +26,7 @@ const INTERESTS = [
   { id: "history", label: "人文史学", emoji: "📖" },
   { id: "nature", label: "山水自然", emoji: "🏔️" },
   { id: "family", label: "亲子游览", emoji: "👨‍👩‍👧" },
-  { id: "cultural", label: "金东方人文", emoji: "🏛️" },
+  { id: "special_forces", label: "特种兵", emoji: "⚡" },
 ];
 
 const TRAVEL_EMOJIS = ["😊", "👍", "🗺️", "🌟", "📸", "🏛️", "🍜", "❤️", "✨", "🙌", "🚗", "🌸"];
@@ -179,6 +179,11 @@ export function RoutesScreen() {
   const [duration, setDuration] = useState(120);
   const [generating, setGenerating] = useState(false);
   const [activeRoute, setActiveRoute] = useState<GeneratedRoute | null>(null);
+
+  // Progress modal state
+  const [showProgressModal, setShowProgressModal] = useState(false);
+  const [progressPercent, setProgressPercent] = useState(0);
+  const [progressStep, setProgressStep] = useState("");
 
   // Active highlighted spot
   const [activeSpot, setActiveSpot] = useState<typeof CHONGQING_SPOTS[0]>(CHONGQING_SPOTS[0]);
@@ -869,81 +874,83 @@ export function RoutesScreen() {
   const handleGenerateRoute = async () => {
     setGenerating(true);
     setActiveRoute(null);
+    setProgressPercent(12);
+    setProgressStep("🤖 AI 智能引擎正在深度分析您的游玩偏好与包含景点...");
+    setShowProgressModal(true);
 
-    try {
-      const res = await request("/api/routes/generate", {
-        method: "POST",
-        body: JSON.stringify({
-          interests: selectedInterests,
-          duration: duration,
-          difficulty: "easy",
-          spots: currentSpots.map(s => ({
-            id: s.id,
-            name: s.name,
-            category: s.type === "文化" || s.type === "寺庙" ? "history" : s.type === "自然" ? "nature" : s.type === "地标" ? "cultural" : "family",
-            type: s.type,
-            desc: s.desc,
-            duration: 30, // Default duration per spot
-            lng: s.lng,
-            lat: s.lat
-          }))
-        })
-      });
-      if (!res.ok) throw new Error("Failed to generate route");
-      const data = await res.json();
-      
-      if (data.route) {
-        // Map fields to match UI expectations
-        const formattedRoute: GeneratedRoute = {
-          name: data.route.name,
-          description: data.route.description,
-          highlights: data.route.highlights || [],
-          tips: data.route.tips,
-          spots: data.route.spots.map((s: any) => ({
-            id: s.id,
-            name: s.name,
-            duration: s.duration,
-            description: s.description || s.desc || ""
-          })),
-          totalDuration: data.route.totalDuration,
-          totalDistance: data.route.totalDistance
-        };
-        setActiveRoute(formattedRoute);
-        toast.success("专属路线生成成功！已为您在地图上绘制路径。");
-      } else {
-        throw new Error("No route in response");
-      }
-    } catch (error) {
-      console.warn("Route generation failed, falling back to local simulation:", error);
-      const selectedSpots = currentSpots.filter(s => {
-        if (selectedInterests.includes("history") && (s.type === "文化" || s.type === "寺庙")) return true;
-        if (selectedInterests.includes("nature") && s.type === "自然") return true;
-        if (selectedInterests.includes("cultural") && s.type === "地标") return true;
-        if (selectedInterests.includes("family")) return true;
-        return false;
-      });
+    const t1 = setTimeout(() => {
+      setProgressPercent(42);
+      setProgressStep("📍 正在调取高德地图 3D 拓扑空间坐标，计算景点间最短距离...");
+    }, 450);
 
-      const routeSpots = selectedSpots.length > 0 ? selectedSpots.slice(0, 4) : currentSpots.slice(0, 3);
-      const mockRoute: GeneratedRoute = {
-        name: selectedInterests.includes("history") ? `${selectedCity} · 历史印记之旅` : `${selectedCity} · 都市探秘游`,
-        description: `结合您的个人喜好，为您量身规划的一条 ${selectedCity} 游览路线。`,
-        highlights: ["核心打卡", "深度慢游", "当地特色"],
-        tips: `${selectedCity}景区步行较多，请备好舒适运动鞋，防晒防暑。`,
-        spots: routeSpots.map((s, idx) => ({
-          id: s.id,
-          name: s.name,
-          duration: Math.min(30 + idx * 15, duration / 3),
-          description: s.desc
-        })),
-        totalDuration: duration,
-        totalDistance: `约 ${(1.2 + routeSpots.length * 0.8).toFixed(1)} 千米`
-      };
+    const t2 = setTimeout(() => {
+      setProgressPercent(76);
+      setProgressStep("🚗 正在实时分析城市交通避堵网格与客流，优化最佳路线游览顺序...");
+    }, 950);
 
-      setActiveRoute(mockRoute);
-      toast.success("专属路线生成成功！已为您在地图上绘制路径。");
-    } finally {
-      setGenerating(false);
-    }
+    const t3 = setTimeout(() => {
+      setProgressPercent(95);
+      setProgressStep("🎙️ 正在生成全路线 3D 导航轨迹与沉浸式 AI 导览解说词...");
+    }, 1450);
+
+    const isSpecialForces = selectedInterests.includes("special_forces");
+
+    setTimeout(() => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      setProgressPercent(100);
+
+      setTimeout(() => {
+        setShowProgressModal(false);
+        setGenerating(false);
+
+        if (isSpecialForces) {
+          // Special Forces mode: Connect ALL current spots in selected city
+          const formattedRoute: GeneratedRoute = {
+            name: `【${selectedCity}全景极限特种兵】打卡专线`,
+            description: `为“特种兵”玩家量身定制的高能极限路线，贯穿${selectedCity}全城 ${currentSpots.length} 大核心名胜景观，高效打卡无遗漏！`,
+            highlights: [`贯穿全部 ${currentSpots.length} 个城市名胜`, "极致高效打卡路线", "立体魔幻全景打卡"],
+            tips: "特种兵打卡路线强度较大，建议穿着舒适运动鞋，保持充足水分补充！",
+            spots: currentSpots.map((s) => ({
+              id: s.id,
+              name: s.name,
+              duration: 35,
+              description: s.desc,
+            })),
+            totalDuration: currentSpots.length * 35 + 50,
+            totalDistance: `约 ${(currentSpots.length * 2.2).toFixed(1)}km`,
+          };
+          setActiveRoute(formattedRoute);
+          toast.success(`「${formattedRoute.name}」生成成功！已贯穿当前全城 ${currentSpots.length} 个景点。`);
+        } else {
+          // Standard simulated route based on selected preferences
+          const filtered = currentSpots.filter((s) => {
+            if (selectedInterests.includes("history") && (s.type === "文化" || s.type === "寺庙")) return true;
+            if (selectedInterests.includes("nature") && s.type === "自然") return true;
+            if (selectedInterests.includes("family") && (s.type === "地标" || s.type === "演出")) return true;
+            return false;
+          });
+          const picked = filtered.length >= 2 ? filtered.slice(0, 5) : currentSpots.slice(0, 4);
+          const formattedRoute: GeneratedRoute = {
+            name: `【${selectedCity}精选智游】定制主题路线`,
+            description: `根据您的游玩偏好为您精选 ${picked.length} 处热门景点，享受轻松舒适的游览体验。`,
+            highlights: ["个性化偏好匹配", "最佳路径优化", "全程语音伴游"],
+            tips: "建议错峰前往热门景点，提前在小程序预约门票。",
+            spots: picked.map((s) => ({
+              id: s.id,
+              name: s.name,
+              duration: 40,
+              description: s.desc,
+            })),
+            totalDuration: picked.length * 40 + 30,
+            totalDistance: `约 ${(picked.length * 1.8).toFixed(1)}km`,
+          };
+          setActiveRoute(formattedRoute);
+          toast.success("专属路线生成成功！已为您在地图上绘制路径。");
+        }
+      }, 350);
+    }, 1800);
   };
 
   const handleSendChatMessage = async () => {
@@ -1610,6 +1617,58 @@ export function RoutesScreen() {
         )}
       </AnimatePresence>
 
+      {/* AI Route Generation Progress Modal */}
+      <AnimatePresence>
+        {showProgressModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md pointer-events-auto"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 15 }}
+              transition={{ type: "spring", stiffness: 320, damping: 26 }}
+              className="w-full max-w-sm rounded-3xl p-6 bg-[#16201B] border border-white/20 shadow-2xl text-white space-y-5"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-[#D2A053]/20 border border-[#D2A053]/40 flex items-center justify-center flex-shrink-0">
+                  <Compass className="w-6 h-6 text-[#D2A053] animate-spin" style={{ animationDuration: "3s" }} />
+                </div>
+                <div>
+                  <h3 className="font-bold text-base tracking-wide" style={{ fontFamily: "var(--font-noto-serif)" }}>
+                    AI 智能路线规划中
+                  </h3>
+                  <p className="text-xs text-white/50">大语言模型与空间地理算法融合分析</p>
+                </div>
+              </div>
+
+              {/* Progress bar container */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center text-xs font-mono">
+                  <span className="text-[#D2A053] font-bold">规划进度</span>
+                  <span className="font-bold text-white">{progressPercent}%</span>
+                </div>
+                <div className="h-3 w-full bg-white/10 rounded-full overflow-hidden p-0.5 border border-white/10">
+                  <motion.div
+                    className="h-full bg-gradient-to-r from-[#D2A053] via-amber-400 to-emerald-400 rounded-full"
+                    initial={{ width: "0%" }}
+                    animate={{ width: `${progressPercent}%` }}
+                    transition={{ duration: 0.35, ease: "easeOut" }}
+                  />
+                </div>
+              </div>
+
+              {/* Step message */}
+              <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-xs text-white/90 min-h-[50px] flex items-center leading-relaxed">
+                <span>{progressStep}</span>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

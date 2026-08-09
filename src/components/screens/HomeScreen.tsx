@@ -52,7 +52,7 @@ function PCView() {
 
   useEffect(() => {
     setLoading(true);
-    fetch("/api/spots?limit=8")
+    fetch("/api/spots?category=national&limit=8")
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) setSpots(data);
@@ -656,7 +656,7 @@ function MobileSpots() {
     if (loading) return;
     setLoading(true);
     try {
-      const r = await fetch(`/api/spots?page=${p}&limit=4`);
+      const r = await fetch(`/api/spots?category=national&page=${p}&limit=6`);
       const d = await r.json();
       if (Array.isArray(d)) {
         if (d.length < 4) setHasMore(false);
