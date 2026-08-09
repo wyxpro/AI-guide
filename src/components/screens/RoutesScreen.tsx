@@ -1057,21 +1057,21 @@ export function RoutesScreen() {
       {/* 1. Integrated Header (Mobile only) */}
       <div className="md:hidden flex items-center justify-between px-4 h-14 bg-white border-b border-zinc-200/80 shadow-sm z-40 flex-shrink-0">
         <div className="flex items-center gap-2">
-          {/* Mobile Left Header AI Badge Icon Button */}
+          {/* Mobile Left Header City Selector Pill (Moved from right) */}
           <button
             onClick={() => {
-              setShowLeftSidebar(!showLeftSidebar);
+              setShowLeftSidebar(true);
               setShowRightSidebar(false);
             }}
-            className="w-8.5 h-8.5 rounded-xl bg-gradient-to-tr from-[#3A4D39] via-[#4F6F52] to-[#7C9A7D] text-white flex items-center justify-center font-black text-xs shadow-md border border-[#D2A053]/50 hover:opacity-90 active:scale-95 transition-all cursor-pointer"
-            title="AI 智能向导地图"
+            className="px-3 h-8.5 rounded-full bg-[#D2A053] text-white flex items-center gap-1 text-[11px] font-black shadow-sm active:scale-95 transition-all cursor-pointer"
           >
-            <span className="tracking-tighter font-black text-[11px] bg-gradient-to-r from-amber-200 to-white bg-clip-text text-transparent">AI</span>
+            <MapPin className="w-3.5 h-3.5" />
+            <span>{selectedCity}</span>
           </button>
         </div>
 
         {/* Integrated Top Search in mobile header */}
-        <div className="flex-1 max-w-[190px] h-8.5 mx-2 flex items-center bg-zinc-100/90 rounded-full px-2.5 border border-zinc-200/40">
+        <div className="flex-1 max-w-[210px] h-8.5 mx-2 flex items-center bg-zinc-100/90 rounded-full px-2.5 border border-zinc-200/40">
           <Search className="w-3.5 h-3.5 text-zinc-400 mr-1.5 flex-shrink-0" />
           <input
             value={searchQuery}
@@ -1082,18 +1082,7 @@ export function RoutesScreen() {
           />
         </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => {
-              setShowLeftSidebar(true);
-              setShowRightSidebar(false);
-            }}
-            className="px-2.5 h-8.5 rounded-full bg-[#D2A053] text-white flex items-center gap-0.5 text-[10.5px] font-extrabold active:scale-95 transition-all"
-          >
-            <MapPin className="w-3 h-3" />
-            <span>{selectedCity}</span>
-          </button>
-        </div>
+        <div className="flex items-center gap-2" />
       </div>
 
       {/* 2. Main Workspace */}
@@ -1397,18 +1386,18 @@ export function RoutesScreen() {
             </button>
           </div>
 
-          {/* Draggable Float AI Assistant Panel (Compact Size: w-270px h-360px) */}
+          {/* Draggable Float AI Assistant Panel (Centered in screen, 360° drag) */}
           {showFloatChat && (
             <motion.div
               drag
               dragControls={dragControls}
               dragListener={false}
-              dragConstraints={{ left: -700, right: 300, top: -400, bottom: 200 }}
-              dragElastic={0.05}
+              dragConstraints={{ left: -600, right: 600, top: -400, bottom: 400 }}
+              dragElastic={0.08}
               dragMomentum={false}
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              className="absolute bottom-4 right-4 z-40 w-[270px] h-[360px] bg-white/95 backdrop-blur-md rounded-2xl border border-zinc-200/80 shadow-2xl flex flex-col overflow-hidden"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[290px] sm:w-[320px] h-[390px] bg-white/98 backdrop-blur-md rounded-2xl border border-zinc-200/80 shadow-2xl flex flex-col overflow-hidden"
             >
               {/* Header acts as drag handle */}
               <div

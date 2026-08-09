@@ -336,7 +336,7 @@ export function ProfileScreen() {
                   </div>
                 </div>
 
-                {/* Edit Profile Top Right Button (shifted leftwards with Pencil icon) */}
+                {/* Edit Profile Top Right Button (shifted leftwards by 3 spaces with Pencil icon) */}
                 <button
                   onClick={() => {
                     setEditName(profileName);
@@ -348,7 +348,7 @@ export function ProfileScreen() {
                     setEditBg(profileBg);
                     setShowEditProfile(true);
                   }}
-                  className="mr-2 w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white active:scale-95 transition-transform cursor-pointer shadow-md hover:bg-white/30"
+                  className="mr-6 w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white active:scale-95 transition-transform cursor-pointer shadow-md hover:bg-white/30"
                   title="编辑资料"
                 >
                   <Pencil className="w-4 h-4" />
@@ -367,7 +367,7 @@ export function ProfileScreen() {
                     <BookOpen className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="font-black text-base text-zinc-900 tracking-tight">景点打卡报告</h3>
+                    <h3 className="font-black text-base text-zinc-900 tracking-tight">打卡旅游报告</h3>
                     <p className="text-xs text-zinc-500 font-medium mt-0.5">多模态评估结果与专属导览建议</p>
                   </div>
                 </div>

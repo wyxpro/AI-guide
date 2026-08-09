@@ -101,18 +101,18 @@ export function BottomTabBar() {
                 >
                   <Icon
                     className="w-5 h-5 transition-colors"
-                    style={{ color: active ? "#2563EB" : "#9CA3AF", strokeWidth: active ? 2.3 : 1.7 }}
+                    style={{ color: active ? "#4F6F52" : "#9CA3AF", strokeWidth: active ? 2.3 : 1.7 }}
                   />
                   {active && (
                     <motion.div
                       layoutId="active-tab-glow"
-                      className="absolute -inset-1.5 bg-blue-500/20 rounded-full blur-xs -z-10"
+                      className="absolute -inset-1.5 bg-[#4F6F52]/20 rounded-full blur-xs -z-10"
                     />
                   )}
                 </motion.div>
                 <span
                   className="text-[9.5px] font-bold leading-none transition-colors"
-                  style={{ color: active ? "#2563EB" : "#71717A" }}
+                  style={{ color: active ? "#4F6F52" : "#71717A" }}
                 >
                   {tab.label}
                 </span>
