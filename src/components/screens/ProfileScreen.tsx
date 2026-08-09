@@ -69,6 +69,9 @@ export function ProfileScreen() {
   const [showVipModal, setShowVipModal] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
+  const [showThemeModal, setShowThemeModal] = useState(false);
+  const [favTabFilter, setFavTabFilter] = useState<string>("all");
+  const [vipSelectedTier, setVipSelectedTier] = useState<string>("year");
   const [selectedPosterSpot, setSelectedPosterSpot] = useState<any>(null);
   const [allSpots, setAllSpots] = useState<any[]>([]);
 
@@ -350,7 +353,7 @@ export function ProfileScreen() {
                     <BookOpen className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="font-black text-base text-zinc-900 tracking-tight">查看行程评估报告</h3>
+                    <h3 className="font-black text-base text-zinc-900 tracking-tight">景点打卡报告</h3>
                     <p className="text-xs text-zinc-500 font-medium mt-0.5">多模态评估结果与专属导览建议</p>
                   </div>
                 </div>
@@ -381,9 +384,9 @@ export function ProfileScreen() {
                   id: "avatar",
                   icon: User,
                   colorBg: "bg-rose-100/80 text-rose-600",
-                  title: "AI 导览分身",
-                  desc: "导览声音模式与形象选择",
-                  onClick: () => router.push("/qa")
+                  title: "主题切换",
+                  desc: "标准模式 · 童趣模式 · 适老模式",
+                  onClick: () => setShowThemeModal(true)
                 },
                 {
                   id: "vip",
@@ -2327,7 +2330,7 @@ export function ProfileScreen() {
                   </div>
                   <div>
                     <h3 className="font-extrabold text-base text-zinc-900">我的收藏库</h3>
-                    <p className="text-xs text-zinc-400">已收藏的景区、伴游广播与精选路线</p>
+                    <p className="text-xs text-zinc-400">分类浏览已收藏的文旅资产</p>
                   </div>
                 </div>
                 <button onClick={() => setShowFavoritesModal(false)} className="w-8 h-8 rounded-full hover:bg-zinc-100 flex items-center justify-center text-zinc-400 transition-colors">
@@ -2335,18 +2338,50 @@ export function ProfileScreen() {
                 </button>
               </div>
 
+              {/* 5 Tab Filter Pills: 全部 景点 文物 路线 讲解 */}
+              <div className="px-5 pt-3 pb-2 border-b border-zinc-100 flex items-center gap-2 overflow-x-auto scrollbar-none flex-shrink-0">
+                {[
+                  { id: "all", label: "全部" },
+                  { id: "spot", label: "景点" },
+                  { id: "relic", label: "文物" },
+                  { id: "route", label: "路线" },
+                  { id: "audio", label: "讲解" },
+                ].map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={() => setFavTabFilter(t.id)}
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-all flex-shrink-0 cursor-pointer ${
+                      favTabFilter === t.id
+                        ? "bg-purple-600 text-white shadow-sm"
+                        : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+
               {/* Favorites Content */}
               <div className="flex-1 overflow-y-auto p-5 space-y-3.5">
-                {favorites.length === 0 ? (
-                  <div className="text-center py-16 text-zinc-400">
-                    <Heart className="w-12 h-12 mx-auto text-zinc-300 mb-2" />
-                    <p className="text-xs font-bold">暂无收藏项目</p>
-                    <p className="text-[10px] mt-1">在景点详情页点击心形图标即可一键收藏</p>
-                  </div>
-                ) : (
-                  favorites.map((fav) => {
-                    const spot = allSpots.find(s => s.id === fav.spotId);
-                    const title = fav.spotName || (spot ? spot.name : "收藏经典景区");
+                {(() => {
+                  const filteredFavs = favorites.filter((fav) => {
+                    if (favTabFilter === "all") return true;
+                    return fav.type === favTabFilter;
+                  });
+
+                  if (filteredFavs.length === 0) {
+                    return (
+                      <div className="text-center py-16 text-zinc-400">
+                        <Heart className="w-12 h-12 mx-auto text-zinc-300 mb-2" />
+                        <p className="text-xs font-bold">暂无「{favTabFilter === "all" ? "收藏" : favTabFilter}」类型项目</p>
+                        <p className="text-[10px] mt-1">在景点详情页点击心形图标即可一键收藏</p>
+                      </div>
+                    );
+                  }
+
+                  return filteredFavs.map((fav) => {
+                    const spot = allSpots.find((s) => s.id === fav.spotId);
+                    const title = fav.spotName || (spot ? spot.name : "故宫博物院·太和殿");
                     const imgUrl = fav.spotImage || (spot ? spot.img : "/images/spots/10001.webp");
 
                     return (
@@ -2354,9 +2389,12 @@ export function ProfileScreen() {
                         <img src={imgUrl} alt={title} className="w-16 h-16 rounded-xl object-cover flex-shrink-0 shadow-sm" />
                         <div className="flex-1 min-w-0">
                           <h4 className="font-extrabold text-xs text-zinc-900 truncate">{title}</h4>
-                          <span className="text-[9.5px] font-bold text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full inline-block mt-1">
-                            {fav.type === "spot" ? "精选景点" : "音频导览"}
-                          </span>
+                          <div className="flex items-center gap-1.5 mt-1">
+                            <span className="text-[9.5px] font-bold text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full">
+                              {fav.type === "spot" ? "精选景点" : fav.type === "relic" ? "镇馆之宝" : fav.type === "route" ? "专属路线" : "语音讲解"}
+                            </span>
+                            <span className="text-[9px] text-zinc-400">包含 3D 交互与讲解</span>
+                          </div>
                         </div>
                         <button
                           onClick={() => unfavorite(fav.id)}
@@ -2367,15 +2405,101 @@ export function ProfileScreen() {
                         </button>
                       </div>
                     );
-                  })
-                )}
+                  });
+                })()}
               </div>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
 
-      {/* Dedicated VIP Membership Modal ("会员订阅") */}
+      {/* Theme Switcher Modal ("主题切换") */}
+      <AnimatePresence>
+        {showThemeModal && (
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md" onClick={() => setShowThemeModal(false)}>
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={SPRING}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col text-zinc-800 border border-zinc-200"
+            >
+              <div className="p-5 border-b border-zinc-100 flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center shadow-sm">
+                    <User className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-extrabold text-base text-zinc-900">界面与主题切换</h3>
+                    <p className="text-xs text-zinc-400">适配全人群与不同场景的无障碍体验</p>
+                  </div>
+                </div>
+                <button onClick={() => setShowThemeModal(false)} className="w-8 h-8 rounded-full hover:bg-zinc-100 flex items-center justify-center text-zinc-400 transition-colors">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="p-5 space-y-3">
+                {[
+                  {
+                    id: "standard",
+                    title: "🌟 标准模式",
+                    desc: "经典高显色调，全功能AI智导与沉浸3D地图",
+                    tag: "推荐"
+                  },
+                  {
+                    id: "childish",
+                    title: "🎈 童趣模式",
+                    desc: "卡通趣彩插画，趣味萌音讲解与故事闯关",
+                    tag: "趣味"
+                  },
+                  {
+                    id: "elderly",
+                    title: "👓 适老模式",
+                    desc: "特大醒目标示，大按键极简操作与一键语音播报",
+                    tag: "关爱"
+                  },
+                ].map((tItem) => {
+                  const isSelected = mode === tItem.id;
+                  return (
+                    <div
+                      key={tItem.id}
+                      onClick={() => {
+                        setMode(tItem.id as Mode);
+                        toast.success(`已切换为「${tItem.title}」！`);
+                        setShowThemeModal(false);
+                      }}
+                      className={`p-4 rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${
+                        isSelected
+                          ? "bg-rose-50/70 border-rose-400 shadow-md"
+                          : "bg-zinc-50 border-zinc-200/80 hover:border-rose-200"
+                      }`}
+                    >
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-extrabold text-sm text-zinc-900">{tItem.title}</h4>
+                          <span className="text-[9.5px] font-black px-2 py-0.5 rounded-full bg-rose-500 text-white">
+                            {tItem.tag}
+                          </span>
+                        </div>
+                        <p className="text-xs text-zinc-500">{tItem.desc}</p>
+                      </div>
+                      {isSelected && (
+                        <div className="w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center flex-shrink-0">
+                          <Check className="w-3.5 h-3.5 stroke-[3]" />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Dedicated VIP Membership Modal ("加入会员，尊享高定伴游") */}
       <AnimatePresence>
         {showVipModal && (
           <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md" onClick={() => setShowVipModal(false)}>
@@ -2387,39 +2511,62 @@ export function ProfileScreen() {
               onClick={(e) => e.stopPropagation()}
               className="w-full max-w-lg bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col text-zinc-800 border border-zinc-200"
             >
-              {/* VIP Gold Card Header */}
-              <div className="p-6 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-black relative flex-shrink-0">
+              {/* VIP Gold Card Header - 官网宣传页风格 */}
+              <div className="p-6 bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 text-black relative flex-shrink-0 shadow-inner">
                 <button onClick={() => setShowVipModal(false)} className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/10 hover:bg-black/20 flex items-center justify-center text-black transition-colors cursor-pointer">
                   <X className="w-4 h-4" />
                 </button>
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-black text-amber-400 flex items-center justify-center shadow-lg">
+                  <div className="w-12 h-12 rounded-2xl bg-black text-amber-400 flex items-center justify-center shadow-xl">
                     <Sparkles className="w-6 h-6" />
                   </div>
                   <div>
-                    <span className="text-[10px] font-black text-black/70 bg-white/30 px-2.5 py-0.5 rounded-full">
-                      旅行家Pro · 尊享黑金卡
+                    <span className="text-[10px] font-black text-black/80 bg-white/40 px-2.5 py-0.5 rounded-full border border-black/10">
+                      旅行家Pro 官方尊享套餐
                     </span>
-                    <h3 className="text-xl font-extrabold tracking-tight mt-1">VIP 无界伴游会员</h3>
+                    <h3 className="text-xl font-black tracking-tight mt-1" style={{ fontFamily: "var(--font-noto-serif)" }}>
+                      加入会员 · 尊享高定伴游
+                    </h3>
                   </div>
                 </div>
               </div>
 
-              {/* VIP Privileges Body */}
-              <div className="p-5 space-y-4 max-h-[60vh] overflow-y-auto">
-                <h4 className="font-extrabold text-xs text-zinc-800">尊享四大核心专属特权</h4>
+              {/* 4 Subscription Tier Options */}
+              <div className="p-5 space-y-3.5 max-h-[60vh] overflow-y-auto">
+                <h4 className="font-extrabold text-xs text-zinc-800">选择您的专属伴游套餐</h4>
                 <div className="grid grid-cols-2 gap-3">
                   {[
-                    { title: "AI 双向实时对谈", desc: "无限次语音即时响应与多方言支持" },
-                    { title: "4K 3D 沉浸地图", desc: "专属全景高精三维轨迹绘制" },
-                    { title: "全城特种兵路线", desc: "AI 高效极限规划与一键无缝导航" },
-                    { title: "专属声音音色定制", desc: "解锁知性女声与磁性男声高品质声音" },
-                  ].map((p, idx) => (
-                    <div key={idx} className="p-3 rounded-2xl bg-amber-50/60 border border-amber-200/80 space-y-1">
-                      <h5 className="font-extrabold text-xs text-amber-950">{p.title}</h5>
-                      <p className="text-[10px] text-amber-900/80 leading-relaxed">{p.desc}</p>
-                    </div>
-                  ))}
+                    { id: "month", name: "连续月卡", price: "19", period: "/月", orig: "¥30", tag: "首月优惠", desc: "无限次 AI 对话 + 标准音色" },
+                    { id: "quarter", name: "季卡套餐", price: "48", period: "/季", orig: "¥90", tag: "热门推荐", desc: "赠送专属音色与双向语音" },
+                    { id: "year", name: "年度尊享", price: "128", period: "/年", orig: "¥360", tag: "立省60%", desc: "送全城特种兵路线库 + 3D全景" },
+                    { id: "lifetime", name: "终身尊享", price: "298", period: "终身", orig: "¥999", tag: "限量尊享", desc: "无限次 4K 三维地图 + 全局AI" },
+                  ].map((tier) => {
+                    const isSelected = vipSelectedTier === tier.id;
+                    return (
+                      <div
+                        key={tier.id}
+                        onClick={() => setVipSelectedTier(tier.id)}
+                        className={`p-3.5 rounded-2xl border cursor-pointer transition-all relative overflow-hidden flex flex-col justify-between ${
+                          isSelected
+                            ? "bg-amber-50/80 border-amber-500 shadow-md ring-2 ring-amber-400/50"
+                            : "bg-zinc-50 border-zinc-200/80 hover:border-amber-300"
+                        }`}
+                      >
+                        <span className="absolute top-0 right-0 bg-amber-500 text-black text-[8.5px] font-black px-2 py-0.5 rounded-bl-lg">
+                          {tier.tag}
+                        </span>
+                        <div>
+                          <h5 className="font-black text-xs text-amber-950">{tier.name}</h5>
+                          <div className="mt-1.5 flex items-baseline gap-1">
+                            <span className="text-xl font-black text-amber-900">¥{tier.price}</span>
+                            <span className="text-[10px] text-amber-700 font-bold">{tier.period}</span>
+                            <span className="text-[9px] text-zinc-400 line-through ml-1">{tier.orig}</span>
+                          </div>
+                        </div>
+                        <p className="text-[9.5px] text-amber-900/70 mt-2 font-medium leading-tight">{tier.desc}</p>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -2427,12 +2574,12 @@ export function ProfileScreen() {
               <div className="p-4 border-t border-zinc-100 bg-zinc-50">
                 <button
                   onClick={() => {
-                    toast.success("已为您激活 VIP 无界伴游终身尊享卡！");
+                    toast.success("已成功订购会员！开通尊享高定伴游！");
                     setShowVipModal(false);
                   }}
-                  className="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-extrabold text-xs shadow-md hover:from-amber-600 hover:to-yellow-600 active:scale-95 transition-all cursor-pointer"
+                  className="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-500 text-black font-extrabold text-xs shadow-md hover:from-amber-600 hover:to-yellow-600 active:scale-95 transition-all cursor-pointer"
                 >
-                  立即领用 VIP 尊享特权卡
+                  立即开通 · 尊享高定伴游
                 </button>
               </div>
             </motion.div>

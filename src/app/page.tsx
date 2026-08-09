@@ -785,13 +785,13 @@ export default function WelcomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
+          <div className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none gap-4 md:grid md:grid-cols-2 lg:grid-cols-4 md:gap-6 items-stretch pb-4 md:pb-0 -mx-6 px-6 md:mx-0 md:px-0">
             {PERSONAS.map((p) => (
               <motion.div
                 key={p.id}
                 whileHover={{ y: -6 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                className={`p-6 rounded-3xl bg-white border ${p.borderColor} shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between relative overflow-hidden group`}
+                className={`w-[82vw] sm:w-[320px] md:w-auto flex-shrink-0 md:flex-shrink snap-center p-6 rounded-3xl bg-white border ${p.borderColor} shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between relative overflow-hidden group`}
               >
                 {/* Subtle light accent background gradient */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${p.bgGradient} opacity-60 pointer-events-none`} />

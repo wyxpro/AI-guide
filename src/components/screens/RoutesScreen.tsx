@@ -185,6 +185,7 @@ export function RoutesScreen() {
   const [progressPercent, setProgressPercent] = useState(0);
   const [progressStep, setProgressStep] = useState("");
   const [showRouteHistoryModal, setShowRouteHistoryModal] = useState(false);
+  const [historyCategoryTab, setHistoryCategoryTab] = useState<string>("instagrammable");
 
   // Active highlighted spot
   const [activeSpot, setActiveSpot] = useState<typeof CHONGQING_SPOTS[0]>(CHONGQING_SPOTS[0]);
@@ -1384,35 +1385,33 @@ export function RoutesScreen() {
             >
               <BookOpen className="w-5 h-5" />
             </button>
+            {/* 智能向导小慧 icon button placed 3 spaces (mt-3) below 路线合集 button */}
+            <button
+              onClick={() => setShowFloatChat(!showFloatChat)}
+              className="w-10 h-10 rounded-xl bg-[#4F6F52] text-white shadow-lg shadow-emerald-800/30 border border-[#3A5240] flex items-center justify-center font-bold hover:bg-[#3A5240] active:scale-95 transition-all cursor-pointer mt-3 group"
+              title="智能向导小慧"
+            >
+              <MessageSquare className="w-5 h-5 animate-pulse" />
+            </button>
           </div>
 
-          {/* Desktop Draggable Float AI Assistant Panel (Wider and shorter: w-360px h-500px) */}
-          {!isMobile && !showFloatChat && (
-            <button
-              onClick={() => setShowFloatChat(true)}
-              className="absolute bottom-4 right-4 z-30 w-14 h-14 rounded-full bg-[#4F6F52] text-white shadow-2xl flex flex-col items-center justify-center hover:bg-[#3A5240] active:scale-95 transition-all group"
-            >
-              <MessageSquare className="w-6 h-6 animate-pulse" />
-              <span className="text-[9px] font-black mt-0.5 scale-90">智能向导</span>
-            </button>
-          )}
-
-          {!isMobile && showFloatChat && (
+          {/* Draggable Float AI Assistant Panel */}
+          {showFloatChat && (
             <motion.div
               drag
               dragControls={dragControls}
               dragListener={false}
-              dragConstraints={{ left: -800, right: 50, top: -400, bottom: 100 }}
+              dragConstraints={{ left: -800, right: 50, top: -400, bottom: 200 }}
               dragElastic={0.05}
               dragMomentum={false}
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              className="absolute bottom-4 right-4 z-30 w-[300px] h-[420px] bg-white/95 backdrop-blur-md rounded-2xl border border-zinc-200/80 shadow-2xl flex flex-col overflow-hidden"
+              className="absolute bottom-4 right-4 z-40 w-[310px] h-[430px] bg-white/95 backdrop-blur-md rounded-2xl border border-zinc-200/80 shadow-2xl flex flex-col overflow-hidden"
             >
               {/* Header acts as drag handle */}
               <div
                 onPointerDown={(e) => dragControls.start(e)}
-                className="p-3 bg-zinc-50/50 border-b border-zinc-100 flex items-center justify-between cursor-grab active:cursor-grabbing select-none"
+                className="p-3 bg-zinc-50/80 border-b border-zinc-100 flex items-center justify-between cursor-grab active:cursor-grabbing select-none"
               >
                 <div className="flex items-center gap-2 pointer-events-none">
                   <div className="w-7 h-7 rounded-full bg-[#4F6F52]/10 flex items-center justify-center text-[#4F6F52]">
@@ -1420,7 +1419,7 @@ export function RoutesScreen() {
                   </div>
                   <div>
                     <h3 className="font-extrabold text-xs text-zinc-800">智能向导小慧</h3>
-                    <span className="text-[8.5px] text-zinc-400 block mt-0.5">按住此处可上下左右拖拽</span>
+                    <span className="text-[8.5px] text-zinc-400 block mt-0.5">按住顶部框可自由悬浮拖拽</span>
                   </div>
                 </div>
                 <button
@@ -1446,7 +1445,7 @@ export function RoutesScreen() {
                       <div className={`max-w-[85%] rounded-2xl px-3 py-2 text-xs leading-relaxed shadow-sm ${
                         isUser ? "bg-[#4D96FF] text-white rounded-br-sm" : "bg-white text-zinc-800 border rounded-bl-sm"
                       }`}>
-                        {msg.content}
+                        {msg.content.replace(/\*\*/g, "")}
                       </div>
                     </div>
                   );
@@ -1742,134 +1741,179 @@ export function RoutesScreen() {
                 </button>
               </div>
 
-              {/* Body Content - Scrollable Route Cards List */}
-              <div className="flex-1 overflow-y-auto py-4 space-y-4 pr-1 scrollbar-thin">
+              {/* Category Filter Tabs */}
+              <div className="px-6 pt-3 pb-2 border-b border-zinc-100 flex items-center gap-2 overflow-x-auto scrollbar-none flex-shrink-0">
                 {[
-                  {
-                    id: "route-photo",
-                    tag: "📸 网红打卡",
-                    tagColor: "bg-rose-500 text-white",
-                    title: `【${selectedCity}网红绝美打卡】出片专线`,
-                    duration: "约3.5小时",
-                    distance: "8.6km",
-                    spotsCount: "5大热搜地标",
-                    spotObjects: currentSpots.slice(0, 5),
-                    advice: "建议 16:30 前往最核心地标捕捉傍晚魔幻光影，随后乘坐缆车或漫步江畔，19:30 欣赏璀璨灯火，摄影出片率最高！",
-                    routeData: {
-                      name: `【${selectedCity}网红绝美打卡】出片专线`,
-                      description: `为您精选 ${selectedCity} 出片率最高的 5 大核心打卡景观，定格极致视效！`,
-                      highlights: ["极致摄影视角", "网红热搜地标", "黄金光影时段"],
-                      tips: "建议在傍晚黄昏至夜幕初降时段前往主地标，带上补光设备与亮色穿搭出片效果最佳！",
-                      spots: currentSpots.slice(0, 5).map(s => ({ id: s.id, name: s.name, duration: 40, description: s.desc })),
-                      totalDuration: 210,
-                      totalDistance: "8.6km"
-                    }
-                  },
-                  {
-                    id: "route-all",
-                    tag: "⚡ 特种兵全景",
-                    tagColor: "bg-[#D2A053] text-black font-extrabold",
-                    title: `【${selectedCity}全景极限特种兵】全城名胜贯通线`,
-                    duration: "约7.0小时",
-                    distance: `约 ${(currentSpots.length * 2.2).toFixed(1)}km`,
-                    spotsCount: `贯穿全城 ${currentSpots.length} 大名胜`,
-                    spotObjects: currentSpots,
-                    advice: "适合精力充沛的极速打卡玩家，建议穿轻便运动鞋并准备移动电源，早晨 08:30 出发，无缝衔接地铁与缆车。",
-                    routeData: {
-                      name: `【${selectedCity}全景极限特种兵】全城名胜贯通线`,
-                      description: `为“特种兵”玩家量身定制的高能极限路线，贯穿${selectedCity}全城 ${currentSpots.length} 大核心名胜景观，高效打卡无遗漏！`,
-                      highlights: [`贯穿全部 ${currentSpots.length} 个城市名胜`, "极致高效打卡路线", "立体魔幻全景打卡"],
-                      tips: "特种兵打卡路线强度较大，建议穿着舒适运动鞋，保持充足水分补充！",
-                      spots: currentSpots.map((s) => ({ id: s.id, name: s.name, duration: 35, description: s.desc })),
-                      totalDuration: currentSpots.length * 35 + 50,
-                      totalDistance: `约 ${(currentSpots.length * 2.2).toFixed(1)}km`
-                    }
-                  },
-                  {
-                    id: "route-slow",
-                    tag: "🍵 烟火漫游",
-                    tagColor: "bg-emerald-600 text-white",
-                    title: `【${selectedCity}老街茶馆】市井民俗慢游专线`,
-                    duration: "约4.5小时",
-                    distance: "6.2km",
-                    spotsCount: "4大古韵街区",
-                    spotObjects: currentSpots.slice(0, 4),
-                    advice: "适合喜欢沉浸式感受人文烟火气的朋友，可以在老街茶馆听戏品茶，尝古法特色小吃。",
-                    routeData: {
-                      name: `【${selectedCity}老街茶馆】市井民俗慢游专线`,
-                      description: `为您量身定制的慢节奏民俗体验路线，漫步古老街区，聆听盖碗茶里的巴蜀故事。`,
-                      highlights: ["老街茶馆漫步", "传统非遗小吃", "人文沉浸体验"],
-                      tips: "建议下午时段在老茶馆歇脚听戏，体验最地道的市井生活风情。",
-                      spots: currentSpots.slice(0, 4).map(s => ({ id: s.id, name: s.name, duration: 45, description: s.desc })),
-                      totalDuration: 270,
-                      totalDistance: "6.2km"
-                    }
-                  }
-                ].map((rItem) => (
-                  <div
-                    key={rItem.id}
-                    className="p-4 rounded-2xl border border-zinc-200/80 bg-[#FAF8F5] hover:border-[#4F6F52]/50 hover:shadow-md transition-all space-y-3"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${rItem.tagColor}`}>
-                          {rItem.tag}
-                        </span>
-                        <h4 className="font-extrabold text-sm text-zinc-900" style={{ fontFamily: "var(--font-noto-serif)" }}>
-                          {rItem.title}
-                        </h4>
-                      </div>
-                      <span className="text-[11px] font-mono text-zinc-500 font-semibold">{rItem.distance}</span>
-                    </div>
+                  { id: "instagrammable", label: "📸 网红打卡", activeBg: "bg-pink-500 text-white" },
+                  { id: "nature", label: "🏔️ 山水自然", activeBg: "bg-emerald-600 text-white" },
+                  { id: "family", label: "👨‍👩‍👧 亲子游览", activeBg: "bg-indigo-600 text-white" },
+                  { id: "special_forces", label: "⚡ 特种兵", activeBg: "bg-amber-500 text-black font-black" },
+                ].map((tab) => {
+                  const isActive = historyCategoryTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setHistoryCategoryTab(tab.id)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all flex-shrink-0 cursor-pointer ${
+                        isActive ? `${tab.activeBg} shadow-sm` : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  );
+                })}
+              </div>
 
-                    {/* Spot flow image cards */}
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 my-1">
-                      {rItem.spotObjects.map((sObj, idx) => (
-                        <div key={idx} className="flex flex-col bg-white rounded-xl overflow-hidden border border-zinc-200/90 shadow-2xs group hover:border-[#D2A053] transition-all">
-                          <div className="relative h-16 w-full overflow-hidden bg-zinc-100">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={sObj.img || "/images/spots/10001.webp"}
-                              alt={sObj.name}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
-                            <span className="absolute top-1 left-1 bg-black/65 backdrop-blur-xs text-[8.5px] text-white px-1.5 py-0.5 rounded font-extrabold">
-                              {idx + 1}
-                            </span>
-                          </div>
-                          <div className="p-1.5">
-                            <span className="text-[11px] font-extrabold text-zinc-900 block truncate">{sObj.name}</span>
-                            <span className="text-[9px] text-[#D2A053] font-bold block mt-0.5">{sObj.type || "景区名胜"}</span>
-                          </div>
+              {/* Body Content - Timeline Route Diagram */}
+              <div className="flex-1 overflow-y-auto p-5 space-y-4 scrollbar-thin">
+                {(() => {
+                  const categoryRoutes: Record<string, any> = {
+                    instagrammable: {
+                      tag: "📸 网红打卡",
+                      title: `【${selectedCity}网红绝美打卡】极速出片路线`,
+                      distance: "8.6km",
+                      spots: currentSpots.slice(0, 5),
+                      advice: "建议 16:30 前往最核心地标捕捉傍晚魔幻光影，随后乘坐缆车或漫步江畔，19:30 视角最赞！",
+                      routeData: {
+                        name: `【${selectedCity}网红绝美打卡】出片专线`,
+                        description: `为您精选 ${selectedCity} 出片率最高的 5 大核心打卡景观，定格极致视效！`,
+                        highlights: ["极致摄影视角", "网红热搜地标", "黄金光影时段"],
+                        tips: "建议在傍晚黄昏至夜幕初降时段前往主地标，带上补光设备与亮色穿搭出片效果最佳！",
+                        spots: currentSpots.slice(0, 5).map(s => ({ id: s.id, name: s.name, duration: 40, description: s.desc })),
+                        totalDuration: 210,
+                        totalDistance: "8.6km"
+                      }
+                    },
+                    nature: {
+                      tag: "🏔️ 山水自然",
+                      title: `【${selectedCity}山水清音】自然氧吧漫步专线`,
+                      distance: "12.4km",
+                      spots: currentSpots.filter(s => s.type === "自然" || s.name.includes("山") || s.name.includes("江") || s.name.includes("湖")).concat(currentSpots).slice(0, 4),
+                      advice: "清晨前往山水绿道呼吸新鲜空气，带上饮用水，享受恬静自然的氧吧之旅。",
+                      routeData: {
+                        name: `【${selectedCity}山水清音】自然氧吧漫步专线`,
+                        description: `漫步${selectedCity}自然胜景，感受清风拂面与山水清音。`,
+                        highlights: ["生态森林氧吧", "自然景观大视野", "轻松户外徒步"],
+                        tips: "建议穿着舒适跑鞋，准备好防晒与防蚊用具。",
+                        spots: currentSpots.slice(0, 4).map(s => ({ id: s.id, name: s.name, duration: 50, description: s.desc })),
+                        totalDuration: 240,
+                        totalDistance: "12.4km"
+                      }
+                    },
+                    family: {
+                      tag: "👨‍👩‍👧 亲子游览",
+                      title: `【${selectedCity}亲子智趣】寓教于乐全家游`,
+                      distance: "7.5km",
+                      spots: currentSpots.slice(0, 4),
+                      advice: "线路平缓舒适，周边配套完善，适合全家老少轻松打卡，体验人文科技乐趣。",
+                      routeData: {
+                        name: `【${selectedCity}亲子智趣】寓教于乐全家游`,
+                        description: `轻松平缓的全家欢游览线路，互动体验丰富。`,
+                        highlights: ["全家欢游览", "寓教于乐科普", "配套无障碍设施"],
+                        tips: "景点间车程短，推荐选择打车或轻轨无缝抵达。",
+                        spots: currentSpots.slice(0, 4).map(s => ({ id: s.id, name: s.name, duration: 45, description: s.desc })),
+                        totalDuration: 220,
+                        totalDistance: "7.5km"
+                      }
+                    },
+                    special_forces: {
+                      tag: "⚡ 特种兵",
+                      title: `【${selectedCity}全景极限特种兵】全城名胜贯通线`,
+                      distance: `约 ${(currentSpots.length * 2.2).toFixed(1)}km`,
+                      spots: currentSpots,
+                      advice: "适合精力充沛的极速打卡玩家，建议穿轻便运动鞋并准备移动电源，早晨 08:30 出发，无缝衔接全城轨交。",
+                      routeData: {
+                        name: `【${selectedCity}全景极限特种兵】全城名胜贯通线`,
+                        description: `为“特种兵”玩家量身定制的高能极限路线，贯穿${selectedCity}全城 ${currentSpots.length} 大核心名胜景观，高效打卡无遗漏！`,
+                        highlights: [`贯穿全部 ${currentSpots.length} 个城市名胜`, "极致高效打卡路线", "立体魔幻全景打卡"],
+                        tips: "特种兵打卡路线强度较大，建议穿着舒适运动鞋，保持充足水分补充！",
+                        spots: currentSpots.map((s) => ({ id: s.id, name: s.name, duration: 35, description: s.desc })),
+                        totalDuration: currentSpots.length * 35 + 50,
+                        totalDistance: `约 ${(currentSpots.length * 2.2).toFixed(1)}km`
+                      }
+                    }
+                  };
+
+                  const activeRouteItem = categoryRoutes[historyCategoryTab] || categoryRoutes.instagrammable;
+
+                  return (
+                    <div className="space-y-4">
+                      {/* Route Header */}
+                      <div className="flex items-center justify-between p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200/80">
+                        <div>
+                          <h4 className="font-extrabold text-sm text-zinc-900" style={{ fontFamily: "var(--font-noto-serif)" }}>
+                            {activeRouteItem.title}
+                          </h4>
+                          <span className="text-[11px] font-mono text-zinc-500 mt-0.5 block">全程约 {activeRouteItem.distance} · 覆盖 {activeRouteItem.spots.length} 大景观</span>
                         </div>
-                      ))}
-                    </div>
+                      </div>
 
-                    {/* Planning advice box */}
-                    <div className="p-3 rounded-xl bg-white border border-amber-200/60 text-xs text-amber-900 leading-relaxed flex items-start gap-2">
-                      <span className="text-sm flex-shrink-0">💡</span>
-                      <div>
-                        <strong className="font-bold text-amber-950 block mb-0.5">AI 规划建议：</strong>
-                        <span>{rItem.advice}</span>
+                      {/* Vertical Timeline Diagram */}
+                      <div className="relative border-l-2 border-[#D2A053]/40 ml-4 pl-6 space-y-4 py-2">
+                        {activeRouteItem.spots.map((spotObj: any, idx: number) => (
+                          <div key={idx} className="relative group">
+                            {/* Timeline Node Number Badge */}
+                            <div className="absolute -left-[35px] top-2 w-6 h-6 rounded-full bg-[#D2A053] text-black font-black text-xs flex items-center justify-center border-2 border-white shadow-md">
+                              {idx + 1}
+                            </div>
+
+                            {/* Spot Card */}
+                            <div className="bg-white border border-zinc-200 rounded-2xl p-3 shadow-xs flex items-center gap-3.5 hover:border-[#D2A053] transition-all">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={spotObj.img || "/images/spots/10001.webp"}
+                                alt={spotObj.name}
+                                className="w-16 h-16 rounded-xl object-cover flex-shrink-0 shadow-sm"
+                              />
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between">
+                                  <h5 className="font-extrabold text-xs text-zinc-900 truncate">{spotObj.name}</h5>
+                                  <span className="text-[9.5px] font-bold text-[#D2A053] bg-amber-50 px-2 py-0.5 rounded-full flex-shrink-0">
+                                    建议打卡 40分钟
+                                  </span>
+                                </div>
+                                <p className="text-[10px] text-zinc-400 mt-1 line-clamp-1">{spotObj.desc || "历史底蕴深厚，景色独特别致"}</p>
+                              </div>
+                            </div>
+
+                            {/* Distance Connector text between nodes */}
+                            {idx < activeRouteItem.spots.length - 1 && (
+                              <div className="text-[9.5px] font-mono text-zinc-400 my-1 pl-1 flex items-center gap-1">
+                                <span>🚗 距下个景点约 2.4km</span>
+                                <span>·</span>
+                                <span>预计耗时 8分钟</span>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* AI Advice Box */}
+                      <div className="p-3.5 rounded-2xl bg-amber-50/80 border border-amber-200/80 text-xs text-amber-900 leading-relaxed flex items-start gap-2.5">
+                        <span className="text-base flex-shrink-0">💡</span>
+                        <div>
+                          <strong className="font-extrabold text-amber-950 block mb-0.5">AI 智能路线规划建议：</strong>
+                          <span>{activeRouteItem.advice}</span>
+                        </div>
+                      </div>
+
+                      {/* Action Button */}
+                      <div className="pt-2 flex justify-end">
+                        <button
+                          onClick={() => {
+                            setActiveRoute(activeRouteItem.routeData as GeneratedRoute);
+                            setShowRouteHistoryModal(false);
+                            toast.success(`已载入「${activeRouteItem.title}」至地图！`);
+                          }}
+                          className="w-full py-3 rounded-xl bg-[#3A4D39] text-white text-xs font-extrabold hover:bg-[#4F6F52] shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                        >
+                          <Compass className="w-4 h-4 text-[#D2A053]" />
+                          载入地图并开始游览
+                        </button>
                       </div>
                     </div>
-
-                    {/* Load button */}
-                    <div className="pt-1 flex justify-end">
-                      <button
-                        onClick={() => {
-                          setActiveRoute(rItem.routeData as GeneratedRoute);
-                          setShowRouteHistoryModal(false);
-                          toast.success(`已载入「${rItem.title}」至地图！`);
-                        }}
-                        className="px-4 py-2 rounded-xl bg-[#3A4D39] text-white text-xs font-bold hover:bg-[#4F6F52] shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
-                      >
-                        <Compass className="w-3.5 h-3.5 text-[#D2A053]" />
-                        载入地图并开始游览
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })()}
               </div>
             </motion.div>
           </motion.div>
