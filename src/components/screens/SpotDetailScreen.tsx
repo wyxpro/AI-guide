@@ -137,16 +137,20 @@ export function SpotDetailScreen({ spotId }: { spotId: string }) {
     setSpeaking(true);
   };
 
-  // Auto-play voice guide if opened via QR code scan
+  // Auto-play voice guide if opened via QR code scan or showStory
   useEffect(() => {
-    if (!autoplay || !spot || speaking) return;
+    const showStoryParam = searchParams.get("showStory") === "true";
+    if ((!autoplay && !showStoryParam) || !spot || speaking) return;
     const timer = setTimeout(() => {
-      toast.info(`扫码成功！正在为您播放「${spot.name}」语音讲解`, { duration: 3000 });
+      if (showStoryParam) {
+        setShowStory(true);
+      }
+      toast.info(`正在为您开启并播放「${spot.name}」语音讲解`, { duration: 3000 });
       speakDescription();
-    }, 800);
+    }, 500);
     return () => clearTimeout(timer);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoplay, spot]);
+  }, [autoplay, spot, searchParams]);
 
   if (loading) return <SpotDetailSkeleton />;
   if (!spot) return (

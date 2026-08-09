@@ -1388,7 +1388,7 @@ export function RoutesScreen() {
             {/* 智能向导小慧 icon button placed 3 spaces (mt-3) below 路线合集 button */}
             <button
               onClick={() => setShowFloatChat(!showFloatChat)}
-              className="w-10 h-10 rounded-xl bg-[#4F6F52] text-white shadow-lg shadow-emerald-800/30 border border-[#3A5240] flex items-center justify-center font-bold hover:bg-[#3A5240] active:scale-95 transition-all cursor-pointer mt-3 group"
+              className="w-10 h-10 rounded-xl bg-[#2563EB] text-white shadow-lg shadow-blue-500/30 border border-blue-400 flex items-center justify-center font-bold hover:bg-[#1D4ED8] active:scale-95 transition-all cursor-pointer mt-3 group"
               title="智能向导小慧"
             >
               <MessageSquare className="w-5 h-5 animate-pulse" />
@@ -1401,7 +1401,7 @@ export function RoutesScreen() {
               drag
               dragControls={dragControls}
               dragListener={false}
-              dragConstraints={{ left: -800, right: 50, top: -400, bottom: 200 }}
+              dragConstraints={{ left: -700, right: 300, top: -400, bottom: 200 }}
               dragElastic={0.05}
               dragMomentum={false}
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -1414,12 +1414,12 @@ export function RoutesScreen() {
                 className="p-3 bg-zinc-50/80 border-b border-zinc-100 flex items-center justify-between cursor-grab active:cursor-grabbing select-none"
               >
                 <div className="flex items-center gap-2 pointer-events-none">
-                  <div className="w-7 h-7 rounded-full bg-[#4F6F52]/10 flex items-center justify-center text-[#4F6F52]">
+                  <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
                     <MessageSquare className="w-4 h-4" />
                   </div>
                   <div>
                     <h3 className="font-extrabold text-xs text-zinc-800">智能向导小慧</h3>
-                    <span className="text-[8.5px] text-zinc-400 block mt-0.5">按住顶部框可自由悬浮拖拽</span>
+                    <span className="text-[8.5px] text-zinc-400 block mt-0.5">按住顶部框可自由左右上下拖拽</span>
                   </div>
                 </div>
                 <button
@@ -1849,11 +1849,11 @@ export function RoutesScreen() {
                       </div>
 
                       {/* Vertical Timeline Diagram */}
-                      <div className="relative border-l-2 border-[#D2A053]/40 ml-4 pl-6 space-y-4 py-2">
+                      <div className="relative border-l-2 border-[#D2A053]/40 ml-2 pl-4 space-y-4 py-2">
                         {activeRouteItem.spots.map((spotObj: any, idx: number) => (
                           <div key={idx} className="relative group">
                             {/* Timeline Node Number Badge */}
-                            <div className="absolute -left-[35px] top-2 w-6 h-6 rounded-full bg-[#D2A053] text-black font-black text-xs flex items-center justify-center border-2 border-white shadow-md">
+                            <div className="absolute -left-[25px] top-2 w-5.5 h-5.5 rounded-full bg-[#D2A053] text-black font-black text-[10px] flex items-center justify-center border-2 border-white shadow-md">
                               {idx + 1}
                             </div>
 
@@ -1866,13 +1866,13 @@ export function RoutesScreen() {
                                 className="w-16 h-16 rounded-xl object-cover flex-shrink-0 shadow-sm"
                               />
                               <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between">
-                                  <h5 className="font-extrabold text-xs text-zinc-900 truncate">{spotObj.name}</h5>
-                                  <span className="text-[9.5px] font-bold text-[#D2A053] bg-amber-50 px-2 py-0.5 rounded-full flex-shrink-0">
+                                <div className="flex items-center justify-between gap-2">
+                                  <h5 className="font-extrabold text-xs text-zinc-900 leading-snug">{spotObj.name}</h5>
+                                  <span className="text-[9px] font-bold text-[#D2A053] bg-amber-50 px-2 py-0.5 rounded-full flex-shrink-0">
                                     建议打卡 40分钟
                                   </span>
                                 </div>
-                                <p className="text-[10px] text-zinc-400 mt-1 line-clamp-1">{spotObj.desc || "历史底蕴深厚，景色独特别致"}</p>
+                                <p className="text-[10px] text-zinc-500 mt-1 leading-relaxed">{spotObj.desc || "历史底蕴深厚，景色独特别致，游览打卡首选之地"}</p>
                               </div>
                             </div>
 

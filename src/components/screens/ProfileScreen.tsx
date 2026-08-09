@@ -5,7 +5,7 @@ import {
   MapPin, Heart, Clock, Settings, MessageSquare,
   Share2, Image as ImageIcon, ChevronRight, ChevronLeft, ChevronDown,
   History, Trophy, Bell, Sun, Zap, Baby, ArrowRight, LogOut, X,
-  Shield, Eye, BookOpen, Volume2, Trash2, HelpCircle, Info, Sparkles, Map, User, Navigation, Check
+  Shield, Eye, BookOpen, Volume2, Trash2, HelpCircle, Info, Sparkles, Map, User, Navigation, Check, Pencil
 } from "lucide-react";
 import { useEazo } from "@eazo/sdk/react";
 import { auth } from "@eazo/sdk";
@@ -159,13 +159,22 @@ export function ProfileScreen() {
   }, [user]);
 
   useEffect(() => {
+    const sampleFavs: FavoriteRecord[] = [
+      { id: 101, type: "spot", spotId: 10011, routeId: null, spotName: "洪崖洞民俗风貌区", spotImage: "/images/spots/10011.webp" },
+      { id: 102, type: "spot", spotId: 10001, routeId: null, spotName: "故宫博物院·太和殿", spotImage: "/images/spots/10001.webp" },
+      { id: 103, type: "relic", spotId: 10002, routeId: null, spotName: "镇馆之宝 · 西汉金缕玉衣", spotImage: "/images/spots/10002.webp" },
+      { id: 104, type: "route", spotId: null, routeId: 201, spotName: "巴蜀民俗老街茶馆漫游专线", spotImage: "/images/spots/10067.webp" },
+      { id: 105, type: "audio", spotId: 10005, routeId: null, spotName: "沉浸听读 · 东方明珠夜景深度解说", spotImage: "/images/spots/10005.webp" },
+    ];
+
     Promise.all([
       request("/api/user/visits").then(r => r.json()),
       request("/api/user/favorites").then(r => r.json()),
       request("/api/user/preferences").then(r => r.json()).catch(() => null),
     ]).then(([v, f, p]) => {
       setVisits(Array.isArray(v) ? v : []);
-      setFavorites(Array.isArray(f) ? f : []);
+      const loadedFavs = Array.isArray(f) && f.length > 0 ? f : sampleFavs;
+      setFavorites(loadedFavs);
       if (p && p.accessibilityMode) {
         const mapped = p.accessibilityMode === "normal" ? "standard" : p.accessibilityMode;
         setMode(mapped);
@@ -176,7 +185,10 @@ export function ProfileScreen() {
         setMode(local === "normal" ? "standard" : (local as Mode));
       }
       setLoadingData(false);
-    }).catch(() => setLoadingData(false));
+    }).catch(() => {
+      setFavorites(sampleFavs);
+      setLoadingData(false);
+    });
   }, [user]);
 
   useEffect(() => {
@@ -280,15 +292,21 @@ export function ProfileScreen() {
         <div className="flex-1 w-full min-h-[600px] flex flex-col">
           {/* Mobile Profile Card (Hidden on Desktop) */}
           <div className="lg:hidden w-full relative pb-6">
-            {/* Top Pink-Purple Gradient Banner */}
+            {/* Top Pink-Purple Gradient Banner with Real Scenic Overlay */}
             <div
-              className="relative px-5 pt-8 pb-10 overflow-hidden"
+              className="relative px-5 pt-8 pb-10 overflow-hidden rounded-b-3xl"
               style={{
                 background: "linear-gradient(135deg, #EC4899 0%, #D946EF 45%, #8B5CF6 100%)",
               }}
             >
-              {/* Subtle light mesh background effects */}
-              <div className="absolute inset-0 bg-white/5 backdrop-blur-[1px]" />
+              {/* Real Scenic Background Image Overlay */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={profileBg || "/images/spots/10011.webp"}
+                alt="Scenic Background"
+                className="absolute inset-0 w-full h-full object-cover opacity-25 mix-blend-overlay"
+              />
+              <div className="absolute inset-0 bg-black/10 backdrop-blur-[0.5px]" />
               
               <div className="relative z-10 flex items-start justify-between">
                 {/* Avatar & User Info */}
@@ -322,7 +340,7 @@ export function ProfileScreen() {
                   </div>
                 </div>
 
-                {/* Edit Profile Top Right Button */}
+                {/* Edit Profile Top Right Button (shifted leftwards with Pencil icon) */}
                 <button
                   onClick={() => {
                     setEditName(profileName);
@@ -334,10 +352,10 @@ export function ProfileScreen() {
                     setEditBg(profileBg);
                     setShowEditProfile(true);
                   }}
-                  className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white active:scale-95 transition-transform cursor-pointer shadow-md hover:bg-white/30"
+                  className="mr-2 w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white active:scale-95 transition-transform cursor-pointer shadow-md hover:bg-white/30"
                   title="编辑资料"
                 >
-                  <Settings className="w-4 h-4" />
+                  <Pencil className="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -458,28 +476,6 @@ export function ProfileScreen() {
                 <span>退出当前账号</span>
               </button>
             </div>
-          </div>
-
-          {/* iOS Segment Control */}
-          <div className="lg:hidden mx-4 flex bg-[#E8EDE9] p-0.75 rounded-2xl border border-[#DEEAE3] mt-2.5 mb-1.5">
-            {[
-              { id: "home", label: "首页", icon: User },
-              { id: "routes", label: "行程", icon: Map },
-              { id: "favorites", label: "收藏", icon: Heart },
-              { id: "interests", label: "兴趣", icon: Sparkles },
-            ].map(item => (
-              <button
-                key={item.id}
-                onClick={() => setActiveSection(item.id as ActiveSection)}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-center text-[11px] font-extrabold rounded-xl transition-all cursor-pointer ${activeSection === item.id
-                  ? "bg-white text-[#4F6F52] shadow-sm"
-                  : "text-[#8F9F8F] hover:text-[#4F6F52]"
-                  }`}
-              >
-                <item.icon className="w-3.5 h-3.5" />
-                {item.label}
-              </button>
-            ))}
           </div>
 
           <div className="p-4 sm:p-0 flex-1">
@@ -2446,19 +2442,22 @@ export function ProfileScreen() {
                     id: "standard",
                     title: "🌟 标准模式",
                     desc: "经典高显色调，全功能AI智导与沉浸3D地图",
-                    tag: "推荐"
+                    tag: "推荐",
+                    img: "/images/spots/10001.webp"
                   },
                   {
                     id: "childish",
                     title: "🎈 童趣模式",
                     desc: "卡通趣彩插画，趣味萌音讲解与故事闯关",
-                    tag: "趣味"
+                    tag: "趣味",
+                    img: "/images/spots/10011.webp"
                   },
                   {
                     id: "elderly",
                     title: "👓 适老模式",
                     desc: "特大醒目标示，大按键极简操作与一键语音播报",
-                    tag: "关爱"
+                    tag: "关爱",
+                    img: "/images/spots/10007.webp"
                   },
                 ].map((tItem) => {
                   const isSelected = mode === tItem.id;
@@ -2470,20 +2469,22 @@ export function ProfileScreen() {
                         toast.success(`已切换为「${tItem.title}」！`);
                         setShowThemeModal(false);
                       }}
-                      className={`p-4 rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${
+                      className={`p-3.5 rounded-2xl border cursor-pointer transition-all flex items-center gap-3.5 justify-between ${
                         isSelected
-                          ? "bg-rose-50/70 border-rose-400 shadow-md"
+                          ? "bg-rose-50/70 border-rose-400 shadow-md ring-2 ring-rose-300/40"
                           : "bg-zinc-50 border-zinc-200/80 hover:border-rose-200"
                       }`}
                     >
-                      <div className="space-y-1">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={tItem.img} alt={tItem.title} className="w-14 h-14 rounded-xl object-cover shadow-sm flex-shrink-0" />
+                      <div className="space-y-1 flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <h4 className="font-extrabold text-sm text-zinc-900">{tItem.title}</h4>
+                          <h4 className="font-extrabold text-xs text-zinc-900">{tItem.title}</h4>
                           <span className="text-[9.5px] font-black px-2 py-0.5 rounded-full bg-rose-500 text-white">
                             {tItem.tag}
                           </span>
                         </div>
-                        <p className="text-xs text-zinc-500">{tItem.desc}</p>
+                        <p className="text-[10px] text-zinc-500 leading-tight">{tItem.desc}</p>
                       </div>
                       {isSelected && (
                         <div className="w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center flex-shrink-0">

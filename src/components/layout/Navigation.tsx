@@ -75,18 +75,18 @@ export function BottomTabBar() {
                   animate={{ scale: active ? 1.15 : 1, y: active ? -2 : 0 }}
                   whileTap={{ scale: 0.9 }}
                   transition={{ type: "spring", stiffness: 450, damping: 22 }}
-                  className="relative w-13 h-13 rounded-full shadow-[0_6px_18px_rgba(79,111,82,0.35)] bg-white flex items-center justify-center p-1 overflow-hidden"
+                  className="relative w-13 h-13 rounded-full shadow-[0_6px_20px_rgba(255,77,141,0.45)] bg-gradient-to-tr from-[#1A2520] to-[#2D3E35] flex items-center justify-center p-0.5 overflow-hidden"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src="/image/logo.png"
                     alt="旅行家Pro Logo"
-                    className="w-full h-full object-contain rounded-full"
+                    className="w-full h-full object-cover rounded-full"
                   />
                 </motion.div>
                 <span
                   className="text-[9.5px] font-black mt-1 leading-none transition-colors"
-                  style={{ color: active ? "#FF5B45" : "#71717A" }}
+                  style={{ color: active ? "#FF4D8D" : "#71717A" }}
                 >
                   数字人导游
                 </span>
@@ -101,18 +101,18 @@ export function BottomTabBar() {
                 >
                   <Icon
                     className="w-5 h-5 transition-colors"
-                    style={{ color: active ? "#4F6F52" : "#9CA3AF", strokeWidth: active ? 2.3 : 1.7 }}
+                    style={{ color: active ? "#FF4D8D" : "#9CA3AF", strokeWidth: active ? 2.3 : 1.7 }}
                   />
                   {active && (
                     <motion.div
                       layoutId="active-tab-glow"
-                      className="absolute -inset-1.5 bg-[#4F6F52]/15 rounded-full blur-xs -z-10"
+                      className="absolute -inset-1.5 bg-[#FF4D8D]/20 rounded-full blur-xs -z-10"
                     />
                   )}
                 </motion.div>
                 <span
                   className="text-[9.5px] font-bold leading-none transition-colors"
-                  style={{ color: active ? "#4F6F52" : "#71717A" }}
+                  style={{ color: active ? "#FF4D8D" : "#71717A" }}
                 >
                   {tab.label}
                 </span>
