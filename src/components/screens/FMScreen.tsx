@@ -19,13 +19,13 @@ interface InterestItem {
 }
 
 const INTEREST_OPTIONS: InterestItem[] = [
-  { id: "heritage", label: "非遗文化", img: "/images/spots/placeholder.svg", icon: "🏺" },
-  { id: "celebrities", label: "城市名人", img: "/images/spots/placeholder.svg", icon: "👑" },
-  { id: "history", label: "历史典故", img: "/images/spots/placeholder.svg", icon: "🏯" },
-  { id: "food", label: "美食起源", img: "/images/spots/placeholder.svg", icon: "🍜" },
-  { id: "life", label: "市井生活", img: "/images/spots/placeholder.svg", icon: "🏮" },
-  { id: "landmarks", label: "城市地标", img: "/images/spots/placeholder.svg", icon: "📸" },
-  { id: "legends", label: "民间传说", img: "/images/spots/placeholder.svg", icon: "📖" },
+  { id: "heritage", label: "非遗文化", img: "/images/spots/10075.webp", icon: "🎨" },
+  { id: "celebrities", label: "城市名人", img: "/images/spots/route-301.webp", icon: "📜" },
+  { id: "history", label: "历史典故", img: "/images/spots/10003.webp", icon: "🏯" },
+  { id: "food", label: "美食起源", img: "/images/spots/10068.webp", icon: "🍜" },
+  { id: "life", label: "市井生活", img: "/images/spots/10060.webp", icon: "🍵" },
+  { id: "landmarks", label: "城市地标", img: "/images/spots/10009.webp", icon: "🗼" },
+  { id: "legends", label: "民间传说", img: "/images/spots/10005.webp", icon: "🐉" },
 ];
 
 const TRACKS_DATABASE: Record<string, { title: string; artist: string; cover: string; text: string; audioUrl: string }> = {
@@ -151,10 +151,8 @@ export function FMScreen() {
     const track = playlist[index];
     if (!track) return;
 
-    // Use real audioUrl in music mode, or TTS API in voice mode
-    const primaryUrl = targetMode === "music"
-      ? (track.audioUrl || `/api/fm/audio?track=${track.id}`)
-      : `/api/qa/tts?text=${encodeURIComponent(track.text)}`;
+    // Synthesize real, distinct high quality narration audio for each track
+    const primaryUrl = `/api/qa/tts?text=${encodeURIComponent("正在为您播放伴游广播：" + track.title + "。" + track.text)}`;
 
     const audio = new Audio(primaryUrl);
     setAudioInstance(audio);
@@ -162,16 +160,9 @@ export function FMScreen() {
     if (autoPlay) {
       setIsPlaying(true);
       audio.play().catch((err) => {
-        console.warn("Primary audio playback failed, trying fallback generator:", err);
-        const fallbackUrl = `/api/fm/audio?track=${track.id}`;
-        const fallbackAudio = new Audio(fallbackUrl);
-        setAudioInstance(fallbackAudio);
-        fallbackAudio.play().then(() => {
-          setIsPlaying(true);
-        }).catch(() => {
-          toast.error("音频加载失败，请重试");
-          setIsPlaying(false);
-        });
+        console.warn("Primary audio playback error:", err);
+        toast.error("音频加载失败，请重试");
+        setIsPlaying(false);
       });
     } else {
       setIsPlaying(false);
