@@ -1395,7 +1395,7 @@ export function RoutesScreen() {
             </button>
           </div>
 
-          {/* Draggable Float AI Assistant Panel */}
+          {/* Draggable Float AI Assistant Panel (Compact Size: w-270px h-360px) */}
           {showFloatChat && (
             <motion.div
               drag
@@ -1406,7 +1406,7 @@ export function RoutesScreen() {
               dragMomentum={false}
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              className="absolute bottom-4 right-4 z-40 w-[310px] h-[430px] bg-white/95 backdrop-blur-md rounded-2xl border border-zinc-200/80 shadow-2xl flex flex-col overflow-hidden"
+              className="absolute bottom-4 right-4 z-40 w-[270px] h-[360px] bg-white/95 backdrop-blur-md rounded-2xl border border-zinc-200/80 shadow-2xl flex flex-col overflow-hidden"
             >
               {/* Header acts as drag handle */}
               <div
@@ -1849,21 +1849,21 @@ export function RoutesScreen() {
                       </div>
 
                       {/* Vertical Timeline Diagram */}
-                      <div className="relative border-l-2 border-[#D2A053]/40 ml-2 pl-4 space-y-4 py-2">
+                      <div className="relative border-l-2 border-[#D2A053]/40 ml-0 pl-3 space-y-4 py-2">
                         {activeRouteItem.spots.map((spotObj: any, idx: number) => (
                           <div key={idx} className="relative group">
                             {/* Timeline Node Number Badge */}
-                            <div className="absolute -left-[25px] top-2 w-5.5 h-5.5 rounded-full bg-[#D2A053] text-black font-black text-[10px] flex items-center justify-center border-2 border-white shadow-md">
+                            <div className="absolute -left-[23px] top-2 w-5.5 h-5.5 rounded-full bg-[#D2A053] text-black font-black text-[10px] flex items-center justify-center border-2 border-white shadow-md">
                               {idx + 1}
                             </div>
 
                             {/* Spot Card */}
-                            <div className="bg-white border border-zinc-200 rounded-2xl p-3 shadow-xs flex items-center gap-3.5 hover:border-[#D2A053] transition-all">
+                            <div className="bg-white border border-zinc-200/90 rounded-2xl p-3.5 shadow-xs flex items-center gap-3.5 hover:border-[#D2A053] transition-all">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img
                                 src={spotObj.img || "/images/spots/10001.webp"}
                                 alt={spotObj.name}
-                                className="w-16 h-16 rounded-xl object-cover flex-shrink-0 shadow-sm"
+                                className="w-18 h-18 rounded-xl object-cover flex-shrink-0 shadow-sm"
                               />
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between gap-2">
@@ -1872,7 +1872,7 @@ export function RoutesScreen() {
                                     建议打卡 40分钟
                                   </span>
                                 </div>
-                                <p className="text-[10px] text-zinc-500 mt-1 leading-relaxed">{spotObj.desc || "历史底蕴深厚，景色独特别致，游览打卡首选之地"}</p>
+                                <p className="text-[10px] text-zinc-600 mt-1 leading-relaxed">{spotObj.desc || "历史底蕴深厚，景色独特别致，游览打卡首选之地"}</p>
                               </div>
                             </div>
 

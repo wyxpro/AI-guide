@@ -75,7 +75,7 @@ export function BottomTabBar() {
                   animate={{ scale: active ? 1.15 : 1, y: active ? -2 : 0 }}
                   whileTap={{ scale: 0.9 }}
                   transition={{ type: "spring", stiffness: 450, damping: 22 }}
-                  className="relative w-13 h-13 rounded-full shadow-[0_6px_20px_rgba(255,77,141,0.45)] bg-gradient-to-tr from-[#1A2520] to-[#2D3E35] flex items-center justify-center p-0.5 overflow-hidden"
+                  className="relative w-13 h-13 rounded-full border-2 border-[#FF4D8D] shadow-[0_4px_18px_rgba(255,77,141,0.5)] bg-white flex items-center justify-center p-0.5 overflow-hidden"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img

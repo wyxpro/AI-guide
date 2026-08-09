@@ -292,21 +292,17 @@ export function ProfileScreen() {
         <div className="flex-1 w-full min-h-[600px] flex flex-col">
           {/* Mobile Profile Card (Hidden on Desktop) */}
           <div className="lg:hidden w-full relative pb-6">
-            {/* Top Pink-Purple Gradient Banner with Real Scenic Overlay */}
+            {/* Top Real Scenic Background Banner (No Pink/Purple Gradient Overlay) */}
             <div
-              className="relative px-5 pt-8 pb-10 overflow-hidden rounded-b-3xl"
+              className="relative px-5 pt-8 pb-10 overflow-hidden rounded-b-3xl bg-zinc-900 shadow-md"
               style={{
-                background: "linear-gradient(135deg, #EC4899 0%, #D946EF 45%, #8B5CF6 100%)",
+                backgroundImage: `url('${profileBg || "/images/spots/10011.webp"}')`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
               }}
             >
-              {/* Real Scenic Background Image Overlay */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={profileBg || "/images/spots/10011.webp"}
-                alt="Scenic Background"
-                className="absolute inset-0 w-full h-full object-cover opacity-25 mix-blend-overlay"
-              />
-              <div className="absolute inset-0 bg-black/10 backdrop-blur-[0.5px]" />
+              {/* Dark translucent backdrop overlay for text contrast */}
+              <div className="absolute inset-0 bg-black/45 backdrop-blur-[0.5px]" />
               
               <div className="relative z-10 flex items-start justify-between">
                 {/* Avatar & User Info */}
@@ -2465,8 +2461,8 @@ export function ProfileScreen() {
                     <div
                       key={tItem.id}
                       onClick={() => {
-                        setMode(tItem.id as Mode);
-                        toast.success(`已切换为「${tItem.title}」！`);
+                        changeMode(tItem.id as Mode);
+                        toast.success(`已成功切换为「${tItem.title}」！`);
                         setShowThemeModal(false);
                       }}
                       className={`p-3.5 rounded-2xl border cursor-pointer transition-all flex items-center gap-3.5 justify-between ${
@@ -2532,15 +2528,15 @@ export function ProfileScreen() {
                 </div>
               </div>
 
-              {/* 4 Subscription Tier Options */}
-              <div className="p-5 space-y-3.5 max-h-[60vh] overflow-y-auto">
-                <h4 className="font-extrabold text-xs text-zinc-800">选择您的专属伴游套餐</h4>
+              {/* 4 Subscription Tier Options & Feature Details */}
+              <div className="p-5 space-y-4 max-h-[62vh] overflow-y-auto">
+                <h4 className="font-extrabold text-xs text-zinc-800">选择您的专属高定伴游套餐</h4>
                 <div className="grid grid-cols-2 gap-3">
                   {[
-                    { id: "month", name: "连续月卡", price: "19", period: "/月", orig: "¥30", tag: "首月优惠", desc: "无限次 AI 对话 + 标准音色" },
-                    { id: "quarter", name: "季卡套餐", price: "48", period: "/季", orig: "¥90", tag: "热门推荐", desc: "赠送专属音色与双向语音" },
-                    { id: "year", name: "年度尊享", price: "128", period: "/年", orig: "¥360", tag: "立省60%", desc: "送全城特种兵路线库 + 3D全景" },
-                    { id: "lifetime", name: "终身尊享", price: "298", period: "终身", orig: "¥999", tag: "限量尊享", desc: "无限次 4K 三维地图 + 全局AI" },
+                    { id: "month", name: "连续月卡", price: "19", period: "/月", orig: "¥30", tag: "首月优惠", desc: "✨ 解锁 1000+ 景区无界伴游 · 无限次 AI 对话与标准音色" },
+                    { id: "quarter", name: "季卡套餐", price: "48", period: "/季", orig: "¥90", tag: "热门推荐", desc: "✨ 赠送专属知性/磁性高品质音色 · 双向实时对谈与沉浸地图" },
+                    { id: "year", name: "年度尊享", price: "128", period: "/年", orig: "¥360", tag: "立省60%", desc: "✨ 送全城特种兵路线库 + 4K 3D 三维高精地图与全局智导" },
+                    { id: "lifetime", name: "终身尊享", price: "298", period: "终身", orig: "¥999", tag: "限量尊享", desc: "✨ 终身无限次全景三维地图 + 官方 VIP 极速优先服务通道" },
                   ].map((tier) => {
                     const isSelected = vipSelectedTier === tier.id;
                     return (
@@ -2564,10 +2560,17 @@ export function ProfileScreen() {
                             <span className="text-[9px] text-zinc-400 line-through ml-1">{tier.orig}</span>
                           </div>
                         </div>
-                        <p className="text-[9.5px] text-amber-900/70 mt-2 font-medium leading-tight">{tier.desc}</p>
+                        <p className="text-[9.5px] text-amber-900/80 mt-2 font-semibold leading-relaxed">{tier.desc}</p>
                       </div>
                     );
                   })}
+                </div>
+
+                {/* Additional membership guarantee badges */}
+                <div className="p-3 rounded-2xl bg-amber-50/50 border border-amber-200/60 text-[10px] text-amber-900 flex items-center justify-around font-bold">
+                  <span>🔒 安全极速开通</span>
+                  <span>⚡ 即刻生效解锁</span>
+                  <span>🎧 全平台设备同步</span>
                 </div>
               </div>
 
