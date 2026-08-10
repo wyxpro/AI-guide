@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { synthesizeSpeech } from "@/lib/api/xfyun-tts";
 import { synthesizeSpeechWithStepFun } from "../../../../lib/stepfun-audio/tts";
+import { synthesizeSiliconFlowSpeech } from "@/lib/ai/siliconflow-audio";
 
 // Helper to generate a valid 1-second WAV audio buffer as ultimate fallback for demo stability
 function createFallbackWavBuffer(): Buffer {
@@ -40,15 +41,20 @@ function createFallbackWavBuffer(): Buffer {
 async function processTts(text: string, options: { voiceStyle?: string; speechRate?: number; pitch?: number; ttsConfig?: any }) {
   const { voiceStyle, speechRate, pitch, ttsConfig } = options;
 
-  // 1. Try StepFun stepaudio-2.5-tts if API key is present
-  if (process.env.STEP_API_KEY) {
+  // 1. Try SiliconFlow FunAudioLLM/CosyVoice2-0.5B if API key is present
+  if (process.env.SILICONFLOW_API_KEY) {
     try {
-      const audioBuffer = await synthesizeSpeechWithStepFun(text, voiceStyle);
-      return new NextResponse(audioBuffer, {
+      const audioBuffer = await synthesizeSiliconFlowSpeech({
+        input: text.slice(0, 500),
+        voice: "fnlp/MOSS-TTSD-v0.5:alex",
+        response_format: "mp3",
+        stream: true,
+      });
+      return new NextResponse(audioBuffer as any, {
         headers: { "Content-Type": "audio/mpeg" },
       });
     } catch (err) {
-      console.error("[TTS Route] StepFun TTS synthesis failed, falling back:", err);
+      console.error("[TTS Route] SiliconFlow CosyVoice2-0.5B failed, falling back:", err);
     }
   }
 

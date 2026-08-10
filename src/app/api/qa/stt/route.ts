@@ -3,6 +3,7 @@ import OpenAI from "openai";
 import fs from "fs";
 import path from "path";
 import { transcribeAudioWithStepFun } from "../../../../lib/stepfun-audio/asr";
+import { transcribeSiliconFlowAudio } from "@/lib/ai/siliconflow-audio";
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,7 +13,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    // 1. Try Vosk local ASR if model folder exists
+    // 1. Try SiliconFlow TeleAI/TeleSpeechASR if SILICONFLOW_API_KEY is present
+    if (process.env.SILICONFLOW_API_KEY) {
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        const mimeType = file.type || "audio/wav";
+        const fileName = file.name || "audio.wav";
+
+        const text = await transcribeSiliconFlowAudio(buffer, mimeType, fileName);
+        if (text) {
+          return NextResponse.json({ text: text.trim() });
+        }
+      } catch (sfError) {
+        console.warn("[STT Route] SiliconFlow TeleAI/TeleSpeechASR failed, falling back:", sfError);
+      }
+    }
     const voskModelPath = path.join(process.cwd(), "models", "vosk-model-cn");
     if (fs.existsSync(voskModelPath)) {
       try {
