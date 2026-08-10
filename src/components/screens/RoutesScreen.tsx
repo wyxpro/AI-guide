@@ -41,19 +41,38 @@ const ROUTE_SPOT_DETAIL_ALIASES: Record<string, string> = {
   "大雁塔·大唐不夜城": "大雁塔与大唐不夜城",
   "西湖风景名胜区": "杭州西湖风景区",
   "解放碑步行街": "解放碑与八一路好吃街",
-  "夫子庙": "夫子庙秦淮风光带",
   "总统府": "南京总统府",
   "陈家祠": "陈家祠 (陈氏书院)",
   "东湖听涛景区": "东湖生态风景区",
+  "珠江夜游天字码头": "珠江夜游",
+  "豫园": "老城厢豫园",
+  "外滩": "上海外滩万国建筑群",
 };
 
 const resolveRouteSpotDetailId = (spot: { name?: string; img?: string; imageUrl?: string }) => {
-  const imageUrl = spot.img || spot.imageUrl;
-  const imageMatch = imageUrl && NATIONAL_SPOTS.find((nationalSpot) => nationalSpot.imageUrl === imageUrl);
-  if (imageMatch) return imageMatch.id;
+  if (spot.name) {
+    const exact = NATIONAL_SPOTS.find((s) => s.name === spot.name);
+    if (exact) return exact.id;
+  }
 
-  const targetName = ROUTE_SPOT_DETAIL_ALIASES[spot.name || ""] || spot.name;
-  return NATIONAL_SPOTS.find((nationalSpot) => nationalSpot.name === targetName)?.id;
+  const imageUrl = spot.img || spot.imageUrl;
+  if (imageUrl) {
+    const imageExact = spot.name
+      ? NATIONAL_SPOTS.find((s) => s.imageUrl === imageUrl && s.name === spot.name)
+      : undefined;
+    if (imageExact) return imageExact.id;
+
+    const imageMatch = NATIONAL_SPOTS.find((s) => s.imageUrl === imageUrl);
+    if (imageMatch) return imageMatch.id;
+  }
+
+  if (spot.name) {
+    const aliasName = ROUTE_SPOT_DETAIL_ALIASES[spot.name] || spot.name;
+    const aliasMatch = NATIONAL_SPOTS.find((s) => s.name === aliasName);
+    if (aliasMatch) return aliasMatch.id;
+  }
+
+  return undefined;
 };
 
 const CHONGQING_SPOTS = [
@@ -164,6 +183,28 @@ const ALL_CITIES_SPOTS: Record<string, typeof CHONGQING_SPOTS> = {
   ]
 };
 
+const ROUTE_DETAIL_SPOT_IDS: Record<string, readonly number[]> = {
+  "重庆": [20001, 20002, 20003, 20004, 20005, 20006],
+  "北京": [20007, 20008, 20009, 20010, 20011, 20012],
+  "上海": [20013, 20014, 20015, 20016, 20017, 20018],
+  "成都": [20019, 20020, 20021, 20022, 20023, 20024],
+  "西安": [20025, 20026, 20027, 20028, 20029, 20030],
+  "杭州": [20031, 20032, 20033, 20034, 20035, 20036],
+  "南京": [20037, 20038, 20039, 20040, 20041, 20042],
+  "武汉": [20043, 20044, 20045, 20046, 20047, 20048],
+  "苏州": [20049, 20050, 20051, 20052, 20053, 20054],
+  "广州": [20055, 20056, 20057, 20058, 20059, 20060],
+};
+
+const ALL_CITIES_SPOTS_WITH_DETAILS = Object.fromEntries(
+  Object.entries(ALL_CITIES_SPOTS).map(([city, spots]) => [
+    city,
+    spots.map((spot, index) => ({
+      ...spot,
+      ...(index < 6 ? { detailSpotId: ROUTE_DETAIL_SPOT_IDS[city][index] } : {}),
+    })),
+  ]),
+) as Record<string, Array<(typeof CHONGQING_SPOTS)[number] & { detailSpotId?: number }>>;
 
 const POPULAR_CITIES = [
   { name: "重庆", center: [106.578, 29.563], img: "/images/spots/10011.webp", badge: "魔幻山城" },
@@ -198,7 +239,7 @@ export function RoutesScreen() {
   const router = useRouter();
   const user = useEazo((s: any) => s.auth.user) as { name?: string | null; avatar?: string | null } | null;
   const [selectedCity, setSelectedCity] = useState("重庆");
-  const currentSpots = ALL_CITIES_SPOTS[selectedCity] || CHONGQING_SPOTS;
+  const currentSpots = ALL_CITIES_SPOTS_WITH_DETAILS[selectedCity] || ALL_CITIES_SPOTS_WITH_DETAILS["重庆"];
 
   const [selectedInterests, setSelectedInterests] = useState<string[]>(["instagrammable"]);
   const [duration, setDuration] = useState(120);
@@ -1326,20 +1367,15 @@ export function RoutesScreen() {
           {/* Map Top horizontal Popular Spots Cards overlay (Aligned to left, avoiding top-right controls) */}
           <div className="absolute top-4 left-4 z-25 flex gap-1.5 sm:gap-2 overflow-x-auto scrollbar-none pb-1.5 snap-x w-[calc(100%-40px)] sm:w-[calc(100%-65px)] md:max-w-[calc(100%-180px)]">
             {currentSpots.slice(0, 6).map((spot) => {
+              const detailId = spot.detailSpotId;
+              if (detailId === undefined) {
+                throw new Error(`热门景点详情未配置：${spot.name}`);
+              }
               const isActive = activeSpot?.id === spot.id;
               return (
                 <button
                   key={spot.id}
-                  onClick={() => {
-                    setActiveSpot(spot);
-                    if (mapInstanceRef.current) {
-                      mapInstanceRef.current.setZoomAndCenter(15, [spot.lng, spot.lat], false, 300);
-                      showAmapInfoWindow(spot);
-                    }
-                    if (autoplayEnabled) {
-                      speakSpotNarration(spot.name, spot.desc);
-                    }
-                  }}
+                  onClick={() => router.push(`/spots/${detailId}`)}
                   className={`flex-shrink-0 w-[100px] sm:w-[140px] rounded-xl overflow-hidden bg-white/95 backdrop-blur-md border transition-all text-left shadow-md flex flex-col snap-start ${
                     isActive ? "border-[#4F6F52] ring-2 ring-[#4F6F52]/20" : "border-zinc-200/40"
                   }`}

@@ -1041,6 +1041,123 @@ export const NATIONAL_SPOTS: NationalSpot[] = [
     location: { lat: 31.0256, lng: 114.4128 }
   },
 
+  // ── 路线热门景点补充（前六项专属详情） ──
+  {
+    id: 10095, name: "朝天门广场", category: "cultural", city: "重庆",
+    description: "朝天门位于长江与嘉陵江交汇处，是重庆最具辨识度的两江观景地。站在广场远眺，可欣赏江面交汇、来往船只和渝中半岛的层叠城市天际线。",
+    imageUrl: "/images/spots/route-3.webp", duration: 90, distance: "重庆市渝中区长滨路1号", rating: 46, visitCount: 68000, tags: ["两江交汇", "城市地标", "江景观赏", "重庆夜景"], location: { lat: 29.569, lng: 106.583 }
+  },
+  {
+    id: 10096, name: "南山一棵树观景台", category: "nature", city: "重庆",
+    description: "南山一棵树观景台坐拥俯瞰渝中半岛的经典视角，入夜后万家灯火沿两江铺展开来，是体验山城立体夜景的热门去处。",
+    imageUrl: "/images/spots/route-6.webp", duration: 90, distance: "重庆市南岸区龙黄公路", rating: 47, visitCount: 72000, tags: ["山城夜景", "两江视角", "观景台", "摄影打卡"], location: { lat: 29.55, lng: 106.592 }
+  },
+  {
+    id: 10097, name: "景山公园", category: "nature", city: "北京",
+    description: "景山公园位于北京中轴线北端，园内万春亭是俯瞰故宫全景的最佳位置之一。登高可将红墙黄瓦与北京城的中轴线尽收眼底。",
+    imageUrl: "/images/spots/route-105.webp", duration: 75, distance: "北京市东城区景山前街11号", rating: 46, visitCount: 65000, tags: ["故宫全景", "北京中轴线", "万春亭", "皇家园林"], location: { lat: 39.923, lng: 116.397 }
+  },
+  {
+    id: 10098, name: "南京路步行街", category: "cultural", city: "上海",
+    description: "南京路步行街是上海最具代表性的商业街区之一，从外滩延伸至人民广场，百年老字号、现代商场与城市霓虹共同构成繁华街景。",
+    imageUrl: "/images/spots/route-204.webp", duration: 120, distance: "上海市黄浦区南京东路", rating: 46, visitCount: 93000, tags: ["中华商业第一街", "百年老字号", "城市夜景", "购物漫步"], location: { lat: 31.235, lng: 121.479 }
+  },
+  {
+    id: 10099, name: "上海博物馆", category: "cultural", city: "上海",
+    description: "上海博物馆以青铜器、陶瓷、书法、绘画等中国古代艺术珍藏闻名，圆顶方座的建筑造型寓意“天圆地方”，是人民广场的重要文化地标。",
+    imageUrl: "/images/spots/route-205.webp", duration: 150, distance: "上海市黄浦区人民大道201号", rating: 48, visitCount: 78000, tags: ["国家一级博物馆", "中国古代艺术", "青铜器", "人民广场"], location: { lat: 31.228, lng: 121.475 }
+  },
+  {
+    id: 10100, name: "田子坊", category: "cultural", city: "上海",
+    description: "田子坊由石库门里弄更新而成，狭窄巷道里汇集画廊、设计店、咖啡馆和手作空间，保留了上海弄堂的生活质感与创意气息。",
+    imageUrl: "/images/spots/route-206.webp", duration: 120, distance: "上海市黄浦区泰康路210弄", rating: 46, visitCount: 71000, tags: ["石库门", "创意街区", "弄堂漫步", "文艺打卡"], location: { lat: 31.207, lng: 121.468 }
+  },
+  {
+    id: 10101, name: "成都杜甫草堂博物馆", category: "cultural", city: "成都",
+    description: "杜甫草堂是唐代诗人杜甫在成都寓居近四年的故居，园内古木清幽、茅屋朴素，承载着诗人创作《茅屋为秋风所破歌》等名篇的历史记忆。",
+    imageUrl: "/images/spots/route-301.webp", duration: 120, distance: "四川省成都市青羊区青华路37号", rating: 47, visitCount: 69000, tags: ["杜甫故居", "诗歌文化", "川西园林", "人文古迹"], location: { lat: 30.66, lng: 104.028 }
+  },
+  {
+    id: 10102, name: "春熙路步行街", category: "cultural", city: "成都",
+    description: "春熙路步行街是成都时尚与烟火气交汇的核心商圈，周边可见太古里、大慈寺和网红熊猫雕塑，适合感受城市潮流与美食活力。",
+    imageUrl: "/images/spots/route-306.webp", duration: 120, distance: "四川省成都市锦江区春熙路", rating: 46, visitCount: 96000, tags: ["成都商圈", "潮流地标", "熊猫打卡", "美食购物"], location: { lat: 30.655, lng: 104.08 }
+  },
+  {
+    id: 10103, name: "大唐芙蓉园", category: "cultural", city: "西安",
+    description: "大唐芙蓉园以盛唐皇家园林文化为主题，亭台楼阁环绕水面，夜间灯光、演艺与唐风建筑共同营造沉浸式的大唐风貌。",
+    imageUrl: "/images/spots/route-402.webp", duration: 150, distance: "陕西省西安市雁塔区芙蓉西路99号", rating: 47, visitCount: 82000, tags: ["盛唐文化", "皇家园林", "夜游演艺", "唐风建筑"], location: { lat: 34.218, lng: 108.969 }
+  },
+  {
+    id: 10104, name: "西安钟楼", category: "history", city: "西安",
+    description: "西安钟楼始建于明代，坐落在古城中心四条大街交会处，是中国现存形制最大、保存最完整的古代钟楼之一，夜景尤为壮丽。",
+    imageUrl: "/images/spots/route-403.webp", duration: 60, distance: "陕西省西安市碑林区钟楼盘道", rating: 47, visitCount: 88000, tags: ["明代建筑", "古城地标", "钟楼夜景", "城市中心"], location: { lat: 34.261, lng: 108.942 }
+  },
+  {
+    id: 10105, name: "雷峰塔", category: "history", city: "杭州",
+    description: "雷峰塔位于西湖南岸夕照山上，因“雷峰夕照”闻名。登塔可眺望西湖全景，白娘子传说也为这座古塔增添了浓厚的人文色彩。",
+    imageUrl: "/images/spots/route-503.webp", duration: 75, distance: "浙江省杭州市西湖区南山路15号", rating: 46, visitCount: 76000, tags: ["雷峰夕照", "白娘子传说", "西湖全景", "古塔"], location: { lat: 30.233, lng: 120.148 }
+  },
+  {
+    id: 10106, name: "清河坊历史街区", category: "cultural", city: "杭州",
+    description: "清河坊历史街区保留了南宋以来的市井格局，胡庆余堂等老字号与传统手作店铺沿街分布，是感受老杭州商业文化的经典去处。",
+    imageUrl: "/images/spots/route-504.webp", duration: 120, distance: "浙江省杭州市上城区河坊街", rating: 46, visitCount: 73000, tags: ["南宋遗韵", "杭州老街", "老字号", "市井文化"], location: { lat: 30.242, lng: 120.169 }
+  },
+  {
+    id: 10107, name: "六和塔", category: "history", city: "杭州",
+    description: "六和塔始建于北宋，临钱塘江而立，原为镇江潮而建。塔身层层收分，登临远望可感受钱塘江的开阔江景。",
+    imageUrl: "/images/spots/route-506.webp", duration: 75, distance: "浙江省杭州市西湖区之江路16号", rating: 45, visitCount: 52000, tags: ["北宋古塔", "钱塘江景", "登高远眺", "古建筑"], location: { lat: 30.198, lng: 120.126 }
+  },
+  {
+    id: 10108, name: "鸡鸣寺", category: "cultural", city: "南京",
+    description: "鸡鸣寺是南京历史悠久的佛教寺院之一，药师佛塔与樱花大道相映成景。春季花开时，这里是金陵最受欢迎的赏樱地点之一。",
+    imageUrl: "/images/spots/route-604.webp", duration: 75, distance: "江苏省南京市玄武区鸡鸣寺路1号", rating: 46, visitCount: 69000, tags: ["金陵古刹", "樱花大道", "药师佛塔", "城市赏樱"], location: { lat: 32.063, lng: 118.792 }
+  },
+  {
+    id: 10109, name: "明孝陵", category: "history", city: "南京",
+    description: "明孝陵是明太祖朱元璋与马皇后的合葬陵寝，神道两侧石刻庄严雄浑，建筑与山林融为一体，是南京明代文化遗产的重要代表。",
+    imageUrl: "/images/spots/route-605.webp", duration: 120, distance: "江苏省南京市玄武区明陵路", rating: 48, visitCount: 75000, tags: ["世界文化遗产", "明代帝陵", "神道石刻", "紫金山"], location: { lat: 32.061, lng: 118.831 }
+  },
+  {
+    id: 10110, name: "户部巷特色街区", category: "cultural", city: "武汉",
+    description: "户部巷是武汉知名的传统小吃街区，百年巷道汇集热干面、豆皮、面窝等汉味美食，是体验武汉“过早”文化的热门一站。",
+    imageUrl: "/images/spots/route-703.webp", duration: 90, distance: "湖北省武汉市武昌区司门口", rating: 45, visitCount: 74000, tags: ["汉味小吃", "武汉过早", "热干面", "百年老巷"], location: { lat: 30.548, lng: 114.296 }
+  },
+  {
+    id: 10111, name: "昙华林", category: "cultural", city: "武汉",
+    description: "昙华林是武汉保存较完整的历史街区之一，近代中西合璧建筑、书店、咖啡馆和工作室分布其间，兼具老城记忆与文艺活力。",
+    imageUrl: "/images/spots/route-706.webp", duration: 90, distance: "湖北省武汉市武昌区昙华林路", rating: 46, visitCount: 61000, tags: ["历史街区", "文艺武汉", "近代建筑", "漫步拍照"], location: { lat: 30.554, lng: 114.312 }
+  },
+  {
+    id: 10112, name: "虎丘山风景名胜区", category: "history", city: "苏州",
+    description: "虎丘山以云岩寺塔闻名，塔身微斜有“东方比萨斜塔”之称。千年古迹、剑池传说与园林山水汇聚，是苏州文化地标之一。",
+    imageUrl: "/images/spots/route-802.webp", duration: 120, distance: "江苏省苏州市姑苏区虎丘山8号", rating: 47, visitCount: 68000, tags: ["虎丘塔", "剑池", "苏州古迹", "园林山水"], location: { lat: 31.344, lng: 120.578 }
+  },
+  {
+    id: 10113, name: "金鸡湖景区", category: "nature", city: "苏州",
+    description: "金鸡湖景区位于苏州工业园区核心，湖畔现代建筑与开阔水景相映，东方之门、文化艺术中心等地标让这里呈现别样的现代苏州。",
+    imageUrl: "/images/spots/route-805.webp", duration: 120, distance: "江苏省苏州市工业园区星港街158号", rating: 46, visitCount: 70000, tags: ["现代苏州", "东方之门", "湖畔夜景", "城市地标"], location: { lat: 31.311, lng: 120.697 }
+  },
+  {
+    id: 10114, name: "山塘街", category: "cultural", city: "苏州",
+    description: "山塘街沿山塘河绵延，粉墙黛瓦、小桥流水与临河老宅构成典型江南水乡画卷，被誉为“姑苏第一街”。",
+    imageUrl: "/images/spots/route-806.webp", duration: 120, distance: "江苏省苏州市姑苏区山塘街", rating: 47, visitCount: 79000, tags: ["七里山塘", "江南水乡", "夜游古街", "小桥流水"], location: { lat: 31.321, lng: 120.597 }
+  },
+  {
+    id: 10115, name: "越秀公园五羊雕像", category: "cultural", city: "广州",
+    description: "五羊雕像坐落于越秀公园，是广州最具代表性的城市象征。雕像取材于“五羊衔谷”的传说，寄托着羊城丰饶安宁的美好寓意。",
+    imageUrl: "/images/spots/route-904.webp", duration: 60, distance: "广东省广州市越秀区解放北路988号", rating: 45, visitCount: 64000, tags: ["羊城象征", "五羊传说", "越秀公园", "城市地标"], location: { lat: 23.142, lng: 113.264 }
+  },
+  {
+    id: 10116, name: "白云山风景区", category: "nature", city: "广州",
+    description: "白云山素有“羊城第一秀”之称，山间林木繁茂、云雾缭绕。登临摩星岭可远眺广州城区，是市民亲近自然与登高健行的好去处。",
+    imageUrl: "/images/spots/route-905.webp", duration: 150, distance: "广东省广州市白云区广园中路801号", rating: 47, visitCount: 81000, tags: ["羊城第一秀", "摩星岭", "登山健行", "城市绿肺"], location: { lat: 23.177, lng: 113.298 }
+  },
+  {
+    id: 10117, name: "荔枝湾涌", category: "cultural", city: "广州",
+    description: "荔枝湾涌保留了西关水乡的河涌风貌，沿岸骑楼、古桥与荔枝树相映。乘船或漫步其间，可感受岭南老城舒缓的生活气息。",
+    imageUrl: "/images/spots/route-906.webp", duration: 90, distance: "广东省广州市荔湾区龙津西路", rating: 45, visitCount: 56000, tags: ["西关风情", "岭南水乡", "河涌游船", "老广州"], location: { lat: 23.12, lng: 113.232 }
+  },
+
   // ── 全国热门非城市特别景区 ──
   {
     id: 10021,
@@ -1125,5 +1242,201 @@ export const NATIONAL_SPOTS: NationalSpot[] = [
     visitCount: 87000,
     tags: ["终年积雪", "神山朝圣", "冰川大索道", "蓝月谷绝景"],
     location: { lat: 27.1009, lng: 100.1743 }
+  },
+  {
+    id: 10118,
+    name: "故宫博物院",
+    category: "history",
+    city: "北京",
+    description: "故宫博物院是明清两代的皇家宫殿，世界上现存规模最大、保存最为完整的木质结构古建筑群之一。红墙黄瓦、宫阙巍峨，珍藏百万级文物，是了解中国古代历史与皇家文化的必游之地。",
+    imageUrl: "/images/spots/10001.webp",
+    duration: 240,
+    distance: "北京市中心",
+    rating: 49,
+    visitCount: 154000,
+    tags: ["皇家宫殿", "历史文化", "世界遗产", "国宝级文物"],
+    location: { lat: 39.9163, lng: 116.3972 }
+  },
+  {
+    id: 10119,
+    name: "什刹海历史文化区",
+    category: "cultural",
+    city: "北京",
+    description: "什刹海历史文化区由前海、后海和西海组成，周边保留了大量老北京胡同与传统院落。白天可沿湖漫步、探访胡同，夜晚则可感受后海酒吧与灯影水色交织的城市风情。",
+    imageUrl: "/images/spots/10053.webp",
+    duration: 150,
+    distance: "北京市西城区",
+    rating: 47,
+    visitCount: 76000,
+    tags: ["老北京胡同", "后海夜景", "湖畔漫步", "京味文化"],
+    location: { lat: 39.9388, lng: 116.3861 }
+  },
+  {
+    id: 10120,
+    name: "外滩",
+    category: "cultural",
+    city: "上海",
+    description: "外滩是上海最具代表性的城市名片之一，黄浦江西岸汇聚风格各异的历史建筑群，被誉为“万国建筑博览群”。与对岸陆家嘴的现代天际线隔江相望，夜景璀璨夺目。",
+    imageUrl: "/images/spots/10009.webp",
+    duration: 90,
+    distance: "上海市黄浦区江畔",
+    rating: 48,
+    visitCount: 145000,
+    tags: ["万国建筑", "黄浦江夜景", "城市地标", "江风漫步"],
+    location: { lat: 31.2406, lng: 121.4904 }
+  },
+  {
+    id: 10121,
+    name: "豫园",
+    category: "cultural",
+    city: "上海",
+    description: "豫园是著名的江南古典园林，亭台楼阁玲珑雅致，水榭回廊错落有致，以太湖石等园林奇石著称。园外老城厢商圈烟火十足，适合感受老上海的传统风貌。",
+    imageUrl: "/images/spots/10010.webp",
+    duration: 120,
+    distance: "上海市黄浦区",
+    rating: 46,
+    visitCount: 68000,
+    tags: ["江南园林", "老城厢", "九曲桥", "传统风貌"],
+    location: { lat: 31.2272, lng: 121.4921 }
+  },
+  {
+    id: 10122,
+    name: "东方明珠电视塔",
+    category: "cultural",
+    city: "上海",
+    description: "东方明珠电视塔坐落于陆家嘴核心地带，独特的球体结构极具未来感。登临观景层可俯瞰黄浦江弧线与上海天际线，透明观光廊带来云端视角的震撼体验。",
+    imageUrl: "/images/spots/10063.webp",
+    duration: 120,
+    distance: "上海市浦东新区陆家嘴",
+    rating: 48,
+    visitCount: 138000,
+    tags: ["陆家嘴地标", "城市天际线", "透明观景", "黄浦江全景"],
+    location: { lat: 31.2397, lng: 121.4998 }
+  },
+  {
+    id: 10123,
+    name: "秦始皇帝陵博物院",
+    category: "history",
+    city: "西安",
+    description: "秦始皇帝陵博物院以兵马俑坑闻名，成百上千的陶俑陶马整齐列阵，场面震撼。这里集中展现了秦代军事、工艺与帝陵制度，是了解秦帝国的核心窗口。",
+    imageUrl: "/images/spots/10003.webp",
+    duration: 150,
+    distance: "距西安市中心约30公里",
+    rating: 49,
+    visitCount: 128000,
+    tags: ["世界奇迹", "秦代遗迹", "考古巨制", "震撼人心"],
+    location: { lat: 34.3841, lng: 109.2785 }
+  },
+  {
+    id: 10124,
+    name: "西安城墙",
+    category: "cultural",
+    city: "西安",
+    description: "西安城墙是中国现存规模最大、保存最完整的古代城垣建筑之一。登城可骑行环绕古城，俯瞰城墙内外古今交融的市井风光，夜景尤具氛围。",
+    imageUrl: "/images/spots/10004.webp",
+    duration: 120,
+    distance: "西安市中心",
+    rating: 47,
+    visitCount: 75000,
+    tags: ["隋唐遗风", "骑行打卡", "古老城垣", "夜景极美"],
+    location: { lat: 34.2543, lng: 108.9424 }
+  },
+  {
+    id: 10125,
+    name: "大雁塔·大唐不夜城",
+    category: "cultural",
+    city: "西安",
+    description: "大雁塔是唐代重要佛塔，夜幕降临后，塔下的大唐不夜城灯火辉煌，唐风建筑与沉浸式演艺交相辉映，重现盛唐华彩乐章，是西安夜游必打卡的城市地标。",
+    imageUrl: "/images/spots/10054.webp",
+    duration: 180,
+    distance: "西安市雁塔区",
+    rating: 49,
+    visitCount: 142000,
+    tags: ["盛唐不夜城", "玄奘大雁塔", "唐风演艺", "璀璨灯会"],
+    location: { lat: 34.2185, lng: 108.9641 }
+  },
+  {
+    id: 10126,
+    name: "西湖风景名胜区",
+    category: "nature",
+    city: "杭州",
+    description: "西湖以湖光山色与深厚人文底蕴闻名，苏堤春晓、断桥残雪、平湖秋月等胜景如诗如画。沿湖漫步或乘画舫泛舟，能深刻体会江南意境。",
+    imageUrl: "/images/spots/10005.webp",
+    duration: 180,
+    distance: "杭州市中心",
+    rating: 49,
+    visitCount: 189000,
+    tags: ["湖光山色", "世界遗产", "浪漫断桥", "诗画江南"],
+    location: { lat: 30.2439, lng: 120.1472 }
+  },
+  {
+    id: 10127,
+    name: "解放碑步行街",
+    category: "cultural",
+    city: "重庆",
+    description: "解放碑步行街是重庆核心商圈与城市地标，既是抗战胜利的历史见证，也是山城最繁华的商业中心之一。周边美食街烟火十足，适合步行逛吃与拍照打卡。",
+    imageUrl: "/images/spots/10066.webp",
+    duration: 90,
+    distance: "重庆市渝中区核心",
+    rating: 47,
+    visitCount: 105000,
+    tags: ["山城地标", "繁华商圈", "步行街", "美食打卡"],
+    location: { lat: 29.5574, lng: 106.5772 }
+  },
+  {
+    id: 10128,
+    name: "总统府",
+    category: "history",
+    city: "南京",
+    description: "总统府拥有600多年的历史，曾是明代汉王府、清代两江总督署、太平天国天王府以及中华民国临时政府总统府。园内中式园林与近现代西式建筑交织，是南京近代史的重要见证。",
+    imageUrl: "/images/spots/10072.webp",
+    duration: 120,
+    distance: "南京市玄武区长江路",
+    rating: 47,
+    visitCount: 84000,
+    tags: ["近代风云", "民国建筑", "历史见证", "园林建筑"],
+    location: { lat: 32.0436, lng: 118.7963 }
+  },
+  {
+    id: 10129,
+    name: "陈家祠",
+    category: "cultural",
+    city: "广州",
+    description: "陈家祠以木雕、石雕、砖雕、陶塑、灰塑、铁铸和彩绘等岭南工艺闻名，装饰华丽、细节繁复，是了解广府建筑与民间艺术的代表性场所。",
+    imageUrl: "/images/spots/10075.webp",
+    duration: 120,
+    distance: "广州市荔湾区中山七路",
+    rating: 48,
+    visitCount: 76000,
+    tags: ["岭南建筑", "民间工艺", "广府文化", "祠堂建筑"],
+    location: { lat: 23.1278, lng: 113.2445 }
+  },
+  {
+    id: 10130,
+    name: "东湖听涛景区",
+    category: "nature",
+    city: "武汉",
+    description: "东湖听涛景区是东湖经典游览片区之一，湖岸林木葱郁、清风拂面，适合环湖漫步、骑行或观景休憩，是体验武汉“城中湖”魅力的好去处。",
+    imageUrl: "/images/spots/10028.webp",
+    duration: 150,
+    distance: "武汉市武昌区东湖路",
+    rating: 48,
+    visitCount: 89000,
+    tags: ["城中湖", "湖畔骑行", "林荫步道", "休闲观景"],
+    location: { lat: 30.5754, lng: 114.3752 }
+  },
+  {
+    id: 10131,
+    name: "珠江夜游天字码头",
+    category: "cultural",
+    city: "广州",
+    description: "从天字码头登船体验珠江夜游，沿江欣赏广州塔、猎德大桥等城市地标与两岸霓虹倒影，感受“羊城不夜”的璀璨夜色与水上风情。",
+    imageUrl: "/images/spots/10077.webp",
+    duration: 75,
+    distance: "广州市越秀区沿江东路",
+    rating: 48,
+    visitCount: 110000,
+    tags: ["珠江夜景", "游船体验", "城市霓虹", "广州地标"],
+    location: { lat: 23.116, lng: 113.269 }
   }
 ];
