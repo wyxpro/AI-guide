@@ -44,9 +44,13 @@ async function processTts(text: string, options: { voiceStyle?: string; speechRa
   // 1. Try SiliconFlow FunAudioLLM/CosyVoice2-0.5B if API key is present
   if (process.env.SILICONFLOW_API_KEY) {
     try {
+      const isMale = (typeof voiceStyle === "string" && (voiceStyle.startsWith("male") || voiceStyle.includes("male"))) ||
+                     (typeof options.ttsConfig?.voice === "string" && options.ttsConfig.voice.includes("male"));
+      const selectedVoice = isMale ? "fnlp/MOSS-TTSD-v0.5:alex" : "fnlp/MOSS-TTSD-v0.5:anna";
+
       const audioBuffer = await synthesizeSiliconFlowSpeech({
         input: text.slice(0, 500),
-        voice: "fnlp/MOSS-TTSD-v0.5:alex",
+        voice: selectedVoice,
         response_format: "mp3",
         stream: true,
       });

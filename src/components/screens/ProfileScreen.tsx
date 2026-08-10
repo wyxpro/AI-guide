@@ -5,7 +5,7 @@ import {
   MapPin, Heart, Clock, Settings, MessageSquare,
   Share2, Image as ImageIcon, ChevronRight, ChevronLeft, ChevronDown,
   History, Trophy, Bell, Sun, Zap, Baby, ArrowRight, LogOut, X,
-  Shield, Eye, BookOpen, Volume2, Trash2, HelpCircle, Info, Sparkles, Map, User, Navigation, Check, Pencil
+  Shield, Eye, BookOpen, Volume2, Trash2, HelpCircle, Info, Sparkles, Compass, Map, User, Navigation, Check, Pencil
 } from "lucide-react";
 import { useEazo } from "@eazo/sdk/react";
 import { auth } from "@eazo/sdk";
@@ -80,7 +80,7 @@ export function ProfileScreen() {
   // States for sub-views
   const [routeTab, setRouteTab] = useState<"ongoing" | "completed" | "cancelled">("ongoing");
   const [favoriteTag, setFavoriteTag] = useState<"all" | "spot" | "relic" | "route" | "audio">("all");
-  const [selectedInterests, setSelectedInterests] = useState<string[]>(["history", "nature", "architecture"]);
+  const [selectedInterests, setSelectedInterests] = useState<string[]>(["history", "nature"]);
   const [cacheSize, setCacheSize] = useState("23.6MB");
 
   // Local profile states
@@ -395,7 +395,7 @@ export function ProfileScreen() {
                 },
                 {
                   id: "interests",
-                  icon: Sparkles,
+                  icon: Compass,
                   colorBg: "bg-amber-100/80 text-amber-600",
                   title: "我的兴趣",
                   desc: "设置观看景点喜好与专属偏好",
@@ -486,7 +486,7 @@ export function ProfileScreen() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -12 }}
                 transition={SPRING}
-                className="bg-white lg:rounded-[24px] lg:border lg:border-[#E2EAE5] lg:shadow-sm rounded-3xl border border-[#E2EAE5] shadow-sm overflow-hidden"
+                className="hidden lg:block bg-white lg:rounded-[24px] lg:border lg:border-[#E2EAE5] lg:shadow-sm overflow-hidden"
               >
                 {/* Banner & User profile header (Desktop styled, hidden on mobile to avoid duplication) */}
                 <div

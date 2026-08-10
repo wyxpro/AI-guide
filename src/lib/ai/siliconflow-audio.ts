@@ -28,7 +28,7 @@ export async function synthesizeSiliconFlowSpeech(options: SiliconFlowTtsOptions
   const payload = {
     model: options.model || "FunAudioLLM/CosyVoice2-0.5B",
     input: options.input,
-    voice: options.voice || "fnlp/MOSS-TTSD-v0.5:alex",
+    voice: options.voice || "fnlp/MOSS-TTSD-v0.5:anna",
     response_format: options.response_format || "mp3",
     stream: options.stream !== undefined ? options.stream : true,
   };
