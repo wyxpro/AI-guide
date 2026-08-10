@@ -181,6 +181,16 @@ function PCView() {
 
             <div className="pt-4 border-t border-zinc-100 flex items-center justify-between">
               <button
+                onClick={() => router.push("/qa")}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-[#3A4D39] text-white hover:bg-[#4F6F52] transition-colors shadow-sm cursor-pointer"
+              >
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
+                数字人导游
+              </button>
+
+              <button
                 onClick={() => {
                   handleAudioPlay();
                   toast.success("正在为您即时开启本地语音导览解说...");
@@ -193,16 +203,6 @@ function PCView() {
                   <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
                 </svg>
                 {isPlaying ? "暂停讲解" : "语音讲解"}
-              </button>
-
-              <button
-                onClick={() => router.push("/qa")}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-[#3A4D39] text-white hover:bg-[#4F6F52] transition-colors shadow-sm"
-              >
-                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-                  <polygon points="5 3 19 12 5 21 5 3" />
-                </svg>
-                数字人导游
               </button>
             </div>
           </div>
@@ -544,6 +544,19 @@ function MobileChengduPanel() {
 
         {/* Right: Audio and Video buttons */}
         <div className="flex items-center gap-3">
+          {/* Digital Human button */}
+          <div
+            onClick={() => router.push("/qa")}
+            className="flex flex-col items-center cursor-pointer select-none group"
+          >
+            <div className="w-8 h-8 rounded-full bg-[#FFF0ED] text-[#FF5B45] flex items-center justify-center shadow-sm hover:bg-[#FFE0DB] transition-colors">
+              <svg className="w-4 h-4 ml-0.5" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="5 3 19 12 5 21 5 3" />
+              </svg>
+            </div>
+            <span className="text-[9px] font-bold text-zinc-700 mt-1">数字人导游</span>
+          </div>
+
           {/* Audio/Explain button */}
           <div
             onClick={() => {
@@ -559,19 +572,6 @@ function MobileChengduPanel() {
               </svg>
             </div>
             <span className="text-[9px] font-bold text-zinc-700 mt-1">语音讲解</span>
-          </div>
-
-          {/* Digital Human button */}
-          <div
-            onClick={() => router.push("/qa")}
-            className="flex flex-col items-center cursor-pointer select-none group"
-          >
-            <div className="w-8 h-8 rounded-full bg-[#FFF0ED] text-[#FF5B45] flex items-center justify-center shadow-sm hover:bg-[#FFE0DB] transition-colors">
-              <svg className="w-4 h-4 ml-0.5" viewBox="0 0 24 24" fill="currentColor">
-                <polygon points="5 3 19 12 5 21 5 3" />
-              </svg>
-            </div>
-            <span className="text-[9px] font-bold text-zinc-700 mt-1">数字人导游</span>
           </div>
         </div>
       </div>

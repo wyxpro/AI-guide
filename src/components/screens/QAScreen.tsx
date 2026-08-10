@@ -191,7 +191,7 @@ function initMsg(spotName?: string | null): Message {
     role: "assistant",
     content: spotName
       ? `您好！我已为您准备好「${spotName}」的详细讲解，想了解历史渊源、文化典故还是游览小贴士？`
-      : "您好！我是旅行家ProAI导览官小玉，随时为您解答景区一切问题。可语音提问，也可文字输入。",
+      : "您好！我是旅行家小玉，右上角可以切换背景，数字人形象，声音风格，随时为您解答景区一切问题！",
     timestamp: "刚刚",
   };
 }
@@ -533,6 +533,20 @@ export function QAScreen() {
     };
   }, [messages, chatExpanded]);
 
+  const initialWelcomeFiredRef = useRef(false);
+  useEffect(() => {
+    if (initialWelcomeFiredRef.current) return;
+    initialWelcomeFiredRef.current = true;
+    const welcomeText = spotName
+      ? `您好！我已为您准备好「${spotName}」的详细讲解，想了解历史渊源、文化典故还是游览小贴士？`
+      : "您好！我是旅行家小玉，右上角可以切换背景，数字人形象，声音风格，随时为您解答景区一切问题！";
+    const timer = setTimeout(() => {
+      speak(welcomeText);
+    }, 450);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spotName]);
+
   useEffect(() => {
     if (loading) {
       setTimeout(() => setAvatarState("thinking"), 0);
@@ -544,7 +558,9 @@ export function QAScreen() {
       return;
     }
     const s = detectEmotion(last.content);
-    setTimeout(() => setAvatarState(s), 0);
+    // Mouth movement should ONLY be turned on by audio playback, not text bubble appearance
+    const stateToApply = s === "speaking" ? "idle" : s;
+    setTimeout(() => setAvatarState(stateToApply), 0);
     const t = setTimeout(() => setAvatarState("idle"), 6000);
     return () => clearTimeout(t);
   }, [loading, messages]);
@@ -555,15 +571,6 @@ export function QAScreen() {
 
     const cleanedText = text.replace(/\[情感[:：][^\]]+\]/g, "").trim();
     if (!cleanedText) return;
-
-    setAvatarState("speaking");
-
-    // Trigger Live2D gesture motion and set speaking state for Live2D lip sync
-    try {
-      const { Live2dManager } = require("@/lib/live2d/live2dManager");
-      Live2dManager.getInstance().setSpeaking(true);
-      Live2dManager.getInstance().triggerSpeakMotion();
-    } catch (e) {}
 
     const currentOpt = VOICE_OPTIONS.find((v) => v.id === selectedVoiceId) || VOICE_OPTIONS[0];
 
@@ -601,6 +608,7 @@ export function QAScreen() {
             try {
               const { Live2dManager } = require("@/lib/live2d/live2dManager");
               Live2dManager.getInstance().setSpeaking(true);
+              Live2dManager.getInstance().triggerSpeakMotion();
             } catch (e) {}
           };
           utter.onend = () => {
@@ -649,6 +657,7 @@ export function QAScreen() {
           Live2dManager.getInstance().onAudioStarted = () => {
             setAvatarState("speaking");
             Live2dManager.getInstance().setSpeaking(true);
+            Live2dManager.getInstance().triggerSpeakMotion();
           };
           Live2dManager.getInstance().onAudioEnded = () => {
             setAvatarState("idle");
@@ -664,6 +673,7 @@ export function QAScreen() {
             try {
               const { Live2dManager } = require("@/lib/live2d/live2dManager");
               Live2dManager.getInstance().setSpeaking(true);
+              Live2dManager.getInstance().triggerSpeakMotion();
             } catch (e) {}
           };
           audio.onended = () => {

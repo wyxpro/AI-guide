@@ -1068,10 +1068,22 @@ export function RoutesScreen() {
           >
             <Menu className="w-5 h-5 text-zinc-700" />
           </button>
+
+          {/* City Pill Button moved right next to Hamburger button */}
+          <button
+            onClick={() => {
+              setShowLeftSidebar(true);
+              setShowRightSidebar(false);
+            }}
+            className="px-2.5 h-8.5 rounded-full bg-[#D2A053] text-white flex items-center gap-1 text-[10.5px] font-black shadow-xs active:scale-95 transition-all cursor-pointer flex-shrink-0"
+          >
+            <MapPin className="w-3 h-3" />
+            <span>{selectedCity}</span>
+          </button>
         </div>
 
         {/* Integrated Top Search in mobile header */}
-        <div className="flex-1 max-w-[170px] h-8.5 mx-2 flex items-center bg-zinc-100/90 rounded-full px-2.5 border border-zinc-200/40">
+        <div className="flex-1 max-w-[170px] h-8.5 ml-2 flex items-center bg-zinc-100/90 rounded-full px-2.5 border border-zinc-200/40">
           <Search className="w-3.5 h-3.5 text-zinc-400 mr-1.5 flex-shrink-0" />
           <input
             value={searchQuery}
@@ -1080,27 +1092,6 @@ export function RoutesScreen() {
             placeholder={`搜索${selectedCity}...`}
             className="w-full bg-transparent outline-none text-[10.5px] font-semibold text-zinc-800 placeholder:text-zinc-400"
           />
-        </div>
-
-        {/* Mobile Right Header: City Pill + Blue Chat Button */}
-        <div className="flex items-center gap-1.5">
-          <button
-            onClick={() => {
-              setShowLeftSidebar(true);
-              setShowRightSidebar(false);
-            }}
-            className="px-2.5 h-8.5 rounded-full bg-[#D2A053] text-white flex items-center gap-1 text-[10.5px] font-black shadow-xs active:scale-95 transition-all cursor-pointer"
-          >
-            <MapPin className="w-3 h-3" />
-            <span>{selectedCity}</span>
-          </button>
-          <button
-            onClick={() => setShowFloatChat(!showFloatChat)}
-            className="w-8.5 h-8.5 rounded-full bg-[#2563EB] text-white shadow-md shadow-blue-500/30 flex items-center justify-center active:scale-95 transition-all cursor-pointer"
-            title="智能向导小慧"
-          >
-            <MessageSquare className="w-4.5 h-4.5" />
-          </button>
         </div>
       </div>
 
@@ -1394,6 +1385,13 @@ export function RoutesScreen() {
               title="路线合集"
             >
               <BookOpen className="w-5 h-5" />
+            </button>
+            <button
+              onClick={() => setShowFloatChat(!showFloatChat)}
+              className="w-10 h-10 rounded-xl bg-[#2563EB] text-white shadow-lg shadow-blue-500/30 border border-blue-400 flex items-center justify-center font-bold hover:bg-blue-600 active:scale-95 transition-all cursor-pointer"
+              title="智能向导小慧"
+            >
+              <MessageSquare className="w-5 h-5" />
             </button>
           </div>
 

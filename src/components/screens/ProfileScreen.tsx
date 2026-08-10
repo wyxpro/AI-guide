@@ -70,6 +70,7 @@ export function ProfileScreen() {
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
   const [showThemeModal, setShowThemeModal] = useState(false);
+  const [showInterestsModal, setShowInterestsModal] = useState(false);
   const [favTabFilter, setFavTabFilter] = useState<string>("all");
   const [vipSelectedTier, setVipSelectedTier] = useState<string>("year");
   const [selectedPosterSpot, setSelectedPosterSpot] = useState<any>(null);
@@ -159,13 +160,11 @@ export function ProfileScreen() {
   }, [user]);
 
   useEffect(() => {
-    const sampleFavs: FavoriteRecord[] = [
-      { id: 101, type: "spot", spotId: 10011, routeId: null, spotName: "洪崖洞民俗风貌区", spotImage: "/images/spots/10011.webp" },
-      { id: 102, type: "spot", spotId: 10001, routeId: null, spotName: "故宫博物院·太和殿", spotImage: "/images/spots/10001.webp" },
-      { id: 103, type: "relic", spotId: 10002, routeId: null, spotName: "镇馆之宝 · 西汉金缕玉衣", spotImage: "/images/spots/10002.webp" },
-      { id: 104, type: "route", spotId: null, routeId: 201, spotName: "巴蜀民俗老街茶馆漫游专线", spotImage: "/images/spots/10067.webp" },
-      { id: 105, type: "audio", spotId: 10005, routeId: null, spotName: "沉浸听读 · 东方明珠夜景深度解说", spotImage: "/images/spots/10005.webp" },
-    ];
+    let localFavs: FavoriteRecord[] = [];
+    try {
+      const stored = localStorage.getItem("user_favorites");
+      if (stored) localFavs = JSON.parse(stored);
+    } catch {}
 
     Promise.all([
       request("/api/user/visits").then(r => r.json()),
@@ -173,7 +172,7 @@ export function ProfileScreen() {
       request("/api/user/preferences").then(r => r.json()).catch(() => null),
     ]).then(([v, f, p]) => {
       setVisits(Array.isArray(v) ? v : []);
-      const loadedFavs = Array.isArray(f) && f.length > 0 ? f : sampleFavs;
+      const loadedFavs = Array.isArray(f) ? f : localFavs;
       setFavorites(loadedFavs);
       if (p && p.accessibilityMode) {
         const mapped = p.accessibilityMode === "normal" ? "standard" : p.accessibilityMode;
@@ -186,7 +185,7 @@ export function ProfileScreen() {
       }
       setLoadingData(false);
     }).catch(() => {
-      setFavorites(sampleFavs);
+      setFavorites(localFavs);
       setLoadingData(false);
     });
   }, [user]);
@@ -379,6 +378,14 @@ export function ProfileScreen() {
             <div className="mx-4 mt-4 bg-white rounded-3xl p-2 shadow-sm border border-neutral-100/90 divide-y divide-neutral-100/70">
               {[
                 {
+                  id: "visits",
+                  icon: MapPin,
+                  colorBg: "bg-blue-100/80 text-blue-600",
+                  title: "行程足迹",
+                  desc: "打卡轨迹与历史漫游记录",
+                  onClick: () => setShowVisitedSpots(true)
+                },
+                {
                   id: "favorites",
                   icon: Heart,
                   colorBg: "bg-purple-100/80 text-purple-600",
@@ -387,12 +394,12 @@ export function ProfileScreen() {
                   onClick: () => setShowFavoritesModal(true)
                 },
                 {
-                  id: "visits",
-                  icon: MapPin,
-                  colorBg: "bg-blue-100/80 text-blue-600",
-                  title: "行程足迹",
-                  desc: "打卡轨迹与历史漫游记录",
-                  onClick: () => setShowVisitedSpots(true)
+                  id: "interests",
+                  icon: Sparkles,
+                  colorBg: "bg-amber-100/80 text-amber-600",
+                  title: "我的兴趣",
+                  desc: "设置观看景点喜好与专属偏好",
+                  onClick: () => setShowInterestsModal(true)
                 },
                 {
                   id: "avatar",
@@ -415,7 +422,7 @@ export function ProfileScreen() {
                   icon: HelpCircle,
                   colorBg: "bg-slate-100/80 text-slate-600",
                   title: "关于我们",
-                  desc: "旅行家Pro 智慧导览 v2.0",
+                  desc: "旅行家Pro 智慧导览 v2.5",
                   onClick: () => setShowAboutModal(true)
                 },
                 {
@@ -2365,8 +2372,8 @@ export function ProfileScreen() {
 
                   return filteredFavs.map((fav) => {
                     const spot = allSpots.find((s) => s.id === fav.spotId);
-                    const title = fav.spotName || (spot ? spot.name : "故宫博物院·太和殿");
-                    const imgUrl = fav.spotImage || (spot ? spot.img : "/images/spots/10001.webp");
+                    const title = fav.spotName || spot?.name || "精选收藏景点";
+                    const imgUrl = fav.spotImage || spot?.img || "/images/spots/10001.webp";
 
                     return (
                       <div key={fav.id} className="p-3 rounded-2xl border border-zinc-200/80 bg-[#FAF9F6] flex items-center gap-3.5 group hover:border-purple-300 transition-all">
@@ -2665,47 +2672,197 @@ export function ProfileScreen() {
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
               transition={SPRING}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-lg bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col text-zinc-800 border border-zinc-200"
+              className="w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col text-zinc-800 border border-zinc-200"
             >
               {/* Header */}
-              <div className="p-6 bg-[#1A2520] text-white text-center relative flex-shrink-0">
+              <div className="p-6 bg-gradient-to-br from-[#2E4F32] to-[#1D3320] text-white text-center relative flex-shrink-0">
                 <button onClick={() => setShowAboutModal(false)} className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors cursor-pointer">
                   <X className="w-4 h-4" />
                 </button>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/image/logo.png" alt="Logo" className="w-16 h-16 mx-auto rounded-2xl shadow-lg border-2 border-white/20 object-contain bg-white p-1" />
-                <h3 className="text-lg font-extrabold tracking-wide mt-3" style={{ fontFamily: "var(--font-noto-serif)" }}>
-                  旅行家Pro · 智慧文旅伴游
+                <img src="/image/logo.png" alt="Logo" className="w-16 h-16 mx-auto rounded-2xl shadow-xl border-2 border-white/20 object-contain bg-white p-1" />
+                <h3 className="text-xl font-black tracking-wide mt-3" style={{ fontFamily: "var(--font-noto-serif)" }}>
+                  旅行家Pro · 智慧文旅伴游系统
                 </h3>
-                <span className="text-[10px] font-mono text-zinc-400 bg-white/10 px-2.5 py-0.5 rounded-full mt-1 inline-block">
-                  v2.0.4 Release (Build 2026.08)
+                <span className="text-[10px] font-mono font-bold text-emerald-200 bg-white/15 px-3 py-0.5 rounded-full mt-1.5 inline-block border border-white/20">
+                  v2.5.0 Premium Release
                 </span>
               </div>
 
-              {/* Tech Architecture Stack */}
-              <div className="p-5 space-y-4 max-h-[55vh] overflow-y-auto">
-                <h4 className="font-extrabold text-xs text-zinc-800">AI 多模态底层技术架构</h4>
-                <div className="flex flex-wrap gap-1.5">
-                  {["DeepSeek-V3 LLM", "StepFun Audio 2.5", "iFlytek Voice TTS", "Live2D HD Model", "AMap 3D WebGL", "Next.js 16 AppRouter"].map((tech, idx) => (
-                    <span key={idx} className="text-[10.5px] font-mono font-extrabold bg-zinc-100 text-zinc-700 px-2.5 py-1 rounded-lg border border-zinc-200">
-                      ⚡ {tech}
-                    </span>
-                  ))}
+              {/* Developer & Contact Card */}
+              <div className="p-5 space-y-4 max-h-[60vh] overflow-y-auto">
+                <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200/80 shadow-xs space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="text-xs font-black text-emerald-950">项目主理与开发者信息</span>
+                    </div>
+                    <span className="text-[9.5px] font-extrabold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md">官方认证</span>
+                  </div>
+
+                  <div className="space-y-2 pt-1">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-zinc-500 font-semibold flex items-center gap-1">
+                        👨‍💻 开发者：
+                      </span>
+                      <span className="font-black text-zinc-900 bg-white px-2.5 py-1 rounded-lg border border-emerald-200/60 shadow-2xs">
+                        晓叶
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-zinc-500 font-semibold flex items-center gap-1">
+                        💬 联系微信：
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-mono font-black text-emerald-700 bg-white px-2.5 py-1 rounded-lg border border-emerald-200/60 shadow-2xs select-all">
+                          wyx200265
+                        </span>
+                        <button
+                          onClick={() => {
+                            if (typeof navigator !== "undefined" && navigator.clipboard) {
+                              navigator.clipboard.writeText("wyx200265");
+                              toast.success("微信账号 wyx200265 已成功复制！");
+                            }
+                          }}
+                          className="px-2 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[10.5px] font-bold shadow-2xs transition-colors cursor-pointer"
+                        >
+                          复制
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200/80 text-xs text-zinc-600 leading-relaxed space-y-1.5">
-                  <h5 className="font-extrabold text-zinc-900">品牌愿景与探索</h5>
-                  <p>用双脚丈量世界，用声音感受历史。致力于通过 AIGC 多模态交互与三维空间算法，为全网游客打造最贴心、最懂景区的智能伴游体验。</p>
+                {/* Tech Highlights */}
+                <div className="space-y-2">
+                  <h4 className="font-extrabold text-xs text-zinc-800">核心智驾引擎支持</h4>
+                  <div className="grid grid-cols-2 gap-2 text-[10.5px]">
+                    <div className="p-2.5 rounded-xl bg-zinc-50 border border-zinc-200/70 font-semibold text-zinc-700 flex items-center gap-1.5">
+                      <span>🤖 Live2D 数字人交互</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-zinc-50 border border-zinc-200/70 font-semibold text-zinc-700 flex items-center gap-1.5">
+                      <span>🗺️ 高德 3D 地图导航</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-zinc-50 border border-zinc-200/70 font-semibold text-zinc-700 flex items-center gap-1.5">
+                      <span>🎙️ 神经语音 TTS 合成</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-zinc-50 border border-zinc-200/70 font-semibold text-zinc-700 flex items-center gap-1.5">
+                      <span>📸 VR / Camera 识景</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
               {/* Footer */}
-              <div className="p-4 border-t border-zinc-100 bg-zinc-50 text-center">
+              <div className="p-4 border-t border-zinc-100 bg-zinc-50 flex gap-2">
+                <button
+                  onClick={() => {
+                    if (typeof navigator !== "undefined" && navigator.clipboard) {
+                      navigator.clipboard.writeText("wyx200265");
+                      toast.success("微信 wyx200265 已复制，欢迎沟通交流！");
+                    }
+                  }}
+                  className="flex-1 py-2.5 rounded-xl bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-extrabold text-xs transition-colors cursor-pointer"
+                >
+                  联系开发者 (微信)
+                </button>
                 <button
                   onClick={() => setShowAboutModal(false)}
-                  className="w-full py-3 rounded-xl bg-[#3A4D39] text-white font-extrabold text-xs hover:bg-[#4F6F52] active:scale-95 transition-all cursor-pointer"
+                  className="flex-1 py-2.5 rounded-xl bg-[#2E4F32] hover:bg-[#1D3320] text-white font-extrabold text-xs transition-colors cursor-pointer"
                 >
-                  关闭
+                  确认关闭
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Dedicated Interests Modal ("我的兴趣") */}
+      <AnimatePresence>
+        {showInterestsModal && (
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md" onClick={() => setShowInterestsModal(false)}>
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={SPRING}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-lg max-h-[85vh] bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col text-zinc-800 border border-zinc-200"
+            >
+              {/* Header */}
+              <div className="p-5 border-b border-zinc-100 flex items-center justify-between flex-shrink-0 bg-gradient-to-r from-amber-50 to-orange-50">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-md">
+                    <Sparkles className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-extrabold text-base text-zinc-900">我的观景兴趣设置</h3>
+                    <p className="text-xs text-zinc-500">勾选偏好，系统将自动推荐定制游览路线与讲解</p>
+                  </div>
+                </div>
+                <button onClick={() => setShowInterestsModal(false)} className="w-8 h-8 rounded-full hover:bg-zinc-200/60 flex items-center justify-center text-zinc-500 transition-colors">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Interests Checklist Grid */}
+              <div className="flex-1 overflow-y-auto p-5 space-y-3">
+                {[
+                  { id: "history", label: "历史古迹", desc: "博物馆、帝陵古刹与千年历史典故", icon: "🏛️" },
+                  { id: "nature", label: "山水自然", desc: "名山大川、湖光山色与森林氧吧", icon: "🏔️" },
+                  { id: "photography", label: "网红打卡", desc: "极具出片视觉地标、最美夜景与绝美视角", icon: "📸" },
+                  { id: "architecture", label: "传统建筑", desc: "川东吊脚楼、江南古典园林与飞檐梁栋", icon: "🏯" },
+                  { id: "food", label: "特色美食", desc: "百年老街美食、盖碗茶与市井烟火小吃", icon: "🍜" },
+                  { id: "family", label: "亲子研学", desc: "大熊猫基地、科普互动馆与轻松平坦步道", icon: "👨‍👩‍👧" },
+                  { id: "temple", label: "梵刹寺庙", desc: "深山古刹、禅宗石刻与清修之地", icon: "🎭" },
+                  { id: "museum", label: "文博展览", desc: "镇馆之宝、青铜重器与艺术书画名作", icon: "🎨" },
+                  { id: "nightview", label: "绚丽夜景", desc: "江畔灯光秀、霓虹街区与夜游船票", icon: "🌃" },
+                ].map((item) => {
+                  const isChecked = selectedInterests.includes(item.id);
+                  return (
+                    <div
+                      key={item.id}
+                      onClick={() => toggleInterest(item.id)}
+                      className={`p-3.5 rounded-2xl border transition-all flex items-center justify-between cursor-pointer ${
+                        isChecked
+                          ? "bg-amber-50 border-amber-500 text-amber-950 shadow-sm ring-1 ring-amber-400/30"
+                          : "bg-zinc-50 border-zinc-200/80 text-zinc-700 hover:border-amber-200 hover:bg-white"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3.5">
+                        <span className="text-2xl flex-shrink-0">{item.icon}</span>
+                        <div>
+                          <h4 className="font-black text-xs text-zinc-900">{item.label}</h4>
+                          <p className="text-[10.5px] text-zinc-500 mt-0.5 leading-tight">{item.desc}</p>
+                        </div>
+                      </div>
+
+                      <div className={`w-6 h-6 rounded-full border flex items-center justify-center transition-all flex-shrink-0 ${
+                        isChecked ? "bg-amber-500 border-amber-500 text-white shadow-sm" : "border-zinc-300 bg-white"
+                      }`}>
+                        {isChecked && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Footer */}
+              <div className="p-4 border-t border-zinc-100 bg-zinc-50 flex items-center justify-between">
+                <span className="text-xs font-bold text-zinc-500">
+                  已选择 <span className="font-black text-amber-600">{selectedInterests.length}</span> 项偏好
+                </span>
+                <button
+                  onClick={() => {
+                    localStorage.setItem("user_selected_interests", JSON.stringify(selectedInterests));
+                    toast.success("兴趣偏好已成功更新！全站算法将优先推送相关项目");
+                    setShowInterestsModal(false);
+                  }}
+                  className="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs shadow-md active:scale-95 transition-all cursor-pointer"
+                >
+                  保存兴趣配置
                 </button>
               </div>
             </motion.div>
