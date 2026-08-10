@@ -320,7 +320,7 @@ export function ProfileScreen() {
                       <h2 className="text-xl font-extrabold text-white tracking-tight drop-shadow-sm">
                         {displayName || "xiaoye"}
                       </h2>
-                      <span className="px-2.5 py-0.5 rounded-full bg-amber-500 text-white text-[10.5px] font-black shadow-sm flex-shrink-0 flex items-center gap-1">
+                      <span className="px-2.5 py-0.5 rounded-full bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 border border-purple-300/40 text-white text-[10.5px] font-black shadow-md flex-shrink-0 flex items-center gap-1">
                         <span>👑</span> <span>{profileLevel || "Lv.5 问鼎江山"}</span>
                       </span>
                     </div>
@@ -558,28 +558,6 @@ export function ProfileScreen() {
                   </div>
                 </div>
 
-                {/* Mobile header info section (Compact experience mode selection) */}
-                <div className="lg:hidden p-4.5 bg-[#FAFBFB] border-b border-[#E8EDE9] flex flex-col gap-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10.5px] font-extrabold text-[#4F6F52]">界面辅助适配</span>
-                    <span className="text-[9px] text-zinc-400">选择适合您阅读与互动的交互模式</span>
-                  </div>
-                  <div className="bg-[#E8EDE9] p-0.75 rounded-2xl flex items-center gap-1 shadow-inner">
-                    {(["standard", "elder", "child"] as Mode[]).map(m => (
-                      <button
-                        key={m}
-                        onClick={() => changeMode(m)}
-                        className={`flex-1 text-[11px] font-black py-2 rounded-xl transition-all cursor-pointer ${mode === m
-                          ? "bg-white text-[#4F6F52] shadow-sm"
-                          : "text-[#8F9F8F] hover:text-[#4F6F52]"
-                          }`}
-                      >
-                        {m === "standard" ? "标准" : m === "elder" ? "适老" : "童趣"}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
                 {/* Main Body */}
                 <div className="p-4 sm:p-6 space-y-5">
                   {/* Desktop Quick Entry Cards (Hidden on Mobile) */}
@@ -607,42 +585,6 @@ export function ProfileScreen() {
                         <span className="text-[10.5px] font-bold text-zinc-700 mt-2">{btn.label}</span>
                       </motion.div>
                     ))}
-                  </div>
-
-                  {/* Recently Viewed (最近浏览) */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-black flex items-center gap-1.5">
-                        <History className="w-4 h-4 text-[#4F6F52]" />
-                        最近浏览
-                      </h3>
-                      <button
-                        onClick={() => setActiveSection("favorites")}
-                        className="text-[10px] font-bold text-zinc-400 hover:text-zinc-600 transition-colors"
-                      >
-                        全部 &gt;
-                      </button>
-                    </div>
-
-                    <div className="space-y-2.5">
-                      {[
-                        { name: "岳阳楼", time: "今天 10:32", desc: "江南三大名楼之一", img: "/images/spots/yueyang-tower.webp", label: "景点" },
-                        { name: "商后母戊鼎", time: "昨天 18:40", desc: "中国国家博物馆藏", img: "/images/spots/houmuwu-ding.webp", label: "文物" },
-                        { name: "黄鹤楼", time: "09-15 15:30", desc: "天下江山第一楼", img: "/images/spots/10027.webp", label: "景点" },
-                      ].map((item, index) => (
-                        <div key={index} className="flex items-center gap-3.5 p-3 rounded-2xl border border-[#EEF2F0] hover:bg-neutral-50 transition-colors">
-                          <img src={item.img} className="w-11 h-11 rounded-xl object-cover shadow-sm flex-shrink-0" alt="" />
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <span className="font-extrabold text-[12.5px] truncate">{item.name}</span>
-                              <span className="text-[8.5px] text-zinc-400 bg-zinc-100 px-1 py-0.5 rounded">{item.label}</span>
-                            </div>
-                            <p className="text-[10px] text-zinc-400 truncate mt-0.5">{item.desc}</p>
-                          </div>
-                          <span className="text-[9.5px] font-mono text-zinc-300 flex-shrink-0">{item.time}</span>
-                        </div>
-                      ))}
-                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -2475,14 +2417,14 @@ export function ProfileScreen() {
                     img: "/images/spots/10001.webp"
                   },
                   {
-                    id: "childish",
+                    id: "child",
                     title: "🎈 童趣模式",
                     desc: "卡通趣彩插画，趣味萌音讲解与故事闯关",
                     tag: "趣味",
                     img: "/images/spots/10011.webp"
                   },
                   {
-                    id: "elderly",
+                    id: "elder",
                     title: "👓 适老模式",
                     desc: "特大醒目标示，大按键极简操作与一键语音播报",
                     tag: "关爱",
