@@ -86,7 +86,7 @@ export function BottomTabBar() {
                 </motion.div>
                 <span
                   className="text-[9.5px] font-black mt-1 leading-none transition-colors"
-                  style={{ color: active ? "#22C55E" : "#71717A" }}
+                  style={{ color: active ? "#FF4D8D" : "#71717A" }}
                 >
                   AI数字人导游
                 </span>
@@ -101,18 +101,18 @@ export function BottomTabBar() {
                 >
                   <Icon
                     className="w-5 h-5 transition-colors"
-                    style={{ color: active ? "#22C55E" : "#9CA3AF", strokeWidth: active ? 2.3 : 1.7 }}
+                    style={{ color: active ? "#FF4D8D" : "#9CA3AF", strokeWidth: active ? 2.3 : 1.7 }}
                   />
                   {active && (
                     <motion.div
                       layoutId="active-tab-glow"
-                      className="absolute -inset-1.5 bg-[#22C55E]/30 rounded-full blur-xs -z-10"
+                      className="absolute -inset-1.5 bg-[#FF4D8D]/30 rounded-full blur-xs -z-10"
                     />
                   )}
                 </motion.div>
                 <span
                   className="text-[9.5px] font-extrabold leading-none transition-colors"
-                  style={{ color: active ? "#22C55E" : "#71717A" }}
+                  style={{ color: active ? "#FF4D8D" : "#71717A" }}
                 >
                   {tab.label}
                 </span>

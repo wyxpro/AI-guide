@@ -15,6 +15,7 @@ import { PosterGenerator } from "@/components/ui/PosterGenerator";
 import { request } from "@/lib/api/request";
 import { toast } from "sonner";
 import { getLocalScenicImage } from "@/lib/scenic-image";
+import { NATIONAL_SPOTS } from "@/lib/data/national-spots";
 
 const SPRING = { type: "spring" as const, stiffness: 280, damping: 35 };
 
@@ -323,14 +324,16 @@ export function ProfileScreen() {
                         已认证
                       </span>
                     </div>
-                    <div className="flex items-center gap-1.5 bg-white/20 backdrop-blur-md border border-white/30 text-white/90 text-[11px] font-mono px-2.5 py-0.5 rounded-full w-fit">
-                      <span>ID 33a4****c533</span>
-                      <button
-                        onClick={() => toast.success("账号ID已复制到剪贴板")}
-                        className="text-white/80 hover:text-white font-bold text-[10px] ml-0.5 cursor-pointer"
-                      >
-                        复制
-                      </button>
+                    <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+                      <span className="px-2.5 py-0.5 rounded-full bg-rose-500/85 backdrop-blur-md border border-rose-300/40 text-white text-[10.5px] font-bold shadow-xs flex items-center gap-1">
+                        <span>♀</span> <span>{profileGender || "女"}</span>
+                      </span>
+                      <span className="px-2.5 py-0.5 rounded-full bg-sky-500/85 backdrop-blur-md border border-sky-300/40 text-white text-[10.5px] font-bold shadow-xs flex items-center gap-1">
+                        <span>📍</span> <span>{profileRegion || "四川 成都"}</span>
+                      </span>
+                      <span className="px-2.5 py-0.5 rounded-full bg-amber-500/85 backdrop-blur-md border border-amber-300/40 text-white text-[10.5px] font-bold shadow-xs flex items-center gap-1">
+                        <span>👑</span> <span>{profileLevel || "Lv.5 问鼎江山"}</span>
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -347,7 +350,7 @@ export function ProfileScreen() {
                     setEditBg(profileBg);
                     setShowEditProfile(true);
                   }}
-                  className="mr-6 w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white active:scale-95 transition-transform cursor-pointer shadow-md hover:bg-white/30"
+                  className="mr-12 w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white active:scale-95 transition-transform cursor-pointer shadow-md hover:bg-white/30"
                   title="编辑资料"
                 >
                   <Pencil className="w-4 h-4" />
@@ -2370,10 +2373,29 @@ export function ProfileScreen() {
                     );
                   }
 
+                  const findSpotMeta = (fav: FavoriteRecord) => {
+                    const targetId = Number(fav.spotId);
+                    if (fav.spotName && fav.spotImage && !fav.spotName.includes("精选")) {
+                      return { name: fav.spotName, img: fav.spotImage };
+                    }
+                    const national = NATIONAL_SPOTS.find(s => Number(s.id) === targetId);
+                    if (national) {
+                      return { name: national.name, img: (national as any).img || national.imageUrl || fav.spotImage || "/images/spots/10001.webp" };
+                    }
+                    const foundApi = allSpots.find(s => Number(s.id) === targetId);
+                    if (foundApi) {
+                      return { name: foundApi.name, img: foundApi.img || foundApi.imageUrl || fav.spotImage || "/images/spots/10001.webp" };
+                    }
+                    return {
+                      name: fav.spotName || "精选名胜景点",
+                      img: fav.spotImage || "/images/spots/10001.webp"
+                    };
+                  };
+
                   return filteredFavs.map((fav) => {
-                    const spot = allSpots.find((s) => s.id === fav.spotId);
-                    const title = fav.spotName || spot?.name || "精选收藏景点";
-                    const imgUrl = fav.spotImage || spot?.img || "/images/spots/10001.webp";
+                    const meta = findSpotMeta(fav);
+                    const title = meta.name;
+                    const imgUrl = meta.img;
 
                     return (
                       <div key={fav.id} className="p-3 rounded-2xl border border-zinc-200/80 bg-[#FAF9F6] flex items-center gap-3.5 group hover:border-purple-300 transition-all">

@@ -114,11 +114,27 @@ export function SpotDetailScreen({ spotId }: { spotId: string }) {
     if (favorited && favId) {
       await request(`/api/user/favorites/${favId}`, { method: "DELETE" });
       setFavorited(false); setFavId(null);
+      try {
+        const stored = JSON.parse(localStorage.getItem("user_favorites") || "[]");
+        const updated = stored.filter((f: any) => f.spotId !== Number(spotId));
+        localStorage.setItem("user_favorites", JSON.stringify(updated));
+      } catch {}
       toast.success("已取消收藏");
     } else {
       const res = await request("/api/user/favorites", { method: "POST", body: JSON.stringify({ type: "spot", id: Number(spotId) }) });
       const data = await res.json();
       setFavorited(true); setFavId(data.id);
+      try {
+        const stored = JSON.parse(localStorage.getItem("user_favorites") || "[]");
+        const newFavItem = {
+          id: data.id || Date.now(),
+          type: "spot",
+          spotId: Number(spotId),
+          spotName: spot?.name || "精选景点",
+          spotImage: spot?.imageUrl || "/images/spots/10001.webp",
+        };
+        localStorage.setItem("user_favorites", JSON.stringify([newFavItem, ...stored.filter((f: any) => f.spotId !== Number(spotId))]));
+      } catch {}
       toast.success("已加入收藏");
     }
   };

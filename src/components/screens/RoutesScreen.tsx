@@ -1055,21 +1055,21 @@ export function RoutesScreen() {
       />
 
       {/* 1. Integrated Header (Mobile only) */}
-      <div className="md:hidden flex items-center justify-between px-4 h-14 bg-white border-b border-zinc-200/80 shadow-sm z-40 flex-shrink-0">
-        <div className="flex items-center gap-2">
+      <div className="md:hidden flex items-center justify-between px-3 h-14 bg-white border-b border-zinc-200/80 shadow-sm z-40 flex-shrink-0">
+        <div className="flex items-center gap-1.5 flex-1 min-w-0">
           {/* Mobile Left Header Hamburger Menu Button */}
           <button
             onClick={() => {
               setShowLeftSidebar(!showLeftSidebar);
               setShowRightSidebar(false);
             }}
-            className="w-9 h-9 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 flex items-center justify-center font-bold shadow-xs border border-zinc-200/60 active:scale-95 transition-all cursor-pointer"
+            className="w-8.5 h-8.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 flex items-center justify-center font-bold shadow-xs border border-zinc-200/60 active:scale-95 transition-all cursor-pointer flex-shrink-0"
             title="展开菜单"
           >
-            <Menu className="w-5 h-5 text-zinc-700" />
+            <Menu className="w-4.5 h-4.5 text-zinc-700" />
           </button>
 
-          {/* City Pill Button moved right next to Hamburger button */}
+          {/* City Pill Button */}
           <button
             onClick={() => {
               setShowLeftSidebar(true);
@@ -1080,18 +1080,18 @@ export function RoutesScreen() {
             <MapPin className="w-3 h-3" />
             <span>{selectedCity}</span>
           </button>
-        </div>
 
-        {/* Integrated Top Search in mobile header */}
-        <div className="flex-1 max-w-[170px] h-8.5 ml-2 flex items-center bg-zinc-100/90 rounded-full px-2.5 border border-zinc-200/40">
-          <Search className="w-3.5 h-3.5 text-zinc-400 mr-1.5 flex-shrink-0" />
-          <input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSearch(searchQuery)}
-            placeholder={`搜索${selectedCity}...`}
-            className="w-full bg-transparent outline-none text-[10.5px] font-semibold text-zinc-800 placeholder:text-zinc-400"
-          />
+          {/* Integrated Top Search directly right next to Chongqing city button */}
+          <div className="flex-1 max-w-[200px] h-8.5 ml-0.5 flex items-center bg-zinc-100/90 rounded-full px-2.5 border border-zinc-200/40">
+            <Search className="w-3.5 h-3.5 text-zinc-400 mr-1 flex-shrink-0" />
+            <input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch(searchQuery)}
+              placeholder={`搜索${selectedCity}...`}
+              className="w-full bg-transparent outline-none text-[10.5px] font-semibold text-zinc-800 placeholder:text-zinc-400"
+            />
+          </div>
         </div>
       </div>
 
@@ -1169,21 +1169,6 @@ export function RoutesScreen() {
                   );
                 })}
               </div>
-              {/* Left / Right nav buttons */}
-              <button
-                type="button"
-                onClick={() => scrollCities("left")}
-                className="hidden md:flex absolute left-1 top-1/2 -translate-y-1/2 w-7 h-7 items-center justify-center rounded-full bg-white/90 border border-zinc-200 text-zinc-600 hover:bg-white hover:text-[#4F6F52] shadow-sm cursor-pointer active:scale-95 transition-all"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => scrollCities("right")}
-                className="hidden md:flex absolute right-1 top-1/2 -translate-y-1/2 w-7 h-7 items-center justify-center rounded-full bg-white/90 border border-zinc-200 text-zinc-600 hover:bg-white hover:text-[#4F6F52] shadow-sm cursor-pointer active:scale-95 transition-all"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
             </div>
           </div>
 
@@ -1248,7 +1233,7 @@ export function RoutesScreen() {
                 {generating ? (
                   <><Loader2 className="w-3.5 h-3.5 animate-spin" />规划中...</>
                 ) : (
-                  <><Compass className="w-3.5 h-3.5" />生成专属路线</>
+                  <><Navigation className="w-3.5 h-3.5" />一键定制智游路线</>
                 )}
               </button>
 
@@ -1384,7 +1369,7 @@ export function RoutesScreen() {
               className="w-10 h-10 rounded-xl bg-[#FF4D8D] text-white shadow-lg shadow-pink-500/30 border border-pink-400 flex items-center justify-center font-bold hover:bg-[#E03E79] active:scale-95 transition-all cursor-pointer"
               title="路线合集"
             >
-              <BookOpen className="w-5 h-5" />
+              <span className="font-black text-xs px-1.5 py-0.5 rounded-md bg-white text-[#FF4D8D] shadow-xs select-none">AI</span>
             </button>
             <button
               onClick={() => setShowFloatChat(!showFloatChat)}
@@ -1400,18 +1385,18 @@ export function RoutesScreen() {
             <motion.div
               drag
               dragControls={dragControls}
-              dragListener={false}
-              dragConstraints={{ left: -600, right: 600, top: -400, bottom: 400 }}
-              dragElastic={0.08}
+              dragListener={true}
+              dragConstraints={{ left: -1000, right: 1000, top: -800, bottom: 800 }}
+              dragElastic={0.05}
               dragMomentum={false}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[290px] sm:w-[320px] h-[390px] bg-white/98 backdrop-blur-md rounded-2xl border border-zinc-200/80 shadow-2xl flex flex-col overflow-hidden"
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[290px] sm:w-[320px] h-[390px] bg-white/98 backdrop-blur-md rounded-2xl border border-zinc-200/80 shadow-2xl flex flex-col overflow-hidden touch-none"
             >
               {/* Header acts as drag handle */}
               <div
                 onPointerDown={(e) => dragControls.start(e)}
-                className="p-3 bg-zinc-50/80 border-b border-zinc-100 flex items-center justify-between cursor-grab active:cursor-grabbing select-none"
+                className="p-3 bg-zinc-50/80 border-b border-zinc-100 flex items-center justify-between cursor-grab active:cursor-grabbing select-none touch-none"
               >
                 <div className="flex items-center gap-2 pointer-events-none">
                   <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
@@ -1419,7 +1404,7 @@ export function RoutesScreen() {
                   </div>
                   <div>
                     <h3 className="font-extrabold text-xs text-zinc-800">智能向导小慧</h3>
-                    <span className="text-[8.5px] text-zinc-400 block mt-0.5">按住顶部框可自由左右上下拖拽</span>
+                    <span className="text-[8.5px] text-zinc-400 block mt-0.5">按住顶部框或弹窗自由左右上下拖拽</span>
                   </div>
                 </div>
                 <button

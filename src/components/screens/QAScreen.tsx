@@ -212,6 +212,7 @@ export function QAScreen() {
   }, []);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isSynthesizing, setIsSynthesizing] = useState(false);
   const [avatarState, setAvatarState] = useState<AvatarState>("idle");
   const [recording, setRecording] = useState(false);
   const [ttsEnabled, setTtsEnabled] = useState(true);
@@ -572,6 +573,7 @@ export function QAScreen() {
     const cleanedText = text.replace(/\[情感[:：][^\]]+\]/g, "").trim();
     if (!cleanedText) return;
 
+    setIsSynthesizing(true);
     const currentOpt = VOICE_OPTIONS.find((v) => v.id === selectedVoiceId) || VOICE_OPTIONS[0];
 
     // Ultra-low latency voice playback: Start Web Speech API immediately with matched voice option
@@ -585,6 +587,7 @@ export function QAScreen() {
 
         const speakSentence = () => {
           if (idx >= sentences.length) {
+            setIsSynthesizing(false);
             setAvatarState("idle");
             try {
               const { Live2dManager } = require("@/lib/live2d/live2dManager");
@@ -604,6 +607,7 @@ export function QAScreen() {
           utter.pitch = currentOpt.pitch;
 
           utter.onstart = () => {
+            setIsSynthesizing(false);
             setAvatarState("speaking");
             try {
               const { Live2dManager } = require("@/lib/live2d/live2dManager");
@@ -1108,10 +1112,10 @@ export function QAScreen() {
         <div className="flex items-center justify-between px-4 pb-3 flex-shrink-0 relative z-30 pointer-events-auto"
           style={{ paddingTop: "calc(env(safe-area-inset-top,44px) + 24px)" }}>
           <div className="flex items-center gap-2">
-            <motion.div animate={{ backgroundColor: loading ? "#D2A053" : "#34C759" }}
+            <motion.div animate={{ backgroundColor: (loading || isSynthesizing) ? "#D2A053" : "#34C759" }}
               className="w-2 h-2 rounded-full" />
-            <span className="text-[11px] font-medium" style={{ color: loading ? "#D2A053" : "rgba(255,255,255,0.75)" }}>
-              {loading ? "正在合成语音播放" : "旅行家Pro导览官 · 在线"}
+            <span className="text-[11px] font-medium" style={{ color: (loading || isSynthesizing) ? "#D2A053" : "rgba(255,255,255,0.75)" }}>
+              {(loading || isSynthesizing) ? "正在合成语音播放" : (avatarState === "speaking" ? "正在语音伴游解说中..." : "旅行家Pro导览官 · 在线")}
             </span>
           </div>
           <div className="flex flex-col items-end gap-2.5 relative z-30">
@@ -1390,9 +1394,9 @@ export function QAScreen() {
 
           {/* Desktop Left Panel Floating Controls */}
           <div className="absolute top-8 left-4 right-4 flex justify-between items-center z-30 pointer-events-auto">
-            <div className="text-[11px] font-medium tracking-wide bg-black/40 backdrop-blur px-3 py-1 rounded-full border border-white/10 flex items-center gap-2" style={{ color: loading ? "#D2A053" : "rgba(255,255,255,0.75)" }}>
-              <span className={`w-2 h-2 rounded-full ${loading ? "bg-[#D2A053] animate-ping" : "bg-[#34C759]"}`} />
-              <span>{loading ? "正在合成语音播放" : "旅行家Pro导览官 · 在线"}</span>
+            <div className="text-[11px] font-medium tracking-wide bg-black/40 backdrop-blur px-3 py-1 rounded-full border border-white/10 flex items-center gap-2" style={{ color: (loading || isSynthesizing) ? "#D2A053" : "rgba(255,255,255,0.75)" }}>
+              <span className={`w-2 h-2 rounded-full ${(loading || isSynthesizing) ? "bg-[#D2A053] animate-ping" : "bg-[#34C759]"}`} />
+              <span>{(loading || isSynthesizing) ? "正在合成语音播放" : (avatarState === "speaking" ? "正在语音伴游解说中..." : "旅行家Pro导览官 · 在线")}</span>
             </div>
             <div className="flex gap-2 relative z-30 pointer-events-auto">
               <motion.button whileTap={{ scale: 0.85 }} onClick={(e) => { e.stopPropagation(); setShowBgMenu(!showBgMenu); setShowPersonaMenu(false); }}
