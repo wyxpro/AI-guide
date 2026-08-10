@@ -32,6 +32,30 @@ const INTERESTS = [
 
 const TRAVEL_EMOJIS = ["😊", "👍", "🗺️", "🌟", "📸", "🏛️", "🍜", "❤️", "✨", "🙌", "🚗", "🌸"];
 
+const ROUTE_SPOT_DETAIL_ALIASES: Record<string, string> = {
+  "故宫博物院": "北京故宫博物院",
+  "什刹海历史文化区": "什刹海与南锣鼓巷",
+  "东方明珠电视塔": "东方明珠广播电视塔",
+  "秦始皇帝陵博物院": "秦始皇兵马俑博物馆",
+  "西安城墙": "西安古城墙",
+  "大雁塔·大唐不夜城": "大雁塔与大唐不夜城",
+  "西湖风景名胜区": "杭州西湖风景区",
+  "解放碑步行街": "解放碑与八一路好吃街",
+  "夫子庙": "夫子庙秦淮风光带",
+  "总统府": "南京总统府",
+  "陈家祠": "陈家祠 (陈氏书院)",
+  "东湖听涛景区": "东湖生态风景区",
+};
+
+const resolveRouteSpotDetailId = (spot: { name?: string; img?: string; imageUrl?: string }) => {
+  const imageUrl = spot.img || spot.imageUrl;
+  const imageMatch = imageUrl && NATIONAL_SPOTS.find((nationalSpot) => nationalSpot.imageUrl === imageUrl);
+  if (imageMatch) return imageMatch.id;
+
+  const targetName = ROUTE_SPOT_DETAIL_ALIASES[spot.name || ""] || spot.name;
+  return NATIONAL_SPOTS.find((nationalSpot) => nationalSpot.name === targetName)?.id;
+};
+
 const CHONGQING_SPOTS = [
   { id: 1, name: "洪崖洞民俗风貌区", type: "地标", lat: 29.563, lng: 106.578, price: "免费", time: "全天开放", addr: "重庆市渝中区嘉陵江滨江路88号", distance: "距您 1.2km", rating: "5A景区", img: "/images/spots/10011.webp", desc: "以巴渝传统建筑特色的“吊脚楼”风貌为主体，依山就势，沿江而建。" },
   { id: 2, name: "解放碑步行街", type: "文化", lat: 29.557, lng: 106.577, price: "免费", time: "全天开放", addr: "重庆市渝中区民族路177号", distance: "距您 1.8km", rating: "4A景区", img: "/images/spots/10066.webp", desc: "重庆的标志性地标，纪念抗日战争胜利的纪念碑，也是繁华的商业中心。" },
@@ -386,24 +410,27 @@ export function RoutesScreen() {
       infoWindowRef.current.close();
     }
 
-    // Resolve unique spotId for navigation
-    const uniqueSpotId = spot.id || spot.spotId || (NATIONAL_SPOTS.find(n => n.name === spot.name)?.id) || 10001;
-    (window as any).__navigateToSpotDetail = (id: any) => {
-      router.push(`/spots/${id}`);
-    };
+    const detailId = resolveRouteSpotDetailId(spot);
+    const detailLabel = detailId ? '查看景点详情 <span style="font-size: 10px;">→</span>' : "详情暂未收录";
+    const cardInteractionStyle = detailId
+      ? "cursor: pointer; transition: opacity 0.2s;"
+      : "cursor: default;";
+    const cardHoverAttributes = detailId
+      ? 'onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1"'
+      : "";
 
     const contentHtml = `
       <div style="font-family: system-ui, -apple-system, sans-serif; padding: 12px; width: 285px; background: white; border-radius: 14px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1); border: 1px solid #e4e4e7; position: relative;">
         <button id="infowin-close-btn" style="position: absolute; right: 10px; top: 10px; border: none; background: transparent; color: #a1a1aa; font-size: 18px; font-weight: bold; cursor: pointer; padding: 0 4px; line-height: 1; outline: none; z-index: 10;">×</button>
         
-        <div id="infowin-card-area" onclick="window.__navigateToSpotDetail('${uniqueSpotId}')" style="cursor: pointer; display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-right: 15px; transition: opacity 0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">
+        <div id="infowin-card-area" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-right: 15px; ${cardInteractionStyle}" ${cardHoverAttributes}>
           <div style="flex: 1; min-width: 0;">
             <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
               <h4 style="margin: 0; font-size: 13px; font-weight: 800; color: #18181b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${spot.name}</h4>
               <span style="background: rgba(79, 111, 82, 0.1); color: #4F6F52; font-size: 8px; font-weight: 700; padding: 2px 6px; border-radius: 4px; flex-shrink: 0;">★ ${spot.rating || 4.9}</span>
             </div>
             <p style="margin: 6px 0 4px 0; font-size: 9.5px; color: #71717a; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">${spot.desc || spot.description || "历史底蕴深厚，景色独特别致"}</p>
-            <span style="font-size: 8.5px; color: #3B82F6; font-weight: 700; display: inline-flex; align-items: center; gap: 2px;">查看景点详情 <span style="font-size: 10px;">→</span></span>
+            <span style="font-size: 8.5px; color: ${detailId ? "#3B82F6" : "#71717a"}; font-weight: 700; display: inline-flex; align-items: center; gap: 2px;">${detailLabel}</span>
           </div>
           <img src="${spot.img || spot.imageUrl || '/images/spots/10001.webp'}" alt="${spot.name}" style="width: 54px; height: 54px; border-radius: 8px; object-fit: cover; border: 1px solid #e4e4e7; flex-shrink: 0;" />
         </div>
@@ -446,9 +473,9 @@ export function RoutesScreen() {
       if (closeBtn) {
         closeBtn.onclick = () => infoWindow.close();
       }
-      if (cardArea) {
+      if (cardArea && detailId) {
         cardArea.onclick = () => {
-          router.push(`/spots/${uniqueSpotId}`);
+          router.push(`/spots/${detailId}`);
         };
       }
     }, 150);
