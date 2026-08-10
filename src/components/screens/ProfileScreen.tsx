@@ -320,8 +320,8 @@ export function ProfileScreen() {
                       <h2 className="text-xl font-extrabold text-white tracking-tight drop-shadow-sm">
                         {displayName || "xiaoye"}
                       </h2>
-                      <span className="px-2 py-0.5 rounded-full bg-emerald-500 text-white text-[10px] font-black shadow-sm flex-shrink-0">
-                        已认证
+                      <span className="px-2.5 py-0.5 rounded-full bg-amber-500 text-white text-[10.5px] font-black shadow-sm flex-shrink-0 flex items-center gap-1">
+                        <span>👑</span> <span>{profileLevel || "Lv.5 问鼎江山"}</span>
                       </span>
                     </div>
                     <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
@@ -331,14 +331,11 @@ export function ProfileScreen() {
                       <span className="px-2.5 py-0.5 rounded-full bg-sky-500/85 backdrop-blur-md border border-sky-300/40 text-white text-[10.5px] font-bold shadow-xs flex items-center gap-1">
                         <span>📍</span> <span>{profileRegion || "四川 成都"}</span>
                       </span>
-                      <span className="px-2.5 py-0.5 rounded-full bg-amber-500/85 backdrop-blur-md border border-amber-300/40 text-white text-[10.5px] font-bold shadow-xs flex items-center gap-1">
-                        <span>👑</span> <span>{profileLevel || "Lv.5 问鼎江山"}</span>
-                      </span>
                     </div>
                   </div>
                 </div>
 
-                {/* Edit Profile Top Right Button (shifted leftwards by 3 spaces with Pencil icon) */}
+                {/* Edit Profile Top Right Button (shifted leftwards by another 3 spaces with Pencil icon) */}
                 <button
                   onClick={() => {
                     setEditName(profileName);
@@ -350,7 +347,7 @@ export function ProfileScreen() {
                     setEditBg(profileBg);
                     setShowEditProfile(true);
                   }}
-                  className="mr-12 w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white active:scale-95 transition-transform cursor-pointer shadow-md hover:bg-white/30"
+                  className="mr-16 w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white active:scale-95 transition-transform cursor-pointer shadow-md hover:bg-white/30"
                   title="编辑资料"
                 >
                   <Pencil className="w-4 h-4" />
@@ -365,11 +362,11 @@ export function ProfileScreen() {
                 className="bg-gradient-to-r from-white via-white to-[#F5F3FF] border border-white/90 shadow-[0_8px_24px_rgba(0,0,0,0.06)] rounded-3xl p-4 flex items-center justify-between cursor-pointer active:scale-[0.99] transition-all group"
               >
                 <div className="flex items-center gap-3.5">
-                  <div className="w-12 h-12 rounded-2xl bg-[#7C3AED] text-white flex items-center justify-center shadow-md flex-shrink-0 group-hover:scale-105 transition-transform">
-                    <BookOpen className="w-6 h-6" />
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 text-white flex items-center justify-center shadow-md flex-shrink-0 group-hover:scale-105 transition-transform">
+                    <span className="text-2xl select-none">🏆</span>
                   </div>
                   <div>
-                    <h3 className="font-black text-base text-zinc-900 tracking-tight">打卡旅游报告</h3>
+                    <h3 className="font-black text-base text-zinc-900 tracking-tight">专属旅游报告</h3>
                     <p className="text-xs text-zinc-500 font-medium mt-0.5">多模态评估结果与专属导览建议</p>
                   </div>
                 </div>
@@ -2275,6 +2272,7 @@ export function ProfileScreen() {
                     <PosterGenerator
                       data={{
                         userName: displayName,
+                        userAvatar: profileAvatar,
                         spotsVisited: spotCount || 5,
                         favoriteSpot: selectedPosterSpot.name,
                         date: new Date().toLocaleDateString("zh-CN"),
@@ -2399,9 +2397,23 @@ export function ProfileScreen() {
 
                     return (
                       <div key={fav.id} className="p-3 rounded-2xl border border-zinc-200/80 bg-[#FAF9F6] flex items-center gap-3.5 group hover:border-purple-300 transition-all">
-                        <img src={imgUrl} alt={title} className="w-16 h-16 rounded-xl object-cover flex-shrink-0 shadow-sm" />
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-extrabold text-xs text-zinc-900 truncate">{title}</h4>
+                        <img
+                          src={imgUrl}
+                          alt={title}
+                          onClick={() => {
+                            setShowFavoritesModal(false);
+                            router.push(`/spots/${fav.spotId || 10001}`);
+                          }}
+                          className="w-16 h-16 rounded-xl object-cover flex-shrink-0 shadow-sm cursor-pointer hover:opacity-90 active:scale-95 transition-all"
+                        />
+                        <div
+                          className="flex-1 min-w-0 cursor-pointer"
+                          onClick={() => {
+                            setShowFavoritesModal(false);
+                            router.push(`/spots/${fav.spotId || 10001}`);
+                          }}
+                        >
+                          <h4 className="font-extrabold text-xs text-zinc-900 truncate hover:text-purple-600 transition-colors">{title}</h4>
                           <div className="flex items-center gap-1.5 mt-1">
                             <span className="text-[9.5px] font-bold text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full">
                               {fav.type === "spot" ? "精选景点" : fav.type === "relic" ? "镇馆之宝" : fav.type === "route" ? "专属路线" : "语音讲解"}

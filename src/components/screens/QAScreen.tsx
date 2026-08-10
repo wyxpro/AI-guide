@@ -42,68 +42,68 @@ export interface VoiceOption {
 
 export const VOICE_OPTIONS: VoiceOption[] = [
   {
-    id: "female_xiaoyi",
-    name: "知性翠竹 (温柔女声)",
-    desc: "温婉优雅 · 吐字清晰 · 如沐春风",
-    gender: "female",
-    avatarName: "导游翠竹",
-    tag: "默认女声",
-    pitch: 1.08,
-    rate: 0.95,
-    keywords: ["xiaoyi", "晓伊", "xiaoxuan", "晓萱", "huihui", "慧慧", "xiaoxiao", "晓晓", "ting-ting", "mei-jia", "female", "女"]
-  },
-  {
     id: "female_xiaoxiao",
-    name: "清甜小玉 (专属女声)",
-    desc: "清甜甜美 · 自然灵动 · 导游首选",
+    name: "清甜小玉 (专属高定女声)",
+    desc: "清甜甜美 · 灵动优美 · 数字人官方默认",
     gender: "female",
     avatarName: "导游小玉",
-    tag: "清甜女声",
-    pitch: 1.15,
+    tag: "默认女声",
+    pitch: 1.18,
     rate: 0.98,
     keywords: ["xiaoxiao", "晓晓", "xiaoyi", "晓伊", "huihui", "慧慧", "ting-ting", "mei-jia", "female", "女", "google"]
   },
   {
+    id: "female_xiaoyi",
+    name: "知性翠竹 (温婉优雅女声)",
+    desc: "温婉优雅 · 吐字清晰 · 如沐春风",
+    gender: "female",
+    avatarName: "导游翠竹",
+    tag: "知性女声",
+    pitch: 1.05,
+    rate: 0.95,
+    keywords: ["xiaoyi", "晓伊", "xiaoxuan", "晓萱", "huihui", "慧慧", "xiaoxiao", "晓晓", "ting-ting", "mei-jia", "female", "女"]
+  },
+  {
     id: "female_yaoyao",
-    name: "亲切小萌 (活泼女声)",
+    name: "软萌小妹 (元气活泼女声)",
     desc: "朝气蓬勃 · 软萌亲切 · 活泼灵动",
     gender: "female",
     avatarName: "导游小萌",
     tag: "活泼女声",
-    pitch: 1.25,
+    pitch: 1.28,
     rate: 1.02,
     keywords: ["yaoyao", "瑶瑶", "xiaoxiao", "晓晓", "female", "女"]
   },
   {
     id: "male_yunxi",
-    name: "阳光子轩 (帅气男声)",
-    desc: "阳光温暖 · 磁性自然 · 充满活力",
+    name: "阳光子轩 (清爽活力男声)",
+    desc: "阳光温暖 · 清爽自然 · 充满活力",
     gender: "male",
     avatarName: "导游子轩",
-    tag: "帅气男声",
-    pitch: 0.96,
+    tag: "活力男声",
+    pitch: 0.92,
     rate: 1.0,
     keywords: ["yunxi", "云希", "yunjian", "云健", "kangkang", "康康", "male", "男"]
   },
   {
     id: "male_yunjian",
-    name: "沉稳伟祺 (睿智男声)",
-    desc: "睿智沉稳 · 大气干练 · 专业严谨",
+    name: "沉稳伟祺 (睿智磁性男声)",
+    desc: "睿智沉稳 · 磁性干练 · 专业严谨",
     gender: "male",
     avatarName: "导游伟祺",
-    tag: "沉稳男声",
-    pitch: 0.88,
+    tag: "磁性男声",
+    pitch: 0.82,
     rate: 0.94,
     keywords: ["yunjian", "云健", "yunyang", "云扬", "male", "男"]
   },
   {
     id: "male_zhemai",
-    name: "古风诗仙 (吟诵男声)",
+    name: "古风诗仙 (雅韵吟诵男声)",
     desc: "古风古韵 · 满腹经纶 · 朗朗上口",
     gender: "male",
     avatarName: "诗仙李白",
     tag: "古风男声",
-    pitch: 0.92,
+    pitch: 0.88,
     rate: 0.92,
     keywords: ["zhemai", "哲麦", "yunxi", "云希", "male", "男"]
   }
@@ -280,8 +280,8 @@ export function QAScreen() {
   const [bgImage, setBgImage] = useState<string>("/background/北京.png");
   const [showBgMenu, setShowBgMenu] = useState(false);
 
-  // Voice selection state
-  const [selectedVoiceId, setSelectedVoiceId] = useState<string>("female_xiaoyi");
+  // Voice selection state (Default to pleasant female voice: female_xiaoxiao)
+  const [selectedVoiceId, setSelectedVoiceId] = useState<string>("female_xiaoxiao");
   const [showVoiceMenu, setShowVoiceMenu] = useState<boolean>(false);
 
   const selectVoice = (opt: VoiceOption) => {

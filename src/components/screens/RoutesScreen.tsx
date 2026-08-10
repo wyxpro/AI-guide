@@ -1369,14 +1369,14 @@ export function RoutesScreen() {
               className="w-10 h-10 rounded-xl bg-[#FF4D8D] text-white shadow-lg shadow-pink-500/30 border border-pink-400 flex items-center justify-center font-bold hover:bg-[#E03E79] active:scale-95 transition-all cursor-pointer"
               title="路线合集"
             >
-              <span className="font-black text-xs px-1.5 py-0.5 rounded-md bg-white text-[#FF4D8D] shadow-xs select-none">AI</span>
+              <span className="font-black text-xs px-1.5 py-0.5 rounded-md bg-white text-[#FF4D8D] shadow-xs select-none">景</span>
             </button>
             <button
               onClick={() => setShowFloatChat(!showFloatChat)}
               className="w-10 h-10 rounded-xl bg-[#2563EB] text-white shadow-lg shadow-blue-500/30 border border-blue-400 flex items-center justify-center font-bold hover:bg-blue-600 active:scale-95 transition-all cursor-pointer"
               title="智能向导小慧"
             >
-              <MessageSquare className="w-5 h-5" />
+              <span className="font-black text-xs px-1.5 py-0.5 rounded-md bg-white text-[#2563EB] shadow-xs select-none">AI</span>
             </button>
           </div>
 
@@ -1848,11 +1848,21 @@ export function RoutesScreen() {
                               <img
                                 src={spotObj.img || "/images/spots/10001.webp"}
                                 alt={spotObj.name}
-                                className="w-18 h-18 rounded-xl object-cover flex-shrink-0 shadow-sm"
+                                onClick={() => {
+                                  setShowRouteHistoryModal(false);
+                                  router.push(`/spots/${spotObj.id || 10001}`);
+                                }}
+                                className="w-18 h-18 rounded-xl object-cover flex-shrink-0 shadow-sm cursor-pointer hover:opacity-90 active:scale-95 transition-all"
                               />
-                              <div className="flex-1 min-w-0">
+                              <div
+                                className="flex-1 min-w-0 cursor-pointer"
+                                onClick={() => {
+                                  setShowRouteHistoryModal(false);
+                                  router.push(`/spots/${spotObj.id || 10001}`);
+                                }}
+                              >
                                 <div className="flex items-center justify-between gap-2">
-                                  <h5 className="font-extrabold text-xs text-zinc-900 leading-snug">{spotObj.name}</h5>
+                                  <h5 className="font-extrabold text-xs text-zinc-900 leading-snug hover:text-[#D2A053] transition-colors">{spotObj.name}</h5>
                                   <span className="text-[9px] font-bold text-[#D2A053] bg-amber-50 px-2 py-0.5 rounded-full flex-shrink-0">
                                     建议打卡 40分钟
                                   </span>
