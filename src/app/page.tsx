@@ -304,36 +304,14 @@ export default function WelcomePage() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const cardsContainerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setActiveFeatureIndex((prev) => (prev + 1) % 6);
-    }, 3600);
-    return () => clearInterval(timer);
-  }, []);
-
   useEffect(() => {
     if (typeof window !== "undefined") {
+      if ('scrollRestoration' in window.history) {
+        window.history.scrollRestoration = 'manual';
+      }
       window.scrollTo(0, 0);
     }
   }, []);
-
-  useEffect(() => {
-    if (cardsContainerRef.current && typeof window !== "undefined" && window.innerWidth < 768) {
-      const container = cardsContainerRef.current;
-      const activeCard = container.children[activeFeatureIndex] as HTMLElement;
-      if (activeCard) {
-        const cardLeft = activeCard.offsetLeft;
-        const cardWidth = activeCard.offsetWidth;
-        const containerWidth = container.offsetWidth;
-        container.scrollTo({
-          left: cardLeft - (containerWidth / 2) + (cardWidth / 2),
-          behavior: "smooth"
-        });
-      }
-    }
-  }, [activeFeatureIndex]);
 
   const handleStart = () => {
     window.location.href = "/login";
@@ -507,8 +485,8 @@ export default function WelcomePage() {
             </p>
           </div>
 
-          {/* Cards Container - Full-size swipeable cards on mobile, hover accordion on desktop */}
-          <div ref={cardsContainerRef} className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none gap-4 md:gap-4 items-stretch h-[460px] sm:h-[500px] md:h-[540px] pb-4 pt-2 -mx-4 px-4 md:mx-0 md:px-0">
+          {/* Feature Cards Container - Mobile Swipe Strip (matching PERSONAS layout) / Desktop Interactive Accordion */}
+          <div className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none gap-4 md:gap-4 items-stretch h-[460px] sm:h-[500px] md:h-[540px] pb-4 pt-2 -mx-6 px-6 md:mx-0 md:px-0">
             {[
               {
                 num: "01",
@@ -589,7 +567,7 @@ export default function WelcomePage() {
                   key={i}
                   onMouseEnter={() => setActiveFeatureIndex(i)}
                   onClick={() => setActiveFeatureIndex(i)}
-                  className={`relative h-full rounded-[28px] sm:rounded-[32px] md:rounded-[36px] overflow-hidden cursor-pointer select-none transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] flex-shrink-0 snap-center w-[84vw] sm:w-[350px] md:w-auto ${
+                  className={`relative h-full rounded-[28px] sm:rounded-[32px] md:rounded-[36px] overflow-hidden cursor-pointer select-none transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] flex-shrink-0 snap-center w-[82vw] sm:w-[320px] md:w-auto ${
                     isActive
                       ? "md:flex-[3.5] lg:flex-[4] shadow-2xl border border-white/40"
                       : "md:flex-[0.7] lg:flex-[0.8] hover:md:flex-[1.1] shadow-lg border border-white/20 hover:border-white/40 opacity-95 hover:opacity-100"
