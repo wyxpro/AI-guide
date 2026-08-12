@@ -77,6 +77,21 @@ export function ProfileScreen() {
   const [selectedPosterSpot, setSelectedPosterSpot] = useState<any>(null);
   const [allSpots, setAllSpots] = useState<any[]>([]);
 
+  // User Points & Simulated Payment States
+  const [userPoints, setUserPoints] = useState<number>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("user_points");
+      return saved ? parseInt(saved, 10) : 1280;
+    }
+    return 1280;
+  });
+  const [showRechargeModal, setShowRechargeModal] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [selectedPointsTier, setSelectedPointsTier] = useState<{ points: number; price: number }>({ points: 500, price: 50 });
+  const [paymentMethod, setPaymentMethod] = useState<"wechat" | "alipay">("wechat");
+  const [showPaymentGatewayModal, setShowPaymentGatewayModal] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+
   // States for sub-views
   const [routeTab, setRouteTab] = useState<"ongoing" | "completed" | "cancelled">("ongoing");
   const [favoriteTag, setFavoriteTag] = useState<"all" | "spot" | "relic" | "route" | "audio">("all");
@@ -114,7 +129,7 @@ export function ProfileScreen() {
   const [notiGuide, setNotiGuide] = useState(true);
   const [notiDaily, setNotiDaily] = useState(false);
 
-  const [voiceSpeaker, setVoiceSpeaker] = useState("xinxin");
+  const [voiceSpeaker, setVoiceSpeaker] = useState("female_xiaoxiao");
   const [voiceSpeed, setVoiceSpeed] = useState(1.0);
   const [voiceBgmVolume, setVoiceBgmVolume] = useState(30);
 
@@ -355,8 +370,46 @@ export function ProfileScreen() {
               </div>
             </div>
 
-            {/* Featured Hero Card (Elevated Assessment Card) */}
-            <div className="-mt-6 mx-4 relative z-10">
+            {/* Featured Hero Cards Area */}
+            <div className="-mt-6 mx-4 relative z-10 space-y-3">
+              {/* Member Center & Points Card */}
+              <div className="bg-gradient-to-r from-zinc-900 via-zinc-800 to-black text-white border border-amber-500/30 rounded-3xl p-4 shadow-xl relative overflow-hidden">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-xl">✨</span>
+                    <div>
+                      <h3 className="font-black text-sm text-amber-300">旅行家Pro · 会员中心</h3>
+                      <p className="text-[11px] text-zinc-300 mt-0.5">当前积分余额：<strong className="text-emerald-400 text-sm font-black">{userPoints} 积分</strong></p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowVipModal(true)}
+                    className="text-[10px] font-bold text-amber-300 bg-amber-400/20 hover:bg-amber-400/30 px-2.5 py-1 rounded-full border border-amber-400/30 transition-colors cursor-pointer"
+                  >
+                    VIP 尊享版 →
+                  </button>
+                </div>
+
+                {/* Two Distinctly Colored Action Buttons: Green Recharge & Blue Invite */}
+                <div className="grid grid-cols-2 gap-3 mt-3.5">
+                  <button
+                    onClick={() => setShowRechargeModal(true)}
+                    className="py-2.5 px-3 rounded-2xl bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 text-white font-black text-xs shadow-md shadow-emerald-500/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <span className="text-sm">🟢</span>
+                    <span>积分充值</span>
+                  </button>
+                  <button
+                    onClick={() => setShowInviteModal(true)}
+                    className="py-2.5 px-3 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white font-black text-xs shadow-md shadow-blue-500/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <span className="text-sm">🔵</span>
+                    <span>邀请有礼</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Assessment Report Card */}
               <div
                 onClick={() => setShowTravelReportModal(true)}
                 className="bg-gradient-to-r from-white via-white to-[#F5F3FF] border border-white/90 shadow-[0_8px_24px_rgba(0,0,0,0.06)] rounded-3xl p-4 flex items-center justify-between cursor-pointer active:scale-[0.99] transition-all group"
@@ -560,6 +613,42 @@ export function ProfileScreen() {
 
                 {/* Main Body */}
                 <div className="p-4 sm:p-6 space-y-5">
+                  {/* Desktop Member Center Points Banner */}
+                  <div className="hidden lg:block bg-gradient-to-r from-zinc-900 via-zinc-800 to-black text-white border border-amber-500/30 rounded-3xl p-5 shadow-xl relative overflow-hidden">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/30 text-amber-400 flex items-center justify-center text-xl shadow-inner">
+                          ✨
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-black text-base text-amber-300">旅行家Pro · 会员中心</h3>
+                            <span className="text-[10px] font-bold text-amber-300 bg-amber-400/20 px-2 py-0.5 rounded-full border border-amber-400/30">VIP 尊享版</span>
+                          </div>
+                          <p className="text-xs text-zinc-300 mt-1">当前积分余额：<strong className="text-emerald-400 text-base font-black ml-1">{userPoints} 积分</strong></p>
+                        </div>
+                      </div>
+
+                      {/* Action Buttons: 🟢 积分充值 & 🔵 邀请有礼 */}
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => setShowRechargeModal(true)}
+                          className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 text-white font-black text-xs shadow-md shadow-emerald-500/25 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <span className="text-sm">🟢</span>
+                          <span>积分充值</span>
+                        </button>
+                        <button
+                          onClick={() => setShowInviteModal(true)}
+                          className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white font-black text-xs shadow-md shadow-blue-500/25 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <span className="text-sm">🔵</span>
+                          <span>邀请有礼</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Desktop Quick Entry Cards (Hidden on Mobile) */}
                   <div className="hidden lg:grid grid-cols-4 gap-2 text-center">
                     {[
@@ -2839,6 +2928,303 @@ export function ProfileScreen() {
                   className="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs shadow-md active:scale-95 transition-all cursor-pointer"
                 >
                   保存兴趣配置
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ── 01. 积分充值弹窗 (Points Recharge Modal) ── */}
+      <AnimatePresence>
+        {showRechargeModal && (
+          <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md" onClick={() => setShowRechargeModal(false)}>
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={SPRING}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col text-zinc-800 border border-zinc-200"
+            >
+              {/* Header */}
+              <div className="p-5 bg-gradient-to-r from-emerald-600 to-teal-700 text-white flex items-center justify-between flex-shrink-0">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-lg">
+                    🟢
+                  </div>
+                  <div>
+                    <h3 className="font-extrabold text-base">旅行家Pro · 积分充值中心</h3>
+                    <p className="text-xs text-white/80">极速充值 · 即刻解锁高清音色与导览</p>
+                  </div>
+                </div>
+                <button onClick={() => setShowRechargeModal(false)} className="w-8 h-8 rounded-full hover:bg-white/20 flex items-center justify-center text-white transition-colors cursor-pointer">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="p-5 space-y-4 max-h-[70vh] overflow-y-auto">
+                {/* Current Balance Display */}
+                <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between">
+                  <span className="text-xs font-bold text-emerald-950">当前剩余积分</span>
+                  <span className="text-base font-black text-emerald-600">🟢 {userPoints} 积分</span>
+                </div>
+
+                {/* Recharge Tiers */}
+                <div className="space-y-2">
+                  <label className="text-xs font-extrabold text-zinc-700">选择充值积分套餐</label>
+                  <div className="grid grid-cols-3 gap-2.5">
+                    {[
+                      { points: 100, price: 10, tag: "基础" },
+                      { points: 500, price: 50, tag: "超值首选" },
+                      { points: 1200, price: 100, tag: "立省40%" },
+                    ].map((tier) => {
+                      const isSelected = selectedPointsTier.points === tier.points;
+                      return (
+                        <div
+                          key={tier.points}
+                          onClick={() => setSelectedPointsTier({ points: tier.points, price: tier.price })}
+                          className={`p-3 rounded-2xl border text-center cursor-pointer transition-all relative overflow-hidden flex flex-col justify-between ${
+                            isSelected
+                              ? "bg-emerald-50/90 border-emerald-500 shadow-md ring-2 ring-emerald-400/40"
+                              : "bg-zinc-50 border-zinc-200 hover:border-emerald-300"
+                          }`}
+                        >
+                          {tier.tag && (
+                            <span className="absolute top-0 right-0 bg-emerald-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-bl-md">
+                              {tier.tag}
+                            </span>
+                          )}
+                          <div className="mt-1">
+                            <span className="text-sm font-black text-zinc-900 block">{tier.points} 积分</span>
+                            <span className="text-xs font-black text-emerald-600 mt-0.5 block">¥{tier.price}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Payment Method Selector */}
+                <div className="space-y-2 pt-1">
+                  <label className="text-xs font-extrabold text-zinc-700">选择支付方式</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* WeChat Pay */}
+                    <div
+                      onClick={() => setPaymentMethod("wechat")}
+                      className={`p-3.5 rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${
+                        paymentMethod === "wechat"
+                          ? "bg-emerald-50 border-emerald-500 shadow-sm ring-2 ring-emerald-300/50"
+                          : "bg-zinc-50 border-zinc-200 hover:border-emerald-300"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-sm font-black shadow-xs">
+                          🟢
+                        </div>
+                        <span className="text-xs font-extrabold text-zinc-900">微信支付</span>
+                      </div>
+                      {paymentMethod === "wechat" && <Check className="w-4 h-4 text-emerald-600 stroke-[3]" />}
+                    </div>
+
+                    {/* Alipay */}
+                    <div
+                      onClick={() => setPaymentMethod("alipay")}
+                      className={`p-3.5 rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${
+                        paymentMethod === "alipay"
+                          ? "bg-blue-50 border-blue-500 shadow-sm ring-2 ring-blue-300/50"
+                          : "bg-zinc-50 border-zinc-200 hover:border-blue-300"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center text-sm font-black shadow-xs">
+                          🔵
+                        </div>
+                        <span className="text-xs font-extrabold text-zinc-900">支付宝</span>
+                      </div>
+                      {paymentMethod === "alipay" && <Check className="w-4 h-4 text-blue-600 stroke-[3]" />}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Button */}
+              <div className="p-4 border-t border-zinc-100 bg-zinc-50">
+                <button
+                  onClick={() => setShowPaymentGatewayModal(true)}
+                  className={`w-full py-3.5 rounded-xl font-extrabold text-xs text-white shadow-md active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                    paymentMethod === "wechat"
+                      ? "bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-emerald-500/20"
+                      : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-blue-500/20"
+                  }`}
+                >
+                  <span>确认充值 · 立即支付 ¥{selectedPointsTier.price}</span>
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ── 02. 模拟支付收银台弹窗 (Simulated Payment Gateway Modal) ── */}
+      <AnimatePresence>
+        {showPaymentGatewayModal && (
+          <div className="fixed inset-0 z-[140] flex items-center justify-center p-4 bg-black/80 backdrop-blur-lg" onClick={() => setShowPaymentGatewayModal(false)}>
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={SPRING}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-sm bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col text-zinc-800 border border-zinc-200"
+            >
+              {/* Header depending on Payment Method */}
+              <div className={`p-5 text-white flex items-center justify-between ${
+                paymentMethod === "wechat" ? "bg-emerald-600" : "bg-blue-600"
+              }`}>
+                <div className="flex items-center gap-2.5">
+                  <span className="text-xl">{paymentMethod === "wechat" ? "🟢" : "🔵"}</span>
+                  <div>
+                    <h3 className="font-black text-base">{paymentMethod === "wechat" ? "微信收银台 (模拟支付)" : "支付宝收银台 (模拟支付)"}</h3>
+                    <p className="text-[11px] text-white/80">旅行家Pro 官方安全订单</p>
+                  </div>
+                </div>
+                <button onClick={() => setShowPaymentGatewayModal(false)} className="w-8 h-8 rounded-full hover:bg-white/20 flex items-center justify-center text-white transition-colors cursor-pointer">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* QR Code and Amount Display */}
+              <div className="p-6 text-center space-y-4">
+                <div>
+                  <span className="text-xs text-zinc-400 font-medium">支付金额</span>
+                  <div className="text-3xl font-black text-zinc-900 mt-0.5">
+                    ¥{selectedPointsTier.price}.00
+                  </div>
+                  <span className="inline-block mt-1 px-3 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-bold border border-emerald-200">
+                    加购 +{selectedPointsTier.points} 积分
+                  </span>
+                </div>
+
+                {/* Simulated QR Code Box */}
+                <div className="w-48 h-48 mx-auto bg-zinc-50 rounded-2xl border-2 border-dashed border-zinc-300 p-3 flex flex-col items-center justify-center relative overflow-hidden group shadow-inner">
+                  <div className="w-full h-full bg-white rounded-xl border border-zinc-200 flex flex-col items-center justify-center p-2 relative">
+                    <div className="w-32 h-32 bg-zinc-900 rounded-lg p-1.5 flex flex-col justify-between">
+                      <div className="flex justify-between">
+                        <div className="w-6 h-6 bg-white rounded-xs p-0.5"><div className="w-full h-full bg-zinc-900 rounded-2xs" /></div>
+                        <div className="w-6 h-6 bg-white rounded-xs p-0.5"><div className="w-full h-full bg-zinc-900 rounded-2xs" /></div>
+                      </div>
+                      <div className="text-center font-black text-[8px] text-white tracking-widest uppercase">
+                        {paymentMethod === "wechat" ? "WECHAT PAY" : "ALIPAY"}
+                      </div>
+                      <div className="flex justify-between">
+                        <div className="w-6 h-6 bg-white rounded-xs p-0.5"><div className="w-full h-full bg-zinc-900 rounded-2xs" /></div>
+                        <div className="w-2.5 h-2.5 bg-white rounded-2xs" />
+                      </div>
+                    </div>
+                  </div>
+                  {/* Scanning Animation */}
+                  <div className={`absolute left-0 right-0 h-1 bg-gradient-to-r ${paymentMethod === "wechat" ? "from-emerald-400 to-teal-400" : "from-blue-400 to-indigo-400"} animate-pulse shadow-md top-1/2`} />
+                </div>
+
+                <p className="text-xs text-zinc-500 font-medium">
+                  请使用 {paymentMethod === "wechat" ? "微信" : "支付宝"} 扫描二维码完成支付
+                </p>
+              </div>
+
+              {/* Confirm Payment Button */}
+              <div className="p-4 border-t border-zinc-100 bg-zinc-50">
+                <button
+                  disabled={isProcessingPayment}
+                  onClick={() => {
+                    setIsProcessingPayment(true);
+                    setTimeout(() => {
+                      const newPoints = userPoints + selectedPointsTier.points;
+                      setUserPoints(newPoints);
+                      if (typeof window !== "undefined") {
+                        localStorage.setItem("user_points", newPoints.toString());
+                      }
+                      setIsProcessingPayment(false);
+                      setShowPaymentGatewayModal(false);
+                      setShowRechargeModal(false);
+                      toast.success(`🎉 支付成功！已通过${paymentMethod === "wechat" ? "微信" : "支付宝"}充值 +${selectedPointsTier.points} 积分，最新余额为 ${newPoints} 积分！`);
+                    }, 900);
+                  }}
+                  className={`w-full py-3.5 rounded-xl font-extrabold text-xs text-white shadow-md active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                    paymentMethod === "wechat"
+                      ? "bg-emerald-600 hover:bg-emerald-700"
+                      : "bg-blue-600 hover:bg-blue-700"
+                  }`}
+                >
+                  {isProcessingPayment ? (
+                    <span>正在完成网关校验...</span>
+                  ) : (
+                    <span>确认模拟完成支付</span>
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ── 03. 邀请有礼弹窗 (Invite Friends Rewards Modal) ── */}
+      <AnimatePresence>
+        {showInviteModal && (
+          <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md" onClick={() => setShowInviteModal(false)}>
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={SPRING}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col text-zinc-800 border border-zinc-200"
+            >
+              {/* Header */}
+              <div className="p-5 bg-gradient-to-r from-blue-600 to-indigo-700 text-white flex items-center justify-between flex-shrink-0">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-lg">
+                    🔵
+                  </div>
+                  <div>
+                    <h3 className="font-extrabold text-base">邀请有礼 · 共享双重好礼</h3>
+                    <p className="text-xs text-white/80">邀请新好友加入，即赠 +200 积分</p>
+                  </div>
+                </div>
+                <button onClick={() => setShowInviteModal(false)} className="w-8 h-8 rounded-full hover:bg-white/20 flex items-center justify-center text-white transition-colors cursor-pointer">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="p-5 space-y-4">
+                {/* Invite Code Box */}
+                <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200 text-center space-y-1">
+                  <span className="text-xs font-bold text-blue-900 block">您的专属邀请码</span>
+                  <div className="text-2xl font-black font-mono text-blue-700 tracking-wider">
+                    TRAVELEZ-8888
+                  </div>
+                </div>
+
+                <div className="space-y-2 text-xs text-zinc-600 leading-relaxed bg-zinc-50 p-3.5 rounded-2xl border border-zinc-200/80">
+                  <strong className="font-black text-zinc-900 block">🎁 奖励规则：</strong>
+                  <p>1. 复制专属邀请链接发送给好友。</p>
+                  <p>2. 好友通过您的链接注册登录后，系统自动为您与好友各发放 <strong className="text-blue-600">+200 积分</strong>！</p>
+                  <p>3. 积分可无门槛兑换高定音色与三维高清实景识别服务。</p>
+                </div>
+              </div>
+
+              {/* Action Button */}
+              <div className="p-4 border-t border-zinc-100 bg-zinc-50">
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText("https://traveler-pro.ai/invite?code=TRAVELEZ-8888");
+                    toast.success("已成功复制专属邀请链接到剪贴板！快发给朋友吧！");
+                    setShowInviteModal(false);
+                  }}
+                  className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 font-extrabold text-xs text-white shadow-md active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <Share2 className="w-4 h-4" />
+                  <span>一键复制专属邀请链接</span>
                 </button>
               </div>
             </motion.div>

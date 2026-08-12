@@ -280,8 +280,14 @@ export function QAScreen() {
   const [bgImage, setBgImage] = useState<string>("/background/北京.png");
   const [showBgMenu, setShowBgMenu] = useState(false);
 
-  // Voice selection state (Default to pleasant female voice: female_xiaoxiao)
-  const [selectedVoiceId, setSelectedVoiceId] = useState<string>("female_xiaoxiao");
+  // Voice selection state (Default voice: female_xiaoxiao - 清甜小玉 (专属高定女声))
+  const [selectedVoiceId, setSelectedVoiceId] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("guide_selected_voice_id");
+      if (saved) return saved;
+    }
+    return "female_xiaoxiao";
+  });
   const [showVoiceMenu, setShowVoiceMenu] = useState<boolean>(false);
 
   const selectVoice = (opt: VoiceOption) => {

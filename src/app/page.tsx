@@ -398,26 +398,32 @@ export default function WelcomePage() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative pt-12 md:pt-24 pb-20 max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-        {/* Shizuku Live2D */}
-        <div className="hidden lg:flex lg:col-span-5 justify-center lg:order-2">
+      <section className="relative pt-8 sm:pt-12 md:pt-20 pb-16 md:pb-20 max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12 items-center">
+        {/* Hero Character Image (/image/gw.png) - Order 1 on mobile (above title text), Order 2 on desktop */}
+        <div className="order-1 lg:order-2 lg:col-span-5 flex justify-center items-center">
           <motion.div
-            initial={{ opacity: 0, rotateY: 20 }}
-            animate={{ opacity: 1, rotateY: 0 }}
-            transition={{ ...SPRING, delay: 0.2 }}
-            className="relative w-80 h-96 md:w-96 md:h-[450px] overflow-visible"
-            style={{ transformStyle: "preserve-3d", perspective: 1000 }}
+            initial={{ opacity: 0, scale: 0.92 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ ...SPRING, delay: 0.1 }}
+            className="relative w-72 h-72 sm:w-96 sm:h-96 md:w-[480px] md:h-[520px] max-w-full flex justify-center items-center"
           >
-            <Live2DViewer avatarStyle="live2d_Shizuku" />
+            {/* Soft Ambient Glow Effect */}
+            <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#4F6F52]/20 via-[#D2A053]/20 to-transparent filter blur-3xl -z-10" />
+            <img
+              src="/image/gw.png"
+              alt="AI Digital Guide Character"
+              className="w-full h-full object-contain filter drop-shadow-2xl transition-transform duration-500 hover:scale-105"
+            />
           </motion.div>
         </div>
 
-        <div className="lg:col-span-7 space-y-6 text-center lg:text-left lg:order-1">
+        {/* Main Text Content - Order 2 on mobile (underneath character image), Order 1 on desktop */}
+        <div className="order-2 lg:order-1 lg:col-span-7 space-y-6 text-center lg:text-left">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ ...SPRING, delay: 0.1 }}
-            className="text-4xl md:text-6xl font-black leading-tight text-transparent bg-clip-text"
+            className="text-3xl sm:text-4xl md:text-6xl font-black leading-tight text-transparent bg-clip-text"
             style={{ fontFamily: "var(--font-noto-serif)", backgroundImage: "linear-gradient(135deg, #1E2522 0%, #E11D48 50%, #D2A053 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}
           >
             多模态AI数字人导游<br />
@@ -457,197 +463,215 @@ export default function WelcomePage() {
         </div>
       </section>
 
-
-
-      {/* Featured Capabilities (特色功能) - 3D Auto-play Carousel (Light Theme & Upload Style) */}
-      <section id="feature" className="py-24 bg-[#FAF8F5] border-y border-[#E6E2D8] relative overflow-hidden text-[#1E2522]">
-        {/* Subtle background glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] rounded-full filter blur-[120px] pointer-events-none opacity-10"
+      {/* Featured Capabilities (特色功能) - Horizontal Expandable Accordion (Hover Auto-expand & Matching Images) */}
+      <section id="feature" className="py-16 md:py-24 bg-[#FAF8F5] border-y border-[#E6E2D8] relative overflow-hidden text-[#1E2522]">
+        {/* Subtle ambient background glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] rounded-full filter blur-[140px] pointer-events-none opacity-15"
           style={{ background: "radial-gradient(circle, #4F6F52 0%, transparent 70%)" }} />
 
-        <div className="max-w-7xl mx-auto px-6 relative z-10">
-          <div className="text-center space-y-4 mb-12">
-            <span className="text-xs font-black tracking-[0.2em] text-[#4F6F52] uppercase block">
-              Features
-            </span>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
+          {/* Section Header */}
+          <div className="text-center space-y-3 mb-10 md:mb-14">
+            <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#4F6F52]/10 border border-[#4F6F52]/20 text-[#4F6F52] text-xs font-black tracking-wider">
+              <span>差异化优势</span>
+            </div>
             <h3 className="text-3xl md:text-5xl font-black tracking-tight text-[#1E2522]" style={{ fontFamily: "var(--font-noto-serif)" }}>
-              沉浸式交互，数字科技重塑旅途
+              六大核心特色功能
             </h3>
-            <div className="w-12 h-1.5 rounded-full bg-[#4F6F52] mx-auto mt-4" />
             <p className="text-sm md:text-base text-[#8F9F8F] max-w-2xl mx-auto leading-relaxed">
-              集顶尖算法于一身，让AI成为最懂您的全能私人出行向导。
+              每个功能都针对旅途中的核心痛点精心设计，数字科技重塑出行体验
             </p>
           </div>
 
-          {/* Carousel Container */}
-          <div className="relative w-full h-[400px] md:h-[460px] flex items-center justify-center overflow-hidden">
+          {/* Cards Accordion Container - Reduced Height (h-[440px] to h-[540px]), Hover Auto-expand */}
+          <div className="w-full flex flex-row items-center justify-center gap-2.5 sm:gap-3.5 md:gap-4 h-[440px] sm:h-[500px] md:h-[540px] overflow-x-auto md:overflow-visible pb-4 pt-2 scrollbar-none">
             {[
               {
-                icon: Bot,
                 num: "01",
                 title: "虚拟人3D拟真交互",
-                desc: "提供仕女古风、童趣卡通、现代精英数字人形象，具备自然表情流露与拟真口型算法。",
-                color: "#8B5CF6", // Purple
-                bgImage: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=600&q=80",
+                shortTitle: ["虚拟", "人3D", "交互"],
+                desc: "支持仕女古风、童趣卡通、现代精英数字人形象，具备自然表情流露与拟真口型算法。",
+                bgImage: "https://th.bing.com/th/id/R.6d1bf349506fbd5ff4909ff64948d2d2?rik=F3pOSWN7eFHisA&riu=http%3a%2f%2fyujikeji-home.oss-cn-shenzhen.aliyuncs.com%2fimg%2fnews%2f271.png&ehk=lPND4D1JHp%2bD5fo0qH5GnttqEPnKH2husM%2byADtv8Lw%3d&risl=&pid=ImgRaw&r=0",
+                widget: {
+                  tag: "Virtual Guide AI",
+                  text: "“欢迎来到重庆洪崖洞，我是您的专属AI数字人导游，现在为您进行景点深度讲解。”",
+                  footer: "> Live2D_Avatar_Active"
+                }
               },
               {
-                icon: MessageCircle,
                 num: "02",
-                title: "全天候双工语音对谈",
-                desc: "极速的语音语义流式处理，打破呆板的按键指引，就像与一位温婉知性的文史专家面对面交谈。",
-                color: "#10B981", // Emerald
-                bgImage: "https://images.unsplash.com/photo-1484704849700-f032a568e944?auto=format&fit=crop&w=600&q=80",
+                title: "全国热门景点",
+                shortTitle: ["全国", "热门", "景点"],
+                desc: "覆盖全国热门景区与历史文化胜地，提供高精地图标注、AI动态导览与实时客流避拥堵服务。",
+                bgImage: "https://sns-webpic-qc.xhscdn.com/202608122023/3f16a09b9e132e1e8a32b65f5041aaf8/1040g00831vpjtu361m6g5q3kphti72eq3pp8bo8!nd_dft_wlteh_webp_3",
+                widget: {
+                  tag: "Hot Scenic Spots",
+                  text: "“已为您联动全国各大热门景点知识库与全景语音档案。”",
+                  footer: "> National_Scenic_Database"
+                }
               },
               {
-                icon: MapPin,
                 num: "03",
                 title: "自适应智能专属路径",
+                shortTitle: ["智能", "专属", "路径"],
                 desc: "支持输入您当前的兴趣偏好，如“历史文化优先、走平坦道”，AI自动动态避堵并规划最优旅游足迹。",
-                color: "#D2A053", // Gold/Amber
-                bgImage: "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=600&q=80",
+                bgImage: "/image/1.png",
+                widget: {
+                  tag: "Smart Route Agent",
+                  text: "已自动避开前方拥堵路段，重构最佳顺光摄影片段路径。",
+                  footer: "> GPS_Avoid_Traffic"
+                }
               },
               {
-                icon: Sparkles,
                 num: "04",
                 title: "AR/VR实景研判识别",
+                shortTitle: ["实景", "研判", "识别"],
                 desc: "对准展品文物拍摄即可开展多模态文物识别，提取背后的深度文化故事，变走马观花为沉浸感悟。",
-                color: "#06B6D4", // Cyan
-                bgImage: "https://images.unsplash.com/photo-1626379616459-b2ce1d9decbc?auto=format&fit=crop&w=600&q=80",
+                bgImage: "https://i-blog.csdnimg.cn/direct/279b593e089d4f69a008b73a9e38fa33.png",
+                widget: {
+                  tag: "Multimodal Vision",
+                  text: "已识别文物斗拱拓扑结构，调取宋代建筑规范考证。",
+                  footer: "> Vision_RAG_Ready"
+                }
               },
               {
-                icon: Users,
                 num: "05",
-                title: "适老/童趣多模态适配",
-                desc: "首创三大体验模式，老年大字伴读、儿童故事科普、标准沉浸研读，贴心照顾全家出游偏好。",
-                color: "#EC4899", // Rose/Pink
-                bgImage: "https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=600&q=80",
+                title: "旅游打卡报告",
+                shortTitle: ["旅游", "打卡", "报告"],
+                desc: "一键自动生成高质感专属旅游打卡海报与出游报告，定格美好旅途瞬间。",
+                bgImage: "/image/2.png",
+                widget: {
+                  tag: "Travel Report AI",
+                  text: "“AI已为您一键生成金牌打卡路线总结与专属出游分析报告。”",
+                  footer: "> Poster_Generator_Ready"
+                }
               },
               {
-                icon: TrendingUp,
                 num: "06",
                 title: "景区大屏与情感雷达",
+                shortTitle: ["情感", "雷达", "监测"],
                 desc: "景区管理后台支持游客情感指数雷达监测、高频热搜词云实时流计算及今日客流量科学预测。",
-                color: "#3B82F6", // Blue
-                bgImage: "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?auto=format&fit=crop&w=600&q=80",
+                bgImage: "/image/3.png",
+                widget: {
+                  tag: "Emotion Radar",
+                  text: "游客实时情绪指数 98.4%，高频词“绝美夜景”占比第一。",
+                  footer: "> BigData_Analytics"
+                }
               }
             ].map((f, i) => {
-              // Calculate relative offset wrap-around correctly in range [-3, 2]
-              let diff = i - activeFeatureIndex;
-              if (diff < -3) diff += 6;
-              if (diff > 2) diff -= 6;
-
-              const isActive = diff === 0;
-              const isPrev = diff === -1;
-              const isNext = diff === 1;
-              const isFarPrev = diff === -2;
-              const isFarNext = diff === 2;
-
-              // Responsive offsets
-              const isMobile = windowWidth < 768;
-              let translateX = 0;
-              if (isMobile) {
-                translateX = diff * 280;
-              } else {
-                if (isActive) translateX = 0;
-                else if (isPrev) translateX = -380;
-                else if (isNext) translateX = 380;
-                else if (isFarPrev) translateX = -720;
-                else if (isFarNext) translateX = 720;
-                else translateX = diff < 0 ? -1060 : 1060;
-              }
-
+              const isActive = activeFeatureIndex === i;
               return (
-                <motion.div
+                <div
                   key={i}
+                  onMouseEnter={() => setActiveFeatureIndex(i)}
                   onClick={() => setActiveFeatureIndex(i)}
-                  animate={{
-                    x: translateX,
-                    scale: isActive ? 1.05 : 0.85,
-                    opacity: isActive ? 1 : (Math.abs(diff) === 1 ? 0.75 : (Math.abs(diff) === 2 ? 0.3 : 0)),
-                    zIndex: isActive ? 10 : (Math.abs(diff) === 1 ? 5 : 2),
-                    pointerEvents: isActive || Math.abs(diff) === 1 ? "auto" : "none"
-                  }}
-                  transition={{ type: "spring", stiffness: 150, damping: 22 }}
-                  style={{
-                    backgroundColor: isActive ? "rgba(255, 255, 255, 0.45)" : "rgba(255, 255, 255, 0.18)",
-                    backdropFilter: "blur(16px)",
-                    WebkitBackdropFilter: "blur(16px)",
-                    border: isActive
-                      ? `2px solid ${f.color}`
-                      : `1px solid ${f.color}15`,
-                    boxShadow: isActive
-                      ? `0 20px 45px -12px ${f.color}15`
-                      : `0 4px 15px -3px ${f.color}02`
-                  }}
-                  className={`absolute w-[260px] md:w-[350px] h-[340px] md:h-[380px] rounded-3xl p-6 md:p-8 flex flex-col justify-between cursor-pointer select-none transition-shadow duration-300 group overflow-hidden`}
+                  className={`relative h-full rounded-[24px] sm:rounded-[32px] md:rounded-[36px] overflow-hidden cursor-pointer select-none transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] flex-shrink-0 ${
+                    isActive
+                      ? "flex-[3.5] sm:flex-[4] min-w-[270px] sm:min-w-[360px] md:min-w-[480px] shadow-2xl border border-white/40"
+                      : "flex-[0.7] sm:flex-[0.8] min-w-[50px] sm:min-w-[68px] md:min-w-[84px] hover:flex-[1.1] shadow-lg border border-white/20 hover:border-white/40 opacity-95 hover:opacity-100"
+                  }`}
                 >
-                  {/* Background Image - Faded for Readability */}
+                  {/* Background Image */}
                   <div
-                    className="absolute inset-0 transition-opacity duration-300 pointer-events-none z-0"
-                    style={{
-                      backgroundImage: `url(${f.bgImage})`,
-                      backgroundSize: "cover",
-                      backgroundPosition: "center",
-                      opacity: isActive ? 0.6 : 0.35,
-                    }}
+                    className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out scale-105"
+                    style={{ backgroundImage: `url(${f.bgImage})` }}
                   />
-                  {/* White gradient mask to protect text contrast */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-white/45 to-white/85 pointer-events-none z-0" />
 
-                  <div className="space-y-4 md:space-y-6 z-10 relative">
-                    <div className="flex justify-between items-start">
-                      <div
-                        className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-300 group-hover:scale-105"
-                        style={{
-                          background: `linear-gradient(135deg, ${f.color} 0%, ${f.color}bb 100%)`,
-                          boxShadow: `0 8px 20px ${f.color}30`
-                        }}
-                      >
-                        <f.icon className="w-6 h-6 text-white" />
-                      </div>
-                      <span className="text-xl md:text-3xl font-black font-mono select-none opacity-25 tracking-tight" style={{ color: f.color }}>
-                        {f.num}
-                      </span>
-                    </div>
-
-                    <div className="space-y-2 text-left">
-                      <h4 className="text-base md:text-xl font-black text-[#1E2522] tracking-tight group-hover:text-[#4F6F52] transition-colors duration-300">
-                        {f.title}
-                      </h4>
-                      <p className="text-xs md:text-sm leading-relaxed text-[#374151] font-semibold min-h-[50px] md:min-h-[72px]">
-                        {f.desc}
-                      </p>
-                    </div>
-                  </div>
-
+                  {/* Soft Warm Gradient Overlay */}
                   <div
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleStart();
-                    }}
-                    className="pt-4 mt-4 border-t border-[#E6E2D8] flex items-center gap-2 text-xs font-black transition-all duration-300 hover:opacity-80 justify-start z-10 relative"
-                    style={{ color: f.color }}
-                  >
-                    <span>立即体验</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </div>
-                </motion.div>
+                    className={`absolute inset-0 transition-opacity duration-500 ${
+                      isActive
+                        ? "bg-gradient-to-t from-black/85 via-black/35 to-black/10"
+                        : "bg-gradient-to-t from-black/80 via-black/40 to-black/15 hover:via-black/30"
+                    }`}
+                  />
+
+                  {/* Active Card Expanded View */}
+                  {isActive ? (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.35, delay: 0.05 }}
+                      className="relative h-full p-5 sm:p-7 md:p-8 flex flex-col justify-end text-white z-10"
+                    >
+                      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                        {/* Main Text Content */}
+                        <div className="space-y-2 md:space-y-3 max-w-md">
+                          <div className="text-4xl md:text-5xl font-black font-mono tracking-tighter text-white/90">
+                            {f.num}
+                          </div>
+                          <h4 className="text-xl sm:text-2xl md:text-3xl font-black text-white tracking-tight">
+                            {f.title}
+                          </h4>
+                          <p className="text-xs sm:text-sm text-white/85 leading-relaxed font-normal line-clamp-3 md:line-clamp-none">
+                            {f.desc}
+                          </p>
+                          <div className="pt-2">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleStart();
+                              }}
+                              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/20 hover:bg-white/35 active:scale-95 backdrop-blur-md border border-white/50 text-white font-bold text-xs sm:text-sm transition-all shadow-xl"
+                            >
+                              <span>立即体验</span>
+                              <ArrowRight className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Floating Glass Widget */}
+                        {f.widget && (
+                          <div className="hidden sm:flex flex-col justify-between p-4 rounded-2xl bg-black/45 backdrop-blur-xl border border-white/25 w-44 md:w-56 h-36 md:h-44 shadow-2xl flex-shrink-0 self-end mb-1">
+                            <div className="flex items-center gap-2 text-[11px] text-emerald-400 font-mono">
+                              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                              <span className="font-bold tracking-wide">{f.widget.tag}</span>
+                            </div>
+                            <p className="text-xs text-white/95 leading-relaxed font-medium italic my-auto">
+                              {f.widget.text}
+                            </p>
+                            <div className="text-[10px] text-white/60 font-mono pt-1.5 border-t border-white/20 flex justify-between items-center">
+                              <span>{f.widget.footer}</span>
+                              <span className="text-emerald-400 font-bold">● ONLINE</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  ) : (
+                    /* Collapsed Narrow Card View */
+                    <div className="relative h-full p-2 sm:p-4 flex flex-col justify-end items-center text-white z-10 pb-6 sm:pb-8">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="text-2xl sm:text-3xl md:text-4xl font-black font-mono text-white/90 tracking-tighter">
+                          {f.num}
+                        </div>
+                        {/* Stacked Vertical Title */}
+                        <div className="flex flex-col items-center text-xs sm:text-sm font-bold text-white/95 leading-tight space-y-0.5 tracking-wider text-center">
+                          {f.shortTitle.map((charChunk, idx) => (
+                            <span key={idx} className="whitespace-nowrap">
+                              {charChunk}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               );
             })}
           </div>
 
-          {/* Dots Indicator */}
-          <div className="flex justify-center items-center gap-2 mt-10">
+          {/* Dots Navigation Bar */}
+          <div className="flex justify-center items-center gap-2 mt-8 md:mt-10">
             {[...Array(6)].map((_, idx) => (
               <button
                 key={idx}
+                onMouseEnter={() => setActiveFeatureIndex(idx)}
                 onClick={() => setActiveFeatureIndex(idx)}
-                className="h-2 rounded-full transition-all duration-300"
+                className="h-2 rounded-full transition-all duration-500"
                 style={{
-                  width: activeFeatureIndex === idx ? "24px" : "8px",
-                  backgroundColor: activeFeatureIndex === idx
-                    ? "#4F6F52"
-                    : "rgba(79, 111, 82, 0.2)"
+                  width: activeFeatureIndex === idx ? "28px" : "8px",
+                  backgroundColor: activeFeatureIndex === idx ? "#4F6F52" : "rgba(79, 111, 82, 0.25)"
                 }}
               />
             ))}

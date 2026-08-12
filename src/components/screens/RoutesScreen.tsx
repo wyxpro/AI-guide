@@ -282,8 +282,21 @@ export function RoutesScreen() {
   const [isMobile, setIsMobile] = useState<boolean>(
     () => typeof window !== "undefined" && window.innerWidth < 768
   );
+
+  // Chat popups - Desktop defaults to floating chat open, mobile requires button click
+  const [showFloatChat, setShowFloatChat] = useState<boolean>(
+    () => typeof window !== "undefined" && window.innerWidth >= 768
+  );
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (!mobile) {
+        setShowFloatChat(true);
+      }
+    };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
@@ -296,10 +309,6 @@ export function RoutesScreen() {
   const AMapInstanceRef = useRef<any>(null);
   const infoWindowRef = useRef<any>(null);
   const [amapLoaded, setAmapLoaded] = useState(false);
-
-  // Chat popups
-  const [showFloatChat, setShowFloatChat] = useState(false);
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   // Drag controls for Q&A panel
   const dragControls = useDragControls();

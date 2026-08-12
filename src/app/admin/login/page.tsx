@@ -117,6 +117,45 @@ export default function AdminLoginPage() {
             {loading ? "正在验证身份..." : "安全登录后台"}
           </button>
         </form>
+
+        {/* Test Account Quick Login Section */}
+        <div className="mt-6 pt-5 border-t border-[#E6E2D8] bg-[#FAF8F5] p-4 rounded-2xl border border-dashed border-[#D2A053]/50">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-black text-[#B8843A] uppercase tracking-wider">🔑 测试演示管理员账号</span>
+            <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">免密体验</span>
+          </div>
+          <div className="space-y-1 text-xs font-mono text-neutral-700 bg-white p-2.5 rounded-xl border border-neutral-200 mb-3">
+            <div className="flex justify-between">
+              <span className="text-neutral-400">账号：</span>
+              <span className="font-bold text-neutral-900">wyxcode@qq.com</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-neutral-400">密码：</span>
+              <span className="font-bold text-neutral-900">123456</span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setEmail("wyxcode@qq.com");
+              setPassword("123456");
+              setLoading(true);
+              localStorage.setItem("eazo.session", JSON.stringify({
+                isMock: true,
+                userId: "admin",
+                email: "wyxcode@qq.com",
+              }));
+              toast.success("测试管理员账号一键填充，登录成功！");
+              setTimeout(() => {
+                window.location.href = "/admin";
+              }, 400);
+            }}
+            disabled={loading}
+            className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#D2A053] to-[#B8843A] hover:from-[#e0ae60] hover:to-[#c49045] text-white text-xs font-extrabold shadow-sm active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+          >
+            ⚡ 一键登录测试账号 (wyxcode@qq.com)
+          </button>
+        </div>
       </motion.div>
     </div>
   );
