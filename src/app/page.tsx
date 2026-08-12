@@ -304,12 +304,23 @@ export default function WelcomePage() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  const cardsContainerRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     const timer = setInterval(() => {
       setActiveFeatureIndex((prev) => (prev + 1) % 6);
-    }, 3200);
+    }, 3600);
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    if (cardsContainerRef.current) {
+      const activeCard = cardsContainerRef.current.children[activeFeatureIndex] as HTMLElement;
+      if (activeCard) {
+        activeCard.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+      }
+    }
+  }, [activeFeatureIndex]);
 
   const handleStart = () => {
     window.location.href = "/login";
@@ -326,7 +337,7 @@ export default function WelcomePage() {
       <header className="sticky top-0 z-40 backdrop-blur-md bg-white/70 border-b border-[#E6E2D8]">
         <div className="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <img src="/image/logo.png" alt="旅行家Pro Logo" className="w-10 h-10 object-contain rounded-xl" />
+            <img src="/image/logo.webp" alt="旅行家Pro Logo" className="w-10 h-10 object-contain rounded-xl" />
             <div>
               <h1 className="text-[17px] font-black tracking-wide" style={{ fontFamily: "var(--font-noto-serif)", color: "#1E2522" }}>
                 旅行家Pro
@@ -483,8 +494,8 @@ export default function WelcomePage() {
             </p>
           </div>
 
-          {/* Cards Accordion Container - Reduced Height (h-[440px] to h-[540px]), Hover Auto-expand */}
-          <div className="w-full flex flex-row items-center justify-center gap-2.5 sm:gap-3.5 md:gap-4 h-[440px] sm:h-[500px] md:h-[540px] overflow-x-auto md:overflow-visible pb-4 pt-2 scrollbar-none">
+          {/* Cards Accordion Container - Auto-slide horizontally from 01 on mobile */}
+          <div ref={cardsContainerRef} className="w-full flex flex-row items-center justify-start gap-2.5 sm:gap-3.5 md:gap-4 h-[440px] sm:h-[500px] md:h-[540px] overflow-x-auto md:overflow-visible pb-4 pt-2 scrollbar-none snap-x snap-mandatory">
             {[
               {
                 num: "01",

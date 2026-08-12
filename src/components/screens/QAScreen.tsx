@@ -622,6 +622,7 @@ export function QAScreen() {
 
           utter.rate = (avatarConfig?.speechRate || Math.round(currentOpt.rate * 100)) / 100;
           utter.pitch = currentOpt.pitch;
+          utter.volume = 1.0;
 
           utter.onstart = () => {
             setIsSynthesizing(false);
@@ -688,6 +689,7 @@ export function QAScreen() {
         } else {
           const url = URL.createObjectURL(blob);
           const audio = new Audio(url);
+          audio.volume = 1.0;
           audioRef.current = audio;
           audio.onplay = () => {
             setAvatarState("speaking");
