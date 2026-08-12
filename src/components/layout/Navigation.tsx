@@ -270,8 +270,8 @@ export function SidebarNav({ isAdmin }: { isAdmin: boolean }) {
             <motion.button
               whileTap={{ scale: 0.97 }}
               onClick={() => window.dispatchEvent(new CustomEvent("open-points-modal", { detail: { tab: "invite" } }))}
-              className="w-full py-2.5 px-4 rounded-xl text-white text-xs font-black flex items-center justify-center gap-2 transition-all shadow-md hover:brightness-105 active:scale-95 cursor-pointer"
-              style={{ background: "linear-gradient(135deg, #2563EB 0%, #EC4899 100%)", boxShadow: "0 4px 12px rgba(236, 72, 153, 0.25)" }}
+              className="w-full py-2.5 px-4 rounded-xl text-white text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-sm hover:brightness-105 active:scale-95 cursor-pointer"
+              style={{ background: "linear-gradient(135deg, #FF9D42 0%, #FF5E3A 100%)", boxShadow: "0 3px 8px rgba(255,94,58,0.15)" }}
             >
               <Gift className="w-3.5 h-3.5" />
               <span>邀请有礼 · 积分</span>

@@ -122,21 +122,32 @@ function getVoiceForOption(opt: VoiceOption): SpeechSynthesisVoice | null {
   const zhVoices = voices.filter(isZh);
   if (zhVoices.length === 0) return voices[0] || null;
 
+  // 0. Prioritize High-Quality Natural / Online Sweet Female Voices (Edge/Chrome/Safari)
+  if (opt.gender === "female") {
+    const naturalFemale = zhVoices.find((v) => {
+      const n = v.name.toLowerCase();
+      return (
+        (n.includes("natural") || n.includes("online") || n.includes("google") || n.includes("premium")) &&
+        (n.includes("xiaoxiao") || n.includes("xiaoyi") || n.includes("yaoyao") || n.includes("tingting") || n.includes("female") || n.includes("女"))
+      );
+    });
+    if (naturalFemale) return naturalFemale;
+  }
+
   // 1. Keyword match
   for (const kw of opt.keywords) {
     const match = zhVoices.find((v) => v.name.toLowerCase().includes(kw.toLowerCase()));
     if (match) return match;
   }
 
-  // 2. Gender fallback
+  // 2. Female gender fallback with sweet voice preference
   if (opt.gender === "female") {
     const femaleFallback = zhVoices.find((v) => {
       const n = v.name.toLowerCase();
       return (
-        n.includes("xiaoxiao") || n.includes("xiaoyi") || n.includes("huihui") ||
-        n.includes("xiaoxuan") || n.includes("yaoyao") || n.includes("ting-ting") ||
-        n.includes("mei-jia") || n.includes("sin-ji") || n.includes("female") ||
-        n.includes("女") || n.includes("google") || (n.includes("microsoft") && !n.includes("kangkang"))
+        n.includes("xiaoxiao") || n.includes("xiaoyi") || n.includes("yaoyao") ||
+        n.includes("ting-ting") || n.includes("mei-jia") || n.includes("sin-ji") ||
+        n.includes("female") || n.includes("女") || n.includes("google")
       );
     });
     if (femaleFallback) return femaleFallback;
