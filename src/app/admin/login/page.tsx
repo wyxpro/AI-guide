@@ -62,7 +62,7 @@ export default function AdminLoginPage() {
         <div className="text-center space-y-3 mt-4 mb-8">
           <div className="w-14 h-14 rounded-2xl overflow-hidden flex items-center justify-center flex-shrink-0 shadow-md shadow-[#D2A053]/10 relative border border-neutral-200 mx-auto">
             <Image
-              src="/image/logo.png"
+              src="/image/logo.webp"
               alt="Logo"
               width={56}
               height={56}

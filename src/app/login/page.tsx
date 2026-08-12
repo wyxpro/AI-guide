@@ -231,7 +231,7 @@ export default function LoginPage() {
         {/* Travel Background Image for Mobile Only */}
         <div
           className="absolute inset-0 lg:hidden bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: "url('/image/login_bg.png')" }}
+          style={{ backgroundImage: "url('/image/login_bg.webp')" }}
         />
 
         {/* Soft overlay + blur to make background illustration subtle and elegant */}

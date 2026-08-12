@@ -410,7 +410,7 @@ export default function WelcomePage() {
             {/* Soft Ambient Glow Effect */}
             <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#4F6F52]/20 via-[#D2A053]/20 to-transparent filter blur-3xl -z-10" />
             <img
-              src="/image/gw.png"
+              src="/image/gw.webp"
               alt="AI Digital Guide Character"
               className="w-full h-full object-contain filter drop-shadow-2xl transition-transform duration-500 hover:scale-105"
             />
@@ -503,7 +503,7 @@ export default function WelcomePage() {
                 title: "全国热门景点",
                 shortTitle: ["全国", "热门", "景点"],
                 desc: "覆盖全国热门景区与历史文化胜地，提供高精地图标注、AI动态导览与实时客流避拥堵服务。",
-                bgImage: "/image/jd.png",
+                bgImage: "/image/jd.webp",
                 widget: {
                   tag: "Hot Scenic Spots",
                   text: "“已为您联动全国各大热门景点知识库与全景语音档案。”",
@@ -515,7 +515,7 @@ export default function WelcomePage() {
                 title: "自适应智能专属路径",
                 shortTitle: ["智能", "专属", "路径"],
                 desc: "支持输入您当前的兴趣偏好，如“历史文化优先、走平坦道”，AI自动动态避堵并规划最优旅游足迹。",
-                bgImage: "/image/1.png",
+                bgImage: "/image/1.webp",
                 widget: {
                   tag: "Smart Route Agent",
                   text: "已自动避开前方拥堵路段，重构最佳顺光摄影片段路径。",
@@ -527,7 +527,7 @@ export default function WelcomePage() {
                 title: "AR/VR实景研判识别",
                 shortTitle: ["实景", "研判", "识别"],
                 desc: "对准展品文物拍摄即可开展多模态文物识别，提取背后的深度文化故事，变走马观花为沉浸感悟。",
-                bgImage: "/image/VR.png",
+                bgImage: "/image/VR.webp",
                 widget: {
                   tag: "Multimodal Vision",
                   text: "已识别文物斗拱拓扑结构，调取宋代建筑规范考证。",
@@ -539,7 +539,7 @@ export default function WelcomePage() {
                 title: "旅游打卡报告",
                 shortTitle: ["旅游", "打卡", "报告"],
                 desc: "一键自动生成高质感专属旅游打卡海报与出游报告，定格美好旅途瞬间。",
-                bgImage: "/image/2.png",
+                bgImage: "/image/2.webp",
                 widget: {
                   tag: "Travel Report AI",
                   text: "“AI已为您一键生成金牌打卡路线总结与专属出游分析报告。”",
@@ -551,7 +551,7 @@ export default function WelcomePage() {
                 title: "景区大屏与情感雷达",
                 shortTitle: ["情感", "雷达", "监测"],
                 desc: "景区管理后台支持游客情感指数雷达监测、高频热搜词云实时流计算及今日客流量科学预测。",
-                bgImage: "/image/3.png",
+                bgImage: "/image/3.webp",
                 widget: {
                   tag: "Emotion Radar",
                   text: "游客实时情绪指数 98.4%，高频词“绝美夜景”占比第一。",

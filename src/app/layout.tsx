@@ -17,9 +17,9 @@ export const metadata: Metadata = {
   description: "旅行家Pro智慧景区导游系统，7×24小时在线个性化游览服务。支持语音问答、路线规划、景点讲解。",
   manifest: "/manifest.json",
   icons: {
-    icon: "/image/logo.png",
-    shortcut: "/image/logo.png",
-    apple: "/image/logo.png",
+    icon: "/image/logo.webp",
+    shortcut: "/image/logo.webp",
+    apple: "/image/logo.webp",
   },
   openGraph: {
     type: "website",
@@ -45,13 +45,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="zh-CN" className="h-full antialiased">
       <head>
-        <link rel="preload" href="/image/gw.png" as="image" />
-        <link rel="preload" href="/image/logo.png" as="image" />
-        <link rel="preload" href="/image/1.png" as="image" />
-        <link rel="preload" href="/image/2.png" as="image" />
-        <link rel="preload" href="/image/3.png" as="image" />
-        <link rel="preload" href="/image/jd.png" as="image" />
-        <link rel="preload" href="/image/VR.png" as="image" />
+        <link rel="preload" href="/image/gw.webp" as="image" />
+        <link rel="preload" href="/image/logo.webp" as="image" />
+        <link rel="preload" href="/image/1.webp" as="image" />
+        <link rel="preload" href="/image/2.webp" as="image" />
+        <link rel="preload" href="/image/3.webp" as="image" />
+        <link rel="preload" href="/image/jd.webp" as="image" />
+        <link rel="preload" href="/image/VR.webp" as="image" />
       </head>
       <body className="min-h-svh" style={{ fontFamily: "var(--font-noto-sans)", background: "#FAF8F5" }}>
         <EazoProvider>

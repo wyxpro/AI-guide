@@ -83,7 +83,7 @@ export function BottomTabBar() {
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src="/image/logo.png"
+                    src="/image/logo.webp"
                     alt="旅行家Pro Logo"
                     className="w-full h-full object-cover rounded-full"
                   />
