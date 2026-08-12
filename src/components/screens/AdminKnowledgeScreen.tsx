@@ -10,7 +10,44 @@ const SPRING = { type: "spring" as const, stiffness: 280, damping: 35 };
 const CATEGORIES = ["全部", "general", "faq", "spot", "history", "transport"];
 const CATEGORY_LABELS: Record<string, string> = { general: "概况", faq: "常见问题", spot: "景点", history: "历史", transport: "交通" };
 
-const getDefaultCover = (_title: string) => "/images/spots/placeholder.svg";
+const getDefaultCover = (title: string, category?: string) => {
+  const t = (title || "").toLowerCase();
+  if (t.includes("故宫") || t.includes("北京")) return "/images/spots/10001.webp";
+  if (t.includes("洪崖洞") || t.includes("重庆")) return "/images/spots/10011.webp";
+  if (t.includes("西湖") || t.includes("杭州")) return "/images/spots/10005.webp";
+  if (t.includes("兵马俑") || t.includes("秦始皇") || t.includes("西安")) return "/images/spots/10004.webp";
+  if (t.includes("外滩") || t.includes("东方明珠") || t.includes("上海")) return "/images/spots/10009.webp";
+  if (t.includes("成都") || t.includes("锦里") || t.includes("大熊猫")) return "/images/spots/10007.webp";
+  if (t.includes("黄鹤楼") || t.includes("武汉")) return "/images/spots/10027.webp";
+  if (t.includes("广州") || t.includes("小蛮腰") || t.includes("塔")) return "/images/spots/10031.webp";
+  if (t.includes("南京") || t.includes("夫子庙") || t.includes("秦淮河")) return "/images/spots/10029.webp";
+  if (t.includes("苏州") || t.includes("拙政园")) return "/images/spots/10013.webp";
+  if (t.includes("三峡") || t.includes("江")) return "/images/spots/route-3.webp";
+  if (t.includes("交通") || category === "transport") return "/images/spots/10067.webp";
+  if (t.includes("历史") || category === "history") return "/images/spots/10002.webp";
+  if (t.includes("常见") || category === "faq") return "/images/spots/10051.webp";
+
+  // Distinct fallback based on title string hash
+  const scenicPool = [
+    "/images/spots/10001.webp",
+    "/images/spots/10011.webp",
+    "/images/spots/10005.webp",
+    "/images/spots/10004.webp",
+    "/images/spots/10009.webp",
+    "/images/spots/10007.webp",
+    "/images/spots/10027.webp",
+    "/images/spots/10031.webp",
+    "/images/spots/10029.webp",
+    "/images/spots/10013.webp",
+    "/images/spots/10066.webp",
+    "/images/spots/10052.webp",
+  ];
+  let sum = 0;
+  for (let i = 0; i < t.length; i++) {
+    sum += t.charCodeAt(i);
+  }
+  return scenicPool[sum % scenicPool.length];
+};
 
 interface Doc { id: number; title: string; category: string; content: string; status: string; vectorized: boolean; tags: string[]; fileType: string; coverUrl?: string; updatedAt: string }
 
@@ -192,7 +229,7 @@ export function AdminKnowledgeScreen() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {filtered.map((doc, i) => {
-              const coverImg = doc.coverUrl || getDefaultCover(doc.title);
+              const coverImg = doc.coverUrl || getDefaultCover(doc.title, doc.category);
               return (
                 <motion.div key={doc.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ ...SPRING, delay: i * 0.02 }}
                   className="card-ink overflow-hidden flex flex-col justify-between"

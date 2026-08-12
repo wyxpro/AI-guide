@@ -1459,18 +1459,18 @@ export function RoutesScreen() {
             </button>
           </div>
 
-          {/* Draggable Float AI Assistant Panel (Centered in screen, 360° drag) */}
+          {/* Draggable Float AI Assistant Panel (Positioned in bottom-right corner, 360° drag) */}
           {showFloatChat && (
             <motion.div
               drag
               dragControls={dragControls}
               dragListener={true}
-              dragConstraints={{ left: -1000, right: 1000, top: -800, bottom: 800 }}
+              dragConstraints={{ left: -1400, right: 100, top: -800, bottom: 100 }}
               dragElastic={0.05}
               dragMomentum={false}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[290px] sm:w-[320px] h-[390px] bg-white/98 backdrop-blur-md rounded-2xl border border-zinc-200/80 shadow-2xl flex flex-col overflow-hidden touch-none"
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              className="fixed bottom-6 right-6 z-50 w-[290px] sm:w-[330px] h-[410px] bg-white/98 backdrop-blur-md rounded-3xl border border-zinc-200/80 shadow-2xl flex flex-col overflow-hidden touch-none"
             >
               {/* Header acts as drag handle */}
               <div

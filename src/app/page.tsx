@@ -503,7 +503,7 @@ export default function WelcomePage() {
                 title: "全国热门景点",
                 shortTitle: ["全国", "热门", "景点"],
                 desc: "覆盖全国热门景区与历史文化胜地，提供高精地图标注、AI动态导览与实时客流避拥堵服务。",
-                bgImage: "https://sns-webpic-qc.xhscdn.com/202608122023/3f16a09b9e132e1e8a32b65f5041aaf8/1040g00831vpjtu361m6g5q3kphti72eq3pp8bo8!nd_dft_wlteh_webp_3",
+                bgImage: "/image/jd.png",
                 widget: {
                   tag: "Hot Scenic Spots",
                   text: "“已为您联动全国各大热门景点知识库与全景语音档案。”",
@@ -527,7 +527,7 @@ export default function WelcomePage() {
                 title: "AR/VR实景研判识别",
                 shortTitle: ["实景", "研判", "识别"],
                 desc: "对准展品文物拍摄即可开展多模态文物识别，提取背后的深度文化故事，变走马观花为沉浸感悟。",
-                bgImage: "https://i-blog.csdnimg.cn/direct/279b593e089d4f69a008b73a9e38fa33.png",
+                bgImage: "/image/VR.png",
                 widget: {
                   tag: "Multimodal Vision",
                   text: "已识别文物斗拱拓扑结构，调取宋代建筑规范考证。",
