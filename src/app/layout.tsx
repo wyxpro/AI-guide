@@ -44,6 +44,15 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="zh-CN" className="h-full antialiased">
+      <head>
+        <link rel="preload" href="/image/gw.png" as="image" />
+        <link rel="preload" href="/image/logo.png" as="image" />
+        <link rel="preload" href="/image/1.png" as="image" />
+        <link rel="preload" href="/image/2.png" as="image" />
+        <link rel="preload" href="/image/3.png" as="image" />
+        <link rel="preload" href="/image/jd.png" as="image" />
+        <link rel="preload" href="/image/VR.png" as="image" />
+      </head>
       <body className="min-h-svh" style={{ fontFamily: "var(--font-noto-sans)", background: "#FAF8F5" }}>
         <EazoProvider>
           <UserSyncEffect />
