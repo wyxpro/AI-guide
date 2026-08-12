@@ -314,10 +314,23 @@ export default function WelcomePage() {
   }, []);
 
   useEffect(() => {
-    if (cardsContainerRef.current) {
-      const activeCard = cardsContainerRef.current.children[activeFeatureIndex] as HTMLElement;
+    if (typeof window !== "undefined") {
+      window.scrollTo(0, 0);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (cardsContainerRef.current && typeof window !== "undefined" && window.innerWidth < 768) {
+      const container = cardsContainerRef.current;
+      const activeCard = container.children[activeFeatureIndex] as HTMLElement;
       if (activeCard) {
-        activeCard.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+        const cardLeft = activeCard.offsetLeft;
+        const cardWidth = activeCard.offsetWidth;
+        const containerWidth = container.offsetWidth;
+        container.scrollTo({
+          left: cardLeft - (containerWidth / 2) + (cardWidth / 2),
+          behavior: "smooth"
+        });
       }
     }
   }, [activeFeatureIndex]);
@@ -494,8 +507,8 @@ export default function WelcomePage() {
             </p>
           </div>
 
-          {/* Cards Accordion Container - Auto-slide horizontally from 01 on mobile */}
-          <div ref={cardsContainerRef} className="w-full flex flex-row items-center justify-start gap-2.5 sm:gap-3.5 md:gap-4 h-[440px] sm:h-[500px] md:h-[540px] overflow-x-auto md:overflow-visible pb-4 pt-2 scrollbar-none snap-x snap-mandatory">
+          {/* Cards Container - Full-size swipeable cards on mobile, hover accordion on desktop */}
+          <div ref={cardsContainerRef} className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none gap-4 md:gap-4 items-stretch h-[460px] sm:h-[500px] md:h-[540px] pb-4 pt-2 -mx-4 px-4 md:mx-0 md:px-0">
             {[
               {
                 num: "01",
@@ -576,10 +589,10 @@ export default function WelcomePage() {
                   key={i}
                   onMouseEnter={() => setActiveFeatureIndex(i)}
                   onClick={() => setActiveFeatureIndex(i)}
-                  className={`relative h-full rounded-[24px] sm:rounded-[32px] md:rounded-[36px] overflow-hidden cursor-pointer select-none transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] flex-shrink-0 ${
+                  className={`relative h-full rounded-[28px] sm:rounded-[32px] md:rounded-[36px] overflow-hidden cursor-pointer select-none transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] flex-shrink-0 snap-center w-[84vw] sm:w-[350px] md:w-auto ${
                     isActive
-                      ? "flex-[3.5] sm:flex-[4] min-w-[270px] sm:min-w-[360px] md:min-w-[480px] shadow-2xl border border-white/40"
-                      : "flex-[0.7] sm:flex-[0.8] min-w-[50px] sm:min-w-[68px] md:min-w-[84px] hover:flex-[1.1] shadow-lg border border-white/20 hover:border-white/40 opacity-95 hover:opacity-100"
+                      ? "md:flex-[3.5] lg:flex-[4] shadow-2xl border border-white/40"
+                      : "md:flex-[0.7] lg:flex-[0.8] hover:md:flex-[1.1] shadow-lg border border-white/20 hover:border-white/40 opacity-95 hover:opacity-100"
                   }`}
                 >
                   {/* Background Image */}
@@ -592,66 +605,66 @@ export default function WelcomePage() {
                   <div
                     className={`absolute inset-0 transition-opacity duration-500 ${
                       isActive
-                        ? "bg-gradient-to-t from-black/85 via-black/35 to-black/10"
-                        : "bg-gradient-to-t from-black/80 via-black/40 to-black/15 hover:via-black/30"
+                        ? "bg-gradient-to-t from-black/90 via-black/40 to-black/15"
+                        : "bg-gradient-to-t from-black/85 via-black/45 to-black/20 md:from-black/80 md:via-black/40 md:to-black/15"
                     }`}
                   />
 
-                  {/* Active Card Expanded View */}
-                  {isActive ? (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.35, delay: 0.05 }}
-                      className="relative h-full p-5 sm:p-7 md:p-8 flex flex-col justify-end text-white z-10"
-                    >
-                      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                        {/* Main Text Content */}
-                        <div className="space-y-2 md:space-y-3 max-w-md">
-                          <div className="text-4xl md:text-5xl font-black font-mono tracking-tighter text-white/90">
+                  {/* Mobile Full Expanded View / Desktop Active View */}
+                  <div className={`relative h-full p-5 sm:p-7 md:p-8 flex flex-col justify-end text-white z-10 ${isActive ? "flex" : "flex md:hidden"}`}>
+                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                      {/* Main Text Content */}
+                      <div className="space-y-2.5 md:space-y-3 max-w-md">
+                        <div className="flex items-center justify-between md:block">
+                          <div className="text-3xl sm:text-4xl md:text-5xl font-black font-mono tracking-tighter text-[#D2A053] md:text-white/90">
                             {f.num}
                           </div>
-                          <h4 className="text-xl sm:text-2xl md:text-3xl font-black text-white tracking-tight">
-                            {f.title}
-                          </h4>
-                          <p className="text-xs sm:text-sm text-white/85 leading-relaxed font-normal line-clamp-3 md:line-clamp-none">
-                            {f.desc}
+                          <span className="md:hidden text-[10px] font-extrabold px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white">
+                            {f.widget.tag}
+                          </span>
+                        </div>
+                        <h4 className="text-xl sm:text-2xl md:text-3xl font-black text-white tracking-tight">
+                          {f.title}
+                        </h4>
+                        <p className="text-xs sm:text-sm text-white/90 leading-relaxed font-normal">
+                          {f.desc}
+                        </p>
+                        <div className="pt-1.5 md:pt-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleStart();
+                            }}
+                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/20 hover:bg-white/35 active:scale-95 backdrop-blur-md border border-white/50 text-white font-bold text-xs sm:text-sm transition-all shadow-xl cursor-pointer"
+                          >
+                            <span>立即体验</span>
+                            <ArrowRight className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Floating Glass Widget */}
+                      {f.widget && (
+                        <div className="flex flex-col justify-between p-3.5 sm:p-4 rounded-2xl bg-black/50 backdrop-blur-xl border border-white/25 w-full md:w-56 h-auto md:h-44 shadow-2xl flex-shrink-0 self-end mt-2 md:mt-0">
+                          <div className="hidden md:flex items-center gap-2 text-[11px] text-emerald-400 font-mono">
+                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                            <span className="font-bold tracking-wide">{f.widget.tag}</span>
+                          </div>
+                          <p className="text-xs text-white/95 leading-relaxed font-medium italic my-auto">
+                            {f.widget.text}
                           </p>
-                          <div className="pt-2">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleStart();
-                              }}
-                              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/20 hover:bg-white/35 active:scale-95 backdrop-blur-md border border-white/50 text-white font-bold text-xs sm:text-sm transition-all shadow-xl"
-                            >
-                              <span>立即体验</span>
-                              <ArrowRight className="w-4 h-4" />
-                            </button>
+                          <div className="text-[10px] text-white/60 font-mono pt-1.5 border-t border-white/20 flex justify-between items-center mt-1">
+                            <span>{f.widget.footer}</span>
+                            <span className="text-emerald-400 font-bold">● ONLINE</span>
                           </div>
                         </div>
+                      )}
+                    </div>
+                  </div>
 
-                        {/* Floating Glass Widget */}
-                        {f.widget && (
-                          <div className="hidden sm:flex flex-col justify-between p-4 rounded-2xl bg-black/45 backdrop-blur-xl border border-white/25 w-44 md:w-56 h-36 md:h-44 shadow-2xl flex-shrink-0 self-end mb-1">
-                            <div className="flex items-center gap-2 text-[11px] text-emerald-400 font-mono">
-                              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                              <span className="font-bold tracking-wide">{f.widget.tag}</span>
-                            </div>
-                            <p className="text-xs text-white/95 leading-relaxed font-medium italic my-auto">
-                              {f.widget.text}
-                            </p>
-                            <div className="text-[10px] text-white/60 font-mono pt-1.5 border-t border-white/20 flex justify-between items-center">
-                              <span>{f.widget.footer}</span>
-                              <span className="text-emerald-400 font-bold">● ONLINE</span>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </motion.div>
-                  ) : (
-                    /* Collapsed Narrow Card View */
-                    <div className="relative h-full p-2 sm:p-4 flex flex-col justify-end items-center text-white z-10 pb-6 sm:pb-8">
+                  {/* Desktop Collapsed View (Hidden on mobile) */}
+                  {!isActive && (
+                    <div className="hidden md:flex relative h-full p-2 sm:p-4 flex-col justify-end items-center text-white z-10 pb-6 sm:pb-8">
                       <div className="flex flex-col items-center gap-3">
                         <div className="text-2xl sm:text-3xl md:text-4xl font-black font-mono text-white/90 tracking-tighter">
                           {f.num}
