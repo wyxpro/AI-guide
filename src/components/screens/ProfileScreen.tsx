@@ -129,7 +129,7 @@ export function ProfileScreen() {
   const [notiGuide, setNotiGuide] = useState(true);
   const [notiDaily, setNotiDaily] = useState(false);
 
-  const [voiceSpeaker, setVoiceSpeaker] = useState("female_xiaoxiao");
+  const [voiceSpeaker, setVoiceSpeaker] = useState("female_yaoyao");
   const [voiceSpeed, setVoiceSpeed] = useState(1.0);
   const [voiceBgmVolume, setVoiceBgmVolume] = useState(30);
 
@@ -372,42 +372,6 @@ export function ProfileScreen() {
 
             {/* Featured Hero Cards Area */}
             <div className="-mt-6 mx-4 relative z-10 space-y-3">
-              {/* Member Center & Points Card */}
-              <div className="bg-gradient-to-r from-zinc-900 via-zinc-800 to-black text-white border border-amber-500/30 rounded-3xl p-4 shadow-xl relative overflow-hidden">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <span className="text-xl">✨</span>
-                    <div>
-                      <h3 className="font-black text-sm text-amber-300">旅行家Pro · 会员中心</h3>
-                      <p className="text-[11px] text-zinc-300 mt-0.5">当前积分余额：<strong className="text-emerald-400 text-sm font-black">{userPoints} 积分</strong></p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setShowVipModal(true)}
-                    className="text-[10px] font-bold text-amber-300 bg-amber-400/20 hover:bg-amber-400/30 px-2.5 py-1 rounded-full border border-amber-400/30 transition-colors cursor-pointer"
-                  >
-                    VIP 尊享版 →
-                  </button>
-                </div>
-
-                {/* Two Distinctly Colored Action Buttons: Green Recharge & Blue Invite */}
-                <div className="grid grid-cols-2 gap-3 mt-3.5">
-                  <button
-                    onClick={() => setShowRechargeModal(true)}
-                    className="py-2.5 px-3 rounded-2xl bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 text-white font-black text-xs shadow-md shadow-emerald-500/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    <span className="text-sm">🟢</span>
-                    <span>积分充值</span>
-                  </button>
-                  <button
-                    onClick={() => setShowInviteModal(true)}
-                    className="py-2.5 px-3 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white font-black text-xs shadow-md shadow-blue-500/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    <span className="text-sm">🔵</span>
-                    <span>邀请有礼</span>
-                  </button>
-                </div>
-              </div>
 
               {/* Assessment Report Card */}
               <div
@@ -613,42 +577,6 @@ export function ProfileScreen() {
 
                 {/* Main Body */}
                 <div className="p-4 sm:p-6 space-y-5">
-                  {/* Desktop Member Center Points Banner */}
-                  <div className="hidden lg:block bg-gradient-to-r from-zinc-900 via-zinc-800 to-black text-white border border-amber-500/30 rounded-3xl p-5 shadow-xl relative overflow-hidden">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/30 text-amber-400 flex items-center justify-center text-xl shadow-inner">
-                          ✨
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-black text-base text-amber-300">旅行家Pro · 会员中心</h3>
-                            <span className="text-[10px] font-bold text-amber-300 bg-amber-400/20 px-2 py-0.5 rounded-full border border-amber-400/30">VIP 尊享版</span>
-                          </div>
-                          <p className="text-xs text-zinc-300 mt-1">当前积分余额：<strong className="text-emerald-400 text-base font-black ml-1">{userPoints} 积分</strong></p>
-                        </div>
-                      </div>
-
-                      {/* Action Buttons: 🟢 积分充值 & 🔵 邀请有礼 */}
-                      <div className="flex items-center gap-3">
-                        <button
-                          onClick={() => setShowRechargeModal(true)}
-                          className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 text-white font-black text-xs shadow-md shadow-emerald-500/25 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
-                        >
-                          <span className="text-sm">🟢</span>
-                          <span>积分充值</span>
-                        </button>
-                        <button
-                          onClick={() => setShowInviteModal(true)}
-                          className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white font-black text-xs shadow-md shadow-blue-500/25 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
-                        >
-                          <span className="text-sm">🔵</span>
-                          <span>邀请有礼</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
                   {/* Desktop Quick Entry Cards (Hidden on Mobile) */}
                   <div className="hidden lg:grid grid-cols-4 gap-2 text-center">
                     {[

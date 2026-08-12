@@ -276,16 +276,16 @@ export function CameraRecognize({ currentSpot, onClose, onRecognized }: CameraRe
   if (!mounted) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-0 md:p-4 select-none font-sans overflow-y-auto">
+    <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/75 backdrop-blur-md p-4 select-none font-sans overflow-y-auto">
       {/* Click outside backdrop overlay to close */}
       <div className="absolute inset-0 cursor-pointer" onClick={onClose} />
 
       <motion.div 
-        initial={{ opacity: 0, scale: 0.95, y: 15 }} 
+        initial={{ opacity: 0, scale: 0.92, y: 20 }} 
         animate={{ opacity: 1, scale: 1, y: 0 }} 
-        exit={{ opacity: 0, scale: 0.95, y: 15 }}
+        exit={{ opacity: 0, scale: 0.92, y: 20 }}
         transition={SPRING}
-        className="relative z-10 w-full h-full md:h-auto md:max-h-[96vh] max-w-6xl bg-[#121815]/95 text-[#E6EADF] rounded-none md:rounded-3xl border-0 md:border border-[#D2A053]/30 flex flex-col overflow-hidden shadow-[0_0_50px_rgba(210,160,83,0.15)]"
+        className="relative z-10 w-full max-w-4xl max-h-[85vh] bg-[#121815]/98 text-[#E6EADF] rounded-3xl border border-[#D2A053]/40 flex flex-col overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.6)]"
       >
         {/* ── Top Header (Gold-Jade tech style) ── */}
         <header className="sticky top-0 z-30 bg-[#1A2520]/95 backdrop-blur-md border-b border-[#D2A053]/20 px-4 py-3.5 flex items-center justify-between">

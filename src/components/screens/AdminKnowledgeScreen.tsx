@@ -22,6 +22,7 @@ const getDefaultCover = (title: string, category?: string) => {
   if (t.includes("广州") || t.includes("小蛮腰") || t.includes("塔")) return "/images/spots/10031.webp";
   if (t.includes("南京") || t.includes("夫子庙") || t.includes("秦淮河")) return "/images/spots/10029.webp";
   if (t.includes("苏州") || t.includes("拙政园")) return "/images/spots/10013.webp";
+  if (t.includes("餐饮") || t.includes("美食") || t.includes("小吃") || t.includes("服务")) return "/images/spots/10066.webp";
   if (t.includes("三峡") || t.includes("江")) return "/images/spots/route-3.webp";
   if (t.includes("交通") || category === "transport") return "/images/spots/10067.webp";
   if (t.includes("历史") || category === "history") return "/images/spots/10002.webp";

@@ -39,7 +39,7 @@ const getShortName = (name: string) => {
 };
 
 const CITY_BANNERS: Record<string, string> = {
-  hot: "/images/spots/10001.webp",
+  hot: "/image/jd.png",
   beijing: "/images/spots/10001.webp",
   shanghai: "/images/spots/10009.webp",
   chongqing: "/images/spots/10011.webp",
