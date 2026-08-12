@@ -123,35 +123,31 @@ export function PointsInviteModal({ isOpen, onClose, initialTab = "packages" }: 
             </motion.button>
           </div>
 
-          {/* Navigation Tabs */}
+          {/* Navigation Tabs (Distinct Blue & Pink Colors) */}
           <div className="px-6 pt-4">
-            <div className="flex bg-[#E6E2D8]/30 p-1 rounded-2xl relative">
+            <div className="flex bg-[#E6E2D8]/40 p-1.5 rounded-2xl relative gap-2">
               <button
                 onClick={() => setActiveTab("packages")}
-                className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all relative z-10 ${
-                  activeTab === "packages" ? "text-white" : "text-[#A69B8F] hover:text-[#D2A053]"
+                className={`flex-1 py-2.5 rounded-xl text-xs font-black transition-all relative z-10 flex items-center justify-center gap-1.5 cursor-pointer ${
+                  activeTab === "packages"
+                    ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/30 scale-[1.02]"
+                    : "bg-white/60 text-zinc-600 hover:text-blue-600 hover:bg-white"
                 }`}
               >
-                积分充值
+                <span>🔵</span>
+                <span>积分充值</span>
               </button>
               <button
                 onClick={() => setActiveTab("invite")}
-                className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all relative z-10 ${
-                  activeTab === "invite" ? "text-white" : "text-[#A69B8F] hover:text-[#D2A053]"
+                className={`flex-1 py-2.5 rounded-xl text-xs font-black transition-all relative z-10 flex items-center justify-center gap-1.5 cursor-pointer ${
+                  activeTab === "invite"
+                    ? "bg-gradient-to-r from-pink-500 via-rose-500 to-pink-600 text-white shadow-md shadow-pink-500/30 scale-[1.02]"
+                    : "bg-white/60 text-zinc-600 hover:text-pink-500 hover:bg-white"
                 }`}
               >
-                邀请有礼
+                <span>💖</span>
+                <span>邀请有礼</span>
               </button>
-              {/* Tab indicator sliding effect */}
-              <motion.div
-                layoutId="modal-tab-indicator"
-                className="absolute top-1 bottom-1 rounded-xl bg-[#D2A053] shadow-sm z-0"
-                style={{
-                  left: activeTab === "packages" ? "4px" : "calc(50% + 2px)",
-                  width: "calc(50% - 6px)",
-                }}
-                transition={{ type: "spring", stiffness: 380, damping: 30 }}
-              />
             </div>
           </div>
 

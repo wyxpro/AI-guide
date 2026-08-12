@@ -39,7 +39,7 @@ const getShortName = (name: string) => {
 };
 
 const CITY_BANNERS: Record<string, string> = {
-  hot: "/image/jd.png",
+  hot: "https://static.justxa.com/pic/20190126/1548516329131531533.jpg?watermark/1/image/aHR0cHM6Ly9zdGF0aWMuanVzdHhhLmNvbS9waWMvMjAxNzA4MjMvcWlfbml1XzE1MDM0NTg1MDQ2NTVfMzI4XzMxNF81MzEucG5n/dissolve/50/gravity/SouthEast/dx/20/dy/20",
   beijing: "/images/spots/10001.webp",
   shanghai: "/images/spots/10009.webp",
   chongqing: "/images/spots/10011.webp",

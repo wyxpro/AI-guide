@@ -129,7 +129,7 @@ export function ProfileScreen() {
   const [notiGuide, setNotiGuide] = useState(true);
   const [notiDaily, setNotiDaily] = useState(false);
 
-  const [voiceSpeaker, setVoiceSpeaker] = useState("female_yaoyao");
+  const [voiceSpeaker, setVoiceSpeaker] = useState("female_xiaoxiao");
   const [voiceSpeed, setVoiceSpeed] = useState(1.0);
   const [voiceBgmVolume, setVoiceBgmVolume] = useState(30);
 
